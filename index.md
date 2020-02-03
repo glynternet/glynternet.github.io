@@ -18,7 +18,7 @@ If you are able to attend any of them, please try to let me know so that I can m
 Tilly is taking me out: Sorry!
 
 ### Tuesday 3rd or Wednesday 4th March - _Club Austin: The Birthday Edition_
-Austin Hill is an inspirational man, and the man who got me properly into board games. Club Austin is the board game night that I've started doing in London that some of you have attended, named after that very man. I will put on a night on either the Tuesday or Wednesday of the week, depending on which one is best for the bigger group of people.
+Austin Hill is an inspirational man, and the man who got me properly into board games. Club Austin is the board game night that I've started doing intermittently in London that some of you have attended, named after that very man. I will put on a night on either the Tuesday or Wednesday of the week, depending on which one is best for the bigger group of people.
 
 ### Thursday 5th March - [_Algorave_](https://www.cafeoto.co.uk/events/algorave/)
 
