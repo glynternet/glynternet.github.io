@@ -2,6 +2,7 @@
 layout: page
 title: Routes
 permalink: /routes/
+tags: cycling
 ---
 
 ## Resources
