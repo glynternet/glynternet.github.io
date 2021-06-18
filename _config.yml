@@ -12,6 +12,7 @@ url: "https://glynternet.github.io" # the base hostname & protocol for your site
 # disqus_shortname: YourDisqusShortname
 
 # Build settings
+incremental: true
 # include: [_pages]
 markdown: kramdown
 permalink: /:year/:month/:title
