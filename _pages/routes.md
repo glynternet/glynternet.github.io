@@ -17,7 +17,7 @@ tags: cycling
 * [Ride Britain](https://www.goodreads.com/book/show/55964026-ride-britain). Climbs, climbs and more climbs.
 * [Bikepacking: Mountain bike camping adventures on the wild trails of Britain](http://www.wildthingspublishing.com/product/bikepacking-book/)
 
-## Areas
+## Locations
 
 ### Belvoir
 * [Belvoir Top 10 Climbs](https://www.strava.com/activities/3307295224)
