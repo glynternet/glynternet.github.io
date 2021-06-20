@@ -39,6 +39,7 @@ tags: cycling
 * [l'Etape London Route](https://www.strava.com/activities/401290658/)
 * [Epping Long Loop](https://www.trailforks.com/route/epping-long-loop-lots-of-good-trails/)
 * [Essex Hert MTB Club Trails Guides](http://www.essexhertsmtb.co.uk/mtb-trails.php)
+* [Adventures from the capital - northern & easterly road rides](https://www.komoot.com/collection/762/adventures-from-the-capital-northern-easterly-road-rides)
 
 ### Kent
 * [Top ten toughest cycling climbs in the Kent Alps - Broleur](https://www.broleur.com/top-10-climbs-in-the-kent-alps/)
@@ -55,7 +56,8 @@ tags: cycling
 * [Top 10 toughest cycling climbs in the Sussex hills - Broleur](https://www.broleur.com/top-10-toughest-road-cycling-climbs-in-the-sussex-hills/)
 
 ### South England
-* [London gravel routes: 8 of the best rides to try from the UK capital](https://www.redbull.com/gb-en/best-gravel-bike-routes-london) 
+* [London gravel routes: 8 of the best rides to try from the UK capital](https://www.redbull.com/gb-en/best-gravel-bike-routes-london)
+* [Devon Coast to Coast](https://www.sustrans.org.uk/find-a-route-on-the-national-cycle-network/devon-coast-to-coast)
 
 ### UK
 * [10 best gravel routes in UK](https://www.redbull.com/gb-en/best-gravel-riding-routes-uk)
@@ -66,6 +68,7 @@ tags: cycling
 * [Five climbs you‘ve probably never heard of but need to go and ride - Cycling Weekly](https://www.cyclingweekly.com/news/latest-news/five-climbs-youve-probably-never-heard-need-go-ride-352571)
 
 ### Wales
+* [Cardiff to Anglesey](https://www.sustrans.org.uk/find-a-route-on-the-national-cycle-network/route-8): Sustrans route 8
 * [Bikepacking routes in Wales: The 10 best to explore](https://www.redbull.com/gb-en/best-bikepacking-routes-wales)
 
 ### Other
