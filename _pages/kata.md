@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Kata Resoures
-permalink: /kata/
+permalink: /kata
 ---
 
 # 🥋KATAS🥋

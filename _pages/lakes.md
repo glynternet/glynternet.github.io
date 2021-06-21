@@ -1,7 +1,7 @@
 ---
 layout: amp
 title: Lakes
-permalink: /lakes/
+permalink: /lakes
 ---
 
 # 🚴🚴🚴🚴🚴 Lakes

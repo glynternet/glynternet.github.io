@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Routes
-permalink: /routes/
+permalink: /routes
 tags: cycling
 ---
 

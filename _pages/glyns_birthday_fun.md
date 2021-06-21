@@ -4,7 +4,7 @@
 
 layout: page
 title: Glyn's birthday fun
-permalink: /glyns_birthday_fun/
+permalink: /glyns_birthday_fun
 ---
 
 # Glyn's birthday fun 
