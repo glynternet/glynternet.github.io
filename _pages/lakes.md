@@ -14,7 +14,7 @@ permalink: /lakes
 
 ### Saturday
 
-**Ride**: [Graythwaite Monster Slayers TT](https://www.strava.com/routes/2841783146053040878)
+**Ride**: [Graythwaite Monster Slayers TT (South Lakes)](https://www.strava.com/routes/2841783146053040878)
 
 **Eat**: 1700-2000 [Dude's Dough](https://www.dudesdough.com/) @ [Graythwaite Farm Shop](https://goo.gl/maps/AfGpY1d2NRWLV1RbA)
 
