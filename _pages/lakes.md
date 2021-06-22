@@ -1,6 +1,6 @@
 ---
 layout: amp
-title: 🚴🚴🚴🚴 Lakes... 🚴
+title: Lakes 🚴🚴🚴🚴... 🚴
 permalink: /lakes
 ---
 
