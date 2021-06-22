@@ -20,7 +20,7 @@ permalink: /lakes
 
 ### Sunday
 
-Route: North Lakes route, to be sorted by Ed
+Ride: RB31 For Those about to Climb (North Lakes): [Komoot](https://www.komoot.com/tour/397915833), [Garmin](https://connect.garmin.com/modern/course/64412109)
 
 **Eat**: 1930 [Manor House](https://www.google.com/maps/place/Manor+House/@54.2761419,-3.0478233,15z/data=!4m5!3m4!1s0x0:0x8cb8ba599d3cd6d0!8m2!3d54.2762176!4d-3.0477999), Oxen Park
 
