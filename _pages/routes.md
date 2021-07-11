@@ -31,6 +31,7 @@ tags: cycling
 * [Danger zone hill](https://www.komoot.com/highlight/474115)
 * [12 rides around Watlington](https://www.komoot.com/guide/780424/road-cycling-routes-around-watlington)
   * There are some routes that cover areas of the Chilterns that I've not been to.
+* [Wild Cycles](https://www.wildcycles.co.uk/explore-routes) - Road, MTB, Gravel
 
 ### Epping (& Essex)
 * [Route You: Epping Forest - Overview of all cycle routes](https://www.routeyou.com/en-gb/location/bike/47412135/cycling-in-epping-forest-overview-of-all-cycle-routes)
