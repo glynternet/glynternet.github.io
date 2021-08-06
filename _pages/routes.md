@@ -49,6 +49,9 @@ tags: cycling
 ### Kent
 * [Top ten toughest cycling climbs in the Kent Alps - Broleur](https://www.broleur.com/top-10-climbs-in-the-kent-alps/)
 
+### London
+* [Must-ride MTB trails — Mountain bike day trips from London](https://www.komoot.com/collection/972380/must-ride-mtb-trails-mountain-bike-day-trips-from-london)
+
 ### Lake District
 * [Grizedale Grizzely' XC event route](https://www.strava.com/activities/134735481#7298319124)
 
