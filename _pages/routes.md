@@ -13,7 +13,7 @@ tags: cycling
 * [Bifurkate](http://bifurkate.com/): Build custom maps of strava activities, with clickable links. Really good for finding old activities that you can't quite remember the names of but you can kind of remember the time range that you did it in.
 
 ### Event & event sites
-* [https://audax.uk/](Audax UK)
+* [Audax UK](https://audax.uk/)
 
 ### Books
 * [_Lost Lanes_](http://lostlanes.thebikeshow.net/). _South England_ (Original), _Wales_, _West_, _North_ editions available.
