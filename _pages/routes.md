@@ -36,14 +36,17 @@ tags: cycling
   * There are some routes that cover areas of the Chilterns that I've not been to.
 * [Wild Cycles](https://www.wildcycles.co.uk/explore-routes) - Road, MTB, Gravel
 
-### Epping (& Essex)
+### Epping Forest
 * [Route You: Epping Forest - Overview of all cycle routes](https://www.routeyou.com/en-gb/location/bike/47412135/cycling-in-epping-forest-overview-of-all-cycle-routes)
+* [Epping Long Loop](https://www.trailforks.com/route/epping-long-loop-lots-of-good-trails/)
+* [Essex Hert MTB Club Trails Guides](http://www.essexhertsmtb.co.uk/mtb-trails.php)
+
+### Essex
 * [101 climbs (and moderate inclines) of Essex](https://www.rideblackmore.com/blogs/news/101-climbs-and-moderate-inclines-of-essex)
+* [A Day in Hell 2021: London](9https://ridewithgps.com/routes/35431632)
 * [Audax Cyclists of Mid Essex routes](https://acme.bike/)
 * [Hub Velo Routes](https://www.hub-velo.co.uk/about-us/hv-routes-and-rides/)
 * [l'Etape London Route](https://www.strava.com/activities/401290658/)
-* [Epping Long Loop](https://www.trailforks.com/route/epping-long-loop-lots-of-good-trails/)
-* [Essex Hert MTB Club Trails Guides](http://www.essexhertsmtb.co.uk/mtb-trails.php)
 * [Adventures from the capital - northern & easterly road rides](https://www.komoot.com/collection/762/adventures-from-the-capital-northern-easterly-road-rides)
 
 ### Kent
