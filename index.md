@@ -9,3 +9,4 @@ title: glyn.io
 # glyn.io
 
 [routes](/routes)
+[camping](/camping)
