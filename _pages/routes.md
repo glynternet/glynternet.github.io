@@ -17,7 +17,7 @@ tags: cycling
 
 ### Books
 * [_Lost Lanes_](http://lostlanes.thebikeshow.net/). _South England_ (Original), _Wales_, _West_, _North_ editions available.
-* [Ride Britain](https://www.goodreads.com/book/show/55964026-ride-britain). Climbs, climbs and more climbs.
+* [Ride Britain](https://www.goodreads.com/book/show/55964026-ride-britain) [(GPX)](https://www.100climbs.co.uk/ride-britain-gpx). Climbs, climbs and more climbs.
 * [Bikepacking: Mountain bike camping adventures on the wild trails of Britain](http://www.wildthingspublishing.com/product/bikepacking-book/)
 
 ## Locations
