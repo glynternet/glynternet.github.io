@@ -15,6 +15,7 @@ tags: cycling
 
 ### Event & event sites
 * [Audax UK](https://audax.uk/)
+* [BMBO](https://www.bmbo.org.uk/calendar/) - British Mountain Bike Orienteering calendar
 
 ### Books
 * [_Lost Lanes_](http://lostlanes.thebikeshow.net/). _South England_ (Original), _Wales_, _West_, _North_ editions available.
