@@ -45,7 +45,7 @@ tags: cycling
 
 ### Essex
 * [101 climbs (and moderate inclines) of Essex](https://www.rideblackmore.com/blogs/news/101-climbs-and-moderate-inclines-of-essex)
-* [A Day in Hell 2021: London](9https://ridewithgps.com/routes/35431632)
+* [A Day in Hell 2021: London](https://ridewithgps.com/routes/35431632)
 * [Audax Cyclists of Mid Essex routes](https://acme.bike/)
 * [Hub Velo Routes](https://www.hub-velo.co.uk/about-us/hv-routes-and-rides/)
 * [l'Etape London Route](https://www.strava.com/activities/401290658/)
