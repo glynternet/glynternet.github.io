@@ -8,8 +8,9 @@ tags: cycling
 ## Resources
 
 ### Websites
-* [Bifurkate](http://bifurkate.com/): Build custom maps of strava activities, with clickable links. Really good for finding old activities that you can't quite remember the names of but you can kind of remember the time range that you did it in.
+* [Bifurkate](http://bifurkate.com/) - Build custom maps of strava activities, with clickable links. Really good for finding old activities that you can't quite remember the names of but you can kind of remember the time range that you did it in.
 * [Routes CC](https://www.routes.cc/)
+* [cycle.travel](https://cycle.travel) - Easily build routes on quiet lanes.
 * [UK National Cycle Network](https://osmaps.ordnancesurvey.co.uk/ncn)
 * [Halfway Coffee](http://halfwaycoffee.com/) - Map of cyclist-friendly cafés around the UK.
 
