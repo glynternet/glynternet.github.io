@@ -59,11 +59,6 @@ _Included in: tech_
 - Water bottles
 
 
-## TECH
-_Includes groups: battery\_pack, garmin, lights, listening_  
-
-
-
 ## WEATHER
 - Temperature
 - Precipitation
