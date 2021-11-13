@@ -4,6 +4,12 @@ title: Cycle prep
 permalink: /cycle_prep
 ---
 
+## BATTERY\_PACK
+_Included in: tech_  
+- Battery pack
+- USB cable
+
+
 ## CLOTHING
 - Get dressed
 - Neck gaiter
@@ -12,21 +18,24 @@ permalink: /cycle_prep
 
 
 ## GARMIN
+_Included in: tech_  
 - Load routes
 - Charge
 - HRM
 
 
 ## LIGHTS
+_Included in: tech_  
 - Front
 - Back
-- Charge lights
+- Charge Them
 
 
 ## LISTENING
-- Headphones
-- Podcasts downloaded
-- Music downloaded
+_Included in: tech_  
+- headphones
+- podcasts downloaded
+- music downloaded
 
 
 ## MAINTENANCE
@@ -48,6 +57,11 @@ permalink: /cycle_prep
 ## NUTRITION
 - Gather food
 - Water bottles
+
+
+## TECH
+_Includes groups: battery\_pack, garmin, lights, listening_  
+
 
 
 ## WEATHER
