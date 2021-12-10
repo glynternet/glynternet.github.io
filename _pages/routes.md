@@ -13,6 +13,7 @@ tags: cycling
 * [cycle.travel](https://cycle.travel) - Easily build routes on quiet lanes.
 * [UK National Cycle Network](https://osmaps.ordnancesurvey.co.uk/ncn)
 * [Halfway Coffee](http://halfwaycoffee.com/) - Map of cyclist-friendly cafés around the UK.
+* [TFL cycle map](https://tfl.gov.uk/maps/cycle)
 
 ### Event & event sites
 * [Audax UK](https://audax.uk/)
