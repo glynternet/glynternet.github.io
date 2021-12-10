@@ -17,6 +17,7 @@ tags: cycling
 
 ### Event & event sites
 * [Audax UK](https://audax.uk/)
+* [Bikepacking events](https://bikepacking.com/events/)
 * [BMBO](https://www.bmbo.org.uk/calendar/) - British Mountain Bike Orienteering calendar
 
 ### Books
