@@ -10,3 +10,4 @@ title: glyn.io
 
 [🚴](/routes)
 [🏕️](/camping)
+[🧦](/socks)
