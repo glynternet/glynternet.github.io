@@ -7,11 +7,17 @@ tags: socks
 
 ## Resources
 
-* [Nordic socks](https://www.thenordicsocks.co.uk/)
-* Stance
-* [Thought](https://www.wearethought.com/)
-* Pair of Theives
+* Ballonet
 * Daily Paper
 * Happy Socks
+* [Nordic socks](https://www.thenordicsocks.co.uk/)
 * [Oliver Spencer](https://oliverspencer.co.uk/collections/socks)
+* Pair of Theives
+* Paul Smith
+* Pongo
+* Qnoop
+* Stance
+* Stepney Workers Club
+* [Thought](https://www.wearethought.com/)
 * Wawwa
+* YMC
