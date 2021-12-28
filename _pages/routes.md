@@ -89,4 +89,5 @@ tags: cycling
 
 ### Other
 * [London to Whistable](https://www.strava.com/routes/2840903354483380750)
+* [Land's End to John o' Groats](https://www.rideacrossbritain.com/route/daily-stages/) - As done by _Ride Across Britain_.
 
