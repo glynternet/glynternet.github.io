@@ -86,6 +86,7 @@ tags: cycling
 ### Wales
 * [Cardiff to Anglesey](https://www.sustrans.org.uk/find-a-route-on-the-national-cycle-network/route-8): Sustrans route 8
 * [Bikepacking routes in Wales: The 10 best to explore](https://www.redbull.com/gb-en/best-bikepacking-routes-wales)
+* [6 of the best gravel routes in Wales](https://www.redbull.com/gb-en/best-gravel-bike-routes-wales)
 
 ### Scotland
 * [Highland Trail 550](https://dotwatcher.cc/race/highland-trail-550-2021) - 880km, 16000m MTB 🤙
