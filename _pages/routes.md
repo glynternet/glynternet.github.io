@@ -87,6 +87,9 @@ tags: cycling
 * [Cardiff to Anglesey](https://www.sustrans.org.uk/find-a-route-on-the-national-cycle-network/route-8): Sustrans route 8
 * [Bikepacking routes in Wales: The 10 best to explore](https://www.redbull.com/gb-en/best-bikepacking-routes-wales)
 
+### Scotland
+* [Highland Trail 550](https://dotwatcher.cc/race/highland-trail-550-2021) - 880km, 16000m MTB 🤙
+
 ### Other
 * [London to Whistable](https://www.strava.com/routes/2840903354483380750)
 * [Land's End to John o' Groats](https://www.rideacrossbritain.com/route/daily-stages/) - As done by _Ride Across Britain_.
