@@ -71,6 +71,9 @@ tags: cycling
 * [Top 10 toughest cycling climbs in the Surrey hills - Broleur](https://www.broleur.com/top-10-toughest-climbs-in-the-surrey-pyrenees/)
 * [Top 10 toughest cycling climbs in the Sussex hills - Broleur](https://www.broleur.com/top-10-toughest-road-cycling-climbs-in-the-sussex-hills/)
 
+### North England
+* [Dales Divide 2021](https://ridewithgps.com/routes/37838843)
+
 ### South England
 * [London gravel routes: 8 of the best rides to try from the UK capital](https://www.redbull.com/gb-en/best-gravel-bike-routes-london)
 * [Devon Coast to Coast](https://www.sustrans.org.uk/find-a-route-on-the-national-cycle-network/devon-coast-to-coast)
