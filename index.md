@@ -11,3 +11,4 @@ title: glyn.io
 [🚴](/routes)
 [🏕️](/camping)
 [🧦](/socks)
+[✔️](/event_readiness)
