@@ -18,6 +18,7 @@ How are you travelling there?
 * Timings
 
 Do you need somewhere to stay before/after?
+
 How are you getting back?
 * Tickets
 * Timings
