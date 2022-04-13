@@ -13,4 +13,5 @@ tags: campings
 * [Cool camping](https://coolcamping.com/)
 
 ### Articles
+* [Best Wild Camping Spots in the UK](https://adventurequeens.co.uk/2017/11/03/best-wild-camping-spots-in-the-uk/)
 * [15 of Britain's best almost-wild, off-grid campsites](https://www.theguardian.com/travel/2021/mar/20/15-best-almost-wild-camping-off-grid-campsites-britain-uk)
