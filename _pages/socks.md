@@ -5,7 +5,7 @@ permalink: /socks
 tags: socks
 ---
 
-## Resources
+# 🧦
 
 * Ballonet
 * Daily Paper
