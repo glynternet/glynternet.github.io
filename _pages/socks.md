@@ -9,6 +9,7 @@ tags: socks
 
 * Ballonet
 * Daily Paper
+* [Darn Tought](https://darntough.com/)
 * Happy Socks
 * [Nordic socks](https://www.thenordicsocks.co.uk/)
 * [Oliver Spencer](https://oliverspencer.co.uk/collections/socks)
