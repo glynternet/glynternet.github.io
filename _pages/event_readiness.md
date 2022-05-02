@@ -1,9 +1,11 @@
 ---
 layout: page
 title: Event readiness
-permalink: /event_readiness
+permalink: /cycling/event_readiness
 tags: cycling
 ---
+
+# ✔️ Ride/event readiness checklist
 
 This will be messy as it evolves but is basically a bunch of questions that need answering to be ready for an event or race.
 

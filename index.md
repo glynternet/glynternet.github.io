@@ -8,7 +8,6 @@ title: glyn.io
 
 # glyn.io
 
-[🚴](/routes)
+[🚴](/cycling)
 [🏕️](/camping)
 [🧦](/socks)
-[✔️](/event_readiness)

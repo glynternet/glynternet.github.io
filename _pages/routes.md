@@ -1,11 +1,11 @@
 ---
 layout: page
 title: Routes
-permalink: /routes
+permalink: /cycling/routes
 tags: cycling
 ---
 
-## Resources
+## 🛠️🗜️ Route-planning tools/resources 🪚🪛
 
 ### Websites
 * [Bifurkate](http://bifurkate.com/) - Build custom maps of strava activities, with clickable links. Really good for finding old activities that you can't quite remember the names of but you can kind of remember the time range that you did it in.
@@ -26,7 +26,7 @@ tags: cycling
 * [Ride Britain](https://www.goodreads.com/book/show/55964026-ride-britain) [(GPX)](https://www.100climbs.co.uk/ride-britain-gpx). Climbs, climbs and more climbs.
 * [Bikepacking: Mountain bike camping adventures on the wild trails of Britain](http://www.wildthingspublishing.com/product/bikepacking-book/)
 
-## Locations
+## 🗺️ Routes
 
 ### UK
 * [10 best gravel routes in UK](https://www.redbull.com/gb-en/best-gravel-riding-routes-uk)
