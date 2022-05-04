@@ -87,6 +87,9 @@ tags: cycling
 * [15 fantastic cycle routes for a great bike ride in Surrey and Sussex](https://www.cyclingweekly.com/news/latest-news/15-fantastic-cycle-routes-great-bike-ride-surrey-sussex-327644)
 * [Top 10 toughest cycling climbs in the Surrey hills - Broleur](https://www.broleur.com/top-10-toughest-climbs-in-the-surrey-pyrenees/)
 * [Top 10 toughest cycling climbs in the Sussex hills - Broleur](https://www.broleur.com/top-10-toughest-road-cycling-climbs-in-the-sussex-hills/)
+* [Giro Cycles Surrey local loops (road & gravel)](https://www.girocycles.com/pages/local-loops)
+* [Kinesis UK Surrey Hills Gravelcross](https://ridewithgps.com/routes/28350598)
+* [Surrey Hills Gravelcross CX Sportive](https://www.bikemap.net/en/r/3412449/#11.2/51.1915/-0.4395)
 
 ### Wales
 * [Cardiff to Anglesey](https://www.sustrans.org.uk/find-a-route-on-the-national-cycle-network/route-8): Sustrans route 8
