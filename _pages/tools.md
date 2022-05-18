@@ -23,3 +23,4 @@ tags: cycling
 - Power meter battery
 - Lube
 - Dust cap
+- Presta valve core
