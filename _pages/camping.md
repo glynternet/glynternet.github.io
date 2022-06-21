@@ -11,6 +11,11 @@ tags: campings
 * [Pegs and pitches](https://pegsandpitches.co.uk/)
 * [Pitch up](https://www.pitchup.com/)
 * [Cool camping](https://coolcamping.com/)
+* [Warm showers](https://www.warmshowers.org/) - Host and be hosted by cyclists.
+* [BritStop](https://www.britstops.com/) - One off payment then stay for free at many different places.
+
+### Good-looking sites
+* [Private camps in Cotswold woodland](https://www.hipcamp.com/en-GB/land/england-gloucestershire-private-camps-in-cotswold-woodland-6p0h8x9p?adults=1&children=0) - Wild-ish spots for groups up to 10 people.
 
 ### Articles
 * [Best Wild Camping Spots in the UK](https://adventurequeens.co.uk/2017/11/03/best-wild-camping-spots-in-the-uk/)
