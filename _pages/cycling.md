@@ -8,5 +8,6 @@ tags: cycling
 # 🚴
 
 [🗺️](/cycling/routes)
+[🍌](/cycling/food)
 [🛠️](/cycling/tools)
-[✔️](/cycling/event_readiness)
+[👍](/cycling/event_readiness)
