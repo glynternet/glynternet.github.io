@@ -24,4 +24,5 @@ tags: cycling
 - Lube
 - Dust cap
 - Presta valve core
-- Tubeless plug kit w/ blade to cut excess off
+- Tubeless plug kit w/ blade for excess
+- Tubeless sealant
