@@ -24,5 +24,6 @@ tags: cycling
 - Lube
 - Dust cap
 - Presta valve core
+- Presta valve core tool
 - Tubeless plug kit w/ blade for excess
 - Tubeless sealant
