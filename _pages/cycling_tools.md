@@ -11,7 +11,7 @@ tags: cycling
 - Spare tube
 - Tyre boot
 - Tyre levers
-- Hex key
+- Hex keys
 - Torx wrench
 - Screwdriver
 - Inner tube patches
