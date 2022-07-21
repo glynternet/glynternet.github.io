@@ -17,6 +17,7 @@ tags: cycling
 * [UK National Rail Maps](https://www.nationalrail.co.uk/stations_destinations/rail-maps.aspx)
 * [Halfway Coffee](http://halfwaycoffee.com/) - Map of cyclist-friendly cafés around the UK.
 * [TFL cycle map](https://tfl.gov.uk/maps/cycle)
+* [Fastest known times](https://fastestknowntimes.org.uk/) - FKTs for long distance multi-terrain cycling routes throughout the UK. Useful for list of fixed routes.
 
 ### Event & event sites
 * [Audax UK](https://audax.uk/)
@@ -36,6 +37,7 @@ tags: cycling
 * [40 Great British Bike Rides](https://www.greatbritishbikerides.co.uk/download-gpx-files/)
 * [Rapha _A Day In Hell_ routes](https://www.rapha.cc/gb/en/stories/a-day-in-heLL#EUROPE)
 * [Land's End to John o' Groats](https://www.rideacrossbritain.com/route/daily-stages/) - As done by _Ride Across Britain_.
+* [London - Edinburgh - London](https://londonedinburghlondon.com/route)
 
 ### North England
 * [Dales Divide 2021](https://ridewithgps.com/routes/37838843)
@@ -96,6 +98,11 @@ tags: cycling
 * [Giro Cycles Surrey local loops (road & gravel)](https://www.girocycles.com/pages/local-loops)
 * [Kinesis UK Surrey Hills Gravelcross](https://ridewithgps.com/routes/28350598)
 * [Surrey Hills Gravelcross CX Sportive](https://www.bikemap.net/en/r/3412449/#11.2/51.1915/-0.4395)
+
+### West England
+
+* [Dirtydevil.cc routes](https://ridewithgps.com/users/2600593/) - Forest of Dean gravel
+
 
 ### Wales
 * [Cardiff to Anglesey](https://www.sustrans.org.uk/find-a-route-on-the-national-cycle-network/route-8): Sustrans route 8
