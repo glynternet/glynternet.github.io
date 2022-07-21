@@ -34,6 +34,7 @@ tags: cycling
 - Tubeless sealant
 
 ### Extended
+- Derailleur hanger
 - Needle & thread
 - Spare brake pads
 - Spare cleats
