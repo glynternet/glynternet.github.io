@@ -5,7 +5,7 @@ permalink: /cycling/routes
 tags: cycling
 ---
 
-## 🛠️🗜️ Route-planning tools/resources 🪚🪛
+## 🛠️🗜️ Route-design tools/resources 🪚🪛
 
 ### Websites
 * [Free Open-source Garmin maps](https://garmin3.bbbike.org/)
@@ -31,6 +31,7 @@ tags: cycling
 ## 🗺️ Routes
 
 ### UK
+* [UK Gravel Club](https://www.ukgravelbike.club/ukgbc-routes/)
 * [10 best gravel routes in UK](https://www.redbull.com/gb-en/best-gravel-riding-routes-uk)
 * [40 Great British Bike Rides](https://www.greatbritishbikerides.co.uk/download-gpx-files/)
 * [Rapha _A Day In Hell_ routes](https://www.rapha.cc/gb/en/stories/a-day-in-heLL#EUROPE)
@@ -79,6 +80,9 @@ tags: cycling
 * [l'Etape London Route](https://www.strava.com/activities/401290658/)
 * [Adventures from the capital - northern & easterly road rides](https://www.komoot.com/collection/762/adventures-from-the-capital-northern-easterly-road-rides)
 
+### Hertfordshire
+* [Spokes CC Gravel route](https://www.strava.com/routes/2815576986037554582)
+
 #### Kent
 * [Top ten toughest cycling climbs in the Kent Alps - Broleur](https://www.broleur.com/top-10-climbs-in-the-kent-alps/)
 
@@ -97,6 +101,7 @@ tags: cycling
 * [Cardiff to Anglesey](https://www.sustrans.org.uk/find-a-route-on-the-national-cycle-network/route-8): Sustrans route 8
 * [Bikepacking routes in Wales: The 10 best to explore](https://www.redbull.com/gb-en/best-bikepacking-routes-wales)
 * [6 of the best gravel routes in Wales](https://www.redbull.com/gb-en/best-gravel-bike-routes-wales)
+* [Eryri 360 Series](https://www.wheelgoodtimes.com/eryri-360) - 7 mixed-terrain, non-technical trails in Snowdonia National Park.
 
 ###  Scotland
 * [Highland Trail 550](https://dotwatcher.cc/race/highland-trail-550-2021) - 880km, 16000m MTB 🤙
