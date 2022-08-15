@@ -10,7 +10,6 @@ tags: cycling
 ### Websites
 * [Free Open-source Garmin maps](https://garmin3.bbbike.org/)
 * [Bifurkate](http://bifurkate.com/) - Build custom maps of strava activities, with clickable links. Really good for finding old activities that you can't quite remember the names of but you can kind of remember the time range that you did it in.
-* [Routes CC](https://www.routes.cc/)
 * [cycle.travel](https://cycle.travel) - Easily build routes on quiet lanes.
 * [OpenCycleMap](https://www.opencyclemap.org/)
 * [UK National Cycle Network](https://osmaps.ordnancesurvey.co.uk/ncn)
@@ -18,6 +17,7 @@ tags: cycling
 * [Halfway Coffee](http://halfwaycoffee.com/) - Map of cyclist-friendly cafés around the UK.
 * [TFL cycle map](https://tfl.gov.uk/maps/cycle)
 * [Fastest known times](https://fastestknowntimes.org.uk/) - FKTs for long distance multi-terrain cycling routes throughout the UK. Useful for list of fixed routes.
+* [Parkopedia](https://www.parkopedia.com/) - Parking spots with opening times and prices.
 
 ### Event & event sites
 * [Audax UK](https://audax.uk/)
@@ -25,11 +25,18 @@ tags: cycling
 * [BMBO](https://www.bmbo.org.uk/calendar/) - British Mountain Bike Orienteering calendar
 
 ### Books
-* [_Lost Lanes_](http://lostlanes.thebikeshow.net/). _South England_ (Original), _Wales_, _West_, _North_ editions available.
+* [_Lost Lanes_](http://lostlanes.thebikeshow.net/). _South England_ (Original), _Wales_, _West_, _Midlands_, _North_ editions available.
 * [Ride Britain](https://www.goodreads.com/book/show/55964026-ride-britain) [(GPX)](https://www.100climbs.co.uk/ride-britain-gpx). Climbs, climbs and more climbs.
 * [Bikepacking: Mountain bike camping adventures on the wild trails of Britain](http://www.wildthingspublishing.com/product/bikepacking-book/) [(GPX)](https://wildthingspublishing.com/bikepacking/)
+* [Wild Cycling](https://www.goodreads.com/book/show/35099598-wild-cycling)
+* [Really Wild Cycling](https://www.goodreads.com/book/show/54144328-really-wild-cycling)
+* [Big Rides: Great Britain and Ireland](https://www.adventurebooks.com/products/big_rides-_great_britain_-_ireland) - Long-distance road, gravel and MTB rides curated by Kathy Rogers & Markus Stitz.
+* [Great British Gravel Rides](https://www.goodreads.com/book/show/61206527-great-british-gravel-rides) - 25 gravel routes from passionate gravel enthusiasts, curated by Markus Stitz.
+* [Epic Bike Rides of the World](https://www.goodreads.com/book/show/28236759-epic-bike-rides-of-the-world) - Worldwide bucket-list road rides.
+* [Epic Bike Rides of Europe](https://www.goodreads.com/book/show/50822569-epic-bike-rides-of-europe) - European bucket-list road rides.
 
 ## 🗺️ Routes
+* [Cycling Stage](https://www.cyclingstage.com/gpx-2022-pro-cycling-races/) - Routes for pro pelaton races.
 
 ### UK
 * [UK Gravel Club](https://www.ukgravelbike.club/ukgbc-routes/)
@@ -41,11 +48,16 @@ tags: cycling
 
 ### North England
 * [Dales Divide 2021](https://ridewithgps.com/routes/37838843)
+* [Hell of the North West](https://www.randomadventure.co.uk/events/hell-of-the-north-west/) - 845Km road race with >14,000m climbing
 
 #### Lake District
 * [Grizedale Grizzely' XC event route](https://www.strava.com/activities/134735481#7298319124)
 
+#### Peak District
+* [Glorious Gravel Ride](https://gravelbike.guide/routes/the-glorious-gravel-ride/)
+
 ### Midlands
+* [Velotastic Midlands gravel routes](https://velotastic.co.uk/gravel-a-la-carte/)
 
 #### Nottingham
 * [Premium gravel grinding through Nottinghamshire – Pens & Pits](https://www.komoot.com/collection/701)
@@ -90,6 +102,7 @@ tags: cycling
 
 #### London
 * [Must-ride MTB trails — Mountain bike day trips from London](https://www.komoot.com/collection/972380/must-ride-mtb-trails-mountain-bike-day-trips-from-london)
+* [Routes CC](https://www.routes.cc/)
 
 #### Surrey & Sussex
 * [15 fantastic cycle routes for a great bike ride in Surrey and Sussex](https://www.cyclingweekly.com/news/latest-news/15-fantastic-cycle-routes-great-bike-ride-surrey-sussex-327644)
@@ -100,7 +113,6 @@ tags: cycling
 * [Surrey Hills Gravelcross CX Sportive](https://www.bikemap.net/en/r/3412449/#11.2/51.1915/-0.4395)
 
 ### West England
-
 * [Dirtydevil.cc routes](https://ridewithgps.com/users/2600593/) - Forest of Dean gravel
 
 
@@ -112,6 +124,7 @@ tags: cycling
 
 ###  Scotland
 * [Highland Trail 550](https://dotwatcher.cc/race/highland-trail-550-2021) - 880km, 16000m MTB 🤙
+* [Markus Stitz komoot routes](https://www.komoot.com/user/642038402014) - Scottish ultradistance legend and founder of [Bikepacking Scotland](https://bikepackingscotland.com/) with plenty of routes to offer.
 
 ## Need sorting
 * [Five climbs you‘ve probably never heard of but need to go and ride - Cycling Weekly](https://www.cyclingweekly.com/news/latest-news/five-climbs-youve-probably-never-heard-need-go-ride-352571)
