@@ -23,6 +23,7 @@ tags: cycling
 * [Audax UK](https://audax.uk/)
 * [Bikepacking events](https://bikepacking.com/events/)
 * [BMBO](https://www.bmbo.org.uk/calendar/) - British Mountain Bike Orienteering calendar
+* [Dotwacher CC Events](https://dotwatcher.cc/events)
 
 ### Books
 * [_Lost Lanes_](http://lostlanes.thebikeshow.net/). _South England_ (Original), _Wales_, _West_, _Midlands_, _North_ editions available.
@@ -45,6 +46,7 @@ tags: cycling
 * [Rapha _A Day In Hell_ routes](https://www.rapha.cc/gb/en/stories/a-day-in-heLL#EUROPE)
 * [Land's End to John o' Groats](https://www.rideacrossbritain.com/route/daily-stages/) - As done by _Ride Across Britain_.
 * [London - Edinburgh - London](https://londonedinburghlondon.com/route)
+* [Second City Divide](https://www.secondcitydivide.cc/) - 600km Glasgow to Manchester mixed terrain
 
 ### North England
 * [Dales Divide 2021](https://ridewithgps.com/routes/37838843)
@@ -55,6 +57,7 @@ tags: cycling
 
 #### Peak District
 * [Glorious Gravel Ride](https://gravelbike.guide/routes/the-glorious-gravel-ride/)
+* [Pure Peak Grit](https://www.purepeakgrit.cc/) - Road cycling route linking virtually every categorised climb in the Peak District National Park. 600km long with over 13,500m of ascent.
 
 ### Midlands
 * [Velotastic Midlands gravel routes](https://velotastic.co.uk/gravel-a-la-carte/)
@@ -113,18 +116,26 @@ tags: cycling
 * [Surrey Hills Gravelcross CX Sportive](https://www.bikemap.net/en/r/3412449/#11.2/51.1915/-0.4395)
 
 ### West England
-* [Dirtydevil.cc routes](https://ridewithgps.com/users/2600593/) - Forest of Dean gravel
-
+* [Dirtydevil.cc routes](https://ridewithgps.com/users/2600593/) - Forest of Dean gravel.
+* [East Devon Trail](https://www.komoot.com/collection/1326720/-east-devon-trail) - 185km mixed-terrain.
 
 ### Wales
 * [Cardiff to Anglesey](https://www.sustrans.org.uk/find-a-route-on-the-national-cycle-network/route-8): Sustrans route 8
 * [Bikepacking routes in Wales: The 10 best to explore](https://www.redbull.com/gb-en/best-bikepacking-routes-wales)
 * [6 of the best gravel routes in Wales](https://www.redbull.com/gb-en/best-gravel-bike-routes-wales)
 * [Eryri 360 Series](https://www.wheelgoodtimes.com/eryri-360) - 7 mixed-terrain, non-technical trails in Snowdonia National Park.
+* [Tyd 'Nol At Dy Goed](https://www.komoot.com/tour/843186245) - 484km gravel ride in and around Snowdonia.
+* [Bear Bones WRT EVENT](https://www.bearbonesbikepacking.co.uk/events/wrt-event/) - 3 day MTB event.
+* [Bear Bones 200](https://www.bearbonesbikepacking.co.uk/events/bb200-event/) - Late season 200km event in Cambrian Mountains.
 
 ###  Scotland
 * [Highland Trail 550](https://dotwatcher.cc/race/highland-trail-550-2021) - 880km, 16000m MTB 🤙
 * [Markus Stitz komoot routes](https://www.komoot.com/user/642038402014) - Scottish ultradistance legend and founder of [Bikepacking Scotland](https://bikepackingscotland.com/) with plenty of routes to offer.
+* [Tiso Overland 500](https://www.tiso.com/overland500) - Over 500 miles of Scotland's finest gravel, singletrack and quiet country roads.
+
+### Europe
+* [EuroVelo](https://en.eurovelo.com/) - European cycle route network.
+* [Route des Grandes Alpes](https://en.routedesgrandesalpes.com/) - Lake Geneva to Mediterranean via France’s great Alpine passes.
 
 ## Need sorting
 * [Five climbs you‘ve probably never heard of but need to go and ride - Cycling Weekly](https://www.cyclingweekly.com/news/latest-news/five-climbs-youve-probably-never-heard-need-go-ride-352571)

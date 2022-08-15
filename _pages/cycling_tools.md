@@ -38,3 +38,7 @@ tags: cycling
 - Needle & thread
 - Spare brake pads
 - Spare cleats
+
+### Other people's lists and guidance
+- [Huli "tools map"](https://www.huli.life/post/the-tools-map)
+- [Example Transcontinental Race Kit List](https://www.apidura.com/journal/chris-herberts-transcontinental-race-kit-list/)

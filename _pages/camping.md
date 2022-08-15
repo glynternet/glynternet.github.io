@@ -12,6 +12,7 @@ tags: campings
 * [Pegs and pitches](https://pegsandpitches.co.uk/)
 * [Campsites](https://campsites.co.uk/)
 * [Cool camping](https://coolcamping.com/)
+* [Nearly wild camping](https://nearlywildcamping.org/)
 * [Warm showers](https://www.warmshowers.org/) - Host and be hosted by cyclists.
 * [BritStop](https://www.britstops.com/) - One off payment then stay for free at many different places.
 
