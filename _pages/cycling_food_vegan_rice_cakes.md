@@ -11,27 +11,45 @@ EF Pro Cycling took down their vegan version of their rice cakes so I've pulled 
 
 ---
 
-This vegan rice cakes recipe is a blank canvas. Delicious just the way they are, these chewy little cakes can also be jazzed up with any number of additions. Here are a few vegan add-in options to try:
+This vegan rice cakes recipe is a blank canvas. Delicious the way they are, or they can be jazzed up with any number of additions. Here are a options to try:
 
-- Cinnamon + finely chopped crystallized ginger
-- Lemon zest + chopped dates + cashews
-- Crushed salted roasted peanuts + cacao nibs
-- Chopped almonds + toasted coconut flakes + diced dried apricots
-
-A note about ingredients: Make sure you use creamed coconut, rather than coconut cream or milk. Creamed coconut is a creamy white semi-solid, typically sold in a block at the grocery store.
+- Cranberries, cacao nibs & almonds
+- Cinnamon & finely chopped crystallized ginger
+- Lemon zest, chopped dates & cashews
+- Crushed salted roasted peanuts & cacao nibs
+- Chopped almonds, toasted coconut flakes & diced dried apricots
 
 ### Ingredients
 
-- 4 cups water, 1000g
-- 2 ¼ cups white short-grain rice, 500g
-- ¾ cup creamed coconut, 200g
-- 2 Tablespoons white sugar, 25.2g
-- 2 Tablespoons coconut oil, 24g
+**⚠️ Make sure you use creamed coconut, rather than coconut cream or milk ⚠️**.  
+Creamed coconut is a creamy white semi-solid, typically sold in a block.
+
+Original ingredients list, I usually half the quantities:
+
+- 1L water
+- 500g white short-grain rice
+- 200g cup creamed coconut
+- 2 tablespoons white sugar
+- 2 tablespoons coconut oil
 - 1 teaspoon vanilla extract
+- 1 chef's kiss
 
 ### Method
 
-In a rice cooker, combine water, rice, sugar, coconut oil and vanilla. Turn it on and leave to cook. Once the rice cooker has finished cooking, mix coconut cream directly into the warm rice. If you’re using any spices, fruit, chocolate, nuts or other add-ins this is the time to add them. Mix thoroughly.
+Combine water, rice, sugar, coconut oil and vanilla. Cook the mixture like you would usually cook short-grain rice, i.e. in a rice cooker or following some other sushi rice cooking recipe.
+
+Once cooked, mix coconut cream directly into the warm rice. If you’re using any spices, fruit, chocolate, nuts or other add-ins this is the time to add them. Mix thoroughly.
+
+#### Lazy Glyn slab-making method
+
+Once cooled a bit, squidge the mixture into two old takeaway tubs then put into the fridge overnight.
+
+Then do one of the following, in order of decreasing laziness:
+* Take a fork and a tub out on ride.
+* Transfer one tub's worth into large freezer bag and take on ride.
+* Slice into approx 6 chunks per tub and [wrap with finess](https://www.skratchlabs.com/blogs/recipes/rice-cake-wrapping-and-recipe).
+
+#### Original slab-making method
 
 Once cooled to room temperature, spoon the mixture into a large zip-closure freezer bag. Flatten, smooth the air out and leave to cool on a flat tray. Once cool, transfer to the refrigerator to set up overnight.
 
