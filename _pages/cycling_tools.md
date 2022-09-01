@@ -22,6 +22,7 @@ tags: cycling
 - Power meter battery
 - Lube
 - Dust cap
+- Lint-free cloth / blue roll
 
 ### Tubed
 - Spare inner tube(s)
