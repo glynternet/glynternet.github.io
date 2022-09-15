@@ -15,7 +15,7 @@ tags: cycling
 * [UK National Cycle Network](https://osmaps.ordnancesurvey.co.uk/ncn)
 * [UK National Rail Maps](https://www.nationalrail.co.uk/stations_destinations/rail-maps.aspx)
 * [Halfway Coffee](http://halfwaycoffee.com/) - Map of cyclist-friendly cafés around the UK.
-* [TFL cycle map](https://tfl.gov.uk/maps/cycle)
+* TFL [cycle routes](https://tfl.gov.uk/maps/cycle) and [bikes on trains map](https://content.tfl.gov.uk/cycles-on-public-transport.pdf)
 * [Fastest known times](https://fastestknowntimes.org.uk/) - FKTs for long distance multi-terrain cycling routes throughout the UK. Useful for list of fixed routes.
 * [Parkopedia](https://www.parkopedia.com/) - Parking spots with opening times and prices.
 
