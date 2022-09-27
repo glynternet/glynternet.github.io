@@ -9,6 +9,7 @@ tags: cycling
 
 ### Essentials
 - Pump
+- Presta Schrader adapter
 - Tyre boot
 - Tyre levers
 - Hex keys
