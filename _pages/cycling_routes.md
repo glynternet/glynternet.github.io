@@ -16,7 +16,8 @@ tags: cycling
 * [UK National Rail Maps](https://www.nationalrail.co.uk/stations_destinations/rail-maps.aspx)
 * [Halfway Coffee](http://halfwaycoffee.com/) - Map of cyclist-friendly cafés around the UK.
 * TFL [cycle routes](https://tfl.gov.uk/maps/cycle) and [bikes on trains map](https://content.tfl.gov.uk/cycles-on-public-transport.pdf)
-* [Fastest known times](https://fastestknowntimes.org.uk/) - FKTs for long distance multi-terrain cycling routes throughout the UK. Useful for list of named routes.
+* [Fastest known times (UK)](https://fastestknowntimes.org.uk/) - FKTs for long distance multi-terrain cycling routes throughout the UK. Useful for list of named routes.
+* [Fastest known times](https://www.cyclingfkt.com/fkts.html) - FKTs for long distance multi-terrain cycling routes throughout the world. Useful for list of named routes.
 * [Trailforks](https://www.trailforks.com/trails/map/) - MTB trails to spice up a ride.
 * [Parkopedia](https://www.parkopedia.com/) - Parking spots with opening times and prices.
 
@@ -140,6 +141,7 @@ tags: cycling
 
 ### Africa
 * Congo Nile Trail ([GPX](/data/congo-nile-trail.gpx)) + [Bikepacker's edition](https://bikepacking.com/routes/congo-nile-trail/)
+* [Rwanda-Burundi-Tanzania-Uganda Loop](https://www.bikemap.net/en/r/4742745)
 
 ## Need sorting
 * [Five climbs you‘ve probably never heard of but need to go and ride - Cycling Weekly](https://www.cyclingweekly.com/news/latest-news/five-climbs-youve-probably-never-heard-need-go-ride-352571)
