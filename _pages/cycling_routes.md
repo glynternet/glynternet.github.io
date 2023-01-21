@@ -138,5 +138,8 @@ tags: cycling
 * [EuroVelo](https://en.eurovelo.com/) - European cycle route network.
 * [Route des Grandes Alpes](https://en.routedesgrandesalpes.com/) - Lake Geneva to Mediterranean via France’s great Alpine passes.
 
+### Africa
+* Congo Nile Trail ([GPX](/data/congo-nile-trail.gpx)) + [Bikepacker's edition](https://bikepacking.com/routes/congo-nile-trail/)
+
 ## Need sorting
 * [Five climbs you‘ve probably never heard of but need to go and ride - Cycling Weekly](https://www.cyclingweekly.com/news/latest-news/five-climbs-youve-probably-never-heard-need-go-ride-352571)
