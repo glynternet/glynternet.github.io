@@ -16,6 +16,7 @@ tags: cycling
 * [UK National Rail Maps](https://www.nationalrail.co.uk/stations_destinations/rail-maps.aspx)
 * [Halfway Coffee](http://halfwaycoffee.com/) - Map of cyclist-friendly cafés around the UK.
 * TFL [cycle routes](https://tfl.gov.uk/maps/cycle) and [bikes on trains map](https://content.tfl.gov.uk/cycles-on-public-transport.pdf)
+* [Rail Hike Camp](https://felt.com/map/Rail-Hike-Camp-kv9BQ3TnpTvud8TM43gTqpB) - Campsites close to train stations.
 * [Fastest known times (UK)](https://fastestknowntimes.org.uk/) - FKTs for long distance multi-terrain cycling routes throughout the UK. Useful for list of named routes.
 * [Fastest known times](https://www.cyclingfkt.com/fkts.html) - FKTs for long distance multi-terrain cycling routes throughout the world. Useful for list of named routes.
 * [Trailforks](https://www.trailforks.com/trails/map/) - MTB trails to spice up a ride.
@@ -49,6 +50,7 @@ tags: cycling
 * [Land's End to John o' Groats](https://www.rideacrossbritain.com/route/daily-stages/) - As done by _Ride Across Britain_.
 * [London - Edinburgh - London](https://londonedinburghlondon.com/route)
 * [Second City Divide](https://www.secondcitydivide.cc/) - 600km Glasgow to Manchester mixed terrain
+* [Mountain Bike Routs UK](https://mbruk.co.uk/index.html) - Single and multi-day MTB routes around the UK.
 
 ### North England
 * [Dales Divide 2021](https://ridewithgps.com/routes/37838843)
@@ -99,8 +101,9 @@ tags: cycling
 * [l'Etape London Route](https://www.strava.com/activities/401290658/)
 * [Adventures from the capital - northern & easterly road rides](https://www.komoot.com/collection/762/adventures-from-the-capital-northern-easterly-road-rides)
 
-### Hertfordshire
+#### Hertfordshire
 * [Spokes CC Gravel route](https://www.strava.com/routes/2815576986037554582)
+* [Rapha - Queen of Herts gravel route](https://www.komoot.com/tour/588078624)
 
 #### Kent
 * [Top ten toughest cycling climbs in the Kent Alps - Broleur](https://www.broleur.com/top-10-climbs-in-the-kent-alps/)
@@ -108,6 +111,7 @@ tags: cycling
 #### London
 * [Must-ride MTB trails — Mountain bike day trips from London](https://www.komoot.com/collection/972380/must-ride-mtb-trails-mountain-bike-day-trips-from-london)
 * [Routes CC](https://www.routes.cc/)
+* [Rapha Gravel Clubhouse routes](https://www.komoot.com/collection/1103665/gravel-clubhouse-rides-rapha-london)
 
 #### Surrey & Sussex
 * [15 fantastic cycle routes for a great bike ride in Surrey and Sussex](https://www.cyclingweekly.com/news/latest-news/15-fantastic-cycle-routes-great-bike-ride-surrey-sussex-327644)
@@ -120,6 +124,10 @@ tags: cycling
 ### West England
 * [Dirtydevil.cc routes](https://ridewithgps.com/users/2600593/) - Forest of Dean gravel.
 * [East Devon Trail](https://www.komoot.com/collection/1326720/-east-devon-trail) - 185km mixed-terrain.
+
+### East England
+* [Further East (2021 route)](https://ridewithgps.com/routes/37425144) - From _Further East_ race.
+* [Rebellion Way](https://www.cyclinguk.org/rebellion-way)
 
 ### Wales
 * [Cardiff to Anglesey](https://www.sustrans.org.uk/find-a-route-on-the-national-cycle-network/route-8): Sustrans route 8
