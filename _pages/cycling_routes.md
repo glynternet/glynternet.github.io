@@ -114,6 +114,7 @@ tags: cycling
 * [Rapha Gravel Clubhouse routes](https://www.komoot.com/collection/1103665/gravel-clubhouse-rides-rapha-london)
 
 #### Surrey & Sussex
+* [Richmond Park to Surrey Hills Gravel Sausage Loop](https://www.strava.com/routes/2721015997018213592)
 * [15 fantastic cycle routes for a great bike ride in Surrey and Sussex](https://www.cyclingweekly.com/news/latest-news/15-fantastic-cycle-routes-great-bike-ride-surrey-sussex-327644)
 * [Top 10 toughest cycling climbs in the Surrey hills - Broleur](https://www.broleur.com/top-10-toughest-climbs-in-the-surrey-pyrenees/)
 * [Top 10 toughest cycling climbs in the Sussex hills - Broleur](https://www.broleur.com/top-10-toughest-road-cycling-climbs-in-the-sussex-hills/)
