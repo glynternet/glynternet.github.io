@@ -16,6 +16,7 @@ tags: campings
 * [Warm showers](https://www.warmshowers.org/) - Host and be hosted by cyclists.
 * [BritStop](https://www.britstops.com/) - One off payment then stay for free at many different places.
 * [Rail Hike Camp](https://felt.com/map/Rail-Hike-Camp-kv9BQ3TnpTvud8TM43gTqpB) - Campsites close to train stations.
+* [British Mountaineering Club huts](https://www.thebmc.co.uk/organisations/huts)
 
 ### Good-looking sites
 * [Private camps in Cotswold woodland](https://www.hipcamp.com/en-GB/land/england-gloucestershire-private-camps-in-cotswold-woodland-6p0h8x9p?adults=1&children=0) - Wild-ish spots for groups up to 10 people.
