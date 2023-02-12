@@ -28,7 +28,7 @@
   </wpt>
 
   <wpt lat="55.1888" lon="-3.59624">
-    <name>A E Bike Shop & Cafe</name>
+    <name>A E Bike Shop &amp; Cafe</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -112,7 +112,7 @@
   </wpt>
 
   <wpt lat="54.1276" lon="-0.485736">
-    <name>B & F Potatoes Ltd & Bannisters Farm Shop</name>
+    <name>B &amp; F Potatoes Ltd &amp; Bannisters Farm Shop</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -280,7 +280,7 @@
   </wpt>
 
   <wpt lat="54.8228" lon="-1.66662">
-    <name>Broom House Farm Coffee Shop & Farm Shop</name>
+    <name>Broom House Farm Coffee Shop &amp; Farm Shop</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -472,7 +472,7 @@
   </wpt>
 
   <wpt lat="56.5928" lon="-3.33723">
-    <name>Cargill's Restaurant & Bistro</name>
+    <name>Cargill's Restaurant &amp; Bistro</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -784,7 +784,7 @@
   </wpt>
 
   <wpt lat="51.1818" lon="-2.75128">
-    <name>Double Gate Farm B & B</name>
+    <name>Double Gate Farm B &amp; B</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -910,7 +910,7 @@
   </wpt>
 
   <wpt lat="53.939" lon="-1.80884">
-    <name>Fryer F & Sons</name>
+    <name>Fryer F &amp; Sons</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -934,7 +934,7 @@
   </wpt>
 
   <wpt lat="54.2913" lon="-1.99511">
-    <name>George & Dragon Inn</name>
+    <name>George &amp; Dragon Inn</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -1030,13 +1030,13 @@
   </wpt>
 
   <wpt lat="50.8969" lon="-2.61777">
-    <name>Hamish's Farm Shop & CafÃ©</name>
+    <name>Hamish's Farm Shop &amp; CafÃ©</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
 
   <wpt lat="51.483" lon="-1.2384">
-    <name>Hampstead Norreys Community Shop & Cafe</name>
+    <name>Hampstead Norreys Community Shop &amp; Cafe</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -1096,7 +1096,7 @@
   </wpt>
 
   <wpt lat="53.6101" lon="-1.80122">
-    <name>Hinchliffes Farm Shop & Restaurant</name>
+    <name>Hinchliffes Farm Shop &amp; Restaurant</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -1228,7 +1228,7 @@
   </wpt>
 
   <wpt lat="51.3408" lon="-2.25141">
-    <name>Kennet & Avon Canal Trust Cafe</name>
+    <name>Kennet &amp; Avon Canal Trust Cafe</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -1306,7 +1306,7 @@
   </wpt>
 
   <wpt lat="51.721" lon="-2.15215">
-    <name>Lavender Bakehouse & Coffee Shop</name>
+    <name>Lavender Bakehouse &amp; Coffee Shop</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -1342,7 +1342,7 @@
   </wpt>
 
   <wpt lat="52.9819" lon="-2.71127">
-    <name>Lockside Stores & Cafe</name>
+    <name>Lockside Stores &amp; Cafe</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -1432,13 +1432,13 @@
   </wpt>
 
   <wpt lat="51.6919" lon="0.319264">
-    <name>Megarrys Antiques & Teashop</name>
+    <name>Megarrys Antiques &amp; Teashop</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
 
   <wpt lat="51.2398" lon="-2.38781">
-    <name>Mells Village Shop, Post Office & CafÃ©</name>
+    <name>Mells Village Shop, Post Office &amp; CafÃ©</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -1486,7 +1486,7 @@
   </wpt>
 
   <wpt lat="52.0229" lon="0.239307">
-    <name>Mocha Cafe & Diner</name>
+    <name>Mocha Cafe &amp; Diner</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -1510,7 +1510,7 @@
   </wpt>
 
   <wpt lat="52.0243" lon="-1.83574">
-    <name>Morris & Brown Cafe</name>
+    <name>Morris &amp; Brown Cafe</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -1564,7 +1564,7 @@
   </wpt>
 
   <wpt lat="53.1103" lon="-0.920362">
-    <name>Newfield Ice Cream Parlour & Cafe</name>
+    <name>Newfield Ice Cream Parlour &amp; Cafe</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -1648,7 +1648,7 @@
   </wpt>
 
   <wpt lat="52.839" lon="-0.923993">
-    <name>On The Sands Cafe & Deli</name>
+    <name>On The Sands Cafe &amp; Deli</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -1666,7 +1666,7 @@
   </wpt>
 
   <wpt lat="53.619" lon="-2.7883">
-    <name>Owd Barn Country Store & Tearoom</name>
+    <name>Owd Barn Country Store &amp; Tearoom</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -1768,7 +1768,7 @@
   </wpt>
 
   <wpt lat="53.4903" lon="-2.35032">
-    <name>Playfoots Cafe & Bar</name>
+    <name>Playfoots Cafe &amp; Bar</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -1828,7 +1828,7 @@
   </wpt>
 
   <wpt lat="51.8089" lon="-1.63614">
-    <name>Priory Restaurant and Bed & Breakfast Burford</name>
+    <name>Priory Restaurant and Bed &amp; Breakfast Burford</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -2050,7 +2050,7 @@
   </wpt>
 
   <wpt lat="55.4717" lon="-1.59298">
-    <name>Shoreline Cafe & Shop</name>
+    <name>Shoreline Cafe &amp; Shop</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -2080,7 +2080,7 @@
   </wpt>
 
   <wpt lat="54.0705" lon="-0.579869">
-    <name>Sledmere Farm Shop & Cafe</name>
+    <name>Sledmere Farm Shop &amp; Cafe</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -2098,7 +2098,7 @@
   </wpt>
 
   <wpt lat="52.0649" lon="-0.316586">
-    <name>Southill Tea Rooms & Village Stores</name>
+    <name>Southill Tea Rooms &amp; Village Stores</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -2206,19 +2206,19 @@
   </wpt>
 
   <wpt lat="51.1867" lon="-2.80439">
-    <name>Sweets Tea Rooms, Peat & Science Museum</name>
+    <name>Sweets Tea Rooms, Peat &amp; Science Museum</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
 
   <wpt lat="53.6619" lon="-2.96548">
-    <name>Switchback Cafe & Bar</name>
+    <name>Switchback Cafe &amp; Bar</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
 
   <wpt lat="54.3144" lon="-2.08111">
-    <name>Sykes House B&B</name>
+    <name>Sykes House B&amp;B</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -2542,7 +2542,7 @@
   </wpt>
 
   <wpt lat="50.2606" lon="-5.29274">
-    <name>The Hub Portreath Bike Hire & Coffee Shop</name>
+    <name>The Hub Portreath Bike Hire &amp; Coffee Shop</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -2830,7 +2830,7 @@
   </wpt>
 
   <wpt lat="55.7194" lon="-3.20407">
-    <name>The Scots Pine Tearoom & Restaurant</name>
+    <name>The Scots Pine Tearoom &amp; Restaurant</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -2920,7 +2920,7 @@
   </wpt>
 
   <wpt lat="50.9276" lon="-0.896699">
-    <name>The Village Shop & Tea Room</name>
+    <name>The Village Shop &amp; Tea Room</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -3028,7 +3028,7 @@
   </wpt>
 
   <wpt lat="53.6664" lon="-2.78293">
-    <name>Twin Lakes Velo Cafe & Function/Event Space</name>
+    <name>Twin Lakes Velo Cafe &amp; Function/Event Space</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -3040,7 +3040,7 @@
   </wpt>
 
   <wpt lat="50.5883" lon="-3.72013">
-    <name>Ullacombe Farm Cafe & Shop</name>
+    <name>Ullacombe Farm Cafe &amp; Shop</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -3094,7 +3094,7 @@
   </wpt>
 
   <wpt lat="53.1218" lon="-1.55995">
-    <name>Vintage Cycles Shop & Tea Room</name>
+    <name>Vintage Cycles Shop &amp; Tea Room</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
@@ -3190,7 +3190,7 @@
   </wpt>
 
   <wpt lat="53.1015" lon="-1.02978">
-    <name>Woodberry Teahouse CafÃ© & Shop</name>
+    <name>Woodberry Teahouse CafÃ© &amp; Shop</name>
     <sym>Flag, Blue</sym>
     <type>user</type>
   </wpt>
