@@ -29,6 +29,7 @@ tags: cycling
 * [Dotwacher CC Events](https://dotwatcher.cc/events)
 
 ### Books
+* [100 Climbs](https://www.100climbs.co.uk/books) & others by Simon Warren. Climbs to add into routes for a little 🌶
 * [_Lost Lanes_](http://lostlanes.thebikeshow.net/). _South England_ (Original), _Wales_, _West_, _Midlands_, _North_ editions available.
 * [Ride Britain](https://www.goodreads.com/book/show/55964026-ride-britain) [(GPX)](https://www.100climbs.co.uk/ride-britain-gpx). Climbs, climbs and more climbs.
 * [Bikepacking: Mountain bike camping adventures on the wild trails of Britain](http://www.wildthingspublishing.com/product/bikepacking-book/) [(GPX)](https://wildthingspublishing.com/bikepacking/)
