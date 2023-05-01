@@ -8,7 +8,7 @@ tags: cycling
 # 🚴
 
 [🗺️](/cycling/routes)
-[🍌](/cycling/food)
+[🍌](/cycling/nutrition)
 [☕](/data/halfway-coffee.gpx)
 [🛠️](/cycling/tools)
 [👍](/cycling/event_readiness)
