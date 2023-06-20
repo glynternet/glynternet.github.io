@@ -9,12 +9,12 @@ tags: cycling
 
 _"The Solstice Sprint is a 1000KM ‘checkpoints up front’ ultradistance bicycle race around the UK, starting and ending in Warwick(UK), set on the summer solstice. Riders must visit 10 checkpoints in order of 1-10, each checkpoint has a mandatory parcour, how riders get to each checkpoint is up to them."_
 
-Official site: https://www.solsticesprint.com/
-Tracking: https://www.followmychallenge.com/live/solstice-sprint-2023/
-Coverage: https://dotwatcher.cc/race/solstice-sprint-2023
+Official site: [Solstice Sprint](https://www.solsticesprint.com/)  
+Tracking: [Follow My Challenge](https://www.followmychallenge.com/live/solstice-sprint-2023/)  
+Coverage: [dotwatcher.cc](https://dotwatcher.cc/race/solstice-sprint-2023)  
 
 ## Pacing
-I am racing and aiming to complete in 72 hours.
+I am racing, aiming to complete in 72 hours (hopefully faster) and will be totally satisfied if I even finish 😊
 
 ![Checkpoints](/data/ss23-pace.jpg)
 
