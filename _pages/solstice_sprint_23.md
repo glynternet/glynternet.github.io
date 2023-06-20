@@ -25,5 +25,5 @@ I've opted for a route that tends towards as short as possible whilst minimising
 Route and checkpoint breakdown
 ![Checkpoints](/data/ss23-checkpoints.jpg)
 
-Points of interest
+Points of interest, formatted for scrolling on phone.
 ![Waypoints](/data/ss23-waypoints.jpg)
