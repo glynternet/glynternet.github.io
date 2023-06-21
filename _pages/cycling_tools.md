@@ -41,6 +41,7 @@ tags: cycling
 - Needle & thread
 - Spare brake pads
 - Spare cleats
+- Gaffer or duct tape
 
 ### Other people's lists and guidance
 - [Huli "tools map"](https://www.huli.life/post/the-tools-map)
