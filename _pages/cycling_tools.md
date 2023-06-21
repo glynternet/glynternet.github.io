@@ -13,9 +13,9 @@ tags: cycling
 - Tyre boot
 - Tyre levers
 - Hex keys
-- Torx wrench
+- Torx driver
 - Screwdriver
-- Quick link
+- Quick link(s)
 - Chain tool
 - Super glue
 - Zip tie
