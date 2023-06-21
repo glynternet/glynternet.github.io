@@ -24,6 +24,7 @@ tags: cycling
 - Lube
 - Dust cap
 - Lint-free cloth / blue roll
+- Spoke tool
 
 ### Tubed
 - Spare inner tube(s)
