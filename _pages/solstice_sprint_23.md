@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Solstice Sprint 2023
-permalink: /ss23
+permalink: /cycling/races/ss23
 tags: cycling
 ---
 
@@ -12,6 +12,8 @@ _"The Solstice Sprint is a 1000KM ‘checkpoints up front’ ultradistance bicyc
 Official site: [Solstice Sprint](https://www.solsticesprint.com/)  
 Tracking: [Follow My Challenge](https://www.followmychallenge.com/live/solstice-sprint-2023/)  
 Coverage: [dotwatcher.cc](https://dotwatcher.cc/race/solstice-sprint-2023)  
+
+This race has both some flat bits and some very hilly bits.
 
 ## Pacing
 I am racing, aiming to complete in 72 hours (hopefully faster) and will be totally satisfied if I even finish 😊
