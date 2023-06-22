@@ -28,6 +28,11 @@ Route files can be found [here](https://drive.google.com/drive/folders/1YATpAQq4
 
 <object data="/data/ss23-map.pdf" type="application/pdf"></object>
 
+![Section 1](/data/ss23-route-1-profile.jpg)
+![Section 2](/data/ss23-route-2-profile.jpg)
+![Section 3](/data/ss23-route-3-profile.jpg)
+![Section 4](/data/ss23-route-4-profile.jpg)
+
 Route and checkpoint breakdown
 ![Checkpoints](/data/ss23-checkpoints.jpg)
 
