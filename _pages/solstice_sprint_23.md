@@ -26,6 +26,8 @@ I've opted for a route that tends towards as short as possible whilst minimising
 
 Route files can be found [here](https://drive.google.com/drive/folders/1YATpAQq4aBwdj-JyNK2HkrW6aPzAOxoR)
 
+<object data="/data/ss23-map.pdf" type="application/pdf"></object>
+
 Route and checkpoint breakdown
 ![Checkpoints](/data/ss23-checkpoints.jpg)
 
