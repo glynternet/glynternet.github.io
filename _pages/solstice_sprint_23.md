@@ -24,6 +24,8 @@ I am racing, aiming to complete in 72 hours (hopefully faster) and will be total
 
 I've opted for a route that tends towards as short as possible whilst minimising hills.
 
+Route files can be found [here](https://drive.google.com/drive/folders/1YATpAQq4aBwdj-JyNK2HkrW6aPzAOxoR)
+
 Route and checkpoint breakdown
 ![Checkpoints](/data/ss23-checkpoints.jpg)
 
