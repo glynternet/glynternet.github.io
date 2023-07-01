@@ -27,21 +27,31 @@ main =
 -- MODEL
 
 
+type alias Model =
+    { waypoints : List Waypoint
+    , routeSheet : RouteSheet
+    }
+
+
 type alias Waypoint =
     { name : String
     , distance : Float
     }
 
 
-type alias Model =
-    { waypoints : List Waypoint
+type alias RouteSheet =
+    { info : List Info
     }
+
+
+type Info
+    = InfoWaypoint Waypoint
+    | Ride Float
 
 
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
 init _ _ _ =
-    -- this is actually not required to update the waypoints, just playing around.
-    ( Model [], Cmd.none )
+    ( Model [] <| RouteSheet [], Cmd.none )
 
 
 type Msg
@@ -53,7 +63,9 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateWaypoints waypoints ->
-            ( Model waypoints, Cmd.none )
+            ( Model waypoints (RouteSheet (List.foldl (\el accum -> ( el, [ InfoWaypoint el, Ride (el.distance - (Tuple.first accum).distance) ] ++ Tuple.second accum )) ( Waypoint "start" 0.0, [ InfoWaypoint <| Waypoint "start" 0.0 ] ) waypoints |> Tuple.second |> List.reverse))
+            , Cmd.none
+            )
 
         Never ->
             ( model, Cmd.none )
@@ -65,7 +77,7 @@ update msg model =
 
 view : Model -> Browser.Document Msg
 view model =
-    Browser.Document "Next Actions"
+    Browser.Document "Route sheet"
         [ div []
             [ Html.button
                 [ Html.Events.onClick <|
@@ -73,5 +85,40 @@ view model =
                 ]
                 [ Html.text "hello" ]
             ]
-        , div [] (List.map (\waypoint -> div [] [ Html.text ((++) (String.fromFloat waypoint.distance ++ " ") waypoint.name) ]) model.waypoints)
+        , Html.h2 [] [ Html.text "Waypoints" ]
+        , div [] (List.map (\waypoint -> div [] [ Html.text ((++) (formatFloat waypoint.distance ++ " ") waypoint.name) ]) model.waypoints)
+        , Html.br [] []
+        , Html.h2 [] [ Html.text "Route breakdown" ]
+        , div []
+            (List.map
+                (\infoPoint ->
+                    div []
+                        [ Html.text
+                            (case infoPoint of
+                                Ride dist ->
+                                    String.join " " [ "|", "ride", formatFloat dist ]
+
+                                InfoWaypoint waypoint ->
+                                    String.join " " [ "-", waypoint.name ]
+                            )
+                        ]
+                )
+                model.routeSheet.info
+            )
         ]
+
+
+formatFloat : Float -> String
+formatFloat value =
+    case String.split "." (String.fromFloat value) of
+        [ val ] ->
+            val
+
+        [ val, dec ] ->
+            String.join "."
+                [ val
+                , String.left 2 dec |> String.padRight 2 '0'
+                ]
+
+        _ ->
+            "please contact Glyn"

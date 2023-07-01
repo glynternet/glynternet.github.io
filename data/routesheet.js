@@ -4370,6 +4370,43 @@ function _Browser_load(url)
 		}
 	}));
 }
+
+
+
+var _Bitwise_and = F2(function(a, b)
+{
+	return a & b;
+});
+
+var _Bitwise_or = F2(function(a, b)
+{
+	return a | b;
+});
+
+var _Bitwise_xor = F2(function(a, b)
+{
+	return a ^ b;
+});
+
+function _Bitwise_complement(a)
+{
+	return ~a;
+};
+
+var _Bitwise_shiftLeftBy = F2(function(offset, a)
+{
+	return a << offset;
+});
+
+var _Bitwise_shiftRightBy = F2(function(offset, a)
+{
+	return a >> offset;
+});
+
+var _Bitwise_shiftRightZfBy = F2(function(offset, a)
+{
+	return a >>> offset;
+});
 var $author$project$Main$Never = {$: 'Never'};
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
@@ -5160,25 +5197,72 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$application = _Browser_application;
-var $author$project$Main$Model = function (waypoints) {
-	return {waypoints: waypoints};
+var $author$project$Main$Model = F2(
+	function (waypoints, routeSheet) {
+		return {routeSheet: routeSheet, waypoints: waypoints};
+	});
+var $author$project$Main$RouteSheet = function (info) {
+	return {info: info};
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = F3(
 	function (_v0, _v1, _v2) {
 		return _Utils_Tuple2(
-			$author$project$Main$Model(_List_Nil),
+			A2(
+				$author$project$Main$Model,
+				_List_Nil,
+				$author$project$Main$RouteSheet(_List_Nil)),
 			$elm$core$Platform$Cmd$none);
 	});
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $author$project$Main$InfoWaypoint = function (a) {
+	return {$: 'InfoWaypoint', a: a};
+};
+var $author$project$Main$Ride = function (a) {
+	return {$: 'Ride', a: a};
+};
+var $author$project$Main$Waypoint = F2(
+	function (name, distance) {
+		return {distance: distance, name: name};
+	});
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		if (msg.$ === 'UpdateWaypoints') {
 			var waypoints = msg.a;
 			return _Utils_Tuple2(
-				$author$project$Main$Model(waypoints),
+				A2(
+					$author$project$Main$Model,
+					waypoints,
+					$author$project$Main$RouteSheet(
+						$elm$core$List$reverse(
+							A3(
+								$elm$core$List$foldl,
+								F2(
+									function (el, accum) {
+										return _Utils_Tuple2(
+											el,
+											_Utils_ap(
+												_List_fromArray(
+													[
+														$author$project$Main$InfoWaypoint(el),
+														$author$project$Main$Ride(el.distance - accum.a.distance)
+													]),
+												accum.b));
+									}),
+								_Utils_Tuple2(
+									A2($author$project$Main$Waypoint, 'start', 0.0),
+									_List_fromArray(
+										[
+											$author$project$Main$InfoWaypoint(
+											A2($author$project$Main$Waypoint, 'start', 0.0))
+										])),
+								waypoints).b))),
 				$elm$core$Platform$Cmd$none);
 		} else {
 			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -5191,13 +5275,76 @@ var $elm$browser$Browser$Document = F2(
 var $author$project$Main$UpdateWaypoints = function (a) {
 	return {$: 'UpdateWaypoints', a: a};
 };
-var $author$project$Main$Waypoint = F2(
-	function (name, distance) {
-		return {distance: distance, name: name};
-	});
+var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$core$String$fromFloat = _String_fromNumber;
+var $elm$core$String$cons = _String_cons;
+var $elm$core$String$fromChar = function (_char) {
+	return A2($elm$core$String$cons, _char, '');
+};
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
+var $elm$core$String$repeatHelp = F3(
+	function (n, chunk, result) {
+		return (n <= 0) ? result : A3(
+			$elm$core$String$repeatHelp,
+			n >> 1,
+			_Utils_ap(chunk, chunk),
+			(!(n & 1)) ? result : _Utils_ap(result, chunk));
+	});
+var $elm$core$String$repeat = F2(
+	function (n, chunk) {
+		return A3($elm$core$String$repeatHelp, n, chunk, '');
+	});
+var $elm$core$String$padRight = F3(
+	function (n, _char, string) {
+		return _Utils_ap(
+			string,
+			A2(
+				$elm$core$String$repeat,
+				n - $elm$core$String$length(string),
+				$elm$core$String$fromChar(_char)));
+	});
+var $author$project$Main$formatFloat = function (value) {
+	var _v0 = A2(
+		$elm$core$String$split,
+		'.',
+		$elm$core$String$fromFloat(value));
+	_v0$2:
+	while (true) {
+		if (_v0.b) {
+			if (!_v0.b.b) {
+				var val = _v0.a;
+				return val;
+			} else {
+				if (!_v0.b.b.b) {
+					var val = _v0.a;
+					var _v1 = _v0.b;
+					var dec = _v1.a;
+					return A2(
+						$elm$core$String$join,
+						'.',
+						_List_fromArray(
+							[
+								val,
+								A3(
+								$elm$core$String$padRight,
+								2,
+								_Utils_chr('0'),
+								A2($elm$core$String$left, 2, dec))
+							]));
+				} else {
+					break _v0$2;
+				}
+			}
+		} else {
+			break _v0$2;
+		}
+	}
+	return 'please contact Glyn';
+};
+var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -5220,7 +5367,7 @@ var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$browser$Browser$Document,
-		'Next Actions',
+		'Route sheet',
 		_List_fromArray(
 			[
 				A2(
@@ -5247,6 +5394,13 @@ var $author$project$Main$view = function (model) {
 							]))
 					])),
 				A2(
+				$elm$html$Html$h2,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Waypoints')
+					])),
+				A2(
 				$elm$html$Html$div,
 				_List_Nil,
 				A2(
@@ -5259,11 +5413,55 @@ var $author$project$Main$view = function (model) {
 								[
 									$elm$html$Html$text(
 									_Utils_ap(
-										$elm$core$String$fromFloat(waypoint.distance) + ' ',
+										$author$project$Main$formatFloat(waypoint.distance) + ' ',
 										waypoint.name))
 								]));
 					},
-					model.waypoints))
+					model.waypoints)),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				A2(
+				$elm$html$Html$h2,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Route breakdown')
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				A2(
+					$elm$core$List$map,
+					function (infoPoint) {
+						return A2(
+							$elm$html$Html$div,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									function () {
+										if (infoPoint.$ === 'Ride') {
+											var dist = infoPoint.a;
+											return A2(
+												$elm$core$String$join,
+												' ',
+												_List_fromArray(
+													[
+														'|',
+														'ride',
+														$author$project$Main$formatFloat(dist)
+													]));
+										} else {
+											var waypoint = infoPoint.a;
+											return A2(
+												$elm$core$String$join,
+												' ',
+												_List_fromArray(
+													['-', waypoint.name]));
+										}
+									}())
+								]));
+					},
+					model.routeSheet.info))
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$application(
