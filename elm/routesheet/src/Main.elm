@@ -1,9 +1,10 @@
-module Main exposing (..)
+port module Main exposing (storeState)
 
 import Browser
 import Browser.Navigation
 import Html exposing (Attribute, Html, div)
 import Html.Events
+import Json.Encode
 import String
 import Url exposing (Protocol(..))
 
@@ -29,7 +30,6 @@ main =
 
 type alias Model =
     { waypoints : List Waypoint
-    , routeSheet : RouteSheet
     }
 
 
@@ -40,9 +40,8 @@ type alias Waypoint =
     }
 
 
-type alias RouteSheet =
-    { info : List Info
-    }
+type alias RouteInfo =
+    List Info
 
 
 type Info
@@ -50,9 +49,9 @@ type Info
     | Ride Float
 
 
-init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
-init _ _ _ =
-    ( Model [] <| RouteSheet [], Cmd.none )
+init : Maybe Model -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
+init maybeModel _ _ =
+    ( Maybe.withDefault (Model []) maybeModel, Cmd.none )
 
 
 type Msg
@@ -64,8 +63,8 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateWaypoints waypoints ->
-            ( Model waypoints (RouteSheet (List.foldl (\el accum -> ( el, [ InfoWaypoint el, Ride (el.distance - (Tuple.first accum).distance) ] ++ Tuple.second accum )) ( Waypoint "start" 0.0 "Landmark", [ InfoWaypoint <| Waypoint "start" 0.0 "Landmark" ] ) waypoints |> Tuple.second |> List.reverse))
-            , Cmd.none
+            ( Model waypoints
+            , storeModel <| Model waypoints
             )
 
         Never ->
@@ -109,9 +108,16 @@ view model =
                             )
                         ]
                 )
-                model.routeSheet.info
+                (routesheet model)
             )
         ]
+
+
+routesheet : Model -> RouteInfo
+routesheet model =
+    List.foldl (\el accum -> ( el, [ InfoWaypoint el, Ride (el.distance - (Tuple.first accum).distance) ] ++ Tuple.second accum )) ( Waypoint "start" 0.0 "Landmark", [ InfoWaypoint <| Waypoint "start" 0.0 "Landmark" ] ) model.waypoints
+        |> Tuple.second
+        |> List.reverse
 
 
 formatFloat : Float -> String
@@ -128,3 +134,32 @@ formatFloat value =
 
         _ ->
             "please contact Glyn"
+
+
+
+-- STATE
+
+
+storeModel : Model -> Cmd msg
+storeModel model =
+    Json.Encode.object
+        [ ( "waypoints", encodeWaypoints model.waypoints )
+        ]
+        |> Json.Encode.encode 2
+        |> storeState
+
+
+encodeWaypoints : List Waypoint -> Json.Encode.Value
+encodeWaypoints waypoints =
+    Json.Encode.list
+        (\waypoint ->
+            Json.Encode.object
+                [ ( "name", Json.Encode.string waypoint.name )
+                , ( "distance", Json.Encode.float waypoint.distance )
+                , ( "typ", Json.Encode.string waypoint.typ )
+                ]
+        )
+        waypoints
+
+
+port storeState : String -> Cmd msg

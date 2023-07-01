@@ -11,10 +11,26 @@ layout: default
 			{% include comment.html %}
 		{% endif %}
 		<script>
-			const app = Elm.Main.init({
-				flags: {}
-			});
+			try {
+				const storedState = localStorage.getItem("appState");
+				const app = Elm.Main.init({
+					// TODO: can I initialise on a node here or best to just take whole page?
+					flags: JSON.parse(storedState)
+				});
+				app.ports.storeState.subscribe(state => {
+					localStorage.setItem("appState", state);
+					console.log("Stored state");
+				});
+			}
+			catch(err) {
+				console.error(err);
+				if (window.confirm("Error initialising app, please see console.\nWould you like to start a fresh?")) {
+					localStorage.removeItem("appState");
+					location.reload();
+				}
+			}
 		</script>
     	</div>
     	{% include footer.html %}
-</article>
+		</article>
+</div>
