@@ -1,0 +1,20 @@
+---
+layout: default
+---
+
+<div class="c-page">
+		<article class="c-article">
+   	 	{% include header.html %}
+    	<div class="c-article__main">
+        {{ content }}
+		{% if page.title != 'Home' %}
+			{% include comment.html %}
+		{% endif %}
+		<script>
+			const app = Elm.Main.init({
+				flags: {}
+			});
+		</script>
+    	</div>
+    	{% include footer.html %}
+</article>
