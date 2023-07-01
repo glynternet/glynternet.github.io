@@ -2,7 +2,9 @@ port module Main exposing (storeState)
 
 import Browser
 import Browser.Navigation
+import Dict
 import Html exposing (Attribute, Html, div)
+import Html.Attributes
 import Html.Events
 import Json.Encode
 import String
@@ -28,8 +30,16 @@ main =
 -- MODEL
 
 
+type alias StoredState =
+    { waypoints : List Waypoint }
+
+
 type alias Model =
     { waypoints : List Waypoint
+
+    -- maintained as list to allow easy interoperability with state storage and initialisation of flags.
+    -- flags can't handle being a set
+    , types : Dict.Dict String Bool
     }
 
 
@@ -49,23 +59,37 @@ type Info
     | Ride Float
 
 
-init : Maybe Model -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
-init maybeModel _ _ =
-    ( Maybe.withDefault (Model []) maybeModel, Cmd.none )
+init : Maybe StoredState -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
+init maybeState _ _ =
+    ( maybeState |> Maybe.map (\state -> Model state.waypoints <| initialTypes state.waypoints) |> Maybe.withDefault (Model [] Dict.empty), Cmd.none )
 
 
 type Msg
     = Never
     | UpdateWaypoints (List Waypoint)
+    | TypeEnabled String Bool
+
+
+initialTypes : List Waypoint -> Dict.Dict String Bool
+initialTypes waypoints =
+    List.map (\el -> ( el.typ, True )) waypoints |> Dict.fromList
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateWaypoints waypoints ->
-            ( Model waypoints
-            , storeModel <| Model waypoints
-            )
+            let
+                sortedWaypoint =
+                    List.sortBy .distance waypoints
+
+                newModel =
+                    Model sortedWaypoint (initialTypes sortedWaypoint)
+            in
+            ( newModel, storeModel newModel )
+
+        TypeEnabled typ enabled ->
+            ( { model | types = Dict.insert typ enabled model.types }, Cmd.none )
 
         Never ->
             ( model, Cmd.none )
@@ -86,6 +110,7 @@ view model =
                         , Waypoint "foo" 1.234567 "Resupply"
                         , Waypoint "bar" 2.345678 "Sleep"
                         , Waypoint "baz" 3.456789 "Resupply"
+                        , Waypoint "anywhere" 32.9 "Municipality"
                         , Waypoint "qux" 4.567891 "Sleep"
                         , Waypoint "finish" 99.567891 "Landmark"
                         ]
@@ -95,6 +120,12 @@ view model =
         , Html.h2 [] [ Html.text "Waypoints" ]
         , div [] (List.map (\waypoint -> div [] [ Html.text ((++) (formatFloat waypoint.distance ++ " ") waypoint.name) ]) model.waypoints)
         , Html.br [] []
+        , div []
+            [ Html.h2 [] [ Html.text "Options" ]
+            , Html.h3 [] [ Html.text "Location types" ]
+            , Html.fieldset []
+                (model.types |> Dict.toList |> List.map (\( typ, included ) -> checkbox included (TypeEnabled typ (not included)) typ))
+            ]
         , Html.h2 [] [ Html.text "Route breakdown" ]
         , div []
             (List.map
@@ -130,7 +161,7 @@ routesheet model =
             )
         )
         ( Maybe.Nothing, [] )
-        model.waypoints
+        (List.filter (\w -> Dict.get w.typ model.types |> Maybe.withDefault True) model.waypoints)
         |> Tuple.second
         |> List.reverse
 
@@ -151,6 +182,16 @@ formatFloat value =
             "please contact Glyn"
 
 
+checkbox : Bool -> msg -> String -> Html msg
+checkbox b msg name =
+    Html.label
+        [ Html.Attributes.style "padding" "20px"
+        ]
+        [ Html.input [ Html.Attributes.type_ "checkbox", Html.Events.onClick msg, Html.Attributes.checked b ] []
+        , Html.text name
+        ]
+
+
 
 -- STATE
 
@@ -159,6 +200,7 @@ storeModel : Model -> Cmd msg
 storeModel model =
     Json.Encode.object
         [ ( "waypoints", encodeWaypoints model.waypoints )
+        , ( "types", Json.Encode.dict (\key -> key) Json.Encode.bool model.types )
         ]
         |> Json.Encode.encode 2
         |> storeState

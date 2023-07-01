@@ -5200,9 +5200,152 @@ var $elm$core$Task$perform = F2(
 var $elm$browser$Browser$application = _Browser_application;
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
-var $author$project$Main$Model = function (waypoints) {
-	return {waypoints: waypoints};
+var $author$project$Main$Model = F2(
+	function (waypoints, types) {
+		return {types: types, waypoints: waypoints};
+	});
+var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
+var $elm$core$Dict$Black = {$: 'Black'};
+var $elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
+var $elm$core$Dict$Red = {$: 'Red'};
+var $elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _v1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _v3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					key,
+					value,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _v5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _v6 = left.d;
+				var _v7 = _v6.a;
+				var llK = _v6.b;
+				var llV = _v6.c;
+				var llLeft = _v6.d;
+				var llRight = _v6.e;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					lK,
+					lV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var $elm$core$Basics$compare = _Utils_compare;
+var $elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _v1 = A2($elm$core$Basics$compare, key, nKey);
+			switch (_v1.$) {
+				case 'LT':
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3($elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3($elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var $elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Dict$fromList = function (assocs) {
+	return A3(
+		$elm$core$List$foldl,
+		F2(
+			function (_v0, dict) {
+				var key = _v0.a;
+				var value = _v0.b;
+				return A3($elm$core$Dict$insert, key, value, dict);
+			}),
+		$elm$core$Dict$empty,
+		assocs);
 };
+var $author$project$Main$initialTypes = function (waypoints) {
+	return $elm$core$Dict$fromList(
+		A2(
+			$elm$core$List$map,
+			function (el) {
+				return _Utils_Tuple2(el.typ, true);
+			},
+			waypoints));
+};
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm$core$Maybe$withDefault = F2(
@@ -5215,12 +5358,20 @@ var $elm$core$Maybe$withDefault = F2(
 		}
 	});
 var $author$project$Main$init = F3(
-	function (maybeModel, _v0, _v1) {
+	function (maybeState, _v0, _v1) {
 		return _Utils_Tuple2(
 			A2(
 				$elm$core$Maybe$withDefault,
-				$author$project$Main$Model(_List_Nil),
-				maybeModel),
+				A2($author$project$Main$Model, _List_Nil, $elm$core$Dict$empty),
+				A2(
+					$elm$core$Maybe$map,
+					function (state) {
+						return A2(
+							$author$project$Main$Model,
+							state.waypoints,
+							$author$project$Main$initialTypes(state.waypoints));
+					},
+					maybeState)),
 			$elm$core$Platform$Cmd$none);
 	});
 var $elm$json$Json$Decode$list = _Json_decodeList;
@@ -5229,6 +5380,49 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $elm$json$Json$Decode$null = _Json_decodeNull;
 var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $elm$json$Json$Decode$string = _Json_decodeString;
+var $elm$core$List$sortBy = _List_sortBy;
+var $elm$json$Json$Encode$bool = _Json_wrap;
+var $elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3($elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var $elm$json$Json$Encode$dict = F3(
+	function (toKey, toValue, dictionary) {
+		return _Json_wrap(
+			A3(
+				$elm$core$Dict$foldl,
+				F3(
+					function (key, value, obj) {
+						return A3(
+							_Json_addField,
+							toKey(key),
+							toValue(value),
+							obj);
+					}),
+				_Json_emptyObject(_Utils_Tuple0),
+				dictionary));
+	});
 var $elm$json$Json$Encode$float = _Json_wrap;
 var $elm$json$Json$Encode$list = F2(
 	function (func, entries) {
@@ -5284,24 +5478,57 @@ var $author$project$Main$storeModel = function (model) {
 					[
 						_Utils_Tuple2(
 						'waypoints',
-						$author$project$Main$encodeWaypoints(model.waypoints))
+						$author$project$Main$encodeWaypoints(model.waypoints)),
+						_Utils_Tuple2(
+						'types',
+						A3(
+							$elm$json$Json$Encode$dict,
+							function (key) {
+								return key;
+							},
+							$elm$json$Json$Encode$bool,
+							model.types))
 					]))));
 };
 var $author$project$Main$update = F2(
 	function (msg, model) {
-		if (msg.$ === 'UpdateWaypoints') {
-			var waypoints = msg.a;
-			return _Utils_Tuple2(
-				$author$project$Main$Model(waypoints),
-				$author$project$Main$storeModel(
-					$author$project$Main$Model(waypoints)));
-		} else {
-			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+		switch (msg.$) {
+			case 'UpdateWaypoints':
+				var waypoints = msg.a;
+				var sortedWaypoint = A2(
+					$elm$core$List$sortBy,
+					function ($) {
+						return $.distance;
+					},
+					waypoints);
+				var newModel = A2(
+					$author$project$Main$Model,
+					sortedWaypoint,
+					$author$project$Main$initialTypes(sortedWaypoint));
+				return _Utils_Tuple2(
+					newModel,
+					$author$project$Main$storeModel(newModel));
+			case 'TypeEnabled':
+				var typ = msg.a;
+				var enabled = msg.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							types: A3($elm$core$Dict$insert, typ, enabled, model.types)
+						}),
+					$elm$core$Platform$Cmd$none);
+			default:
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
 var $elm$browser$Browser$Document = F2(
 	function (title, body) {
 		return {body: body, title: title};
+	});
+var $author$project$Main$TypeEnabled = F2(
+	function (a, b) {
+		return {$: 'TypeEnabled', a: a, b: b};
 	});
 var $author$project$Main$UpdateWaypoints = function (a) {
 	return {$: 'UpdateWaypoints', a: a};
@@ -5312,7 +5539,69 @@ var $author$project$Main$Waypoint = F3(
 	});
 var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$bool(bool));
+	});
+var $elm$html$Html$Attributes$checked = $elm$html$Html$Attributes$boolProperty('checked');
+var $elm$html$Html$input = _VirtualDom_node('input');
+var $elm$html$Html$label = _VirtualDom_node('label');
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
+var $author$project$Main$checkbox = F3(
+	function (b, msg, name) {
+		return A2(
+			$elm$html$Html$label,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'padding', '20px')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$input,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$type_('checkbox'),
+							$elm$html$Html$Events$onClick(msg),
+							$elm$html$Html$Attributes$checked(b)
+						]),
+					_List_Nil),
+					$elm$html$Html$text(name)
+				]));
+	});
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
 var $elm$core$String$fromFloat = _String_fromNumber;
 var $elm$core$String$cons = _String_cons;
 var $elm$core$String$fromChar = function (_char) {
@@ -5380,37 +5669,54 @@ var $author$project$Main$formatFloat = function (value) {
 	return 'please contact Glyn';
 };
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
+var $elm$html$Html$h3 = _VirtualDom_node('h3');
+var $elm$core$Basics$not = _Basics_not;
 var $author$project$Main$InfoWaypoint = function (a) {
 	return {$: 'InfoWaypoint', a: a};
 };
 var $author$project$Main$Ride = function (a) {
 	return {$: 'Ride', a: a};
 };
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
 		}
 	});
 var $elm$core$Tuple$second = function (_v0) {
@@ -5446,10 +5752,16 @@ var $author$project$Main$routesheet = function (model) {
 							accum.b));
 				}),
 			_Utils_Tuple2($elm$core$Maybe$Nothing, _List_Nil),
-			model.waypoints).b);
+			A2(
+				$elm$core$List$filter,
+				function (w) {
+					return A2(
+						$elm$core$Maybe$withDefault,
+						true,
+						A2($elm$core$Dict$get, w.typ, model.types));
+				},
+				model.waypoints)).b);
 };
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$browser$Browser$Document,
@@ -5473,6 +5785,7 @@ var $author$project$Main$view = function (model) {
 											A3($author$project$Main$Waypoint, 'foo', 1.234567, 'Resupply'),
 											A3($author$project$Main$Waypoint, 'bar', 2.345678, 'Sleep'),
 											A3($author$project$Main$Waypoint, 'baz', 3.456789, 'Resupply'),
+											A3($author$project$Main$Waypoint, 'anywhere', 32.9, 'Municipality'),
 											A3($author$project$Main$Waypoint, 'qux', 4.567891, 'Sleep'),
 											A3($author$project$Main$Waypoint, 'finish', 99.567891, 'Landmark')
 										])))
@@ -5508,6 +5821,41 @@ var $author$project$Main$view = function (model) {
 					},
 					model.waypoints)),
 				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$h2,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Options')
+							])),
+						A2(
+						$elm$html$Html$h3,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Location types')
+							])),
+						A2(
+						$elm$html$Html$fieldset,
+						_List_Nil,
+						A2(
+							$elm$core$List$map,
+							function (_v0) {
+								var typ = _v0.a;
+								var included = _v0.b;
+								return A3(
+									$author$project$Main$checkbox,
+									included,
+									A2($author$project$Main$TypeEnabled, typ, !included),
+									typ);
+							},
+							$elm$core$Dict$toList(model.types)))
+					])),
 				A2(
 				$elm$html$Html$h2,
 				_List_Nil,
