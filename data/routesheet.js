@@ -5403,6 +5403,16 @@ var $author$project$Main$InfoWaypoint = function (a) {
 var $author$project$Main$Ride = function (a) {
 	return {$: 'Ride', a: a};
 };
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $elm$core$Tuple$second = function (_v0) {
 	var y = _v0.b;
 	return y;
@@ -5414,22 +5424,28 @@ var $author$project$Main$routesheet = function (model) {
 			F2(
 				function (el, accum) {
 					return _Utils_Tuple2(
-						el,
+						$elm$core$Maybe$Just(el),
 						_Utils_ap(
-							_List_fromArray(
-								[
-									$author$project$Main$InfoWaypoint(el),
-									$author$project$Main$Ride(el.distance - accum.a.distance)
-								]),
+							_Utils_ap(
+								_List_fromArray(
+									[
+										$author$project$Main$InfoWaypoint(el)
+									]),
+								A2(
+									$elm$core$Maybe$withDefault,
+									_List_Nil,
+									A2(
+										$elm$core$Maybe$map,
+										function (previous) {
+											return _List_fromArray(
+												[
+													$author$project$Main$Ride(el.distance - previous.distance)
+												]);
+										},
+										accum.a))),
 							accum.b));
 				}),
-			_Utils_Tuple2(
-				A3($author$project$Main$Waypoint, 'start', 0.0, 'Landmark'),
-				_List_fromArray(
-					[
-						$author$project$Main$InfoWaypoint(
-						A3($author$project$Main$Waypoint, 'start', 0.0, 'Landmark'))
-					])),
+			_Utils_Tuple2($elm$core$Maybe$Nothing, _List_Nil),
 			model.waypoints).b);
 };
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -5453,10 +5469,12 @@ var $author$project$Main$view = function (model) {
 								$author$project$Main$UpdateWaypoints(
 									_List_fromArray(
 										[
+											A3($author$project$Main$Waypoint, 'start', 0, 'Landmark'),
 											A3($author$project$Main$Waypoint, 'foo', 1.234567, 'Resupply'),
 											A3($author$project$Main$Waypoint, 'bar', 2.345678, 'Sleep'),
 											A3($author$project$Main$Waypoint, 'baz', 3.456789, 'Resupply'),
-											A3($author$project$Main$Waypoint, 'qux', 4.567891, 'Sleep')
+											A3($author$project$Main$Waypoint, 'qux', 4.567891, 'Sleep'),
+											A3($author$project$Main$Waypoint, 'finish', 99.567891, 'Landmark')
 										])))
 							]),
 						_List_fromArray(

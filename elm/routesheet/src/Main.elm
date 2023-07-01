@@ -82,10 +82,12 @@ view model =
             [ Html.button
                 [ Html.Events.onClick <|
                     UpdateWaypoints
-                        [ Waypoint "foo" 1.234567 "Resupply"
+                        [ Waypoint "start" 0 "Landmark"
+                        , Waypoint "foo" 1.234567 "Resupply"
                         , Waypoint "bar" 2.345678 "Sleep"
                         , Waypoint "baz" 3.456789 "Resupply"
                         , Waypoint "qux" 4.567891 "Sleep"
+                        , Waypoint "finish" 99.567891 "Landmark"
                         ]
                 ]
                 [ Html.text "hello" ]
@@ -115,7 +117,20 @@ view model =
 
 routesheet : Model -> RouteInfo
 routesheet model =
-    List.foldl (\el accum -> ( el, [ InfoWaypoint el, Ride (el.distance - (Tuple.first accum).distance) ] ++ Tuple.second accum )) ( Waypoint "start" 0.0 "Landmark", [ InfoWaypoint <| Waypoint "start" 0.0 "Landmark" ] ) model.waypoints
+    List.foldl
+        (\el accum ->
+            ( Maybe.Just el
+            , ([ InfoWaypoint el ]
+                ++ (Tuple.first accum
+                        |> Maybe.map (\previous -> [ Ride (el.distance - previous.distance) ])
+                        |> Maybe.withDefault []
+                   )
+              )
+                ++ Tuple.second accum
+            )
+        )
+        ( Maybe.Nothing, [] )
+        model.waypoints
         |> Tuple.second
         |> List.reverse
 
