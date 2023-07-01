@@ -5223,9 +5223,9 @@ var $author$project$Main$InfoWaypoint = function (a) {
 var $author$project$Main$Ride = function (a) {
 	return {$: 'Ride', a: a};
 };
-var $author$project$Main$Waypoint = F2(
-	function (name, distance) {
-		return {distance: distance, name: name};
+var $author$project$Main$Waypoint = F3(
+	function (name, distance, typ) {
+		return {distance: distance, name: name, typ: typ};
 	});
 var $elm$core$Tuple$second = function (_v0) {
 	var y = _v0.b;
@@ -5256,11 +5256,11 @@ var $author$project$Main$update = F2(
 												accum.b));
 									}),
 								_Utils_Tuple2(
-									A2($author$project$Main$Waypoint, 'start', 0.0),
+									A3($author$project$Main$Waypoint, 'start', 0.0, 'Landmark'),
 									_List_fromArray(
 										[
 											$author$project$Main$InfoWaypoint(
-											A2($author$project$Main$Waypoint, 'start', 0.0))
+											A3($author$project$Main$Waypoint, 'start', 0.0, 'Landmark'))
 										])),
 								waypoints).b))),
 				$elm$core$Platform$Cmd$none);
@@ -5316,7 +5316,7 @@ var $author$project$Main$formatFloat = function (value) {
 		if (_v0.b) {
 			if (!_v0.b.b) {
 				var val = _v0.a;
-				return val;
+				return val + '.00';
 			} else {
 				if (!_v0.b.b.b) {
 					var val = _v0.a;
@@ -5383,9 +5383,10 @@ var $author$project$Main$view = function (model) {
 								$author$project$Main$UpdateWaypoints(
 									_List_fromArray(
 										[
-											A2($author$project$Main$Waypoint, 'foo', 1.234567),
-											A2($author$project$Main$Waypoint, 'bar', 2.345678),
-											A2($author$project$Main$Waypoint, 'baz', 3.456789)
+											A3($author$project$Main$Waypoint, 'foo', 1.234567, 'Resupply'),
+											A3($author$project$Main$Waypoint, 'bar', 2.345678, 'Sleep'),
+											A3($author$project$Main$Waypoint, 'baz', 3.456789, 'Resupply'),
+											A3($author$project$Main$Waypoint, 'qux', 4.567891, 'Sleep')
 										])))
 							]),
 						_List_fromArray(
@@ -5456,7 +5457,11 @@ var $author$project$Main$view = function (model) {
 												$elm$core$String$join,
 												' ',
 												_List_fromArray(
-													['-', waypoint.name]));
+													[
+														$author$project$Main$formatFloat(waypoint.distance),
+														waypoint.typ,
+														waypoint.name
+													]));
 										}
 									}())
 								]));

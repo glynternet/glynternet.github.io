@@ -36,6 +36,7 @@ type alias Model =
 type alias Waypoint =
     { name : String
     , distance : Float
+    , typ : String
     }
 
 
@@ -63,7 +64,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateWaypoints waypoints ->
-            ( Model waypoints (RouteSheet (List.foldl (\el accum -> ( el, [ InfoWaypoint el, Ride (el.distance - (Tuple.first accum).distance) ] ++ Tuple.second accum )) ( Waypoint "start" 0.0, [ InfoWaypoint <| Waypoint "start" 0.0 ] ) waypoints |> Tuple.second |> List.reverse))
+            ( Model waypoints (RouteSheet (List.foldl (\el accum -> ( el, [ InfoWaypoint el, Ride (el.distance - (Tuple.first accum).distance) ] ++ Tuple.second accum )) ( Waypoint "start" 0.0 "Landmark", [ InfoWaypoint <| Waypoint "start" 0.0 "Landmark" ] ) waypoints |> Tuple.second |> List.reverse))
             , Cmd.none
             )
 
@@ -81,7 +82,12 @@ view model =
         [ div []
             [ Html.button
                 [ Html.Events.onClick <|
-                    UpdateWaypoints [ Waypoint "foo" 1.234567, Waypoint "bar" 2.345678, Waypoint "baz" 3.456789 ]
+                    UpdateWaypoints
+                        [ Waypoint "foo" 1.234567 "Resupply"
+                        , Waypoint "bar" 2.345678 "Sleep"
+                        , Waypoint "baz" 3.456789 "Resupply"
+                        , Waypoint "qux" 4.567891 "Sleep"
+                        ]
                 ]
                 [ Html.text "hello" ]
             ]
@@ -99,7 +105,7 @@ view model =
                                     String.join " " [ "|", "ride", formatFloat dist ]
 
                                 InfoWaypoint waypoint ->
-                                    String.join " " [ "-", waypoint.name ]
+                                    String.join " " [ formatFloat waypoint.distance, waypoint.typ, waypoint.name ]
                             )
                         ]
                 )
@@ -112,7 +118,7 @@ formatFloat : Float -> String
 formatFloat value =
     case String.split "." (String.fromFloat value) of
         [ val ] ->
-            val
+            val ++ ".00"
 
         [ val, dec ] ->
             String.join "."
