@@ -8,6 +8,8 @@ import Html.Attributes
 import Html.Events
 import Json.Encode
 import String
+import Svg
+import Svg.Attributes
 import Url exposing (Protocol(..))
 
 
@@ -101,6 +103,13 @@ update msg model =
 
 view : Model -> Browser.Document Msg
 view model =
+    let
+        info =
+            routeInfo model
+
+        svgHeight =
+            String.fromInt <| (*) 20 (List.length info)
+    in
     Browser.Document "Route sheet"
         [ div []
             [ Html.button
@@ -127,27 +136,60 @@ view model =
                 (model.types |> Dict.toList |> List.map (\( typ, included ) -> checkbox included (TypeEnabled typ (not included)) typ))
             ]
         , Html.h2 [] [ Html.text "Route breakdown" ]
-        , div []
-            (List.map
-                (\infoPoint ->
-                    div []
-                        [ Html.text
-                            (case infoPoint of
-                                Ride dist ->
-                                    String.join " " [ "|", "ride", formatFloat dist ]
+        , Svg.svg
+            [ Svg.Attributes.width "120"
+            , Svg.Attributes.height svgHeight
+            , Svg.Attributes.viewBox <| "0 0 120 " ++ svgHeight
+            ]
+            (info
+                |> List.indexedMap
+                    (\i item ->
+                        let
+                            translate =
+                                Svg.Attributes.transform <| "translate(0," ++ (String.fromInt <| i * 20) ++ ")"
+                        in
+                        case item of
+                            InfoWaypoint waypoint ->
+                                Svg.g [ translate ]
+                                    [ Svg.circle
+                                        [ Svg.Attributes.cx "5"
+                                        , Svg.Attributes.cy <| String.fromInt 10
+                                        , Svg.Attributes.r "2"
+                                        ]
+                                        []
+                                    , Svg.text_
+                                        [ Svg.Attributes.x "10"
+                                        , Svg.Attributes.dominantBaseline "middle"
+                                        , Svg.Attributes.y <| String.fromInt 10
+                                        ]
+                                        [ Svg.text <| waypoint.name ++ " (" ++ formatFloat waypoint.distance ++ "km)" ]
+                                    ]
 
-                                InfoWaypoint waypoint ->
-                                    String.join " " [ formatFloat waypoint.distance, waypoint.typ, waypoint.name ]
-                            )
-                        ]
-                )
-                (routesheet model)
+                            Ride dist ->
+                                Svg.g [ translate ]
+                                    [ Svg.line
+                                        [ Svg.Attributes.x1 "5"
+                                        , Svg.Attributes.y1 <| String.fromInt 0
+                                        , Svg.Attributes.x2 "5"
+                                        , Svg.Attributes.y2 <| String.fromInt 20
+                                        , Svg.Attributes.stroke "black"
+                                        , Svg.Attributes.strokeWidth "0.5"
+                                        ]
+                                        []
+                                    , Svg.text_
+                                        [ Svg.Attributes.x "10"
+                                        , Svg.Attributes.dominantBaseline "middle"
+                                        , Svg.Attributes.y <| String.fromInt 10
+                                        ]
+                                        [ Svg.text <| formatFloat dist ]
+                                    ]
+                    )
             )
         ]
 
 
-routesheet : Model -> RouteInfo
-routesheet model =
+routeInfo : Model -> RouteInfo
+routeInfo model =
     List.foldl
         (\el accum ->
             ( Maybe.Just el
