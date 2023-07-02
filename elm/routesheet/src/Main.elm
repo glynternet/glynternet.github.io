@@ -131,9 +131,10 @@ view model =
         , Html.br [] []
         , div []
             [ Html.h2 [] [ Html.text "Options" ]
-            , Html.h3 [] [ Html.text "Location types" ]
             , Html.fieldset []
-                (model.types |> Dict.toList |> List.map (\( typ, included ) -> checkbox included (TypeEnabled typ (not included)) typ))
+                (Html.legend [] [ Html.text "Location types" ]
+                    :: (model.types |> Dict.toList |> List.map (\( typ, included ) -> checkbox included (TypeEnabled typ (not included)) typ))
+                )
             ]
         , Html.h2 [] [ Html.text "Route breakdown" ]
         , Svg.svg
@@ -226,11 +227,9 @@ formatFloat value =
 
 checkbox : Bool -> msg -> String -> Html msg
 checkbox b msg name =
-    Html.label
-        [ Html.Attributes.style "padding" "20px"
-        ]
+    Html.div []
         [ Html.input [ Html.Attributes.type_ "checkbox", Html.Events.onClick msg, Html.Attributes.checked b ] []
-        , Html.text name
+        , Html.label [] [ Html.text name ]
         ]
 
 

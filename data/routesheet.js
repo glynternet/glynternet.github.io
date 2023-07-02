@@ -5547,6 +5547,7 @@ var $elm$html$Html$Attributes$boolProperty = F2(
 			$elm$json$Json$Encode$bool(bool));
 	});
 var $elm$html$Html$Attributes$checked = $elm$html$Html$Attributes$boolProperty('checked');
+var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$input = _VirtualDom_node('input');
 var $elm$html$Html$label = _VirtualDom_node('label');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
@@ -5566,8 +5567,6 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$Attributes$stringProperty = F2(
@@ -5581,11 +5580,8 @@ var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('
 var $author$project$Main$checkbox = F3(
 	function (b, msg, name) {
 		return A2(
-			$elm$html$Html$label,
-			_List_fromArray(
-				[
-					A2($elm$html$Html$Attributes$style, 'padding', '20px')
-				]),
+			$elm$html$Html$div,
+			_List_Nil,
 			_List_fromArray(
 				[
 					A2(
@@ -5597,14 +5593,19 @@ var $author$project$Main$checkbox = F3(
 							$elm$html$Html$Attributes$checked(b)
 						]),
 					_List_Nil),
-					$elm$html$Html$text(name)
+					A2(
+					$elm$html$Html$label,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(name)
+						]))
 				]));
 	});
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
 var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
 var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
-var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
 var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
 var $elm$core$String$fromFloat = _String_fromNumber;
@@ -5675,8 +5676,8 @@ var $author$project$Main$formatFloat = function (value) {
 };
 var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
-var $elm$html$Html$h3 = _VirtualDom_node('h3');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$html$Html$legend = _VirtualDom_node('legend');
 var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
 var $elm$core$Basics$not = _Basics_not;
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
@@ -5860,27 +5861,29 @@ var $author$project$Main$view = function (model) {
 								$elm$html$Html$text('Options')
 							])),
 						A2(
-						$elm$html$Html$h3,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Location types')
-							])),
-						A2(
 						$elm$html$Html$fieldset,
 						_List_Nil,
 						A2(
-							$elm$core$List$map,
-							function (_v0) {
-								var typ = _v0.a;
-								var included = _v0.b;
-								return A3(
-									$author$project$Main$checkbox,
-									included,
-									A2($author$project$Main$TypeEnabled, typ, !included),
-									typ);
-							},
-							$elm$core$Dict$toList(model.types)))
+							$elm$core$List$cons,
+							A2(
+								$elm$html$Html$legend,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Location types')
+									])),
+							A2(
+								$elm$core$List$map,
+								function (_v0) {
+									var typ = _v0.a;
+									var included = _v0.b;
+									return A3(
+										$author$project$Main$checkbox,
+										included,
+										A2($author$project$Main$TypeEnabled, typ, !included),
+										typ);
+								},
+								$elm$core$Dict$toList(model.types))))
 					])),
 				A2(
 				$elm$html$Html$h2,
