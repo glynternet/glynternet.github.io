@@ -6973,6 +6973,8 @@ var $author$project$Main$routeBreakdown = function (info) {
 										]));
 							} else {
 								var dist = item.a;
+								var barTop = '2';
+								var barBottom = '18';
 								return A2(
 									$elm$svg$Svg$g,
 									_List_fromArray(
@@ -6984,11 +6986,37 @@ var $author$project$Main$routeBreakdown = function (info) {
 											_List_fromArray(
 												[
 													$elm$svg$Svg$Attributes$x1(svgContentLeftStartString),
-													$elm$svg$Svg$Attributes$y1(
-													$elm$core$String$fromInt(0)),
+													$elm$svg$Svg$Attributes$y1(barTop),
 													$elm$svg$Svg$Attributes$x2(svgContentLeftStartString),
-													$elm$svg$Svg$Attributes$y2(
-													$elm$core$String$fromInt(20)),
+													$elm$svg$Svg$Attributes$y2(barBottom),
+													$elm$svg$Svg$Attributes$stroke('black'),
+													$elm$svg$Svg$Attributes$strokeWidth('0.5')
+												]),
+											_List_Nil),
+											A2(
+											$elm$svg$Svg$line,
+											_List_fromArray(
+												[
+													$elm$svg$Svg$Attributes$x1(
+													$elm$core$String$fromInt(svgContentLeftStart - 2)),
+													$elm$svg$Svg$Attributes$y1(barTop),
+													$elm$svg$Svg$Attributes$x2(
+													$elm$core$String$fromInt(svgContentLeftStart + 2)),
+													$elm$svg$Svg$Attributes$y2(barTop),
+													$elm$svg$Svg$Attributes$stroke('black'),
+													$elm$svg$Svg$Attributes$strokeWidth('0.5')
+												]),
+											_List_Nil),
+											A2(
+											$elm$svg$Svg$line,
+											_List_fromArray(
+												[
+													$elm$svg$Svg$Attributes$x1(
+													$elm$core$String$fromInt(svgContentLeftStart - 2)),
+													$elm$svg$Svg$Attributes$y1(barBottom),
+													$elm$svg$Svg$Attributes$x2(
+													$elm$core$String$fromInt(svgContentLeftStart + 2)),
+													$elm$svg$Svg$Attributes$y2(barBottom),
 													$elm$svg$Svg$Attributes$stroke('black'),
 													$elm$svg$Svg$Attributes$strokeWidth('0.5')
 												]),
@@ -7006,7 +7034,7 @@ var $author$project$Main$routeBreakdown = function (info) {
 											_List_fromArray(
 												[
 													$elm$svg$Svg$text(
-													$author$project$Main$formatFloat(dist))
+													$author$project$Main$formatFloat(dist) + 'km')
 												]))
 										]));
 							}

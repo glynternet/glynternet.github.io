@@ -340,12 +340,37 @@ routeBreakdown info =
                                     ]
 
                             Ride dist ->
+                                let
+                                    barTop =
+                                        "2"
+
+                                    barBottom =
+                                        "18"
+                                in
                                 Svg.g [ translate ]
                                     [ Svg.line
                                         [ Svg.Attributes.x1 svgContentLeftStartString
-                                        , Svg.Attributes.y1 <| String.fromInt 0
+                                        , Svg.Attributes.y1 barTop
                                         , Svg.Attributes.x2 svgContentLeftStartString
-                                        , Svg.Attributes.y2 <| String.fromInt 20
+                                        , Svg.Attributes.y2 barBottom
+                                        , Svg.Attributes.stroke "black"
+                                        , Svg.Attributes.strokeWidth "0.5"
+                                        ]
+                                        []
+                                    , Svg.line
+                                        [ Svg.Attributes.x1 <| String.fromInt <| svgContentLeftStart - 2
+                                        , Svg.Attributes.y1 barTop
+                                        , Svg.Attributes.x2 <| String.fromInt <| svgContentLeftStart + 2
+                                        , Svg.Attributes.y2 barTop
+                                        , Svg.Attributes.stroke "black"
+                                        , Svg.Attributes.strokeWidth "0.5"
+                                        ]
+                                        []
+                                    , Svg.line
+                                        [ Svg.Attributes.x1 <| String.fromInt <| svgContentLeftStart - 2
+                                        , Svg.Attributes.y1 barBottom
+                                        , Svg.Attributes.x2 <| String.fromInt <| svgContentLeftStart + 2
+                                        , Svg.Attributes.y2 barBottom
                                         , Svg.Attributes.stroke "black"
                                         , Svg.Attributes.strokeWidth "0.5"
                                         ]
@@ -355,7 +380,7 @@ routeBreakdown info =
                                         , Svg.Attributes.dominantBaseline "middle"
                                         , Svg.Attributes.y <| String.fromInt 10
                                         ]
-                                        [ Svg.text <| formatFloat dist ]
+                                        [ Svg.text <| formatFloat dist ++ "km" ]
                                     ]
                     )
             )
