@@ -6900,9 +6900,9 @@ var $author$project$Main$routeBreakdown = function (info) {
 				_List_fromArray(
 					[
 						$elm$svg$Svg$Attributes$class('route_breakdown'),
-						$elm$svg$Svg$Attributes$width('120'),
+						$elm$svg$Svg$Attributes$width('240'),
 						$elm$svg$Svg$Attributes$height(svgHeight),
-						$elm$svg$Svg$Attributes$viewBox('0 0 120 ' + svgHeight)
+						$elm$svg$Svg$Attributes$viewBox('0 0 240 ' + svgHeight)
 					]),
 				A2(
 					$elm$core$List$indexedMap,

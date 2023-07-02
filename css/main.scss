@@ -43,3 +43,16 @@
 .route_breakdown {
   padding: 10px;
 }
+
+// When printing:
+// * hide anything that doesn't have an svg in it
+// * display any svg or descendent of svg
+@media print {
+    :not(*:has(svg)) {
+      display: none;
+    }
+
+    svg, svg * {
+      display: block;
+    }
+}

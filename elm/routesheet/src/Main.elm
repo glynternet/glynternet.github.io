@@ -283,9 +283,9 @@ routeBreakdown info =
         [ Html.h2 [] [ Html.text "Route breakdown" ]
         , Svg.svg
             [ Svg.Attributes.class "route_breakdown"
-            , Svg.Attributes.width "120"
+            , Svg.Attributes.width "240"
             , Svg.Attributes.height svgHeight
-            , Svg.Attributes.viewBox <| "0 0 120 " ++ svgHeight
+            , Svg.Attributes.viewBox <| "0 0 240 " ++ svgHeight
             ]
             (info
                 |> List.indexedMap
