@@ -6860,6 +6860,7 @@ var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
 var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
+var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
 var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
@@ -6867,6 +6868,7 @@ var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
 var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
 var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
 var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
@@ -6880,6 +6882,8 @@ var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
 var $author$project$Main$routeBreakdown = function (info) {
 	var svgHeight = $elm$core$String$fromInt(
 		20 * $elm$core$List$length(info));
+	var svgContentLeftStart = 10;
+	var svgContentLeftStartString = $elm$core$String$fromInt(svgContentLeftStart);
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -6900,7 +6904,7 @@ var $author$project$Main$routeBreakdown = function (info) {
 				_List_fromArray(
 					[
 						$elm$svg$Svg$Attributes$class('route_breakdown'),
-						$elm$svg$Svg$Attributes$width('240'),
+						$elm$svg$Svg$Attributes$width('100%'),
 						$elm$svg$Svg$Attributes$height(svgHeight),
 						$elm$svg$Svg$Attributes$viewBox('0 0 240 ' + svgHeight)
 					]),
@@ -6918,11 +6922,24 @@ var $author$project$Main$routeBreakdown = function (info) {
 										[translate]),
 									_List_fromArray(
 										[
-											A2(
+											(waypoint.typ !== '') ? A2(
+											$elm$svg$Svg$text_,
+											_List_fromArray(
+												[
+													$elm$svg$Svg$Attributes$x(svgContentLeftStartString),
+													$elm$svg$Svg$Attributes$dominantBaseline('middle'),
+													$elm$svg$Svg$Attributes$textAnchor('end'),
+													$elm$svg$Svg$Attributes$y(
+													$elm$core$String$fromInt(10))
+												]),
+											_List_fromArray(
+												[
+													$elm$svg$Svg$text(waypoint.typ)
+												])) : A2(
 											$elm$svg$Svg$circle,
 											_List_fromArray(
 												[
-													$elm$svg$Svg$Attributes$cx('5'),
+													$elm$svg$Svg$Attributes$cx(svgContentLeftStartString),
 													$elm$svg$Svg$Attributes$cy(
 													$elm$core$String$fromInt(10)),
 													$elm$svg$Svg$Attributes$r('2')
@@ -6932,7 +6949,8 @@ var $author$project$Main$routeBreakdown = function (info) {
 											$elm$svg$Svg$text_,
 											_List_fromArray(
 												[
-													$elm$svg$Svg$Attributes$x('10'),
+													$elm$svg$Svg$Attributes$x(
+													$elm$core$String$fromInt(svgContentLeftStart + 10)),
 													$elm$svg$Svg$Attributes$dominantBaseline('middle'),
 													$elm$svg$Svg$Attributes$y(
 													$elm$core$String$fromInt(10))
@@ -6965,10 +6983,10 @@ var $author$project$Main$routeBreakdown = function (info) {
 											$elm$svg$Svg$line,
 											_List_fromArray(
 												[
-													$elm$svg$Svg$Attributes$x1('5'),
+													$elm$svg$Svg$Attributes$x1(svgContentLeftStartString),
 													$elm$svg$Svg$Attributes$y1(
 													$elm$core$String$fromInt(0)),
-													$elm$svg$Svg$Attributes$x2('5'),
+													$elm$svg$Svg$Attributes$x2(svgContentLeftStartString),
 													$elm$svg$Svg$Attributes$y2(
 													$elm$core$String$fromInt(20)),
 													$elm$svg$Svg$Attributes$stroke('black'),
@@ -6979,7 +6997,8 @@ var $author$project$Main$routeBreakdown = function (info) {
 											$elm$svg$Svg$text_,
 											_List_fromArray(
 												[
-													$elm$svg$Svg$Attributes$x('10'),
+													$elm$svg$Svg$Attributes$x(
+													$elm$core$String$fromInt(svgContentLeftStart + 10)),
 													$elm$svg$Svg$Attributes$dominantBaseline('middle'),
 													$elm$svg$Svg$Attributes$y(
 													$elm$core$String$fromInt(10))

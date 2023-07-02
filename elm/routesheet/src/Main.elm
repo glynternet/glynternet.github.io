@@ -278,12 +278,18 @@ routeBreakdown info =
     let
         svgHeight =
             String.fromInt <| (*) 20 (List.length info)
+
+        svgContentLeftStart =
+            10
+
+        svgContentLeftStartString =
+            String.fromInt svgContentLeftStart
     in
     Html.div [ Html.Attributes.class "column" ]
         [ Html.h2 [] [ Html.text "Route breakdown" ]
         , Svg.svg
             [ Svg.Attributes.class "route_breakdown"
-            , Svg.Attributes.width "240"
+            , Svg.Attributes.width "100%"
             , Svg.Attributes.height svgHeight
             , Svg.Attributes.viewBox <| "0 0 240 " ++ svgHeight
             ]
@@ -297,14 +303,25 @@ routeBreakdown info =
                         case item of
                             InfoWaypoint waypoint ->
                                 Svg.g [ translate ]
-                                    [ Svg.circle
-                                        [ Svg.Attributes.cx "5"
-                                        , Svg.Attributes.cy <| String.fromInt 10
-                                        , Svg.Attributes.r "2"
-                                        ]
-                                        []
+                                    [ if waypoint.typ /= "" then
+                                        Svg.text_
+                                            [ Svg.Attributes.x svgContentLeftStartString
+                                            , Svg.Attributes.dominantBaseline "middle"
+                                            , Svg.Attributes.textAnchor "end"
+                                            , Svg.Attributes.y <| String.fromInt 10
+                                            ]
+                                            [ Svg.text waypoint.typ
+                                            ]
+
+                                      else
+                                        Svg.circle
+                                            [ Svg.Attributes.cx svgContentLeftStartString
+                                            , Svg.Attributes.cy <| String.fromInt 10
+                                            , Svg.Attributes.r "2"
+                                            ]
+                                            []
                                     , Svg.text_
-                                        [ Svg.Attributes.x "10"
+                                        [ Svg.Attributes.x (String.fromInt <| svgContentLeftStart + 10)
                                         , Svg.Attributes.dominantBaseline "middle"
                                         , Svg.Attributes.y <| String.fromInt 10
                                         ]
@@ -325,16 +342,16 @@ routeBreakdown info =
                             Ride dist ->
                                 Svg.g [ translate ]
                                     [ Svg.line
-                                        [ Svg.Attributes.x1 "5"
+                                        [ Svg.Attributes.x1 svgContentLeftStartString
                                         , Svg.Attributes.y1 <| String.fromInt 0
-                                        , Svg.Attributes.x2 "5"
+                                        , Svg.Attributes.x2 svgContentLeftStartString
                                         , Svg.Attributes.y2 <| String.fromInt 20
                                         , Svg.Attributes.stroke "black"
                                         , Svg.Attributes.strokeWidth "0.5"
                                         ]
                                         []
                                     , Svg.text_
-                                        [ Svg.Attributes.x "10"
+                                        [ Svg.Attributes.x (String.fromInt <| svgContentLeftStart + 10)
                                         , Svg.Attributes.dominantBaseline "middle"
                                         , Svg.Attributes.y <| String.fromInt 10
                                         ]
