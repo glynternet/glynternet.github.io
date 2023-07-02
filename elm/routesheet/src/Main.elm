@@ -2,8 +2,11 @@ port module Main exposing (storeState)
 
 import Browser
 import Browser.Navigation
+import Csv.Decode
 import Dict
 import Dropdown
+import File
+import File.Select
 import Html exposing (Attribute, Html, div)
 import Html.Attributes
 import Html.Events
@@ -11,6 +14,7 @@ import Json.Encode
 import String
 import Svg
 import Svg.Attributes
+import Task
 import Url exposing (Protocol(..))
 
 
@@ -85,9 +89,11 @@ init maybeState _ _ =
 
 type Msg
     = Never
-    | UpdateWaypoints (List Waypoint)
     | TypeEnabled String Bool
     | UpdateTotalDistanceDisplay (Maybe TotalDistanceDisplay)
+    | OpenFileBrowser
+    | FileUploaded File.File
+    | CsvDecoded (Result Csv.Decode.Error (List Waypoint))
 
 
 initialOptions : List Waypoint -> Options
@@ -103,16 +109,6 @@ initialTypes waypoints =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UpdateWaypoints waypoints ->
-            let
-                sortedWaypoint =
-                    List.sortBy .distance waypoints
-
-                newModel =
-                    Model sortedWaypoint (initialOptions sortedWaypoint)
-            in
-            ( newModel, storeModel newModel )
-
         TypeEnabled typ enabled ->
             let
                 options =
@@ -132,8 +128,48 @@ update msg model =
                     )
                 |> Maybe.withDefault ( model, Cmd.none )
 
+        OpenFileBrowser ->
+            ( model, File.Select.file [ "text/csv" ] FileUploaded )
+
+        FileUploaded file ->
+            ( model
+            , File.toString file
+                |> Task.map
+                    (\content ->
+                        Csv.Decode.decodeCsv Csv.Decode.FieldNamesFromFirstRow
+                            (Csv.Decode.into Waypoint
+                                |> Csv.Decode.pipeline (Csv.Decode.field "Name" Csv.Decode.string)
+                                |> Csv.Decode.pipeline (Csv.Decode.field "Distance" Csv.Decode.float)
+                                |> Csv.Decode.pipeline (Csv.Decode.field "Type" Csv.Decode.string)
+                            )
+                            content
+                    )
+                |> Task.perform CsvDecoded
+            )
+
+        CsvDecoded result ->
+            result
+                |> Result.map
+                    (\waypoints ->
+                        let
+                            newModel =
+                                initialModel waypoints
+                        in
+                        ( newModel, storeModel newModel )
+                    )
+                |> Result.withDefault ( model, Cmd.none )
+
         Never ->
             ( model, Cmd.none )
+
+
+initialModel : List Waypoint -> Model
+initialModel waypoints =
+    let
+        sortedWaypoint =
+            List.sortBy .distance waypoints
+    in
+    Model sortedWaypoint (initialOptions sortedWaypoint)
 
 
 
@@ -145,18 +181,8 @@ view model =
     Browser.Document "Route sheet"
         [ div []
             [ Html.button
-                [ Html.Events.onClick <|
-                    UpdateWaypoints
-                        [ Waypoint "start" 0 "Landmark"
-                        , Waypoint "foo" 1.234567 "Resupply"
-                        , Waypoint "bar" 2.345678 "Sleep"
-                        , Waypoint "baz" 3.456789 "Resupply"
-                        , Waypoint "anywhere" 32.9 "Municipality"
-                        , Waypoint "qux" 4.567891 "Sleep"
-                        , Waypoint "finish" 99.567891 "Landmark"
-                        ]
-                ]
-                [ Html.text "hello" ]
+                [ Html.Events.onClick OpenFileBrowser ]
+                [ Html.text "upload csv" ]
             ]
         , Html.div [ Html.Attributes.class "row" ]
             [ waypointsAndOptions model
@@ -256,7 +282,8 @@ routeBreakdown info =
     Html.div [ Html.Attributes.class "column" ]
         [ Html.h2 [] [ Html.text "Route breakdown" ]
         , Svg.svg
-            [ Svg.Attributes.width "120"
+            [ Svg.Attributes.class "route_breakdown"
+            , Svg.Attributes.width "120"
             , Svg.Attributes.height svgHeight
             , Svg.Attributes.viewBox <| "0 0 120 " ++ svgHeight
             ]
