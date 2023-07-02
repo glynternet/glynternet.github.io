@@ -103,13 +103,6 @@ update msg model =
 
 view : Model -> Browser.Document Msg
 view model =
-    let
-        info =
-            routeInfo model
-
-        svgHeight =
-            String.fromInt <| (*) 20 (List.length info)
-    in
     Browser.Document "Route sheet"
         [ div []
             [ Html.button
@@ -126,7 +119,17 @@ view model =
                 ]
                 [ Html.text "hello" ]
             ]
-        , Html.h2 [] [ Html.text "Waypoints" ]
+        , Html.div [ Html.Attributes.class "row" ]
+            [ waypointsAndOptions model
+            , routeBreakdown <| routeInfo model
+            ]
+        ]
+
+
+waypointsAndOptions : Model -> Html Msg
+waypointsAndOptions model =
+    Html.div [ Html.Attributes.class "column" ]
+        [ Html.h2 [] [ Html.text "Waypoints" ]
         , div [] (List.map (\waypoint -> div [] [ Html.text ((++) (formatFloat waypoint.distance ++ " ") waypoint.name) ]) model.waypoints)
         , Html.br [] []
         , div []
@@ -136,7 +139,37 @@ view model =
                     :: (model.types |> Dict.toList |> List.map (\( typ, included ) -> checkbox included (TypeEnabled typ (not included)) typ))
                 )
             ]
-        , Html.h2 [] [ Html.text "Route breakdown" ]
+        ]
+
+
+routeInfo : Model -> RouteInfo
+routeInfo model =
+    List.foldl
+        (\el accum ->
+            ( Maybe.Just el
+            , ([ InfoWaypoint el ]
+                ++ (Tuple.first accum
+                        |> Maybe.map (\previous -> [ Ride (el.distance - previous.distance) ])
+                        |> Maybe.withDefault []
+                   )
+              )
+                ++ Tuple.second accum
+            )
+        )
+        ( Maybe.Nothing, [] )
+        (List.filter (\w -> Dict.get w.typ model.types |> Maybe.withDefault True) model.waypoints)
+        |> Tuple.second
+        |> List.reverse
+
+
+routeBreakdown : RouteInfo -> Html Msg
+routeBreakdown info =
+    let
+        svgHeight =
+            String.fromInt <| (*) 20 (List.length info)
+    in
+    Html.div [ Html.Attributes.class "column" ]
+        [ Html.h2 [] [ Html.text "Route breakdown" ]
         , Svg.svg
             [ Svg.Attributes.width "120"
             , Svg.Attributes.height svgHeight
@@ -187,26 +220,6 @@ view model =
                     )
             )
         ]
-
-
-routeInfo : Model -> RouteInfo
-routeInfo model =
-    List.foldl
-        (\el accum ->
-            ( Maybe.Just el
-            , ([ InfoWaypoint el ]
-                ++ (Tuple.first accum
-                        |> Maybe.map (\previous -> [ Ride (el.distance - previous.distance) ])
-                        |> Maybe.withDefault []
-                   )
-              )
-                ++ Tuple.second accum
-            )
-        )
-        ( Maybe.Nothing, [] )
-        (List.filter (\w -> Dict.get w.typ model.types |> Maybe.withDefault True) model.waypoints)
-        |> Tuple.second
-        |> List.reverse
 
 
 formatFloat : Float -> String

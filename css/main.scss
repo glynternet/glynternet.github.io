@@ -27,3 +27,15 @@
 // Vendor
 @import
     'vendor/highlight';
+
+
+/**
+ * Layout / Columns
+ */
+.row {
+  display: flex;
+}
+
+.column {
+  flex: 50%;
+}

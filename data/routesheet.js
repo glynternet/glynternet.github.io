@@ -5526,10 +5526,6 @@ var $elm$browser$Browser$Document = F2(
 	function (title, body) {
 		return {body: body, title: title};
 	});
-var $author$project$Main$TypeEnabled = F2(
-	function (a, b) {
-		return {$: 'TypeEnabled', a: a, b: b};
-	});
 var $author$project$Main$UpdateWaypoints = function (a) {
 	return {$: 'UpdateWaypoints', a: a};
 };
@@ -5537,19 +5533,16 @@ var $author$project$Main$Waypoint = F3(
 	function (name, distance, typ) {
 		return {distance: distance, name: name, typ: typ};
 	});
-var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$html$Html$Attributes$boolProperty = F2(
-	function (key, bool) {
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
 		return A2(
 			_VirtualDom_property,
 			key,
-			$elm$json$Json$Encode$bool(bool));
+			$elm$json$Json$Encode$string(string));
 	});
-var $elm$html$Html$Attributes$checked = $elm$html$Html$Attributes$boolProperty('checked');
+var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $elm$html$Html$input = _VirtualDom_node('input');
-var $elm$html$Html$label = _VirtualDom_node('label');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -5567,47 +5560,11 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
-var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
-var $author$project$Main$checkbox = F3(
-	function (b, msg, name) {
-		return A2(
-			$elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$input,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$type_('checkbox'),
-							$elm$html$Html$Events$onClick(msg),
-							$elm$html$Html$Attributes$checked(b)
-						]),
-					_List_Nil),
-					A2(
-					$elm$html$Html$label,
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text(name)
-						]))
-				]));
-	});
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
 var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
 var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
 var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
-var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
 var $elm$core$String$fromFloat = _String_fromNumber;
 var $elm$core$String$cons = _String_cons;
 var $elm$core$String$fromChar = function (_char) {
@@ -5677,104 +5634,13 @@ var $author$project$Main$formatFloat = function (value) {
 var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
-var $elm$html$Html$legend = _VirtualDom_node('legend');
 var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
-var $elm$core$Basics$not = _Basics_not;
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
-var $author$project$Main$InfoWaypoint = function (a) {
-	return {$: 'InfoWaypoint', a: a};
-};
-var $author$project$Main$Ride = function (a) {
-	return {$: 'Ride', a: a};
-};
-var $elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
-	});
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
-};
-var $author$project$Main$routeInfo = function (model) {
-	return $elm$core$List$reverse(
-		A3(
-			$elm$core$List$foldl,
-			F2(
-				function (el, accum) {
-					return _Utils_Tuple2(
-						$elm$core$Maybe$Just(el),
-						_Utils_ap(
-							_Utils_ap(
-								_List_fromArray(
-									[
-										$author$project$Main$InfoWaypoint(el)
-									]),
-								A2(
-									$elm$core$Maybe$withDefault,
-									_List_Nil,
-									A2(
-										$elm$core$Maybe$map,
-										function (previous) {
-											return _List_fromArray(
-												[
-													$author$project$Main$Ride(el.distance - previous.distance)
-												]);
-										},
-										accum.a))),
-							accum.b));
-				}),
-			_Utils_Tuple2($elm$core$Maybe$Nothing, _List_Nil),
-			A2(
-				$elm$core$List$filter,
-				function (w) {
-					return A2(
-						$elm$core$Maybe$withDefault,
-						true,
-						A2($elm$core$Dict$get, w.typ, model.types));
-				},
-				model.waypoints)).b);
-};
 var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
 var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
@@ -5786,105 +5652,17 @@ var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
 var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
 var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
 var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
-var $author$project$Main$view = function (model) {
-	var info = $author$project$Main$routeInfo(model);
+var $author$project$Main$routeBreakdown = function (info) {
 	var svgHeight = $elm$core$String$fromInt(
 		20 * $elm$core$List$length(info));
 	return A2(
-		$elm$browser$Browser$Document,
-		'Route sheet',
+		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick(
-								$author$project$Main$UpdateWaypoints(
-									_List_fromArray(
-										[
-											A3($author$project$Main$Waypoint, 'start', 0, 'Landmark'),
-											A3($author$project$Main$Waypoint, 'foo', 1.234567, 'Resupply'),
-											A3($author$project$Main$Waypoint, 'bar', 2.345678, 'Sleep'),
-											A3($author$project$Main$Waypoint, 'baz', 3.456789, 'Resupply'),
-											A3($author$project$Main$Waypoint, 'anywhere', 32.9, 'Municipality'),
-											A3($author$project$Main$Waypoint, 'qux', 4.567891, 'Sleep'),
-											A3($author$project$Main$Waypoint, 'finish', 99.567891, 'Landmark')
-										])))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('hello')
-							]))
-					])),
-				A2(
-				$elm$html$Html$h2,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text('Waypoints')
-					])),
-				A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				A2(
-					$elm$core$List$map,
-					function (waypoint) {
-						return A2(
-							$elm$html$Html$div,
-							_List_Nil,
-							_List_fromArray(
-								[
-									$elm$html$Html$text(
-									_Utils_ap(
-										$author$project$Main$formatFloat(waypoint.distance) + ' ',
-										waypoint.name))
-								]));
-					},
-					model.waypoints)),
-				A2($elm$html$Html$br, _List_Nil, _List_Nil),
-				A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$h2,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Options')
-							])),
-						A2(
-						$elm$html$Html$fieldset,
-						_List_Nil,
-						A2(
-							$elm$core$List$cons,
-							A2(
-								$elm$html$Html$legend,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Location types')
-									])),
-							A2(
-								$elm$core$List$map,
-								function (_v0) {
-									var typ = _v0.a;
-									var included = _v0.b;
-									return A3(
-										$author$project$Main$checkbox,
-										included,
-										A2($author$project$Main$TypeEnabled, typ, !included),
-										typ);
-								},
-								$elm$core$Dict$toList(model.types))))
-					])),
+				$elm$html$Html$Attributes$class('column')
+			]),
+		_List_fromArray(
+			[
 				A2(
 				$elm$html$Html$h2,
 				_List_Nil,
@@ -5979,6 +5757,262 @@ var $author$project$Main$view = function (model) {
 							}
 						}),
 					info))
+			]));
+};
+var $author$project$Main$InfoWaypoint = function (a) {
+	return {$: 'InfoWaypoint', a: a};
+};
+var $author$project$Main$Ride = function (a) {
+	return {$: 'Ride', a: a};
+};
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
+var $author$project$Main$routeInfo = function (model) {
+	return $elm$core$List$reverse(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (el, accum) {
+					return _Utils_Tuple2(
+						$elm$core$Maybe$Just(el),
+						_Utils_ap(
+							_Utils_ap(
+								_List_fromArray(
+									[
+										$author$project$Main$InfoWaypoint(el)
+									]),
+								A2(
+									$elm$core$Maybe$withDefault,
+									_List_Nil,
+									A2(
+										$elm$core$Maybe$map,
+										function (previous) {
+											return _List_fromArray(
+												[
+													$author$project$Main$Ride(el.distance - previous.distance)
+												]);
+										},
+										accum.a))),
+							accum.b));
+				}),
+			_Utils_Tuple2($elm$core$Maybe$Nothing, _List_Nil),
+			A2(
+				$elm$core$List$filter,
+				function (w) {
+					return A2(
+						$elm$core$Maybe$withDefault,
+						true,
+						A2($elm$core$Dict$get, w.typ, model.types));
+				},
+				model.waypoints)).b);
+};
+var $author$project$Main$TypeEnabled = F2(
+	function (a, b) {
+		return {$: 'TypeEnabled', a: a, b: b};
+	});
+var $elm$html$Html$br = _VirtualDom_node('br');
+var $elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$bool(bool));
+	});
+var $elm$html$Html$Attributes$checked = $elm$html$Html$Attributes$boolProperty('checked');
+var $elm$html$Html$input = _VirtualDom_node('input');
+var $elm$html$Html$label = _VirtualDom_node('label');
+var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
+var $author$project$Main$checkbox = F3(
+	function (b, msg, name) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$input,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$type_('checkbox'),
+							$elm$html$Html$Events$onClick(msg),
+							$elm$html$Html$Attributes$checked(b)
+						]),
+					_List_Nil),
+					A2(
+					$elm$html$Html$label,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(name)
+						]))
+				]));
+	});
+var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
+var $elm$html$Html$legend = _VirtualDom_node('legend');
+var $elm$core$Basics$not = _Basics_not;
+var $author$project$Main$waypointsAndOptions = function (model) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('column')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$h2,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Waypoints')
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				A2(
+					$elm$core$List$map,
+					function (waypoint) {
+						return A2(
+							$elm$html$Html$div,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									_Utils_ap(
+										$author$project$Main$formatFloat(waypoint.distance) + ' ',
+										waypoint.name))
+								]));
+					},
+					model.waypoints)),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$h2,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Options')
+							])),
+						A2(
+						$elm$html$Html$fieldset,
+						_List_Nil,
+						A2(
+							$elm$core$List$cons,
+							A2(
+								$elm$html$Html$legend,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Location types')
+									])),
+							A2(
+								$elm$core$List$map,
+								function (_v0) {
+									var typ = _v0.a;
+									var included = _v0.b;
+									return A3(
+										$author$project$Main$checkbox,
+										included,
+										A2($author$project$Main$TypeEnabled, typ, !included),
+										typ);
+								},
+								$elm$core$Dict$toList(model.types))))
+					]))
+			]));
+};
+var $author$project$Main$view = function (model) {
+	return A2(
+		$elm$browser$Browser$Document,
+		'Route sheet',
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$UpdateWaypoints(
+									_List_fromArray(
+										[
+											A3($author$project$Main$Waypoint, 'start', 0, 'Landmark'),
+											A3($author$project$Main$Waypoint, 'foo', 1.234567, 'Resupply'),
+											A3($author$project$Main$Waypoint, 'bar', 2.345678, 'Sleep'),
+											A3($author$project$Main$Waypoint, 'baz', 3.456789, 'Resupply'),
+											A3($author$project$Main$Waypoint, 'anywhere', 32.9, 'Municipality'),
+											A3($author$project$Main$Waypoint, 'qux', 4.567891, 'Sleep'),
+											A3($author$project$Main$Waypoint, 'finish', 99.567891, 'Landmark')
+										])))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('hello')
+							]))
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('row')
+					]),
+				_List_fromArray(
+					[
+						$author$project$Main$waypointsAndOptions(model),
+						$author$project$Main$routeBreakdown(
+						$author$project$Main$routeInfo(model))
+					]))
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$application(
