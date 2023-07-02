@@ -5200,9 +5200,14 @@ var $elm$core$Task$perform = F2(
 var $elm$browser$Browser$application = _Browser_application;
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
+var $author$project$Main$FromFirst = {$: 'FromFirst'};
 var $author$project$Main$Model = F2(
-	function (waypoints, types) {
-		return {types: types, waypoints: waypoints};
+	function (waypoints, options) {
+		return {options: options, waypoints: waypoints};
+	});
+var $author$project$Main$Options = F2(
+	function (types, totalDistanceDisplay) {
+		return {totalDistanceDisplay: totalDistanceDisplay, types: types};
 	});
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
@@ -5336,6 +5341,12 @@ var $author$project$Main$initialTypes = function (waypoints) {
 			},
 			waypoints));
 };
+var $author$project$Main$initialOptions = function (waypoints) {
+	return A2(
+		$author$project$Main$Options,
+		$author$project$Main$initialTypes(waypoints),
+		$author$project$Main$FromFirst);
+};
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (maybe.$ === 'Just') {
@@ -5362,14 +5373,17 @@ var $author$project$Main$init = F3(
 		return _Utils_Tuple2(
 			A2(
 				$elm$core$Maybe$withDefault,
-				A2($author$project$Main$Model, _List_Nil, $elm$core$Dict$empty),
+				A2(
+					$author$project$Main$Model,
+					_List_Nil,
+					A2($author$project$Main$Options, $elm$core$Dict$empty, $author$project$Main$FromFirst)),
 				A2(
 					$elm$core$Maybe$map,
 					function (state) {
 						return A2(
 							$author$project$Main$Model,
 							state.waypoints,
-							$author$project$Main$initialTypes(state.waypoints));
+							$author$project$Main$initialOptions(state.waypoints));
 					},
 					maybeState)),
 			$elm$core$Platform$Cmd$none);
@@ -5381,48 +5395,6 @@ var $elm$json$Json$Decode$null = _Json_decodeNull;
 var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $elm$json$Json$Decode$string = _Json_decodeString;
 var $elm$core$List$sortBy = _List_sortBy;
-var $elm$json$Json$Encode$bool = _Json_wrap;
-var $elm$core$Dict$foldl = F3(
-	function (func, acc, dict) {
-		foldl:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return acc;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var $temp$func = func,
-					$temp$acc = A3(
-					func,
-					key,
-					value,
-					A3($elm$core$Dict$foldl, func, acc, left)),
-					$temp$dict = right;
-				func = $temp$func;
-				acc = $temp$acc;
-				dict = $temp$dict;
-				continue foldl;
-			}
-		}
-	});
-var $elm$json$Json$Encode$dict = F3(
-	function (toKey, toValue, dictionary) {
-		return _Json_wrap(
-			A3(
-				$elm$core$Dict$foldl,
-				F3(
-					function (key, value, obj) {
-						return A3(
-							_Json_addField,
-							toKey(key),
-							toValue(value),
-							obj);
-					}),
-				_Json_emptyObject(_Utils_Tuple0),
-				dictionary));
-	});
 var $elm$json$Json$Encode$float = _Json_wrap;
 var $elm$json$Json$Encode$list = F2(
 	function (func, entries) {
@@ -5478,16 +5450,7 @@ var $author$project$Main$storeModel = function (model) {
 					[
 						_Utils_Tuple2(
 						'waypoints',
-						$author$project$Main$encodeWaypoints(model.waypoints)),
-						_Utils_Tuple2(
-						'types',
-						A3(
-							$elm$json$Json$Encode$dict,
-							function (key) {
-								return key;
-							},
-							$elm$json$Json$Encode$bool,
-							model.types))
+						$author$project$Main$encodeWaypoints(model.waypoints))
 					]))));
 };
 var $author$project$Main$update = F2(
@@ -5504,20 +5467,45 @@ var $author$project$Main$update = F2(
 				var newModel = A2(
 					$author$project$Main$Model,
 					sortedWaypoint,
-					$author$project$Main$initialTypes(sortedWaypoint));
+					$author$project$Main$initialOptions(sortedWaypoint));
 				return _Utils_Tuple2(
 					newModel,
 					$author$project$Main$storeModel(newModel));
 			case 'TypeEnabled':
 				var typ = msg.a;
 				var enabled = msg.b;
+				var options = model.options;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							types: A3($elm$core$Dict$insert, typ, enabled, model.types)
+							options: _Utils_update(
+								options,
+								{
+									types: A3($elm$core$Dict$insert, typ, enabled, model.options.types)
+								})
 						}),
 					$elm$core$Platform$Cmd$none);
+			case 'UpdateTotalDistanceDisplay':
+				var maybeSelection = msg.a;
+				return A2(
+					$elm$core$Maybe$withDefault,
+					_Utils_Tuple2(model, $elm$core$Platform$Cmd$none),
+					A2(
+						$elm$core$Maybe$map,
+						function (selection) {
+							var options = model.options;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										options: _Utils_update(
+											options,
+											{totalDistanceDisplay: selection})
+									}),
+								$elm$core$Platform$Cmd$none);
+						},
+						maybeSelection));
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
@@ -5714,7 +5702,17 @@ var $author$project$Main$routeBreakdown = function (info) {
 											_List_fromArray(
 												[
 													$elm$svg$Svg$text(
-													waypoint.name + (' (' + ($author$project$Main$formatFloat(waypoint.distance) + 'km)')))
+													_Utils_ap(
+														waypoint.name,
+														A2(
+															$elm$core$Maybe$withDefault,
+															'',
+															A2(
+																$elm$core$Maybe$map,
+																function (distance) {
+																	return ' (' + ($author$project$Main$formatFloat(distance) + 'km)');
+																},
+																waypoint.distance))))
 												]))
 										]));
 							} else {
@@ -5759,6 +5757,10 @@ var $author$project$Main$routeBreakdown = function (info) {
 					info))
 			]));
 };
+var $author$project$Main$DisplayWaypoint = F3(
+	function (name, distance, typ) {
+		return {distance: distance, name: name, typ: typ};
+	});
 var $author$project$Main$InfoWaypoint = function (a) {
 	return {$: 'InfoWaypoint', a: a};
 };
@@ -5807,6 +5809,15 @@ var $elm$core$Dict$get = F2(
 			}
 		}
 	});
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
 var $elm$core$Tuple$second = function (_v0) {
 	var y = _v0.b;
 	return y;
@@ -5823,7 +5834,28 @@ var $author$project$Main$routeInfo = function (model) {
 							_Utils_ap(
 								_List_fromArray(
 									[
-										$author$project$Main$InfoWaypoint(el)
+										$author$project$Main$InfoWaypoint(
+										A3(
+											$author$project$Main$DisplayWaypoint,
+											el.name,
+											function () {
+												var _v0 = model.options.totalDistanceDisplay;
+												switch (_v0.$) {
+													case 'FromFirst':
+														return $elm$core$Maybe$Just(el.distance);
+													case 'FromLast':
+														return A2(
+															$elm$core$Maybe$map,
+															function (last) {
+																return last.distance - el.distance;
+															},
+															$elm$core$List$head(
+																$elm$core$List$reverse(model.waypoints)));
+													default:
+														return $elm$core$Maybe$Nothing;
+												}
+											}(),
+											el.typ))
 									]),
 								A2(
 									$elm$core$Maybe$withDefault,
@@ -5846,15 +5878,29 @@ var $author$project$Main$routeInfo = function (model) {
 					return A2(
 						$elm$core$Maybe$withDefault,
 						true,
-						A2($elm$core$Dict$get, w.typ, model.types));
+						A2($elm$core$Dict$get, w.typ, model.options.types));
 				},
 				model.waypoints)).b);
 };
+var $author$project$Main$FromLast = {$: 'FromLast'};
+var $abadi199$elm_input_extra$Dropdown$Item = F3(
+	function (value, text, enabled) {
+		return {enabled: enabled, text: text, value: value};
+	});
+var $author$project$Main$None = {$: 'None'};
+var $abadi199$elm_input_extra$Dropdown$Options = F3(
+	function (items, emptyItem, onChange) {
+		return {emptyItem: emptyItem, items: items, onChange: onChange};
+	});
 var $author$project$Main$TypeEnabled = F2(
 	function (a, b) {
 		return {$: 'TypeEnabled', a: a, b: b};
 	});
+var $author$project$Main$UpdateTotalDistanceDisplay = function (a) {
+	return {$: 'UpdateTotalDistanceDisplay', a: a};
+};
 var $elm$html$Html$br = _VirtualDom_node('br');
+var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$html$Html$Attributes$boolProperty = F2(
 	function (key, bool) {
 		return A2(
@@ -5884,16 +5930,110 @@ var $author$project$Main$checkbox = F3(
 					_List_Nil),
 					A2(
 					$elm$html$Html$label,
-					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$Events$onClick(msg)
+						]),
 					_List_fromArray(
 						[
 							$elm$html$Html$text(name)
 						]))
 				]));
 	});
+var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
+var $elm$core$Basics$not = _Basics_not;
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $elm$html$Html$Events$targetValue = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	$elm$json$Json$Decode$string);
+var $abadi199$elm_input_extra$Dropdown$onChange = F2(
+	function (emptyItem, tagger) {
+		var textToMaybe = function (string) {
+			return A2(
+				$elm$core$Maybe$withDefault,
+				false,
+				A2(
+					$elm$core$Maybe$map,
+					A2(
+						$elm$core$Basics$composeR,
+						function ($) {
+							return $.value;
+						},
+						$elm$core$Basics$eq(string)),
+					emptyItem)) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(string);
+		};
+		return A2(
+			$elm$html$Html$Events$on,
+			'change',
+			A2(
+				$elm$json$Json$Decode$map,
+				A2($elm$core$Basics$composeR, textToMaybe, tagger),
+				$elm$html$Html$Events$targetValue));
+	});
+var $elm$html$Html$option = _VirtualDom_node('option');
+var $elm$html$Html$select = _VirtualDom_node('select');
+var $elm$html$Html$Attributes$selected = $elm$html$Html$Attributes$boolProperty('selected');
+var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
+var $abadi199$elm_input_extra$Dropdown$dropdown = F3(
+	function (options, attributes, currentValue) {
+		var itemsWithEmptyItems = function () {
+			var _v1 = options.emptyItem;
+			if (_v1.$ === 'Just') {
+				var emptyItem = _v1.a;
+				return A2($elm$core$List$cons, emptyItem, options.items);
+			} else {
+				return options.items;
+			}
+		}();
+		var isSelected = function (value) {
+			return A2(
+				$elm$core$Maybe$withDefault,
+				false,
+				A2(
+					$elm$core$Maybe$map,
+					$elm$core$Basics$eq(value),
+					currentValue));
+		};
+		var toOption = function (_v0) {
+			var value = _v0.value;
+			var text = _v0.text;
+			var enabled = _v0.enabled;
+			return A2(
+				$elm$html$Html$option,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$value(value),
+						$elm$html$Html$Attributes$selected(
+						isSelected(value)),
+						$elm$html$Html$Attributes$disabled(!enabled)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(text)
+					]));
+		};
+		return A2(
+			$elm$html$Html$select,
+			_Utils_ap(
+				attributes,
+				_List_fromArray(
+					[
+						A2($abadi199$elm_input_extra$Dropdown$onChange, options.emptyItem, options.onChange)
+					])),
+			A2($elm$core$List$map, toOption, itemsWithEmptyItems));
+	});
 var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
 var $elm$html$Html$legend = _VirtualDom_node('legend');
-var $elm$core$Basics$not = _Basics_not;
 var $author$project$Main$waypointsAndOptions = function (model) {
 	return A2(
 		$elm$html$Html$div,
@@ -5951,7 +6091,7 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 								_List_Nil,
 								_List_fromArray(
 									[
-										$elm$html$Html$text('Location types')
+										$elm$html$Html$text('Location types:')
 									])),
 							A2(
 								$elm$core$List$map,
@@ -5964,8 +6104,59 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 										A2($author$project$Main$TypeEnabled, typ, !included),
 										typ);
 								},
-								$elm$core$Dict$toList(model.types))))
-					]))
+								$elm$core$Dict$toList(model.options.types))))
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				A2(
+					$elm$core$List$cons,
+					A2(
+						$elm$html$Html$legend,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Total distance:')
+							])),
+					_List_fromArray(
+						[
+							A3(
+							$abadi199$elm_input_extra$Dropdown$dropdown,
+							A3(
+								$abadi199$elm_input_extra$Dropdown$Options,
+								_List_fromArray(
+									[
+										A3($abadi199$elm_input_extra$Dropdown$Item, 'from first', 'from first', true),
+										A3($abadi199$elm_input_extra$Dropdown$Item, 'from last', 'from last', true),
+										A3($abadi199$elm_input_extra$Dropdown$Item, 'none', 'none', true)
+									]),
+								$elm$core$Maybe$Nothing,
+								function (maybeSelection) {
+									return A2(
+										$elm$core$Maybe$withDefault,
+										$author$project$Main$UpdateTotalDistanceDisplay($elm$core$Maybe$Nothing),
+										A2(
+											$elm$core$Maybe$map,
+											function (selection) {
+												switch (selection) {
+													case 'from first':
+														return $author$project$Main$UpdateTotalDistanceDisplay(
+															$elm$core$Maybe$Just($author$project$Main$FromFirst));
+													case 'from last':
+														return $author$project$Main$UpdateTotalDistanceDisplay(
+															$elm$core$Maybe$Just($author$project$Main$FromLast));
+													case 'none':
+														return $author$project$Main$UpdateTotalDistanceDisplay(
+															$elm$core$Maybe$Just($author$project$Main$None));
+													default:
+														return $author$project$Main$UpdateTotalDistanceDisplay($elm$core$Maybe$Nothing);
+												}
+											},
+											maybeSelection));
+								}),
+							_List_Nil,
+							$elm$core$Maybe$Just('hello'))
+						])))
 			]));
 };
 var $author$project$Main$view = function (model) {

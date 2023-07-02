@@ -3,6 +3,7 @@ port module Main exposing (storeState)
 import Browser
 import Browser.Navigation
 import Dict
+import Dropdown
 import Html exposing (Attribute, Html, div)
 import Html.Attributes
 import Html.Events
@@ -38,11 +39,20 @@ type alias StoredState =
 
 type alias Model =
     { waypoints : List Waypoint
-
-    -- maintained as list to allow easy interoperability with state storage and initialisation of flags.
-    -- flags can't handle being a set
-    , types : Dict.Dict String Bool
+    , options : Options
     }
+
+
+type alias Options =
+    { types : Dict.Dict String Bool
+    , totalDistanceDisplay : TotalDistanceDisplay
+    }
+
+
+type TotalDistanceDisplay
+    = FromFirst
+    | FromLast
+    | None
 
 
 type alias Waypoint =
@@ -52,24 +62,37 @@ type alias Waypoint =
     }
 
 
+type alias DisplayWaypoint =
+    { name : String
+    , distance : Maybe Float
+    , typ : String
+    }
+
+
 type alias RouteInfo =
     List Info
 
 
 type Info
-    = InfoWaypoint Waypoint
+    = InfoWaypoint DisplayWaypoint
     | Ride Float
 
 
 init : Maybe StoredState -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
 init maybeState _ _ =
-    ( maybeState |> Maybe.map (\state -> Model state.waypoints <| initialTypes state.waypoints) |> Maybe.withDefault (Model [] Dict.empty), Cmd.none )
+    ( maybeState |> Maybe.map (\state -> Model state.waypoints <| initialOptions state.waypoints) |> Maybe.withDefault (Model [] (Options Dict.empty FromFirst)), Cmd.none )
 
 
 type Msg
     = Never
     | UpdateWaypoints (List Waypoint)
     | TypeEnabled String Bool
+    | UpdateTotalDistanceDisplay (Maybe TotalDistanceDisplay)
+
+
+initialOptions : List Waypoint -> Options
+initialOptions waypoints =
+    Options (initialTypes waypoints) FromFirst
 
 
 initialTypes : List Waypoint -> Dict.Dict String Bool
@@ -86,12 +109,28 @@ update msg model =
                     List.sortBy .distance waypoints
 
                 newModel =
-                    Model sortedWaypoint (initialTypes sortedWaypoint)
+                    Model sortedWaypoint (initialOptions sortedWaypoint)
             in
             ( newModel, storeModel newModel )
 
         TypeEnabled typ enabled ->
-            ( { model | types = Dict.insert typ enabled model.types }, Cmd.none )
+            let
+                options =
+                    model.options
+            in
+            ( { model | options = { options | types = Dict.insert typ enabled model.options.types } }, Cmd.none )
+
+        UpdateTotalDistanceDisplay maybeSelection ->
+            maybeSelection
+                |> Maybe.map
+                    (\selection ->
+                        let
+                            options =
+                                model.options
+                        in
+                        ( { model | options = { options | totalDistanceDisplay = selection } }, Cmd.none )
+                    )
+                |> Maybe.withDefault ( model, Cmd.none )
 
         Never ->
             ( model, Cmd.none )
@@ -121,7 +160,7 @@ view model =
             ]
         , Html.div [ Html.Attributes.class "row" ]
             [ waypointsAndOptions model
-            , routeBreakdown <| routeInfo model
+            , routeBreakdown (routeInfo model)
             ]
         ]
 
@@ -135,10 +174,43 @@ waypointsAndOptions model =
         , div []
             [ Html.h2 [] [ Html.text "Options" ]
             , Html.fieldset []
-                (Html.legend [] [ Html.text "Location types" ]
-                    :: (model.types |> Dict.toList |> List.map (\( typ, included ) -> checkbox included (TypeEnabled typ (not included)) typ))
+                (Html.legend [] [ Html.text "Location types:" ]
+                    :: (model.options.types |> Dict.toList |> List.map (\( typ, included ) -> checkbox included (TypeEnabled typ (not included)) typ))
                 )
             ]
+        , div []
+            (Html.legend [] [ Html.text "Total distance:" ]
+                :: [ Dropdown.dropdown
+                        (Dropdown.Options
+                            [ Dropdown.Item "from first" "from first" True
+                            , Dropdown.Item "from last" "from last" True
+                            , Dropdown.Item "none" "none" True
+                            ]
+                            Maybe.Nothing
+                            (\maybeSelection ->
+                                maybeSelection
+                                    |> Maybe.map
+                                        (\selection ->
+                                            case selection of
+                                                "from first" ->
+                                                    UpdateTotalDistanceDisplay (Maybe.Just FromFirst)
+
+                                                "from last" ->
+                                                    UpdateTotalDistanceDisplay (Maybe.Just FromLast)
+
+                                                "none" ->
+                                                    UpdateTotalDistanceDisplay (Maybe.Just None)
+
+                                                _ ->
+                                                    UpdateTotalDistanceDisplay Maybe.Nothing
+                                        )
+                                    |> Maybe.withDefault (UpdateTotalDistanceDisplay Maybe.Nothing)
+                            )
+                        )
+                        []
+                        (Maybe.Just "hello")
+                   ]
+            )
         ]
 
 
@@ -147,7 +219,20 @@ routeInfo model =
     List.foldl
         (\el accum ->
             ( Maybe.Just el
-            , ([ InfoWaypoint el ]
+            , ([ InfoWaypoint <|
+                    DisplayWaypoint el.name
+                        (case model.options.totalDistanceDisplay of
+                            FromFirst ->
+                                Maybe.Just el.distance
+
+                            FromLast ->
+                                List.head (List.reverse model.waypoints) |> Maybe.map (\last -> last.distance - el.distance)
+
+                            None ->
+                                Maybe.Nothing
+                        )
+                        el.typ
+               ]
                 ++ (Tuple.first accum
                         |> Maybe.map (\previous -> [ Ride (el.distance - previous.distance) ])
                         |> Maybe.withDefault []
@@ -157,7 +242,7 @@ routeInfo model =
             )
         )
         ( Maybe.Nothing, [] )
-        (List.filter (\w -> Dict.get w.typ model.types |> Maybe.withDefault True) model.waypoints)
+        (List.filter (\w -> Dict.get w.typ model.options.types |> Maybe.withDefault True) model.waypoints)
         |> Tuple.second
         |> List.reverse
 
@@ -196,7 +281,18 @@ routeBreakdown info =
                                         , Svg.Attributes.dominantBaseline "middle"
                                         , Svg.Attributes.y <| String.fromInt 10
                                         ]
-                                        [ Svg.text <| waypoint.name ++ " (" ++ formatFloat waypoint.distance ++ "km)" ]
+                                        [ Svg.text <|
+                                            waypoint.name
+                                                ++ (waypoint.distance
+                                                        |> Maybe.map
+                                                            (\distance ->
+                                                                " ("
+                                                                    ++ formatFloat distance
+                                                                    ++ "km)"
+                                                            )
+                                                        |> Maybe.withDefault ""
+                                                   )
+                                        ]
                                     ]
 
                             Ride dist ->
@@ -242,7 +338,7 @@ checkbox : Bool -> msg -> String -> Html msg
 checkbox b msg name =
     Html.div []
         [ Html.input [ Html.Attributes.type_ "checkbox", Html.Events.onClick msg, Html.Attributes.checked b ] []
-        , Html.label [] [ Html.text name ]
+        , Html.label [ Html.Events.onClick msg ] [ Html.text name ]
         ]
 
 
@@ -254,7 +350,6 @@ storeModel : Model -> Cmd msg
 storeModel model =
     Json.Encode.object
         [ ( "waypoints", encodeWaypoints model.waypoints )
-        , ( "types", Json.Encode.dict (\key -> key) Json.Encode.bool model.types )
         ]
         |> Json.Encode.encode 2
         |> storeState
