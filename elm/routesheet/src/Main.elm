@@ -69,7 +69,7 @@ type alias Waypoint =
 type alias DisplayWaypoint =
     { name : String
     , distance : Maybe Float
-    , typ : String
+    , typ : Maybe String
     }
 
 
@@ -198,7 +198,8 @@ waypointsAndOptions model =
             [ Html.h2 [] [ Html.text "Options" ]
             , Html.fieldset []
                 (Html.legend [] [ Html.text "Location types:" ]
-                    :: (model.options.types |> Dict.toList
+                    :: (model.options.types
+                            |> Dict.toList
                             |> List.map
                                 (\( typ, included ) ->
                                     checkbox included
@@ -269,7 +270,12 @@ routeInfo model =
                             None ->
                                 Maybe.Nothing
                         )
-                        el.typ
+                        (if el.typ /= "" then
+                            Maybe.Just el.typ
+
+                         else
+                            Maybe.Nothing
+                        )
                ]
                 ++ (Tuple.first accum
                         |> Maybe.map (\previous -> [ Ride (el.distance - previous.distance) ])
@@ -314,42 +320,41 @@ routeBreakdown info =
                         in
                         case item of
                             InfoWaypoint waypoint ->
-                                Svg.g [ translate ]
-                                    [ if waypoint.typ /= "" then
-                                        Svg.text_
-                                            [ Svg.Attributes.x svgContentLeftStartString
-                                            , Svg.Attributes.dominantBaseline "middle"
-                                            , Svg.Attributes.textAnchor "end"
-                                            , Svg.Attributes.y <| String.fromInt 10
-                                            ]
-                                            [ Svg.text waypoint.typ
-                                            ]
+                                let
+                                    waypointInfo =
+                                        List.filterMap identity
+                                            [ Maybe.map (\dist -> formatFloat dist ++ "km") waypoint.distance, waypoint.typ ]
 
-                                      else
-                                        Svg.circle
-                                            [ Svg.Attributes.cx svgContentLeftStartString
-                                            , Svg.Attributes.cy <| String.fromInt 10
-                                            , Svg.Attributes.r "2"
-                                            ]
-                                            []
-                                    , Svg.text_
+                                    waypointInfoLines =
+                                        if List.isEmpty waypointInfo then
+                                            [ "◉" ]
+
+                                        else
+                                            waypointInfo
+                                in
+                                Svg.g [ translate ]
+                                    (Svg.text_
                                         [ Svg.Attributes.x (String.fromInt <| svgContentLeftStart + 10)
                                         , Svg.Attributes.dominantBaseline "middle"
                                         , Svg.Attributes.y <| String.fromInt 10
                                         ]
-                                        [ Svg.text <|
-                                            waypoint.name
-                                                ++ (waypoint.distance
-                                                        |> Maybe.map
-                                                            (\distance ->
-                                                                " ("
-                                                                    ++ formatFloat distance
-                                                                    ++ "km)"
-                                                            )
-                                                        |> Maybe.withDefault ""
-                                                   )
-                                        ]
-                                    ]
+                                        [ Svg.text waypoint.name ]
+                                        :: (waypointInfoLines
+                                                |> List.indexedMap
+                                                    (\j line ->
+                                                        Svg.text_
+                                                            [ Svg.Attributes.x svgContentLeftStartString
+                                                            , Svg.Attributes.y <| String.fromInt 10
+                                                            , Svg.Attributes.dominantBaseline "middle"
+                                                            , Svg.Attributes.dy (String.fromFloat 2 ++ "em")
+                                                            , Svg.Attributes.dy (String.fromFloat (toFloat j - (toFloat <| List.length waypointInfoLines - 1) / 2) ++ "em")
+                                                            , Svg.Attributes.textAnchor "end"
+                                                            , Svg.Attributes.fontSize "smaller"
+                                                            ]
+                                                            [ Svg.text line ]
+                                                    )
+                                           )
+                                    )
 
                             Ride dist ->
                                 let
@@ -365,7 +370,7 @@ routeBreakdown info =
                                         , Svg.Attributes.y1 barTop
                                         , Svg.Attributes.x2 svgContentLeftStartString
                                         , Svg.Attributes.y2 barBottom
-                                        , Svg.Attributes.stroke "black"
+                                        , Svg.Attributes.stroke "grey"
                                         , Svg.Attributes.strokeWidth "0.5"
                                         ]
                                         []
@@ -374,7 +379,7 @@ routeBreakdown info =
                                         , Svg.Attributes.y1 barTop
                                         , Svg.Attributes.x2 <| String.fromInt <| svgContentLeftStart + 2
                                         , Svg.Attributes.y2 barTop
-                                        , Svg.Attributes.stroke "black"
+                                        , Svg.Attributes.stroke "grey"
                                         , Svg.Attributes.strokeWidth "0.5"
                                         ]
                                         []
@@ -383,14 +388,15 @@ routeBreakdown info =
                                         , Svg.Attributes.y1 barBottom
                                         , Svg.Attributes.x2 <| String.fromInt <| svgContentLeftStart + 2
                                         , Svg.Attributes.y2 barBottom
-                                        , Svg.Attributes.stroke "black"
+                                        , Svg.Attributes.stroke "grey"
                                         , Svg.Attributes.strokeWidth "0.5"
                                         ]
                                         []
                                     , Svg.text_
                                         [ Svg.Attributes.x (String.fromInt <| svgContentLeftStart + 10)
-                                        , Svg.Attributes.dominantBaseline "middle"
                                         , Svg.Attributes.y <| String.fromInt 10
+                                        , Svg.Attributes.dominantBaseline "middle"
+                                        , Svg.Attributes.fontSize "smaller"
                                         ]
                                         [ Svg.text <| formatFloat dist ++ "km" ]
                                     ]

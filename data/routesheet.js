@@ -6788,12 +6788,28 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
-var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
 var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
-var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
-var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
 var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
+var $elm$svg$Svg$Attributes$dy = _VirtualDom_attribute('dy');
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (_v0.$ === 'Just') {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
+var $elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
 var $elm$core$String$fromFloat = _String_fromNumber;
 var $elm$core$Bitwise$and = _Bitwise_and;
 var $elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
@@ -6856,12 +6872,18 @@ var $author$project$Main$formatFloat = function (value) {
 	}
 	return 'please contact Glyn';
 };
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
 var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
-var $elm$core$Basics$neq = _Utils_notEqual;
-var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
 var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
@@ -6916,36 +6938,28 @@ var $author$project$Main$routeBreakdown = function (info) {
 								'translate(0,' + ($elm$core$String$fromInt(i * 20) + ')'));
 							if (item.$ === 'InfoWaypoint') {
 								var waypoint = item.a;
+								var waypointInfo = A2(
+									$elm$core$List$filterMap,
+									$elm$core$Basics$identity,
+									_List_fromArray(
+										[
+											A2(
+											$elm$core$Maybe$map,
+											function (dist) {
+												return $author$project$Main$formatFloat(dist) + 'km';
+											},
+											waypoint.distance),
+											waypoint.typ
+										]));
+								var waypointInfoLines = $elm$core$List$isEmpty(waypointInfo) ? _List_fromArray(
+									['◉']) : waypointInfo;
 								return A2(
 									$elm$svg$Svg$g,
 									_List_fromArray(
 										[translate]),
-									_List_fromArray(
-										[
-											(waypoint.typ !== '') ? A2(
-											$elm$svg$Svg$text_,
-											_List_fromArray(
-												[
-													$elm$svg$Svg$Attributes$x(svgContentLeftStartString),
-													$elm$svg$Svg$Attributes$dominantBaseline('middle'),
-													$elm$svg$Svg$Attributes$textAnchor('end'),
-													$elm$svg$Svg$Attributes$y(
-													$elm$core$String$fromInt(10))
-												]),
-											_List_fromArray(
-												[
-													$elm$svg$Svg$text(waypoint.typ)
-												])) : A2(
-											$elm$svg$Svg$circle,
-											_List_fromArray(
-												[
-													$elm$svg$Svg$Attributes$cx(svgContentLeftStartString),
-													$elm$svg$Svg$Attributes$cy(
-													$elm$core$String$fromInt(10)),
-													$elm$svg$Svg$Attributes$r('2')
-												]),
-											_List_Nil),
-											A2(
+									A2(
+										$elm$core$List$cons,
+										A2(
 											$elm$svg$Svg$text_,
 											_List_fromArray(
 												[
@@ -6957,20 +6971,34 @@ var $author$project$Main$routeBreakdown = function (info) {
 												]),
 											_List_fromArray(
 												[
-													$elm$svg$Svg$text(
-													_Utils_ap(
-														waypoint.name,
-														A2(
-															$elm$core$Maybe$withDefault,
-															'',
-															A2(
-																$elm$core$Maybe$map,
-																function (distance) {
-																	return ' (' + ($author$project$Main$formatFloat(distance) + 'km)');
-																},
-																waypoint.distance))))
-												]))
-										]));
+													$elm$svg$Svg$text(waypoint.name)
+												])),
+										A2(
+											$elm$core$List$indexedMap,
+											F2(
+												function (j, line) {
+													return A2(
+														$elm$svg$Svg$text_,
+														_List_fromArray(
+															[
+																$elm$svg$Svg$Attributes$x(svgContentLeftStartString),
+																$elm$svg$Svg$Attributes$y(
+																$elm$core$String$fromInt(10)),
+																$elm$svg$Svg$Attributes$dominantBaseline('middle'),
+																$elm$svg$Svg$Attributes$dy(
+																$elm$core$String$fromFloat(2) + 'em'),
+																$elm$svg$Svg$Attributes$dy(
+																$elm$core$String$fromFloat(
+																	j - (($elm$core$List$length(waypointInfoLines) - 1) / 2)) + 'em'),
+																$elm$svg$Svg$Attributes$textAnchor('end'),
+																$elm$svg$Svg$Attributes$fontSize('smaller')
+															]),
+														_List_fromArray(
+															[
+																$elm$svg$Svg$text(line)
+															]));
+												}),
+											waypointInfoLines)));
 							} else {
 								var dist = item.a;
 								var barTop = '2';
@@ -6989,7 +7017,7 @@ var $author$project$Main$routeBreakdown = function (info) {
 													$elm$svg$Svg$Attributes$y1(barTop),
 													$elm$svg$Svg$Attributes$x2(svgContentLeftStartString),
 													$elm$svg$Svg$Attributes$y2(barBottom),
-													$elm$svg$Svg$Attributes$stroke('black'),
+													$elm$svg$Svg$Attributes$stroke('grey'),
 													$elm$svg$Svg$Attributes$strokeWidth('0.5')
 												]),
 											_List_Nil),
@@ -7003,7 +7031,7 @@ var $author$project$Main$routeBreakdown = function (info) {
 													$elm$svg$Svg$Attributes$x2(
 													$elm$core$String$fromInt(svgContentLeftStart + 2)),
 													$elm$svg$Svg$Attributes$y2(barTop),
-													$elm$svg$Svg$Attributes$stroke('black'),
+													$elm$svg$Svg$Attributes$stroke('grey'),
 													$elm$svg$Svg$Attributes$strokeWidth('0.5')
 												]),
 											_List_Nil),
@@ -7017,7 +7045,7 @@ var $author$project$Main$routeBreakdown = function (info) {
 													$elm$svg$Svg$Attributes$x2(
 													$elm$core$String$fromInt(svgContentLeftStart + 2)),
 													$elm$svg$Svg$Attributes$y2(barBottom),
-													$elm$svg$Svg$Attributes$stroke('black'),
+													$elm$svg$Svg$Attributes$stroke('grey'),
 													$elm$svg$Svg$Attributes$strokeWidth('0.5')
 												]),
 											_List_Nil),
@@ -7027,9 +7055,10 @@ var $author$project$Main$routeBreakdown = function (info) {
 												[
 													$elm$svg$Svg$Attributes$x(
 													$elm$core$String$fromInt(svgContentLeftStart + 10)),
-													$elm$svg$Svg$Attributes$dominantBaseline('middle'),
 													$elm$svg$Svg$Attributes$y(
-													$elm$core$String$fromInt(10))
+													$elm$core$String$fromInt(10)),
+													$elm$svg$Svg$Attributes$dominantBaseline('middle'),
+													$elm$svg$Svg$Attributes$fontSize('smaller')
 												]),
 											_List_fromArray(
 												[
@@ -7063,6 +7092,7 @@ var $elm$core$List$filter = F2(
 			_List_Nil,
 			list);
 	});
+var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$Tuple$second = function (_v0) {
 	var y = _v0.b;
 	return y;
@@ -7100,7 +7130,7 @@ var $author$project$Main$routeInfo = function (model) {
 														return $elm$core$Maybe$Nothing;
 												}
 											}(),
-											el.typ))
+											(el.typ !== '') ? $elm$core$Maybe$Just(el.typ) : $elm$core$Maybe$Nothing))
 									]),
 								A2(
 									$elm$core$Maybe$withDefault,
