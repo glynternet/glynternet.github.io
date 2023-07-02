@@ -194,14 +194,23 @@ view model =
 waypointsAndOptions : Model -> Html Msg
 waypointsAndOptions model =
     Html.div [ Html.Attributes.class "column" ]
-        [ Html.h2 [] [ Html.text "Waypoints" ]
-        , div [] (List.map (\waypoint -> div [] [ Html.text ((++) (formatFloat waypoint.distance ++ " ") waypoint.name) ]) model.waypoints)
-        , Html.br [] []
-        , div []
+        [ div []
             [ Html.h2 [] [ Html.text "Options" ]
             , Html.fieldset []
                 (Html.legend [] [ Html.text "Location types:" ]
-                    :: (model.options.types |> Dict.toList |> List.map (\( typ, included ) -> checkbox included (TypeEnabled typ (not included)) typ))
+                    :: (model.options.types |> Dict.toList
+                            |> List.map
+                                (\( typ, included ) ->
+                                    checkbox included
+                                        (TypeEnabled typ (not included))
+                                        (if typ /= "" then
+                                            typ
+
+                                         else
+                                            "none"
+                                        )
+                                )
+                       )
                 )
             ]
         , div []
@@ -237,6 +246,9 @@ waypointsAndOptions model =
                         (Maybe.Just "hello")
                    ]
             )
+        , Html.br [] []
+        , Html.h2 [] [ Html.text "Waypoints" ]
+        , div [] (List.map (\waypoint -> div [] [ Html.text ((++) (formatFloat waypoint.distance ++ " ") waypoint.name) ]) model.waypoints)
         ]
 
 

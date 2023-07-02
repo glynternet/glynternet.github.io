@@ -7289,32 +7289,6 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 		_List_fromArray(
 			[
 				A2(
-				$elm$html$Html$h2,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text('Waypoints')
-					])),
-				A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				A2(
-					$elm$core$List$map,
-					function (waypoint) {
-						return A2(
-							$elm$html$Html$div,
-							_List_Nil,
-							_List_fromArray(
-								[
-									$elm$html$Html$text(
-									_Utils_ap(
-										$author$project$Main$formatFloat(waypoint.distance) + ' ',
-										waypoint.name))
-								]));
-					},
-					model.waypoints)),
-				A2($elm$html$Html$br, _List_Nil, _List_Nil),
-				A2(
 				$elm$html$Html$div,
 				_List_Nil,
 				_List_fromArray(
@@ -7347,7 +7321,7 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 										$author$project$Main$checkbox,
 										included,
 										A2($author$project$Main$TypeEnabled, typ, !included),
-										typ);
+										(typ !== '') ? typ : 'none');
 								},
 								$elm$core$Dict$toList(model.options.types))))
 					])),
@@ -7401,7 +7375,33 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 								}),
 							_List_Nil,
 							$elm$core$Maybe$Just('hello'))
-						])))
+						]))),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				A2(
+				$elm$html$Html$h2,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Waypoints')
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				A2(
+					$elm$core$List$map,
+					function (waypoint) {
+						return A2(
+							$elm$html$Html$div,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									_Utils_ap(
+										$author$project$Main$formatFloat(waypoint.distance) + ' ',
+										waypoint.name))
+								]));
+					},
+					model.waypoints))
 			]));
 };
 var $author$project$Main$view = function (model) {
