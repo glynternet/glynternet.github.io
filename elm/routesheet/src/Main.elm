@@ -277,7 +277,7 @@ waypointsAndOptions model =
                                                     typ
 
                                                  else
-                                                    "none"
+                                                    "unknown"
                                                 )
                                         )
                                )
@@ -318,7 +318,7 @@ parseTotalDistanceDisplay v =
         "from last" ->
             Maybe.Just FromLast
 
-        "none" ->
+        "hide" ->
             Maybe.Just None
 
         _ ->
@@ -335,7 +335,7 @@ formatTotalDistanceDisplay v =
             "from last"
 
         None ->
-            "none"
+            "hide"
 
 
 routeInfo : Model -> RouteInfo

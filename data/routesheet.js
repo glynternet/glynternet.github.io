@@ -5548,7 +5548,7 @@ var $author$project$Main$parseTotalDistanceDisplay = function (v) {
 			return $elm$core$Maybe$Just($author$project$Main$FromFirst);
 		case 'from last':
 			return $elm$core$Maybe$Just($author$project$Main$FromLast);
-		case 'none':
+		case 'hide':
 			return $elm$core$Maybe$Just($author$project$Main$None);
 		default:
 			return $elm$core$Maybe$Nothing;
@@ -6743,7 +6743,7 @@ var $author$project$Main$formatTotalDistanceDisplay = function (v) {
 		case 'FromLast':
 			return 'from last';
 		default:
-			return 'none';
+			return 'hide';
 	}
 };
 var $author$project$Main$storeState = _Platform_outgoingPort('storeState', $elm$json$Json$Encode$string);
@@ -7531,7 +7531,7 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 												$author$project$Main$checkbox,
 												included,
 												A2($author$project$Main$TypeEnabled, typ, !included),
-												(typ !== '') ? typ : 'none');
+												(typ !== '') ? typ : 'unknown');
 										},
 										$elm$core$Dict$toList(model.options.filteredLocationTypes))))
 							]) : _List_Nil,
