@@ -278,21 +278,19 @@ waypointsAndOptions model =
                   ]
                 , if model.options.locationFilterEnabled then
                     [ Html.fieldset []
-                        (Html.legend [] [ Html.text "Location types:" ]
-                            :: (model.options.filteredLocationTypes
-                                    |> Dict.toList
-                                    |> List.map
-                                        (\( typ, included ) ->
-                                            checkbox included
-                                                (TypeEnabled typ (not included))
-                                                (if typ /= "" then
-                                                    typ
+                        (model.options.filteredLocationTypes
+                            |> Dict.toList
+                            |> List.map
+                                (\( typ, included ) ->
+                                    checkbox included
+                                        (TypeEnabled typ (not included))
+                                        (if typ /= "" then
+                                            typ
 
-                                                 else
-                                                    "unknown"
-                                                )
+                                         else
+                                            "unknown"
                                         )
-                               )
+                                )
                         )
                     ]
 
@@ -300,7 +298,7 @@ waypointsAndOptions model =
                     []
                 , [ Html.hr [] []
                   , div []
-                        [ Html.legend [] [ Html.text "Total distance:" ]
+                        [ Html.legend [] [ Html.text "Total distance" ]
                         , Dropdown.dropdown
                             (Dropdown.Options
                                 [ Dropdown.Item (formatTotalDistanceDisplay FromFirst) (formatTotalDistanceDisplay FromFirst) True
@@ -318,7 +316,7 @@ waypointsAndOptions model =
                         ]
                   , Html.hr [] []
                   , div []
-                        [ Html.legend [] [ Html.text "Spacing:" ]
+                        [ Html.legend [] [ Html.text "Spacing" ]
                         , Input.Number.input
                             { onInput = Maybe.map UpdateItemSpacing >> Maybe.withDefault Never
                             , maxLength = Nothing

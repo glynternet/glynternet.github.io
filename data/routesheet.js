@@ -7845,26 +7845,17 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 								$elm$html$Html$fieldset,
 								_List_Nil,
 								A2(
-									$elm$core$List$cons,
-									A2(
-										$elm$html$Html$legend,
-										_List_Nil,
-										_List_fromArray(
-											[
-												$elm$html$Html$text('Location types:')
-											])),
-									A2(
-										$elm$core$List$map,
-										function (_v1) {
-											var typ = _v1.a;
-											var included = _v1.b;
-											return A3(
-												$author$project$Main$checkbox,
-												included,
-												A2($author$project$Main$TypeEnabled, typ, !included),
-												(typ !== '') ? typ : 'unknown');
-										},
-										$elm$core$Dict$toList(model.options.filteredLocationTypes))))
+									$elm$core$List$map,
+									function (_v1) {
+										var typ = _v1.a;
+										var included = _v1.b;
+										return A3(
+											$author$project$Main$checkbox,
+											included,
+											A2($author$project$Main$TypeEnabled, typ, !included),
+											(typ !== '') ? typ : 'unknown');
+									},
+									$elm$core$Dict$toList(model.options.filteredLocationTypes)))
 							]) : _List_Nil,
 							_List_fromArray(
 							[
@@ -7879,7 +7870,7 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 										_List_Nil,
 										_List_fromArray(
 											[
-												$elm$html$Html$text('Total distance:')
+												$elm$html$Html$text('Total distance')
 											])),
 										A3(
 										$abadi199$elm_input_extra$Dropdown$dropdown,
@@ -7926,7 +7917,7 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 										_List_Nil,
 										_List_fromArray(
 											[
-												$elm$html$Html$text('Spacing:')
+												$elm$html$Html$text('Spacing')
 											])),
 										A3(
 										$abadi199$elm_input_extra$Input$Number$input,
