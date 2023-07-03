@@ -7,7 +7,7 @@ import Dict
 import Dropdown
 import File
 import File.Select
-import Html exposing (Attribute, Html, div)
+import Html exposing (Attribute, Html)
 import Html.Attributes
 import Html.Events
 import Input.Number
@@ -225,22 +225,17 @@ initialModel waypoints =
 view : Model -> Browser.Document Msg
 view model =
     Browser.Document "Route sheet"
-        [ div []
-            [ Html.button
-                [ Html.Events.onClick OpenFileBrowser ]
-                [ Html.text "upload csv" ]
-            ]
-        , Html.div [ Html.Attributes.class "row" ]
-            [ waypointsAndOptions model
+        [ Html.div [ Html.Attributes.class "row" ]
+            [ viewOptions model.options
             , routeBreakdown (routeInfo model) model.options.itemSpacing
             ]
         ]
 
 
-waypointsAndOptions : Model -> Html Msg
-waypointsAndOptions model =
+viewOptions : Options -> Html Msg
+viewOptions options =
     Html.div [ Html.Attributes.class "column", Html.Attributes.class "narrow" ]
-        [ div [] <|
+        [ Html.div [ Html.Attributes.class "options" ] <|
             List.concat
                 [ [ Html.h2 [] [ Html.text "Options" ]
                   , Html.hr [] []
@@ -269,16 +264,16 @@ waypointsAndOptions model =
                         )
                         []
                         (Maybe.Just <|
-                            if model.options.locationFilterEnabled then
+                            if options.locationFilterEnabled then
                                 "filtered"
 
                             else
                                 "all"
                         )
                   ]
-                , if model.options.locationFilterEnabled then
+                , if options.locationFilterEnabled then
                     [ Html.fieldset []
-                        (model.options.filteredLocationTypes
+                        (options.filteredLocationTypes
                             |> Dict.toList
                             |> List.map
                                 (\( typ, included ) ->
@@ -297,7 +292,7 @@ waypointsAndOptions model =
                   else
                     []
                 , [ Html.hr [] []
-                  , div []
+                  , Html.div []
                         [ Html.legend [] [ Html.text "Total distance" ]
                         , Dropdown.dropdown
                             (Dropdown.Options
@@ -312,10 +307,10 @@ waypointsAndOptions model =
                                 )
                             )
                             []
-                            (Maybe.Just <| formatTotalDistanceDisplay model.options.totalDistanceDisplay)
+                            (Maybe.Just <| formatTotalDistanceDisplay options.totalDistanceDisplay)
                         ]
                   , Html.hr [] []
-                  , div []
+                  , Html.div []
                         [ Html.legend [] [ Html.text "Spacing" ]
                         , Input.Number.input
                             { onInput = Maybe.map UpdateItemSpacing >> Maybe.withDefault Never
@@ -325,8 +320,12 @@ waypointsAndOptions model =
                             , hasFocus = Maybe.Nothing
                             }
                             []
-                            (Maybe.Just model.options.itemSpacing)
+                            (Maybe.Just options.itemSpacing)
                         ]
+                  , Html.hr [] []
+                  , Html.button
+                        [ Html.Events.onClick OpenFileBrowser ]
+                        [ Html.text "upload waypoints" ]
                   ]
                 ]
         ]

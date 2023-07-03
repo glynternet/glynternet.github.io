@@ -51,6 +51,14 @@ fieldset {
   padding: 10px;
 }
 
+fieldset div {
+    margin: 0.2em;
+}
+
+.options {
+    padding: 0.2em;
+}
+
 // When printing:
 // * hide anything that doesn't have an svg in it
 // * display any svg or descendent of svg

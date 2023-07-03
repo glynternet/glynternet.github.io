@@ -6900,8 +6900,6 @@ var $elm$browser$Browser$Document = F2(
 	function (title, body) {
 		return {body: body, title: title};
 	});
-var $author$project$Main$OpenFileBrowser = {$: 'OpenFileBrowser'};
-var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -6911,23 +6909,6 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
 var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
 var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
 var $elm$svg$Svg$Attributes$dy = _VirtualDom_attribute('dy');
@@ -7309,6 +7290,7 @@ var $abadi199$elm_input_extra$Dropdown$Item = F3(
 	function (value, text, enabled) {
 		return {enabled: enabled, text: text, value: value};
 	});
+var $author$project$Main$OpenFileBrowser = {$: 'OpenFileBrowser'};
 var $abadi199$elm_input_extra$Dropdown$Options = F3(
 	function (items, emptyItem, onChange) {
 		return {emptyItem: emptyItem, items: items, onChange: onChange};
@@ -7326,6 +7308,7 @@ var $author$project$Main$UpdateTotalDistanceDisplay = function (a) {
 var $author$project$Main$UpdateWaypointSelection = function (a) {
 	return {$: 'UpdateWaypointSelection', a: a};
 };
+var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$Attributes$boolProperty = F2(
 	function (key, bool) {
 		return A2(
@@ -7336,6 +7319,23 @@ var $elm$html$Html$Attributes$boolProperty = F2(
 var $elm$html$Html$Attributes$checked = $elm$html$Html$Attributes$boolProperty('checked');
 var $elm$html$Html$input = _VirtualDom_node('input');
 var $elm$html$Html$label = _VirtualDom_node('label');
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $author$project$Main$checkbox = F3(
 	function (b, msg, name) {
@@ -7774,7 +7774,7 @@ var $abadi199$elm_input_extra$Input$Number$input = F3(
 			_List_Nil);
 	});
 var $elm$html$Html$legend = _VirtualDom_node('legend');
-var $author$project$Main$waypointsAndOptions = function (model) {
+var $author$project$Main$viewOptions = function (options) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -7786,7 +7786,10 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 			[
 				A2(
 				$elm$html$Html$div,
-				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('options')
+					]),
 				$elm$core$List$concat(
 					_List_fromArray(
 						[
@@ -7836,9 +7839,9 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 											$author$project$Main$UpdateWaypointSelection))),
 								_List_Nil,
 								$elm$core$Maybe$Just(
-									model.options.locationFilterEnabled ? 'filtered' : 'all'))
+									options.locationFilterEnabled ? 'filtered' : 'all'))
 							]),
-							model.options.locationFilterEnabled ? _List_fromArray(
+							options.locationFilterEnabled ? _List_fromArray(
 							[
 								A2(
 								$elm$html$Html$fieldset,
@@ -7854,7 +7857,7 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 											A2($author$project$Main$TypeEnabled, typ, !included),
 											(typ !== '') ? typ : 'unknown');
 									},
-									$elm$core$Dict$toList(model.options.filteredLocationTypes)))
+									$elm$core$Dict$toList(options.filteredLocationTypes)))
 							]) : _List_Nil,
 							_List_fromArray(
 							[
@@ -7903,7 +7906,7 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 													$author$project$Main$UpdateTotalDistanceDisplay))),
 										_List_Nil,
 										$elm$core$Maybe$Just(
-											$author$project$Main$formatTotalDistanceDisplay(model.options.totalDistanceDisplay)))
+											$author$project$Main$formatTotalDistanceDisplay(options.totalDistanceDisplay)))
 									])),
 								A2($elm$html$Html$hr, _List_Nil, _List_Nil),
 								A2(
@@ -7931,7 +7934,18 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 												$elm$core$Maybe$withDefault($author$project$Main$Never))
 										},
 										_List_Nil,
-										$elm$core$Maybe$Just(model.options.itemSpacing))
+										$elm$core$Maybe$Just(options.itemSpacing))
+									])),
+								A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Events$onClick($author$project$Main$OpenFileBrowser)
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('upload waypoints')
 									]))
 							])
 						])))
@@ -7945,29 +7959,13 @@ var $author$project$Main$view = function (model) {
 			[
 				A2(
 				$elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick($author$project$Main$OpenFileBrowser)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('upload csv')
-							]))
-					])),
-				A2(
-				$elm$html$Html$div,
 				_List_fromArray(
 					[
 						$elm$html$Html$Attributes$class('row')
 					]),
 				_List_fromArray(
 					[
-						$author$project$Main$waypointsAndOptions(model),
+						$author$project$Main$viewOptions(model.options),
 						A2(
 						$author$project$Main$routeBreakdown,
 						$author$project$Main$routeInfo(model),
