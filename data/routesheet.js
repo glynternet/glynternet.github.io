@@ -7941,7 +7941,8 @@ var $author$project$Main$viewOptions = function (options) {
 								$elm$html$Html$button,
 								_List_fromArray(
 									[
-										$elm$html$Html$Events$onClick($author$project$Main$OpenFileBrowser)
+										$elm$html$Html$Events$onClick($author$project$Main$OpenFileBrowser),
+										$elm$html$Html$Attributes$class('button-4')
 									]),
 								_List_fromArray(
 									[

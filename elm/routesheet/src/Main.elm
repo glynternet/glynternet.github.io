@@ -324,7 +324,7 @@ viewOptions options =
                         ]
                   , Html.hr [] []
                   , Html.button
-                        [ Html.Events.onClick OpenFileBrowser ]
+                        [ Html.Events.onClick OpenFileBrowser, Html.Attributes.class "button-4" ]
                         [ Html.text "upload waypoints" ]
                   ]
                 ]
