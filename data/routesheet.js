@@ -5376,6 +5376,7 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$application = _Browser_application;
+var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $author$project$Main$FromFirst = {$: 'FromFirst'};
@@ -5384,10 +5385,9 @@ var $author$project$Main$Model = F2(
 		return {options: options, waypoints: waypoints};
 	});
 var $author$project$Main$Options = F3(
-	function (locationFilterEnabled, types, totalDistanceDisplay) {
-		return {locationFilterEnabled: locationFilterEnabled, totalDistanceDisplay: totalDistanceDisplay, types: types};
+	function (locationFilterEnabled, filteredLocationTypes, totalDistanceDisplay) {
+		return {filteredLocationTypes: filteredLocationTypes, locationFilterEnabled: locationFilterEnabled, totalDistanceDisplay: totalDistanceDisplay};
 	});
-var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
@@ -5519,7 +5519,7 @@ var $elm$json$Json$Decode$dict = function (decoder) {
 		$elm$core$Dict$fromList,
 		$elm$json$Json$Decode$keyValuePairs(decoder));
 };
-var $author$project$Main$initialTypes = function (waypoints) {
+var $author$project$Main$initialFilteredLocations = function (waypoints) {
 	return $elm$core$Dict$fromList(
 		A2(
 			$elm$core$List$map,
@@ -5589,14 +5589,14 @@ var $author$project$Main$init = F3(
 							state.waypoints,
 							A3(
 								$author$project$Main$Options,
-								false,
+								state.locationFilterEnabled,
 								A2(
 									$elm$core$Result$withDefault,
-									$author$project$Main$initialTypes(state.waypoints),
+									$author$project$Main$initialFilteredLocations(state.waypoints),
 									A2(
 										$elm$json$Json$Decode$decodeValue,
 										$elm$json$Json$Decode$dict($elm$json$Json$Decode$bool),
-										state.types)),
+										state.filteredLocationTypes)),
 								A2(
 									$elm$core$Maybe$withDefault,
 									$author$project$Main$FromFirst,
@@ -6588,7 +6588,7 @@ var $author$project$Main$initialOptions = function (waypoints) {
 	return A3(
 		$author$project$Main$Options,
 		false,
-		$author$project$Main$initialTypes(waypoints),
+		$author$project$Main$initialFilteredLocations(waypoints),
 		$author$project$Main$FromFirst);
 };
 var $elm$core$List$sortBy = _List_sortBy;
@@ -6763,8 +6763,11 @@ var $author$project$Main$storeModel = function (model) {
 						$elm$json$Json$Encode$string(
 							$author$project$Main$formatTotalDistanceDisplay(model.options.totalDistanceDisplay))),
 						_Utils_Tuple2(
-						'types',
-						A3($elm$json$Json$Encode$dict, $elm$core$Basics$identity, $elm$json$Json$Encode$bool, model.options.types))
+						'locationFilterEnabled',
+						$elm$json$Json$Encode$bool(model.options.locationFilterEnabled)),
+						_Utils_Tuple2(
+						'filteredLocationTypes',
+						A3($elm$json$Json$Encode$dict, $elm$core$Basics$identity, $elm$json$Json$Encode$bool, model.options.filteredLocationTypes))
 					]))));
 };
 var $author$project$Main$updateModel = function (model) {
@@ -6785,7 +6788,7 @@ var $author$project$Main$update = F2(
 						options: _Utils_update(
 							options,
 							{
-								types: A3($elm$core$Dict$insert, typ, enabled, model.options.types)
+								filteredLocationTypes: A3($elm$core$Dict$insert, typ, enabled, model.options.filteredLocationTypes)
 							})
 					});
 				return $author$project$Main$updateModel(newModel);
@@ -7023,10 +7026,11 @@ var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
 var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
 var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
 var $author$project$Main$routeBreakdown = function (info) {
-	var svgHeight = $elm$core$String$fromInt(
-		20 * $elm$core$List$length(info));
 	var svgContentLeftStart = 0;
 	var svgContentLeftStartString = $elm$core$String$fromInt(svgContentLeftStart);
+	var itemSpacing = 20;
+	var svgHeight = $elm$core$String$fromInt(
+		itemSpacing * $elm$core$List$length(info));
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -7060,7 +7064,7 @@ var $author$project$Main$routeBreakdown = function (info) {
 					F2(
 						function (i, item) {
 							var translate = $elm$svg$Svg$Attributes$transform(
-								'translate(0,' + ($elm$core$String$fromInt(i * 20) + ')'));
+								'translate(0,' + ($elm$core$String$fromInt(i * itemSpacing) + ')'));
 							if (item.$ === 'InfoWaypoint') {
 								var waypoint = item.a;
 								var waypointInfo = A2(
@@ -7278,7 +7282,7 @@ var $author$project$Main$routeInfo = function (model) {
 					return A2(
 						$elm$core$Maybe$withDefault,
 						true,
-						A2($elm$core$Dict$get, w.typ, model.options.types));
+						A2($elm$core$Dict$get, w.typ, model.options.filteredLocationTypes));
 				},
 				model.waypoints) : model.waypoints).b);
 };
@@ -7500,7 +7504,7 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 											$author$project$Main$UpdateWaypointSelection))),
 								_List_Nil,
 								$elm$core$Maybe$Just(
-									$author$project$Main$formatTotalDistanceDisplay(model.options.totalDistanceDisplay)))
+									model.options.locationFilterEnabled ? 'filtered' : 'all'))
 							]),
 							model.options.locationFilterEnabled ? _List_fromArray(
 							[
@@ -7527,7 +7531,7 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 												A2($author$project$Main$TypeEnabled, typ, !included),
 												(typ !== '') ? typ : 'none');
 										},
-										$elm$core$Dict$toList(model.options.types))))
+										$elm$core$Dict$toList(model.options.filteredLocationTypes))))
 							]) : _List_Nil,
 							_List_fromArray(
 							[
@@ -7645,16 +7649,21 @@ _Platform_export({'Main':{'init':$author$project$Main$main(
 					function (waypoints) {
 						return A2(
 							$elm$json$Json$Decode$andThen,
-							function (types) {
+							function (totalDistanceDisplay) {
 								return A2(
 									$elm$json$Json$Decode$andThen,
-									function (totalDistanceDisplay) {
-										return $elm$json$Json$Decode$succeed(
-											{totalDistanceDisplay: totalDistanceDisplay, types: types, waypoints: waypoints});
+									function (locationFilterEnabled) {
+										return A2(
+											$elm$json$Json$Decode$andThen,
+											function (filteredLocationTypes) {
+												return $elm$json$Json$Decode$succeed(
+													{filteredLocationTypes: filteredLocationTypes, locationFilterEnabled: locationFilterEnabled, totalDistanceDisplay: totalDistanceDisplay, waypoints: waypoints});
+											},
+											A2($elm$json$Json$Decode$field, 'filteredLocationTypes', $elm$json$Json$Decode$value));
 									},
-									A2($elm$json$Json$Decode$field, 'totalDistanceDisplay', $elm$json$Json$Decode$string));
+									A2($elm$json$Json$Decode$field, 'locationFilterEnabled', $elm$json$Json$Decode$bool));
 							},
-							A2($elm$json$Json$Decode$field, 'types', $elm$json$Json$Decode$value));
+							A2($elm$json$Json$Decode$field, 'totalDistanceDisplay', $elm$json$Json$Decode$string));
 					},
 					A2(
 						$elm$json$Json$Decode$field,

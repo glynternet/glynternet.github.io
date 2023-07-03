@@ -41,7 +41,8 @@ main =
 type alias StoredState =
     { waypoints : List Waypoint
     , totalDistanceDisplay : String
-    , types : Json.Decode.Value
+    , locationFilterEnabled : Bool
+    , filteredLocationTypes : Json.Decode.Value
     }
 
 
@@ -53,7 +54,7 @@ type alias Model =
 
 type alias Options =
     { locationFilterEnabled : Bool
-    , types : Dict.Dict String Bool
+    , filteredLocationTypes : Dict.Dict String Bool
     , totalDistanceDisplay : TotalDistanceDisplay
     }
 
@@ -94,10 +95,10 @@ init maybeState _ _ =
             (\state ->
                 Model state.waypoints <|
                     Options
-                        False
-                        (Json.Decode.decodeValue (Json.Decode.dict Json.Decode.bool) state.types
+                        state.locationFilterEnabled
+                        (Json.Decode.decodeValue (Json.Decode.dict Json.Decode.bool) state.filteredLocationTypes
                             --TODO: handle error
-                            |> Result.withDefault (initialTypes state.waypoints)
+                            |> Result.withDefault (initialFilteredLocations state.waypoints)
                         )
                         (parseTotalDistanceDisplay state.totalDistanceDisplay |> Maybe.withDefault FromFirst)
             )
@@ -118,11 +119,11 @@ type Msg
 
 initialOptions : List Waypoint -> Options
 initialOptions waypoints =
-    Options False (initialTypes waypoints) FromFirst
+    Options False (initialFilteredLocations waypoints) FromFirst
 
 
-initialTypes : List Waypoint -> Dict.Dict String Bool
-initialTypes waypoints =
+initialFilteredLocations : List Waypoint -> Dict.Dict String Bool
+initialFilteredLocations waypoints =
     List.map (\el -> ( el.typ, True )) waypoints |> Dict.fromList
 
 
@@ -135,7 +136,7 @@ update msg model =
                     model.options
 
                 newModel =
-                    { model | options = { options | types = Dict.insert typ enabled model.options.types } }
+                    { model | options = { options | filteredLocationTypes = Dict.insert typ enabled model.options.filteredLocationTypes } }
             in
             updateModel newModel
 
@@ -254,12 +255,18 @@ waypointsAndOptions model =
                             )
                         )
                         []
-                        (Maybe.Just <| formatTotalDistanceDisplay model.options.totalDistanceDisplay)
+                        (Maybe.Just <|
+                            if model.options.locationFilterEnabled then
+                                "filtered"
+
+                            else
+                                "all"
+                        )
                   ]
                 , if model.options.locationFilterEnabled then
                     [ Html.fieldset []
                         (Html.legend [] [ Html.text "Location types:" ]
-                            :: (model.options.types
+                            :: (model.options.filteredLocationTypes
                                     |> Dict.toList
                                     |> List.map
                                         (\( typ, included ) ->
@@ -363,7 +370,7 @@ routeInfo model =
         )
         ( Maybe.Nothing, [] )
         (if model.options.locationFilterEnabled then
-            List.filter (\w -> Dict.get w.typ model.options.types |> Maybe.withDefault True) model.waypoints
+            List.filter (\w -> Dict.get w.typ model.options.filteredLocationTypes |> Maybe.withDefault True) model.waypoints
 
          else
             model.waypoints
@@ -375,8 +382,11 @@ routeInfo model =
 routeBreakdown : RouteInfo -> Html Msg
 routeBreakdown info =
     let
+        itemSpacing =
+            20
+
         svgHeight =
-            String.fromInt <| (*) 20 (List.length info)
+            String.fromInt <| (*) itemSpacing (List.length info)
 
         svgContentLeftStart =
             0
@@ -397,7 +407,7 @@ routeBreakdown info =
                     (\i item ->
                         let
                             translate =
-                                Svg.Attributes.transform <| "translate(0," ++ (String.fromInt <| i * 20) ++ ")"
+                                Svg.Attributes.transform <| "translate(0," ++ (String.fromInt <| i * itemSpacing) ++ ")"
                         in
                         case item of
                             InfoWaypoint waypoint ->
@@ -521,7 +531,8 @@ storeModel model =
     Json.Encode.object
         [ ( "waypoints", encodeWaypoints model.waypoints )
         , ( "totalDistanceDisplay", Json.Encode.string <| formatTotalDistanceDisplay model.options.totalDistanceDisplay )
-        , ( "types", Json.Encode.dict identity Json.Encode.bool model.options.types )
+        , ( "locationFilterEnabled", Json.Encode.bool model.options.locationFilterEnabled )
+        , ( "filteredLocationTypes", Json.Encode.dict identity Json.Encode.bool model.options.filteredLocationTypes )
         ]
         |> Json.Encode.encode 2
         |> storeState
