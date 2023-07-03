@@ -211,7 +211,7 @@ view model =
 
 waypointsAndOptions : Model -> Html Msg
 waypointsAndOptions model =
-    Html.div [ Html.Attributes.class "column" ]
+    Html.div [ Html.Attributes.class "column", Html.Attributes.class "narrow" ]
         [ div []
             [ Html.h2 [] [ Html.text "Options" ]
             , Html.fieldset []
@@ -330,18 +330,18 @@ routeBreakdown info =
             String.fromInt <| (*) 20 (List.length info)
 
         svgContentLeftStart =
-            10
+            0
 
         svgContentLeftStartString =
             String.fromInt svgContentLeftStart
     in
-    Html.div [ Html.Attributes.class "column" ]
-        [ Html.h2 [] [ Html.text "Route breakdown" ]
+    Html.div [ Html.Attributes.class "column", Html.Attributes.class "wide" ]
+        [ Html.h2 [ Html.Attributes.style "text-align" "center" ] [ Html.text "Route breakdown" ]
         , Svg.svg
             [ Svg.Attributes.class "route_breakdown"
             , Svg.Attributes.width "100%"
             , Svg.Attributes.height svgHeight
-            , Svg.Attributes.viewBox <| "0 0 240 " ++ svgHeight
+            , Svg.Attributes.viewBox <| "-120 0 240 " ++ svgHeight
             ]
             (info
                 |> List.indexedMap

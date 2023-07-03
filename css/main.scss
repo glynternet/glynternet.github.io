@@ -36,8 +36,12 @@
   display: flex;
 }
 
-.column {
-  flex: 50%;
+.column.narrow {
+  flex: 25%;
+}
+
+.column.wide {
+  flex: 75%;
 }
 
 .route_breakdown {

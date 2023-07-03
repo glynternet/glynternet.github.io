@@ -6984,6 +6984,8 @@ var $elm$core$List$isEmpty = function (xs) {
 var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
 var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
@@ -7002,19 +7004,23 @@ var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
 var $author$project$Main$routeBreakdown = function (info) {
 	var svgHeight = $elm$core$String$fromInt(
 		20 * $elm$core$List$length(info));
-	var svgContentLeftStart = 10;
+	var svgContentLeftStart = 0;
 	var svgContentLeftStartString = $elm$core$String$fromInt(svgContentLeftStart);
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$class('column')
+				$elm$html$Html$Attributes$class('column'),
+				$elm$html$Html$Attributes$class('wide')
 			]),
 		_List_fromArray(
 			[
 				A2(
 				$elm$html$Html$h2,
-				_List_Nil,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'text-align', 'center')
+					]),
 				_List_fromArray(
 					[
 						$elm$html$Html$text('Route breakdown')
@@ -7026,7 +7032,7 @@ var $author$project$Main$routeBreakdown = function (info) {
 						$elm$svg$Svg$Attributes$class('route_breakdown'),
 						$elm$svg$Svg$Attributes$width('100%'),
 						$elm$svg$Svg$Attributes$height(svgHeight),
-						$elm$svg$Svg$Attributes$viewBox('0 0 240 ' + svgHeight)
+						$elm$svg$Svg$Attributes$viewBox('-120 0 240 ' + svgHeight)
 					]),
 				A2(
 					$elm$core$List$indexedMap,
@@ -7404,7 +7410,8 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$class('column')
+				$elm$html$Html$Attributes$class('column'),
+				$elm$html$Html$Attributes$class('narrow')
 			]),
 		_List_fromArray(
 			[
