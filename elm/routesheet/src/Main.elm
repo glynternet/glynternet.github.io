@@ -102,7 +102,7 @@ init maybeState _ _ =
                         state.itemSpacing
                     )
             )
-        |> Maybe.withDefault (Model Maybe.Nothing (WaypointsOptions False Dict.empty) (RouteViewOptions FromZero 20))
+        |> Maybe.withDefault (Model Maybe.Nothing (WaypointsOptions False Dict.empty) (RouteViewOptions FromZero defaultSpacing))
     , Cmd.none
     )
 
@@ -224,6 +224,17 @@ initialModel routeViewOptions waypoints =
 
 view : Model -> Browser.Document Msg
 view model =
+    let
+        exampleWaypoints =
+            [ Waypoint "Start" 0.0 ""
+            , Waypoint "Lungburner Pass" 56.3 "CLIMB"
+            , Waypoint "Blue shoes" 56.1 "CAFE"
+            , Waypoint "Steep Street" 60.7 "CLIMB"
+            , Waypoint "Foosville fountain" 98.3 "WATER"
+            , Waypoint "Foosville fountain" 148.8 "RESUPPLY"
+            , Waypoint "Cosy hedge" 198.2 "SLEEP"
+            ]
+    in
     Browser.Document "Route sheet"
         [ model.waypoints
             |> Maybe.map
@@ -234,7 +245,10 @@ view model =
                         , Html.Attributes.class "page"
                         ]
                         [ viewOptions model.waypointOptions model.routeViewOptions
-                        , routeBreakdown (routeWaypoints w model.waypointOptions) model.routeViewOptions
+                        , Html.div [ Html.Attributes.class "column", Html.Attributes.class "wide" ]
+                            [ Html.h2 [ Html.Attributes.style "text-align" "center" ] [ Html.text "Route breakdown" ]
+                            , routeBreakdown (routeWaypoints w model.waypointOptions) model.routeViewOptions
+                            ]
                         ]
                 )
             |> Maybe.withDefault
@@ -243,7 +257,20 @@ view model =
                     , Html.Attributes.class "flex-center"
                     , Html.Attributes.class "column"
                     ]
-                    [ Html.p [] [ Html.text "hello and welcome" ], viewUploadButton ]
+                    [ Html.p [] [ Html.text "hello and welcome" ]
+                    , Html.p [] [ Html.text "If you know what you're doing, click the upload button below." ]
+                    , viewUploadButton
+                    , Html.p [] [ Html.text "Examples:" ]
+                    , Html.div
+                        [ Html.Attributes.class "flex-container"
+                        , Html.Attributes.class "flex-center"
+                        , Html.Attributes.class "row"
+                        ]
+                        [ routeBreakdown exampleWaypoints (RouteViewOptions FromZero defaultSpacing)
+                        , routeBreakdown exampleWaypoints (RouteViewOptions FromLast defaultSpacing)
+                        , routeBreakdown exampleWaypoints (RouteViewOptions None defaultSpacing)
+                        ]
+                    ]
                 )
         ]
 
@@ -414,129 +441,126 @@ routeBreakdown waypoints routeViewOptions =
         lastWaypointDistance =
             List.head (List.reverse waypoints) |> Maybe.map .distance
     in
-    Html.div [ Html.Attributes.class "column", Html.Attributes.class "wide" ]
-        [ Html.h2 [ Html.Attributes.style "text-align" "center" ] [ Html.text "Route breakdown" ]
-        , Html.div
-            [ Svg.Attributes.class "route_breakdown" ]
-            [ Svg.svg
-                [ Svg.Attributes.width "100%"
-                , Svg.Attributes.height <| String.fromInt svgHeight
-                , Svg.Attributes.viewBox <| "-120 -10 240 " ++ String.fromInt (svgHeight + 20)
-                ]
-                (info
-                    |> List.indexedMap
-                        (\i item ->
-                            let
-                                translate =
-                                    Svg.Attributes.transform <| "translate(0," ++ (String.fromInt <| i * routeViewOptions.itemSpacing) ++ ")"
-                            in
-                            case item of
-                                InfoWaypoint waypoint ->
-                                    let
-                                        waypointDistance =
-                                            case routeViewOptions.totalDistanceDisplay of
-                                                None ->
-                                                    Maybe.Nothing
-
-                                                FromZero ->
-                                                    Maybe.Just (formatFloat waypoint.distance ++ "km")
-
-                                                FromLast ->
-                                                    lastWaypointDistance |> Maybe.map (\last -> formatFloat (last - waypoint.distance) ++ "km")
-
-                                        waypointInfo =
-                                            List.filterMap identity
-                                                [ waypointDistance
-                                                , if waypoint.typ /= "" then
-                                                    Maybe.Just waypoint.typ
-
-                                                  else
-                                                    Maybe.Nothing
-                                                ]
-
-                                        waypointInfoLines =
-                                            if List.isEmpty waypointInfo then
-                                                [ "◉" ]
-
-                                            else
-                                                waypointInfo
-                                    in
-                                    Svg.g [ translate ]
-                                        (Svg.text_
-                                            [ Svg.Attributes.x (String.fromInt <| svgContentLeftStart + 10)
-                                            , Svg.Attributes.dominantBaseline "middle"
-                                            , Svg.Attributes.y <| String.fromInt (routeViewOptions.itemSpacing // 2)
-                                            ]
-                                            [ Svg.text waypoint.name ]
-                                            :: (waypointInfoLines
-                                                    |> List.indexedMap
-                                                        (\j line ->
-                                                            Svg.text_
-                                                                [ Svg.Attributes.x svgContentLeftStartString
-                                                                , Svg.Attributes.y <| String.fromInt (routeViewOptions.itemSpacing // 2)
-                                                                , Svg.Attributes.dominantBaseline "middle"
-                                                                , Svg.Attributes.dy (String.fromFloat (toFloat j - (toFloat <| List.length waypointInfoLines - 1) / 2) ++ "em")
-                                                                , Svg.Attributes.textAnchor "end"
-                                                                , Svg.Attributes.fontSize "smaller"
-                                                                ]
-                                                                [ Svg.text line ]
-                                                        )
-                                               )
-                                        )
-
-                                Ride dist ->
-                                    let
-                                        arrowTop =
-                                            "2"
-
-                                        arrowBottom =
-                                            String.fromInt <| routeViewOptions.itemSpacing - 2
-
-                                        arrowHeadTop =
-                                            String.fromInt <| routeViewOptions.itemSpacing - 6
-
-                                        strokeWidth =
-                                            "1"
-                                    in
-                                    Svg.g [ translate ]
-                                        [ Svg.line
-                                            [ Svg.Attributes.x1 svgContentLeftStartString
-                                            , Svg.Attributes.y1 arrowTop
-                                            , Svg.Attributes.x2 svgContentLeftStartString
-                                            , Svg.Attributes.y2 arrowBottom
-                                            , Svg.Attributes.stroke "grey"
-                                            , Svg.Attributes.strokeWidth strokeWidth
-                                            ]
-                                            []
-                                        , Svg.line
-                                            [ Svg.Attributes.x1 <| String.fromInt <| svgContentLeftStart - 2
-                                            , Svg.Attributes.y1 <| arrowHeadTop
-                                            , Svg.Attributes.x2 <| String.fromInt <| svgContentLeftStart
-                                            , Svg.Attributes.y2 arrowBottom
-                                            , Svg.Attributes.stroke "grey"
-                                            , Svg.Attributes.strokeWidth strokeWidth
-                                            ]
-                                            []
-                                        , Svg.line
-                                            [ Svg.Attributes.x1 <| String.fromInt <| svgContentLeftStart + 2
-                                            , Svg.Attributes.y1 <| arrowHeadTop
-                                            , Svg.Attributes.x2 <| String.fromInt <| svgContentLeftStart
-                                            , Svg.Attributes.y2 arrowBottom
-                                            , Svg.Attributes.stroke "grey"
-                                            , Svg.Attributes.strokeWidth strokeWidth
-                                            ]
-                                            []
-                                        , Svg.text_
-                                            [ Svg.Attributes.x (String.fromInt <| svgContentLeftStart + 10)
-                                            , Svg.Attributes.y <| String.fromInt (routeViewOptions.itemSpacing // 2)
-                                            , Svg.Attributes.dominantBaseline "middle"
-                                            , Svg.Attributes.fontSize "smaller"
-                                            ]
-                                            [ Svg.text <| formatFloat dist ++ "km" ]
-                                        ]
-                        )
-                )
+    Html.div
+        [ Svg.Attributes.class "route_breakdown" ]
+        [ Svg.svg
+            [ Svg.Attributes.width "100%"
+            , Svg.Attributes.height <| String.fromInt svgHeight
+            , Svg.Attributes.viewBox <| "-120 -10 240 " ++ String.fromInt (svgHeight + routeViewOptions.itemSpacing)
             ]
+            (info
+                |> List.indexedMap
+                    (\i item ->
+                        let
+                            translate =
+                                Svg.Attributes.transform <| "translate(0," ++ (String.fromInt <| i * routeViewOptions.itemSpacing) ++ ")"
+                        in
+                        case item of
+                            InfoWaypoint waypoint ->
+                                let
+                                    waypointDistance =
+                                        case routeViewOptions.totalDistanceDisplay of
+                                            None ->
+                                                Maybe.Nothing
+
+                                            FromZero ->
+                                                Maybe.Just (formatFloat waypoint.distance ++ "km")
+
+                                            FromLast ->
+                                                lastWaypointDistance |> Maybe.map (\last -> formatFloat (last - waypoint.distance) ++ "km")
+
+                                    waypointInfo =
+                                        List.filterMap identity
+                                            [ waypointDistance
+                                            , if waypoint.typ /= "" then
+                                                Maybe.Just waypoint.typ
+
+                                              else
+                                                Maybe.Nothing
+                                            ]
+
+                                    waypointInfoLines =
+                                        if List.isEmpty waypointInfo then
+                                            [ "◉" ]
+
+                                        else
+                                            waypointInfo
+                                in
+                                Svg.g [ translate ]
+                                    (Svg.text_
+                                        [ Svg.Attributes.x (String.fromInt <| svgContentLeftStart + 10)
+                                        , Svg.Attributes.dominantBaseline "middle"
+                                        , Svg.Attributes.y <| String.fromInt (routeViewOptions.itemSpacing // 2)
+                                        ]
+                                        [ Svg.text waypoint.name ]
+                                        :: (waypointInfoLines
+                                                |> List.indexedMap
+                                                    (\j line ->
+                                                        Svg.text_
+                                                            [ Svg.Attributes.x svgContentLeftStartString
+                                                            , Svg.Attributes.y <| String.fromInt (routeViewOptions.itemSpacing // 2)
+                                                            , Svg.Attributes.dominantBaseline "middle"
+                                                            , Svg.Attributes.dy (String.fromFloat (toFloat j - (toFloat <| List.length waypointInfoLines - 1) / 2) ++ "em")
+                                                            , Svg.Attributes.textAnchor "end"
+                                                            , Svg.Attributes.fontSize "smaller"
+                                                            ]
+                                                            [ Svg.text line ]
+                                                    )
+                                           )
+                                    )
+
+                            Ride dist ->
+                                let
+                                    arrowTop =
+                                        "2"
+
+                                    arrowBottom =
+                                        String.fromInt <| routeViewOptions.itemSpacing - 2
+
+                                    arrowHeadTop =
+                                        String.fromInt <| routeViewOptions.itemSpacing - 6
+
+                                    strokeWidth =
+                                        "1"
+                                in
+                                Svg.g [ translate ]
+                                    [ Svg.line
+                                        [ Svg.Attributes.x1 svgContentLeftStartString
+                                        , Svg.Attributes.y1 arrowTop
+                                        , Svg.Attributes.x2 svgContentLeftStartString
+                                        , Svg.Attributes.y2 arrowBottom
+                                        , Svg.Attributes.stroke "grey"
+                                        , Svg.Attributes.strokeWidth strokeWidth
+                                        ]
+                                        []
+                                    , Svg.line
+                                        [ Svg.Attributes.x1 <| String.fromInt <| svgContentLeftStart - 2
+                                        , Svg.Attributes.y1 <| arrowHeadTop
+                                        , Svg.Attributes.x2 <| String.fromInt <| svgContentLeftStart
+                                        , Svg.Attributes.y2 arrowBottom
+                                        , Svg.Attributes.stroke "grey"
+                                        , Svg.Attributes.strokeWidth strokeWidth
+                                        ]
+                                        []
+                                    , Svg.line
+                                        [ Svg.Attributes.x1 <| String.fromInt <| svgContentLeftStart + 2
+                                        , Svg.Attributes.y1 <| arrowHeadTop
+                                        , Svg.Attributes.x2 <| String.fromInt <| svgContentLeftStart
+                                        , Svg.Attributes.y2 arrowBottom
+                                        , Svg.Attributes.stroke "grey"
+                                        , Svg.Attributes.strokeWidth strokeWidth
+                                        ]
+                                        []
+                                    , Svg.text_
+                                        [ Svg.Attributes.x (String.fromInt <| svgContentLeftStart + 10)
+                                        , Svg.Attributes.y <| String.fromInt (routeViewOptions.itemSpacing // 2)
+                                        , Svg.Attributes.dominantBaseline "middle"
+                                        , Svg.Attributes.fontSize "smaller"
+                                        ]
+                                        [ Svg.text <| formatFloat dist ++ "km" ]
+                                    ]
+                    )
+            )
         ]
 
 
@@ -582,6 +606,10 @@ checkbox b msg name =
         [ Html.input [ Html.Attributes.type_ "checkbox", Html.Events.onClick msg, Html.Attributes.checked b ] []
         , Html.label [ Html.Events.onClick msg ] [ Html.text name ]
         ]
+
+
+defaultSpacing =
+    25
 
 
 
