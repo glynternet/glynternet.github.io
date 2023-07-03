@@ -28,13 +28,30 @@
 @import
     'vendor/highlight';
 
-fieldset {
+/**
+ * ALL STUFF SPECIFIC FOR ROUTESHEET PAGE THAT MAY NEED MAKING ONLY AVAILABLE THERE
+ */
+
+ fieldset {
     border: none;
 }
 
 /**
  * Layout / Columns
  */
+
+@media screen {
+  body {
+    width: 100%;
+    height: 100vh;
+  }
+
+  .page {
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
 .flex-container.row {
   display: flex;
 }
@@ -42,6 +59,10 @@ fieldset {
 .flex-container.column {
   display: flex;
   flex-direction: column;
+}
+
+.flex-center {
+  align-items: center;
 }
 
 .column.narrow {
@@ -52,8 +73,18 @@ fieldset {
   flex-grow: 2;
 }
 
-.route_breakdown {
-  padding: 10px;
+@media screen {
+  .route_breakdown {
+    padding: 10px;
+    height: 100%;
+    overflow: scroll;
+  }
+}
+
+@media print {
+  .route_breakdown {
+    overflow: visible;
+  }
 }
 
 fieldset div {
@@ -137,4 +168,12 @@ fieldset div {
     svg, svg * {
       display: block;
     }
+
+    * {
+      overflow: visible;
+      margin: 0;
+      padding: 0;
+    }
 }
+
+

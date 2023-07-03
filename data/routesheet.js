@@ -6909,6 +6909,7 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
 var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
 var $elm$svg$Svg$Attributes$dy = _VirtualDom_attribute('dy');
@@ -7097,167 +7098,175 @@ var $author$project$Main$routeBreakdown = F2(
 							$elm$html$Html$text('Route breakdown')
 						])),
 					A2(
-					$elm$svg$Svg$svg,
+					$elm$html$Html$div,
 					_List_fromArray(
 						[
-							$elm$svg$Svg$Attributes$class('route_breakdown'),
-							$elm$svg$Svg$Attributes$width('100%'),
-							$elm$svg$Svg$Attributes$height(
-							$elm$core$String$fromInt(svgHeight)),
-							$elm$svg$Svg$Attributes$viewBox(
-							'-120 -10 240 ' + $elm$core$String$fromInt(svgHeight + 20))
+							$elm$svg$Svg$Attributes$class('route_breakdown')
 						]),
-					A2(
-						$elm$core$List$indexedMap,
-						F2(
-							function (i, item) {
-								var translate = $elm$svg$Svg$Attributes$transform(
-									'translate(0,' + ($elm$core$String$fromInt(i * routeViewOptions.f) + ')'));
-								if (!item.$) {
-									var waypoint = item.a;
-									var waypointDistance = function () {
-										var _v1 = routeViewOptions.x;
-										switch (_v1) {
-											case 2:
-												return $elm$core$Maybe$Nothing;
-											case 0:
-												return $elm$core$Maybe$Just(
-													$author$project$Main$formatFloat(waypoint.r) + 'km');
-											default:
-												return A2(
-													$elm$core$Maybe$map,
-													function (last) {
-														return $author$project$Main$formatFloat(last - waypoint.r) + 'km';
-													},
-													lastWaypointDistance);
-										}
-									}();
-									var waypointInfo = A2(
-										$elm$core$List$filterMap,
-										$elm$core$Basics$identity,
-										_List_fromArray(
-											[
-												waypointDistance,
-												(waypoint.D !== '') ? $elm$core$Maybe$Just(waypoint.D) : $elm$core$Maybe$Nothing
-											]));
-									var waypointInfoLines = $elm$core$List$isEmpty(waypointInfo) ? _List_fromArray(
-										['◉']) : waypointInfo;
-									return A2(
-										$elm$svg$Svg$g,
-										_List_fromArray(
-											[translate]),
-										A2(
-											$elm$core$List$cons,
-											A2(
-												$elm$svg$Svg$text_,
-												_List_fromArray(
-													[
-														$elm$svg$Svg$Attributes$x(
-														$elm$core$String$fromInt(svgContentLeftStart + 10)),
-														$elm$svg$Svg$Attributes$dominantBaseline('middle'),
-														$elm$svg$Svg$Attributes$y(
-														$elm$core$String$fromInt((routeViewOptions.f / 2) | 0))
-													]),
-												_List_fromArray(
-													[
-														$elm$svg$Svg$text(waypoint.R)
-													])),
-											A2(
-												$elm$core$List$indexedMap,
-												F2(
-													function (j, line) {
+					_List_fromArray(
+						[
+							A2(
+							$elm$svg$Svg$svg,
+							_List_fromArray(
+								[
+									$elm$svg$Svg$Attributes$width('100%'),
+									$elm$svg$Svg$Attributes$height(
+									$elm$core$String$fromInt(svgHeight)),
+									$elm$svg$Svg$Attributes$viewBox(
+									'-120 -10 240 ' + $elm$core$String$fromInt(svgHeight + 20))
+								]),
+							A2(
+								$elm$core$List$indexedMap,
+								F2(
+									function (i, item) {
+										var translate = $elm$svg$Svg$Attributes$transform(
+											'translate(0,' + ($elm$core$String$fromInt(i * routeViewOptions.f) + ')'));
+										if (!item.$) {
+											var waypoint = item.a;
+											var waypointDistance = function () {
+												var _v1 = routeViewOptions.x;
+												switch (_v1) {
+													case 2:
+														return $elm$core$Maybe$Nothing;
+													case 0:
+														return $elm$core$Maybe$Just(
+															$author$project$Main$formatFloat(waypoint.r) + 'km');
+													default:
 														return A2(
-															$elm$svg$Svg$text_,
-															_List_fromArray(
-																[
-																	$elm$svg$Svg$Attributes$x(svgContentLeftStartString),
-																	$elm$svg$Svg$Attributes$y(
-																	$elm$core$String$fromInt((routeViewOptions.f / 2) | 0)),
-																	$elm$svg$Svg$Attributes$dominantBaseline('middle'),
-																	$elm$svg$Svg$Attributes$dy(
-																	$elm$core$String$fromFloat(
-																		j - (($elm$core$List$length(waypointInfoLines) - 1) / 2)) + 'em'),
-																	$elm$svg$Svg$Attributes$textAnchor('end'),
-																	$elm$svg$Svg$Attributes$fontSize('smaller')
-																]),
-															_List_fromArray(
-																[
-																	$elm$svg$Svg$text(line)
-																]));
-													}),
-												waypointInfoLines)));
-								} else {
-									var dist = item.a;
-									var strokeWidth = '1';
-									var arrowTop = '2';
-									var arrowHeadTop = $elm$core$String$fromInt(routeViewOptions.f - 6);
-									var arrowBottom = $elm$core$String$fromInt(routeViewOptions.f - 2);
-									return A2(
-										$elm$svg$Svg$g,
-										_List_fromArray(
-											[translate]),
-										_List_fromArray(
-											[
+															$elm$core$Maybe$map,
+															function (last) {
+																return $author$project$Main$formatFloat(last - waypoint.r) + 'km';
+															},
+															lastWaypointDistance);
+												}
+											}();
+											var waypointInfo = A2(
+												$elm$core$List$filterMap,
+												$elm$core$Basics$identity,
+												_List_fromArray(
+													[
+														waypointDistance,
+														(waypoint.D !== '') ? $elm$core$Maybe$Just(waypoint.D) : $elm$core$Maybe$Nothing
+													]));
+											var waypointInfoLines = $elm$core$List$isEmpty(waypointInfo) ? _List_fromArray(
+												['◉']) : waypointInfo;
+											return A2(
+												$elm$svg$Svg$g,
+												_List_fromArray(
+													[translate]),
 												A2(
-												$elm$svg$Svg$line,
+													$elm$core$List$cons,
+													A2(
+														$elm$svg$Svg$text_,
+														_List_fromArray(
+															[
+																$elm$svg$Svg$Attributes$x(
+																$elm$core$String$fromInt(svgContentLeftStart + 10)),
+																$elm$svg$Svg$Attributes$dominantBaseline('middle'),
+																$elm$svg$Svg$Attributes$y(
+																$elm$core$String$fromInt((routeViewOptions.f / 2) | 0))
+															]),
+														_List_fromArray(
+															[
+																$elm$svg$Svg$text(waypoint.R)
+															])),
+													A2(
+														$elm$core$List$indexedMap,
+														F2(
+															function (j, line) {
+																return A2(
+																	$elm$svg$Svg$text_,
+																	_List_fromArray(
+																		[
+																			$elm$svg$Svg$Attributes$x(svgContentLeftStartString),
+																			$elm$svg$Svg$Attributes$y(
+																			$elm$core$String$fromInt((routeViewOptions.f / 2) | 0)),
+																			$elm$svg$Svg$Attributes$dominantBaseline('middle'),
+																			$elm$svg$Svg$Attributes$dy(
+																			$elm$core$String$fromFloat(
+																				j - (($elm$core$List$length(waypointInfoLines) - 1) / 2)) + 'em'),
+																			$elm$svg$Svg$Attributes$textAnchor('end'),
+																			$elm$svg$Svg$Attributes$fontSize('smaller')
+																		]),
+																	_List_fromArray(
+																		[
+																			$elm$svg$Svg$text(line)
+																		]));
+															}),
+														waypointInfoLines)));
+										} else {
+											var dist = item.a;
+											var strokeWidth = '1';
+											var arrowTop = '2';
+											var arrowHeadTop = $elm$core$String$fromInt(routeViewOptions.f - 6);
+											var arrowBottom = $elm$core$String$fromInt(routeViewOptions.f - 2);
+											return A2(
+												$elm$svg$Svg$g,
+												_List_fromArray(
+													[translate]),
 												_List_fromArray(
 													[
-														$elm$svg$Svg$Attributes$x1(svgContentLeftStartString),
-														$elm$svg$Svg$Attributes$y1(arrowTop),
-														$elm$svg$Svg$Attributes$x2(svgContentLeftStartString),
-														$elm$svg$Svg$Attributes$y2(arrowBottom),
-														$elm$svg$Svg$Attributes$stroke('grey'),
-														$elm$svg$Svg$Attributes$strokeWidth(strokeWidth)
-													]),
-												_List_Nil),
-												A2(
-												$elm$svg$Svg$line,
-												_List_fromArray(
-													[
-														$elm$svg$Svg$Attributes$x1(
-														$elm$core$String$fromInt(svgContentLeftStart - 2)),
-														$elm$svg$Svg$Attributes$y1(arrowHeadTop),
-														$elm$svg$Svg$Attributes$x2(
-														$elm$core$String$fromInt(svgContentLeftStart)),
-														$elm$svg$Svg$Attributes$y2(arrowBottom),
-														$elm$svg$Svg$Attributes$stroke('grey'),
-														$elm$svg$Svg$Attributes$strokeWidth(strokeWidth)
-													]),
-												_List_Nil),
-												A2(
-												$elm$svg$Svg$line,
-												_List_fromArray(
-													[
-														$elm$svg$Svg$Attributes$x1(
-														$elm$core$String$fromInt(svgContentLeftStart + 2)),
-														$elm$svg$Svg$Attributes$y1(arrowHeadTop),
-														$elm$svg$Svg$Attributes$x2(
-														$elm$core$String$fromInt(svgContentLeftStart)),
-														$elm$svg$Svg$Attributes$y2(arrowBottom),
-														$elm$svg$Svg$Attributes$stroke('grey'),
-														$elm$svg$Svg$Attributes$strokeWidth(strokeWidth)
-													]),
-												_List_Nil),
-												A2(
-												$elm$svg$Svg$text_,
-												_List_fromArray(
-													[
-														$elm$svg$Svg$Attributes$x(
-														$elm$core$String$fromInt(svgContentLeftStart + 10)),
-														$elm$svg$Svg$Attributes$y(
-														$elm$core$String$fromInt((routeViewOptions.f / 2) | 0)),
-														$elm$svg$Svg$Attributes$dominantBaseline('middle'),
-														$elm$svg$Svg$Attributes$fontSize('smaller')
-													]),
-												_List_fromArray(
-													[
-														$elm$svg$Svg$text(
-														$author$project$Main$formatFloat(dist) + 'km')
-													]))
-											]));
-								}
-							}),
-						info))
+														A2(
+														$elm$svg$Svg$line,
+														_List_fromArray(
+															[
+																$elm$svg$Svg$Attributes$x1(svgContentLeftStartString),
+																$elm$svg$Svg$Attributes$y1(arrowTop),
+																$elm$svg$Svg$Attributes$x2(svgContentLeftStartString),
+																$elm$svg$Svg$Attributes$y2(arrowBottom),
+																$elm$svg$Svg$Attributes$stroke('grey'),
+																$elm$svg$Svg$Attributes$strokeWidth(strokeWidth)
+															]),
+														_List_Nil),
+														A2(
+														$elm$svg$Svg$line,
+														_List_fromArray(
+															[
+																$elm$svg$Svg$Attributes$x1(
+																$elm$core$String$fromInt(svgContentLeftStart - 2)),
+																$elm$svg$Svg$Attributes$y1(arrowHeadTop),
+																$elm$svg$Svg$Attributes$x2(
+																$elm$core$String$fromInt(svgContentLeftStart)),
+																$elm$svg$Svg$Attributes$y2(arrowBottom),
+																$elm$svg$Svg$Attributes$stroke('grey'),
+																$elm$svg$Svg$Attributes$strokeWidth(strokeWidth)
+															]),
+														_List_Nil),
+														A2(
+														$elm$svg$Svg$line,
+														_List_fromArray(
+															[
+																$elm$svg$Svg$Attributes$x1(
+																$elm$core$String$fromInt(svgContentLeftStart + 2)),
+																$elm$svg$Svg$Attributes$y1(arrowHeadTop),
+																$elm$svg$Svg$Attributes$x2(
+																$elm$core$String$fromInt(svgContentLeftStart)),
+																$elm$svg$Svg$Attributes$y2(arrowBottom),
+																$elm$svg$Svg$Attributes$stroke('grey'),
+																$elm$svg$Svg$Attributes$strokeWidth(strokeWidth)
+															]),
+														_List_Nil),
+														A2(
+														$elm$svg$Svg$text_,
+														_List_fromArray(
+															[
+																$elm$svg$Svg$Attributes$x(
+																$elm$core$String$fromInt(svgContentLeftStart + 10)),
+																$elm$svg$Svg$Attributes$y(
+																$elm$core$String$fromInt((routeViewOptions.f / 2) | 0)),
+																$elm$svg$Svg$Attributes$dominantBaseline('middle'),
+																$elm$svg$Svg$Attributes$fontSize('smaller')
+															]),
+														_List_fromArray(
+															[
+																$elm$svg$Svg$text(
+																$author$project$Main$formatFloat(dist) + 'km')
+															]))
+													]));
+										}
+									}),
+								info))
+						]))
 				]));
 	});
 var $elm$core$List$filter = F2(
@@ -7794,7 +7803,8 @@ var $author$project$Main$viewUploadButton = A2(
 	_List_fromArray(
 		[
 			$elm$html$Html$Events$onClick($author$project$Main$OpenFileBrowser),
-			$elm$html$Html$Attributes$class('button-4')
+			$elm$html$Html$Attributes$class('button-4'),
+			A2($elm$html$Html$Attributes$style, 'max-width', '20em')
 		]),
 	_List_fromArray(
 		[
@@ -7970,11 +7980,18 @@ var $author$project$Main$view = function (model) {
 					_List_fromArray(
 						[
 							$elm$html$Html$Attributes$class('flex-container'),
+							$elm$html$Html$Attributes$class('flex-center'),
 							$elm$html$Html$Attributes$class('column')
 						]),
 					_List_fromArray(
 						[
-							$elm$html$Html$text('hello and welcome'),
+							A2(
+							$elm$html$Html$p,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text('hello and welcome')
+								])),
 							$author$project$Main$viewUploadButton
 						])),
 				A2(
@@ -7985,7 +8002,8 @@ var $author$project$Main$view = function (model) {
 							_List_fromArray(
 								[
 									$elm$html$Html$Attributes$class('flex-container'),
-									$elm$html$Html$Attributes$class('row')
+									$elm$html$Html$Attributes$class('row'),
+									$elm$html$Html$Attributes$class('page')
 								]),
 							_List_fromArray(
 								[
