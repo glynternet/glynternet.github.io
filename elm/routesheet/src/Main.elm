@@ -231,6 +231,7 @@ waypointsAndOptions model =
         [ div [] <|
             List.concat
                 [ [ Html.h2 [] [ Html.text "Options" ]
+                  , Html.hr [] []
                   , Html.legend [] [ Html.text "Waypoint selection" ]
                   , Dropdown.dropdown
                         (Dropdown.Options
@@ -285,7 +286,8 @@ waypointsAndOptions model =
 
                   else
                     []
-                , [ div []
+                , [ Html.hr [] []
+                  , div []
                         [ Html.legend [] [ Html.text "Total distance:" ]
                         , Dropdown.dropdown
                             (Dropdown.Options

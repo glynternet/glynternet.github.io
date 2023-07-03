@@ -7442,6 +7442,7 @@ var $abadi199$elm_input_extra$Dropdown$dropdown = F3(
 			A2($elm$core$List$map, toOption, itemsWithEmptyItems));
 	});
 var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
+var $elm$html$Html$hr = _VirtualDom_node('hr');
 var $elm$html$Html$legend = _VirtualDom_node('legend');
 var $author$project$Main$waypointsAndOptions = function (model) {
 	return A2(
@@ -7468,6 +7469,7 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 									[
 										$elm$html$Html$text('Options')
 									])),
+								A2($elm$html$Html$hr, _List_Nil, _List_Nil),
 								A2(
 								$elm$html$Html$legend,
 								_List_Nil,
@@ -7535,6 +7537,7 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 							]) : _List_Nil,
 							_List_fromArray(
 							[
+								A2($elm$html$Html$hr, _List_Nil, _List_Nil),
 								A2(
 								$elm$html$Html$div,
 								_List_Nil,
