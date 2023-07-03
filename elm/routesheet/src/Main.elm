@@ -227,12 +227,13 @@ view model =
     let
         exampleWaypoints =
             [ Waypoint "Start" 0.0 ""
-            , Waypoint "Lungburner Pass" 56.3 "CLIMB"
             , Waypoint "Blue shoes" 56.1 "CAFE"
-            , Waypoint "Steep Street" 60.7 "CLIMB"
+            , Waypoint "Lungburner" 56.3 "CLIMB"
+            , Waypoint "Steep Street" 63.7 "CLIMB"
             , Waypoint "Foosville fountain" 98.3 "WATER"
-            , Waypoint "Foosville fountain" 148.8 "RESUPPLY"
-            , Waypoint "Cosy hedge" 198.2 "SLEEP"
+            , Waypoint "Cosy hedge" 198.2 "😴"
+            , Waypoint "Legburner" 243.8 "CLIMB"
+            , Waypoint "Finish" 273.5 ""
             ]
     in
     Browser.Document "Route sheet"
@@ -262,14 +263,18 @@ view model =
                     , viewUploadButton
                     , Html.p [] [ Html.text "Examples:" ]
                     , Html.div
-                        [ Html.Attributes.class "flex-container"
+                        [ Html.Attributes.style "width" "100%"
+                        , Html.Attributes.style "justify-content" "space-evenly"
+                        , Html.Attributes.class "flex-container"
                         , Html.Attributes.class "flex-center"
                         , Html.Attributes.class "row"
                         ]
-                        [ routeBreakdown exampleWaypoints (RouteViewOptions FromZero defaultSpacing)
-                        , routeBreakdown exampleWaypoints (RouteViewOptions FromLast defaultSpacing)
-                        , routeBreakdown exampleWaypoints (RouteViewOptions None defaultSpacing)
-                        ]
+                        (List.map (\( desc, opts ) -> Html.div [] [ Html.h3 [ Html.Attributes.style "text-align" "center" ] [ Html.text desc ], routeBreakdown exampleWaypoints opts ])
+                            [ ( "Distance from zero", RouteViewOptions FromZero defaultSpacing )
+                            , ( "Distance to go", RouteViewOptions FromLast defaultSpacing )
+                            , ( "Distance between", RouteViewOptions None defaultSpacing )
+                            ]
+                        )
                     ]
                 )
         ]
@@ -444,7 +449,7 @@ routeBreakdown waypoints routeViewOptions =
     Html.div
         [ Svg.Attributes.class "route_breakdown" ]
         [ Svg.svg
-            [ Svg.Attributes.width "100%"
+            [ Svg.Attributes.width "320"
             , Svg.Attributes.height <| String.fromInt svgHeight
             , Svg.Attributes.viewBox <| "-120 -10 240 " ++ String.fromInt (svgHeight + routeViewOptions.itemSpacing)
             ]

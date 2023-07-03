@@ -6911,6 +6911,7 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
+var $elm$html$Html$h3 = _VirtualDom_node('h3');
 var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
 var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
@@ -7088,7 +7089,7 @@ var $author$project$Main$routeBreakdown = F2(
 					$elm$svg$Svg$svg,
 					_List_fromArray(
 						[
-							$elm$svg$Svg$Attributes$width('100%'),
+							$elm$svg$Svg$Attributes$width('320'),
 							$elm$svg$Svg$Attributes$height(
 							$elm$core$String$fromInt(svgHeight)),
 							$elm$svg$Svg$Attributes$viewBox(
@@ -7952,12 +7953,13 @@ var $author$project$Main$view = function (model) {
 	var exampleWaypoints = _List_fromArray(
 		[
 			A3($author$project$Main$Waypoint, 'Start', 0.0, ''),
-			A3($author$project$Main$Waypoint, 'Lungburner Pass', 56.3, 'CLIMB'),
 			A3($author$project$Main$Waypoint, 'Blue shoes', 56.1, 'CAFE'),
-			A3($author$project$Main$Waypoint, 'Steep Street', 60.7, 'CLIMB'),
+			A3($author$project$Main$Waypoint, 'Lungburner', 56.3, 'CLIMB'),
+			A3($author$project$Main$Waypoint, 'Steep Street', 63.7, 'CLIMB'),
 			A3($author$project$Main$Waypoint, 'Foosville fountain', 98.3, 'WATER'),
-			A3($author$project$Main$Waypoint, 'Foosville fountain', 148.8, 'RESUPPLY'),
-			A3($author$project$Main$Waypoint, 'Cosy hedge', 198.2, 'SLEEP')
+			A3($author$project$Main$Waypoint, 'Cosy hedge', 198.2, '😴'),
+			A3($author$project$Main$Waypoint, 'Legburner', 243.8, 'CLIMB'),
+			A3($author$project$Main$Waypoint, 'Finish', 273.5, '')
 		]);
 	return A2(
 		$elm$browser$Browser$Document,
@@ -8002,25 +8004,47 @@ var $author$project$Main$view = function (model) {
 							$elm$html$Html$div,
 							_List_fromArray(
 								[
+									A2($elm$html$Html$Attributes$style, 'width', '100%'),
+									A2($elm$html$Html$Attributes$style, 'justify-content', 'space-evenly'),
 									$elm$html$Html$Attributes$class('flex-container'),
 									$elm$html$Html$Attributes$class('flex-center'),
 									$elm$html$Html$Attributes$class('row')
 								]),
-							_List_fromArray(
-								[
-									A2(
-									$author$project$Main$routeBreakdown,
-									exampleWaypoints,
-									A2($author$project$Main$RouteViewOptions, 0, $author$project$Main$defaultSpacing)),
-									A2(
-									$author$project$Main$routeBreakdown,
-									exampleWaypoints,
-									A2($author$project$Main$RouteViewOptions, 1, $author$project$Main$defaultSpacing)),
-									A2(
-									$author$project$Main$routeBreakdown,
-									exampleWaypoints,
-									A2($author$project$Main$RouteViewOptions, 2, $author$project$Main$defaultSpacing))
-								]))
+							A2(
+								$elm$core$List$map,
+								function (_v0) {
+									var desc = _v0.a;
+									var opts = _v0.b;
+									return A2(
+										$elm$html$Html$div,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$h3,
+												_List_fromArray(
+													[
+														A2($elm$html$Html$Attributes$style, 'text-align', 'center')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text(desc)
+													])),
+												A2($author$project$Main$routeBreakdown, exampleWaypoints, opts)
+											]));
+								},
+								_List_fromArray(
+									[
+										_Utils_Tuple2(
+										'Distance from zero',
+										A2($author$project$Main$RouteViewOptions, 0, $author$project$Main$defaultSpacing)),
+										_Utils_Tuple2(
+										'Distance to go',
+										A2($author$project$Main$RouteViewOptions, 1, $author$project$Main$defaultSpacing)),
+										_Utils_Tuple2(
+										'Distance between',
+										A2($author$project$Main$RouteViewOptions, 2, $author$project$Main$defaultSpacing))
+									])))
 						])),
 				A2(
 					$elm$core$Maybe$map,
