@@ -7300,7 +7300,6 @@ var $author$project$Main$UpdateTotalDistanceDisplay = function (a) {
 var $author$project$Main$UpdateWaypointSelection = function (a) {
 	return {$: 'UpdateWaypointSelection', a: a};
 };
-var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$Attributes$boolProperty = F2(
 	function (key, bool) {
 		return A2(
@@ -7579,33 +7578,7 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 											$author$project$Main$formatTotalDistanceDisplay(model.options.totalDistanceDisplay)))
 									]))
 							])
-						]))),
-				A2($elm$html$Html$br, _List_Nil, _List_Nil),
-				A2(
-				$elm$html$Html$h2,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text('Waypoints')
-					])),
-				A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				A2(
-					$elm$core$List$map,
-					function (waypoint) {
-						return A2(
-							$elm$html$Html$div,
-							_List_Nil,
-							_List_fromArray(
-								[
-									$elm$html$Html$text(
-									_Utils_ap(
-										$author$project$Main$formatFloat(waypoint.distance) + ' ',
-										waypoint.name))
-								]));
-					},
-					model.waypoints))
+						])))
 			]));
 };
 var $author$project$Main$view = function (model) {

@@ -297,9 +297,6 @@ waypointsAndOptions model =
                         ]
                   ]
                 ]
-        , Html.br [] []
-        , Html.h2 [] [ Html.text "Waypoints" ]
-        , div [] (List.map (\waypoint -> div [] [ Html.text ((++) (formatFloat waypoint.distance ++ " ") waypoint.name) ]) model.waypoints)
         ]
 
 
