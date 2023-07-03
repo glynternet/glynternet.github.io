@@ -7472,9 +7472,21 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 								$abadi199$elm_input_extra$Dropdown$Options,
 								_List_fromArray(
 									[
-										A3($abadi199$elm_input_extra$Dropdown$Item, 'from first', 'from first', true),
-										A3($abadi199$elm_input_extra$Dropdown$Item, 'from last', 'from last', true),
-										A3($abadi199$elm_input_extra$Dropdown$Item, 'none', 'none', true)
+										A3(
+										$abadi199$elm_input_extra$Dropdown$Item,
+										$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromFirst),
+										$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromFirst),
+										true),
+										A3(
+										$abadi199$elm_input_extra$Dropdown$Item,
+										$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromLast),
+										$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromLast),
+										true),
+										A3(
+										$abadi199$elm_input_extra$Dropdown$Item,
+										$author$project$Main$formatTotalDistanceDisplay($author$project$Main$None),
+										$author$project$Main$formatTotalDistanceDisplay($author$project$Main$None),
+										true)
 									]),
 								$elm$core$Maybe$Nothing,
 								A2(
@@ -7485,7 +7497,8 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 										$elm$core$Maybe$withDefault($elm$core$Maybe$Nothing),
 										$author$project$Main$UpdateTotalDistanceDisplay))),
 							_List_Nil,
-							$elm$core$Maybe$Nothing)
+							$elm$core$Maybe$Just(
+								$author$project$Main$formatTotalDistanceDisplay(model.options.totalDistanceDisplay)))
 						]))),
 				A2($elm$html$Html$br, _List_Nil, _List_Nil),
 				A2(

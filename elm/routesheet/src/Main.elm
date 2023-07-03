@@ -236,9 +236,9 @@ waypointsAndOptions model =
             (Html.legend [] [ Html.text "Total distance:" ]
                 :: [ Dropdown.dropdown
                         (Dropdown.Options
-                            [ Dropdown.Item "from first" "from first" True
-                            , Dropdown.Item "from last" "from last" True
-                            , Dropdown.Item "none" "none" True
+                            [ Dropdown.Item (formatTotalDistanceDisplay FromFirst) (formatTotalDistanceDisplay FromFirst) True
+                            , Dropdown.Item (formatTotalDistanceDisplay FromLast) (formatTotalDistanceDisplay FromLast) True
+                            , Dropdown.Item (formatTotalDistanceDisplay None) (formatTotalDistanceDisplay None) True
                             ]
                             Maybe.Nothing
                             (Maybe.map parseTotalDistanceDisplay
@@ -247,7 +247,7 @@ waypointsAndOptions model =
                             )
                         )
                         []
-                        Maybe.Nothing
+                        (Maybe.Just <| formatTotalDistanceDisplay model.options.totalDistanceDisplay)
                    ]
             )
         , Html.br [] []
