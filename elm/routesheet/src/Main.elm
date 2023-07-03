@@ -225,109 +225,112 @@ initialModel waypoints =
 view : Model -> Browser.Document Msg
 view model =
     Browser.Document "Route sheet"
-        [ Html.div [ Html.Attributes.class "row" ]
+        [ Html.div [ Html.Attributes.class "flex-container", Html.Attributes.class "row" ]
             [ viewOptions model.options
             , routeBreakdown (routeInfo model) model.options.itemSpacing
             ]
         ]
 
 
+optionGroup : String -> List (Html Msg) -> Html Msg
+optionGroup title elements =
+    Html.div [ Html.Attributes.class "flex-container", Html.Attributes.class "column" ]
+        (Html.legend [] [ Html.text title ] :: elements)
+
+
 viewOptions : Options -> Html Msg
 viewOptions options =
     Html.div [ Html.Attributes.class "column", Html.Attributes.class "narrow" ]
         [ Html.div [ Html.Attributes.class "options" ] <|
-            List.concat
-                [ [ Html.h2 [] [ Html.text "Options" ]
-                  , Html.hr [] []
-                  , Html.legend [] [ Html.text "Waypoint selection" ]
-                  , Dropdown.dropdown
-                        (Dropdown.Options
-                            [ Dropdown.Item "all" "all" True
-                            , Dropdown.Item "filtered" "filtered" True
-                            ]
-                            Maybe.Nothing
-                            (Maybe.map
-                                (\selection ->
-                                    case selection of
-                                        "all" ->
-                                            Maybe.Just False
+            [ Html.h2 [] [ Html.text "Options" ]
+            , Html.hr [] []
+            , optionGroup "Waypoint types"
+                (Dropdown.dropdown
+                    (Dropdown.Options
+                        [ Dropdown.Item "all" "all" True
+                        , Dropdown.Item "filtered" "filtered" True
+                        ]
+                        Maybe.Nothing
+                        (Maybe.map
+                            (\selection ->
+                                case selection of
+                                    "all" ->
+                                        Maybe.Just False
 
-                                        "filtered" ->
-                                            Maybe.Just True
+                                    "filtered" ->
+                                        Maybe.Just True
 
-                                        _ ->
-                                            Maybe.Nothing
-                                )
-                                >> Maybe.withDefault Maybe.Nothing
-                                >> UpdateWaypointSelection
+                                    _ ->
+                                        Maybe.Nothing
                             )
+                            >> Maybe.withDefault Maybe.Nothing
+                            >> UpdateWaypointSelection
                         )
-                        []
-                        (Maybe.Just <|
-                            if options.locationFilterEnabled then
-                                "filtered"
+                    )
+                    []
+                    (Maybe.Just <|
+                        if options.locationFilterEnabled then
+                            "filtered"
 
-                            else
-                                "all"
-                        )
-                  ]
-                , if options.locationFilterEnabled then
-                    [ Html.fieldset []
-                        (options.filteredLocationTypes
-                            |> Dict.toList
-                            |> List.map
-                                (\( typ, included ) ->
-                                    checkbox included
-                                        (TypeEnabled typ (not included))
-                                        (if typ /= "" then
-                                            typ
+                        else
+                            "all"
+                    )
+                    :: (if options.locationFilterEnabled then
+                            [ Html.fieldset []
+                                (options.filteredLocationTypes
+                                    |> Dict.toList
+                                    |> List.map
+                                        (\( typ, included ) ->
+                                            checkbox included
+                                                (TypeEnabled typ (not included))
+                                                (if typ /= "" then
+                                                    typ
 
-                                         else
-                                            "unknown"
+                                                 else
+                                                    "unknown"
+                                                )
                                         )
                                 )
-                        )
-                    ]
+                            ]
 
-                  else
+                        else
+                            []
+                       )
+                )
+            , Html.hr [] []
+            , optionGroup "Total distance"
+                [ Dropdown.dropdown
+                    (Dropdown.Options
+                        [ Dropdown.Item (formatTotalDistanceDisplay FromFirst) (formatTotalDistanceDisplay FromFirst) True
+                        , Dropdown.Item (formatTotalDistanceDisplay FromLast) (formatTotalDistanceDisplay FromLast) True
+                        , Dropdown.Item (formatTotalDistanceDisplay None) (formatTotalDistanceDisplay None) True
+                        ]
+                        Maybe.Nothing
+                        (Maybe.map parseTotalDistanceDisplay
+                            >> Maybe.withDefault Maybe.Nothing
+                            >> UpdateTotalDistanceDisplay
+                        )
+                    )
                     []
-                , [ Html.hr [] []
-                  , Html.div []
-                        [ Html.legend [] [ Html.text "Total distance" ]
-                        , Dropdown.dropdown
-                            (Dropdown.Options
-                                [ Dropdown.Item (formatTotalDistanceDisplay FromFirst) (formatTotalDistanceDisplay FromFirst) True
-                                , Dropdown.Item (formatTotalDistanceDisplay FromLast) (formatTotalDistanceDisplay FromLast) True
-                                , Dropdown.Item (formatTotalDistanceDisplay None) (formatTotalDistanceDisplay None) True
-                                ]
-                                Maybe.Nothing
-                                (Maybe.map parseTotalDistanceDisplay
-                                    >> Maybe.withDefault Maybe.Nothing
-                                    >> UpdateTotalDistanceDisplay
-                                )
-                            )
-                            []
-                            (Maybe.Just <| formatTotalDistanceDisplay options.totalDistanceDisplay)
-                        ]
-                  , Html.hr [] []
-                  , Html.div []
-                        [ Html.legend [] [ Html.text "Spacing" ]
-                        , Input.Number.input
-                            { onInput = Maybe.map UpdateItemSpacing >> Maybe.withDefault Never
-                            , maxLength = Nothing
-                            , maxValue = Maybe.Just 100
-                            , minValue = Maybe.Just 1
-                            , hasFocus = Maybe.Nothing
-                            }
-                            []
-                            (Maybe.Just options.itemSpacing)
-                        ]
-                  , Html.hr [] []
-                  , Html.button
-                        [ Html.Events.onClick OpenFileBrowser, Html.Attributes.class "button-4" ]
-                        [ Html.text "upload waypoints" ]
-                  ]
+                    (Maybe.Just <| formatTotalDistanceDisplay options.totalDistanceDisplay)
                 ]
+            , Html.hr [] []
+            , optionGroup "Spacing"
+                [ Input.Number.input
+                    { onInput = Maybe.map UpdateItemSpacing >> Maybe.withDefault Never
+                    , maxLength = Nothing
+                    , maxValue = Maybe.Just 100
+                    , minValue = Maybe.Just 1
+                    , hasFocus = Maybe.Nothing
+                    }
+                    []
+                    (Maybe.Just options.itemSpacing)
+                ]
+            , Html.hr [] []
+            , Html.button
+                [ Html.Events.onClick OpenFileBrowser, Html.Attributes.class "button-4" ]
+                [ Html.text "upload waypoints" ]
+            ]
         ]
 
 

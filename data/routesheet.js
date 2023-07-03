@@ -7365,17 +7365,6 @@ var $author$project$Main$checkbox = F3(
 						]))
 				]));
 	});
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
 var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
 var $elm$core$Basics$not = _Basics_not;
 var $elm$json$Json$Decode$at = F2(
@@ -7465,6 +7454,14 @@ var $abadi199$elm_input_extra$Dropdown$dropdown = F3(
 	});
 var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
 var $elm$html$Html$hr = _VirtualDom_node('hr');
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
 var $elm$html$Html$Attributes$max = $elm$html$Html$Attributes$stringProperty('max');
 var $elm$html$Html$Attributes$min = $elm$html$Html$Attributes$stringProperty('min');
 var $elm$html$Html$Events$onBlur = function (msg) {
@@ -7774,6 +7771,26 @@ var $abadi199$elm_input_extra$Input$Number$input = F3(
 			_List_Nil);
 	});
 var $elm$html$Html$legend = _VirtualDom_node('legend');
+var $author$project$Main$optionGroup = F2(
+	function (title, elements) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('flex-container'),
+					$elm$html$Html$Attributes$class('column')
+				]),
+			A2(
+				$elm$core$List$cons,
+				A2(
+					$elm$html$Html$legend,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(title)
+						])),
+				elements));
+	});
 var $author$project$Main$viewOptions = function (options) {
 	return A2(
 		$elm$html$Html$div,
@@ -7790,27 +7807,22 @@ var $author$project$Main$viewOptions = function (options) {
 					[
 						$elm$html$Html$Attributes$class('options')
 					]),
-				$elm$core$List$concat(
-					_List_fromArray(
-						[
-							_List_fromArray(
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$h2,
+						_List_Nil,
+						_List_fromArray(
 							[
-								A2(
-								$elm$html$Html$h2,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Options')
-									])),
-								A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-								A2(
-								$elm$html$Html$legend,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Waypoint selection')
-									])),
-								A3(
+								$elm$html$Html$text('Options')
+							])),
+						A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+						A2(
+						$author$project$Main$optionGroup,
+						'Waypoint types',
+						A2(
+							$elm$core$List$cons,
+							A3(
 								$abadi199$elm_input_extra$Dropdown$dropdown,
 								A3(
 									$abadi199$elm_input_extra$Dropdown$Options,
@@ -7839,117 +7851,99 @@ var $author$project$Main$viewOptions = function (options) {
 											$author$project$Main$UpdateWaypointSelection))),
 								_List_Nil,
 								$elm$core$Maybe$Just(
-									options.locationFilterEnabled ? 'filtered' : 'all'))
-							]),
+									options.locationFilterEnabled ? 'filtered' : 'all')),
 							options.locationFilterEnabled ? _List_fromArray(
-							[
-								A2(
-								$elm$html$Html$fieldset,
-								_List_Nil,
-								A2(
-									$elm$core$List$map,
-									function (_v1) {
-										var typ = _v1.a;
-										var included = _v1.b;
-										return A3(
-											$author$project$Main$checkbox,
-											included,
-											A2($author$project$Main$TypeEnabled, typ, !included),
-											(typ !== '') ? typ : 'unknown');
-									},
-									$elm$core$Dict$toList(options.filteredLocationTypes)))
-							]) : _List_Nil,
-							_List_fromArray(
-							[
-								A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-								A2(
-								$elm$html$Html$div,
-								_List_Nil,
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$legend,
-										_List_Nil,
-										_List_fromArray(
-											[
-												$elm$html$Html$text('Total distance')
-											])),
-										A3(
-										$abadi199$elm_input_extra$Dropdown$dropdown,
-										A3(
-											$abadi199$elm_input_extra$Dropdown$Options,
-											_List_fromArray(
-												[
-													A3(
-													$abadi199$elm_input_extra$Dropdown$Item,
-													$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromFirst),
-													$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromFirst),
-													true),
-													A3(
-													$abadi199$elm_input_extra$Dropdown$Item,
-													$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromLast),
-													$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromLast),
-													true),
-													A3(
-													$abadi199$elm_input_extra$Dropdown$Item,
-													$author$project$Main$formatTotalDistanceDisplay($author$project$Main$None),
-													$author$project$Main$formatTotalDistanceDisplay($author$project$Main$None),
-													true)
-												]),
-											$elm$core$Maybe$Nothing,
-											A2(
-												$elm$core$Basics$composeR,
-												$elm$core$Maybe$map($author$project$Main$parseTotalDistanceDisplay),
-												A2(
-													$elm$core$Basics$composeR,
-													$elm$core$Maybe$withDefault($elm$core$Maybe$Nothing),
-													$author$project$Main$UpdateTotalDistanceDisplay))),
-										_List_Nil,
-										$elm$core$Maybe$Just(
-											$author$project$Main$formatTotalDistanceDisplay(options.totalDistanceDisplay)))
-									])),
-								A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-								A2(
-								$elm$html$Html$div,
-								_List_Nil,
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$legend,
-										_List_Nil,
-										_List_fromArray(
-											[
-												$elm$html$Html$text('Spacing')
-											])),
-										A3(
-										$abadi199$elm_input_extra$Input$Number$input,
-										{
-											hasFocus: $elm$core$Maybe$Nothing,
-											maxLength: $elm$core$Maybe$Nothing,
-											maxValue: $elm$core$Maybe$Just(100),
-											minValue: $elm$core$Maybe$Just(1),
-											onInput: A2(
-												$elm$core$Basics$composeR,
-												$elm$core$Maybe$map($author$project$Main$UpdateItemSpacing),
-												$elm$core$Maybe$withDefault($author$project$Main$Never))
+								[
+									A2(
+									$elm$html$Html$fieldset,
+									_List_Nil,
+									A2(
+										$elm$core$List$map,
+										function (_v1) {
+											var typ = _v1.a;
+											var included = _v1.b;
+											return A3(
+												$author$project$Main$checkbox,
+												included,
+												A2($author$project$Main$TypeEnabled, typ, !included),
+												(typ !== '') ? typ : 'unknown');
 										},
-										_List_Nil,
-										$elm$core$Maybe$Just(options.itemSpacing))
-									])),
-								A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-								A2(
-								$elm$html$Html$button,
-								_List_fromArray(
-									[
-										$elm$html$Html$Events$onClick($author$project$Main$OpenFileBrowser),
-										$elm$html$Html$Attributes$class('button-4')
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('upload waypoints')
-									]))
-							])
-						])))
+										$elm$core$Dict$toList(options.filteredLocationTypes)))
+								]) : _List_Nil)),
+						A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+						A2(
+						$author$project$Main$optionGroup,
+						'Total distance',
+						_List_fromArray(
+							[
+								A3(
+								$abadi199$elm_input_extra$Dropdown$dropdown,
+								A3(
+									$abadi199$elm_input_extra$Dropdown$Options,
+									_List_fromArray(
+										[
+											A3(
+											$abadi199$elm_input_extra$Dropdown$Item,
+											$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromFirst),
+											$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromFirst),
+											true),
+											A3(
+											$abadi199$elm_input_extra$Dropdown$Item,
+											$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromLast),
+											$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromLast),
+											true),
+											A3(
+											$abadi199$elm_input_extra$Dropdown$Item,
+											$author$project$Main$formatTotalDistanceDisplay($author$project$Main$None),
+											$author$project$Main$formatTotalDistanceDisplay($author$project$Main$None),
+											true)
+										]),
+									$elm$core$Maybe$Nothing,
+									A2(
+										$elm$core$Basics$composeR,
+										$elm$core$Maybe$map($author$project$Main$parseTotalDistanceDisplay),
+										A2(
+											$elm$core$Basics$composeR,
+											$elm$core$Maybe$withDefault($elm$core$Maybe$Nothing),
+											$author$project$Main$UpdateTotalDistanceDisplay))),
+								_List_Nil,
+								$elm$core$Maybe$Just(
+									$author$project$Main$formatTotalDistanceDisplay(options.totalDistanceDisplay)))
+							])),
+						A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+						A2(
+						$author$project$Main$optionGroup,
+						'Spacing',
+						_List_fromArray(
+							[
+								A3(
+								$abadi199$elm_input_extra$Input$Number$input,
+								{
+									hasFocus: $elm$core$Maybe$Nothing,
+									maxLength: $elm$core$Maybe$Nothing,
+									maxValue: $elm$core$Maybe$Just(100),
+									minValue: $elm$core$Maybe$Just(1),
+									onInput: A2(
+										$elm$core$Basics$composeR,
+										$elm$core$Maybe$map($author$project$Main$UpdateItemSpacing),
+										$elm$core$Maybe$withDefault($author$project$Main$Never))
+								},
+								_List_Nil,
+								$elm$core$Maybe$Just(options.itemSpacing))
+							])),
+						A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick($author$project$Main$OpenFileBrowser),
+								$elm$html$Html$Attributes$class('button-4')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('upload waypoints')
+							]))
+					]))
 			]));
 };
 var $author$project$Main$view = function (model) {
@@ -7962,6 +7956,7 @@ var $author$project$Main$view = function (model) {
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
+						$elm$html$Html$Attributes$class('flex-container'),
 						$elm$html$Html$Attributes$class('row')
 					]),
 				_List_fromArray(

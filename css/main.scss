@@ -35,8 +35,13 @@ fieldset {
 /**
  * Layout / Columns
  */
-.row {
+.flex-container.row {
   display: flex;
+}
+
+.flex-container.column {
+  display: flex;
+  flex-direction: column;
 }
 
 .column.narrow {
