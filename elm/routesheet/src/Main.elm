@@ -408,7 +408,7 @@ routeBreakdown : RouteInfo -> Int -> Html Msg
 routeBreakdown info itemSpacing =
     let
         svgHeight =
-            String.fromInt <| (*) itemSpacing (List.length info)
+            (*) itemSpacing (List.length info)
 
         svgContentLeftStart =
             0
@@ -421,8 +421,8 @@ routeBreakdown info itemSpacing =
         , Svg.svg
             [ Svg.Attributes.class "route_breakdown"
             , Svg.Attributes.width "100%"
-            , Svg.Attributes.height svgHeight
-            , Svg.Attributes.viewBox <| "-120 0 240 " ++ svgHeight
+            , Svg.Attributes.height <| String.fromInt svgHeight
+            , Svg.Attributes.viewBox <| "-120 -10 240 " ++ String.fromInt (svgHeight + 20)
             ]
             (info
                 |> List.indexedMap
@@ -449,7 +449,7 @@ routeBreakdown info itemSpacing =
                                     (Svg.text_
                                         [ Svg.Attributes.x (String.fromInt <| svgContentLeftStart + 10)
                                         , Svg.Attributes.dominantBaseline "middle"
-                                        , Svg.Attributes.y <| String.fromInt 10
+                                        , Svg.Attributes.y <| String.fromInt (itemSpacing // 2)
                                         ]
                                         [ Svg.text waypoint.name ]
                                         :: (waypointInfoLines
@@ -457,9 +457,8 @@ routeBreakdown info itemSpacing =
                                                     (\j line ->
                                                         Svg.text_
                                                             [ Svg.Attributes.x svgContentLeftStartString
-                                                            , Svg.Attributes.y <| String.fromInt 10
+                                                            , Svg.Attributes.y <| String.fromInt (itemSpacing // 2)
                                                             , Svg.Attributes.dominantBaseline "middle"
-                                                            , Svg.Attributes.dy (String.fromFloat 2 ++ "em")
                                                             , Svg.Attributes.dy (String.fromFloat (toFloat j - (toFloat <| List.length waypointInfoLines - 1) / 2) ++ "em")
                                                             , Svg.Attributes.textAnchor "end"
                                                             , Svg.Attributes.fontSize "smaller"
@@ -475,10 +474,10 @@ routeBreakdown info itemSpacing =
                                         "2"
 
                                     arrowBottom =
-                                        "18"
+                                        String.fromInt <| itemSpacing - 2
 
                                     arrowHeadTop =
-                                        "16"
+                                        String.fromInt <| itemSpacing - 6
 
                                     strokeWidth =
                                         "1"
@@ -513,7 +512,7 @@ routeBreakdown info itemSpacing =
                                         []
                                     , Svg.text_
                                         [ Svg.Attributes.x (String.fromInt <| svgContentLeftStart + 10)
-                                        , Svg.Attributes.y <| String.fromInt 10
+                                        , Svg.Attributes.y <| String.fromInt (itemSpacing // 2)
                                         , Svg.Attributes.dominantBaseline "middle"
                                         , Svg.Attributes.fontSize "smaller"
                                         ]

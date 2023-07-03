@@ -7045,8 +7045,7 @@ var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
 var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
 var $author$project$Main$routeBreakdown = F2(
 	function (info, itemSpacing) {
-		var svgHeight = $elm$core$String$fromInt(
-			itemSpacing * $elm$core$List$length(info));
+		var svgHeight = itemSpacing * $elm$core$List$length(info);
 		var svgContentLeftStart = 0;
 		var svgContentLeftStartString = $elm$core$String$fromInt(svgContentLeftStart);
 		return A2(
@@ -7074,8 +7073,10 @@ var $author$project$Main$routeBreakdown = F2(
 						[
 							$elm$svg$Svg$Attributes$class('route_breakdown'),
 							$elm$svg$Svg$Attributes$width('100%'),
-							$elm$svg$Svg$Attributes$height(svgHeight),
-							$elm$svg$Svg$Attributes$viewBox('-120 0 240 ' + svgHeight)
+							$elm$svg$Svg$Attributes$height(
+							$elm$core$String$fromInt(svgHeight)),
+							$elm$svg$Svg$Attributes$viewBox(
+							'-120 -10 240 ' + $elm$core$String$fromInt(svgHeight + 20))
 						]),
 					A2(
 						$elm$core$List$indexedMap,
@@ -7114,7 +7115,7 @@ var $author$project$Main$routeBreakdown = F2(
 														$elm$core$String$fromInt(svgContentLeftStart + 10)),
 														$elm$svg$Svg$Attributes$dominantBaseline('middle'),
 														$elm$svg$Svg$Attributes$y(
-														$elm$core$String$fromInt(10))
+														$elm$core$String$fromInt((itemSpacing / 2) | 0))
 													]),
 												_List_fromArray(
 													[
@@ -7130,10 +7131,8 @@ var $author$project$Main$routeBreakdown = F2(
 																[
 																	$elm$svg$Svg$Attributes$x(svgContentLeftStartString),
 																	$elm$svg$Svg$Attributes$y(
-																	$elm$core$String$fromInt(10)),
+																	$elm$core$String$fromInt((itemSpacing / 2) | 0)),
 																	$elm$svg$Svg$Attributes$dominantBaseline('middle'),
-																	$elm$svg$Svg$Attributes$dy(
-																	$elm$core$String$fromFloat(2) + 'em'),
 																	$elm$svg$Svg$Attributes$dy(
 																	$elm$core$String$fromFloat(
 																		j - (($elm$core$List$length(waypointInfoLines) - 1) / 2)) + 'em'),
@@ -7150,8 +7149,8 @@ var $author$project$Main$routeBreakdown = F2(
 									var dist = item.a;
 									var strokeWidth = '1';
 									var arrowTop = '2';
-									var arrowHeadTop = '16';
-									var arrowBottom = '18';
+									var arrowHeadTop = $elm$core$String$fromInt(itemSpacing - 6);
+									var arrowBottom = $elm$core$String$fromInt(itemSpacing - 2);
 									return A2(
 										$elm$svg$Svg$g,
 										_List_fromArray(
@@ -7205,7 +7204,7 @@ var $author$project$Main$routeBreakdown = F2(
 														$elm$svg$Svg$Attributes$x(
 														$elm$core$String$fromInt(svgContentLeftStart + 10)),
 														$elm$svg$Svg$Attributes$y(
-														$elm$core$String$fromInt(10)),
+														$elm$core$String$fromInt((itemSpacing / 2) | 0)),
 														$elm$svg$Svg$Attributes$dominantBaseline('middle'),
 														$elm$svg$Svg$Attributes$fontSize('smaller')
 													]),
