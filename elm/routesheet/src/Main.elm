@@ -473,38 +473,44 @@ routeBreakdown info itemSpacing =
 
                             Ride dist ->
                                 let
-                                    barTop =
+                                    arrowTop =
                                         "2"
 
-                                    barBottom =
+                                    arrowBottom =
                                         "18"
+
+                                    arrowHeadTop =
+                                        "16"
+
+                                    strokeWidth =
+                                        "1"
                                 in
                                 Svg.g [ translate ]
                                     [ Svg.line
                                         [ Svg.Attributes.x1 svgContentLeftStartString
-                                        , Svg.Attributes.y1 barTop
+                                        , Svg.Attributes.y1 arrowTop
                                         , Svg.Attributes.x2 svgContentLeftStartString
-                                        , Svg.Attributes.y2 barBottom
+                                        , Svg.Attributes.y2 arrowBottom
                                         , Svg.Attributes.stroke "grey"
-                                        , Svg.Attributes.strokeWidth "0.5"
+                                        , Svg.Attributes.strokeWidth strokeWidth
                                         ]
                                         []
                                     , Svg.line
                                         [ Svg.Attributes.x1 <| String.fromInt <| svgContentLeftStart - 2
-                                        , Svg.Attributes.y1 barTop
-                                        , Svg.Attributes.x2 <| String.fromInt <| svgContentLeftStart + 2
-                                        , Svg.Attributes.y2 barTop
+                                        , Svg.Attributes.y1 <| arrowHeadTop
+                                        , Svg.Attributes.x2 <| String.fromInt <| svgContentLeftStart
+                                        , Svg.Attributes.y2 arrowBottom
                                         , Svg.Attributes.stroke "grey"
-                                        , Svg.Attributes.strokeWidth "0.5"
+                                        , Svg.Attributes.strokeWidth strokeWidth
                                         ]
                                         []
                                     , Svg.line
-                                        [ Svg.Attributes.x1 <| String.fromInt <| svgContentLeftStart - 2
-                                        , Svg.Attributes.y1 barBottom
-                                        , Svg.Attributes.x2 <| String.fromInt <| svgContentLeftStart + 2
-                                        , Svg.Attributes.y2 barBottom
+                                        [ Svg.Attributes.x1 <| String.fromInt <| svgContentLeftStart + 2
+                                        , Svg.Attributes.y1 <| arrowHeadTop
+                                        , Svg.Attributes.x2 <| String.fromInt <| svgContentLeftStart
+                                        , Svg.Attributes.y2 arrowBottom
                                         , Svg.Attributes.stroke "grey"
-                                        , Svg.Attributes.strokeWidth "0.5"
+                                        , Svg.Attributes.strokeWidth strokeWidth
                                         ]
                                         []
                                     , Svg.text_

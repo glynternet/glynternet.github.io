@@ -7148,8 +7148,10 @@ var $author$project$Main$routeBreakdown = F2(
 												waypointInfoLines)));
 								} else {
 									var dist = item.a;
-									var barTop = '2';
-									var barBottom = '18';
+									var strokeWidth = '1';
+									var arrowTop = '2';
+									var arrowHeadTop = '16';
+									var arrowBottom = '18';
 									return A2(
 										$elm$svg$Svg$g,
 										_List_fromArray(
@@ -7161,11 +7163,11 @@ var $author$project$Main$routeBreakdown = F2(
 												_List_fromArray(
 													[
 														$elm$svg$Svg$Attributes$x1(svgContentLeftStartString),
-														$elm$svg$Svg$Attributes$y1(barTop),
+														$elm$svg$Svg$Attributes$y1(arrowTop),
 														$elm$svg$Svg$Attributes$x2(svgContentLeftStartString),
-														$elm$svg$Svg$Attributes$y2(barBottom),
+														$elm$svg$Svg$Attributes$y2(arrowBottom),
 														$elm$svg$Svg$Attributes$stroke('grey'),
-														$elm$svg$Svg$Attributes$strokeWidth('0.5')
+														$elm$svg$Svg$Attributes$strokeWidth(strokeWidth)
 													]),
 												_List_Nil),
 												A2(
@@ -7174,12 +7176,12 @@ var $author$project$Main$routeBreakdown = F2(
 													[
 														$elm$svg$Svg$Attributes$x1(
 														$elm$core$String$fromInt(svgContentLeftStart - 2)),
-														$elm$svg$Svg$Attributes$y1(barTop),
+														$elm$svg$Svg$Attributes$y1(arrowHeadTop),
 														$elm$svg$Svg$Attributes$x2(
-														$elm$core$String$fromInt(svgContentLeftStart + 2)),
-														$elm$svg$Svg$Attributes$y2(barTop),
+														$elm$core$String$fromInt(svgContentLeftStart)),
+														$elm$svg$Svg$Attributes$y2(arrowBottom),
 														$elm$svg$Svg$Attributes$stroke('grey'),
-														$elm$svg$Svg$Attributes$strokeWidth('0.5')
+														$elm$svg$Svg$Attributes$strokeWidth(strokeWidth)
 													]),
 												_List_Nil),
 												A2(
@@ -7187,13 +7189,13 @@ var $author$project$Main$routeBreakdown = F2(
 												_List_fromArray(
 													[
 														$elm$svg$Svg$Attributes$x1(
-														$elm$core$String$fromInt(svgContentLeftStart - 2)),
-														$elm$svg$Svg$Attributes$y1(barBottom),
-														$elm$svg$Svg$Attributes$x2(
 														$elm$core$String$fromInt(svgContentLeftStart + 2)),
-														$elm$svg$Svg$Attributes$y2(barBottom),
+														$elm$svg$Svg$Attributes$y1(arrowHeadTop),
+														$elm$svg$Svg$Attributes$x2(
+														$elm$core$String$fromInt(svgContentLeftStart)),
+														$elm$svg$Svg$Attributes$y2(arrowBottom),
 														$elm$svg$Svg$Attributes$stroke('grey'),
-														$elm$svg$Svg$Attributes$strokeWidth('0.5')
+														$elm$svg$Svg$Attributes$strokeWidth(strokeWidth)
 													]),
 												_List_Nil),
 												A2(
