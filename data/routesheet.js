@@ -5579,7 +5579,7 @@ var $author$project$Main$init = F3(
 				$elm$core$Maybe$withDefault,
 				A2(
 					$author$project$Main$Model,
-					_List_Nil,
+					$elm$core$Maybe$Nothing,
 					A4($author$project$Main$Options, false, $elm$core$Dict$empty, $author$project$Main$FromFirst, 20)),
 				A2(
 					$elm$core$Maybe$map,
@@ -5592,7 +5592,8 @@ var $author$project$Main$init = F3(
 								state.locationFilterEnabled,
 								A2(
 									$elm$core$Result$withDefault,
-									$author$project$Main$initialFilteredLocations(state.waypoints),
+									$author$project$Main$initialFilteredLocations(
+										A2($elm$core$Maybe$withDefault, _List_Nil, state.waypoints)),
 									A2(
 										$elm$json$Json$Decode$decodeValue,
 										$elm$json$Json$Decode$dict($elm$json$Json$Decode$bool),
@@ -6604,7 +6605,7 @@ var $author$project$Main$initialModel = function (waypoints) {
 		waypoints);
 	return A2(
 		$author$project$Main$Model,
-		sortedWaypoint,
+		$elm$core$Maybe$Just(sortedWaypoint),
 		$author$project$Main$initialOptions(sortedWaypoint));
 };
 var $BrianHicks$elm_csv$Csv$Decode$succeed = function (value) {
@@ -6750,6 +6751,7 @@ var $author$project$Main$formatTotalDistanceDisplay = function (v) {
 	}
 };
 var $elm$json$Json$Encode$int = _Json_wrap;
+var $elm$json$Json$Encode$null = _Json_encodeNull;
 var $author$project$Main$storeState = _Platform_outgoingPort('storeState', $elm$json$Json$Encode$string);
 var $author$project$Main$storeModel = function (model) {
 	return $author$project$Main$storeState(
@@ -6761,7 +6763,10 @@ var $author$project$Main$storeModel = function (model) {
 					[
 						_Utils_Tuple2(
 						'waypoints',
-						$author$project$Main$encodeWaypoints(model.waypoints)),
+						A2(
+							$elm$core$Maybe$withDefault,
+							$elm$json$Json$Encode$null,
+							A2($elm$core$Maybe$map, $author$project$Main$encodeWaypoints, model.waypoints))),
 						_Utils_Tuple2(
 						'totalDistanceDisplay',
 						$elm$json$Json$Encode$string(
@@ -6891,6 +6896,11 @@ var $author$project$Main$update = F2(
 						$elm$core$Result$map,
 						A2($elm$core$Basics$composeR, $author$project$Main$initialModel, $author$project$Main$updateModel),
 						result));
+			case 'ClearWaypoints':
+				return $author$project$Main$updateModel(
+					_Utils_update(
+						model,
+						{waypoints: $elm$core$Maybe$Nothing}));
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
@@ -7226,71 +7236,72 @@ var $elm$core$Tuple$second = function (_v0) {
 	var y = _v0.b;
 	return y;
 };
-var $author$project$Main$routeInfo = function (model) {
-	return $elm$core$List$reverse(
-		A3(
-			$elm$core$List$foldl,
-			F2(
-				function (el, accum) {
-					return _Utils_Tuple2(
-						$elm$core$Maybe$Just(el),
-						_Utils_ap(
+var $author$project$Main$routeInfo = F2(
+	function (waypoints, options) {
+		return $elm$core$List$reverse(
+			A3(
+				$elm$core$List$foldl,
+				F2(
+					function (el, accum) {
+						return _Utils_Tuple2(
+							$elm$core$Maybe$Just(el),
 							_Utils_ap(
-								_List_fromArray(
-									[
-										$author$project$Main$InfoWaypoint(
-										A3(
-											$author$project$Main$DisplayWaypoint,
-											el.name,
-											function () {
-												var _v0 = model.options.totalDistanceDisplay;
-												switch (_v0.$) {
-													case 'FromFirst':
-														return $elm$core$Maybe$Just(el.distance);
-													case 'FromLast':
-														return A2(
-															$elm$core$Maybe$map,
-															function (last) {
-																return last.distance - el.distance;
-															},
-															$elm$core$List$head(
-																$elm$core$List$reverse(model.waypoints)));
-													default:
-														return $elm$core$Maybe$Nothing;
-												}
-											}(),
-											(el.typ !== '') ? $elm$core$Maybe$Just(el.typ) : $elm$core$Maybe$Nothing))
-									]),
-								A2(
-									$elm$core$Maybe$withDefault,
-									_List_Nil,
+								_Utils_ap(
+									_List_fromArray(
+										[
+											$author$project$Main$InfoWaypoint(
+											A3(
+												$author$project$Main$DisplayWaypoint,
+												el.name,
+												function () {
+													var _v0 = options.totalDistanceDisplay;
+													switch (_v0.$) {
+														case 'FromFirst':
+															return $elm$core$Maybe$Just(el.distance);
+														case 'FromLast':
+															return A2(
+																$elm$core$Maybe$map,
+																function (last) {
+																	return last.distance - el.distance;
+																},
+																$elm$core$List$head(
+																	$elm$core$List$reverse(waypoints)));
+														default:
+															return $elm$core$Maybe$Nothing;
+													}
+												}(),
+												(el.typ !== '') ? $elm$core$Maybe$Just(el.typ) : $elm$core$Maybe$Nothing))
+										]),
 									A2(
-										$elm$core$Maybe$map,
-										function (previous) {
-											return _List_fromArray(
-												[
-													$author$project$Main$Ride(el.distance - previous.distance)
-												]);
-										},
-										accum.a))),
-							accum.b));
-				}),
-			_Utils_Tuple2($elm$core$Maybe$Nothing, _List_Nil),
-			model.options.locationFilterEnabled ? A2(
-				$elm$core$List$filter,
-				function (w) {
-					return A2(
-						$elm$core$Maybe$withDefault,
-						true,
-						A2($elm$core$Dict$get, w.typ, model.options.filteredLocationTypes));
-				},
-				model.waypoints) : model.waypoints).b);
-};
+										$elm$core$Maybe$withDefault,
+										_List_Nil,
+										A2(
+											$elm$core$Maybe$map,
+											function (previous) {
+												return _List_fromArray(
+													[
+														$author$project$Main$Ride(el.distance - previous.distance)
+													]);
+											},
+											accum.a))),
+								accum.b));
+					}),
+				_Utils_Tuple2($elm$core$Maybe$Nothing, _List_Nil),
+				options.locationFilterEnabled ? A2(
+					$elm$core$List$filter,
+					function (w) {
+						return A2(
+							$elm$core$Maybe$withDefault,
+							true,
+							A2($elm$core$Dict$get, w.typ, options.filteredLocationTypes));
+					},
+					waypoints) : waypoints).b);
+	});
+var $author$project$Main$ClearWaypoints = {$: 'ClearWaypoints'};
 var $abadi199$elm_input_extra$Dropdown$Item = F3(
 	function (value, text, enabled) {
 		return {enabled: enabled, text: text, value: value};
 	});
-var $author$project$Main$OpenFileBrowser = {$: 'OpenFileBrowser'};
 var $abadi199$elm_input_extra$Dropdown$Options = F3(
 	function (items, emptyItem, onChange) {
 		return {emptyItem: emptyItem, items: items, onChange: onChange};
@@ -7791,6 +7802,18 @@ var $author$project$Main$optionGroup = F2(
 						])),
 				elements));
 	});
+var $author$project$Main$OpenFileBrowser = {$: 'OpenFileBrowser'};
+var $author$project$Main$viewUploadButton = A2(
+	$elm$html$Html$button,
+	_List_fromArray(
+		[
+			$elm$html$Html$Events$onClick($author$project$Main$OpenFileBrowser),
+			$elm$html$Html$Attributes$class('button-4')
+		]),
+	_List_fromArray(
+		[
+			$elm$html$Html$text('upload waypoints')
+		]));
 var $author$project$Main$viewOptions = function (options) {
 	return A2(
 		$elm$html$Html$div,
@@ -7932,16 +7955,17 @@ var $author$project$Main$viewOptions = function (options) {
 								$elm$core$Maybe$Just(options.itemSpacing))
 							])),
 						A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+						$author$project$Main$viewUploadButton,
 						A2(
 						$elm$html$Html$button,
 						_List_fromArray(
 							[
-								$elm$html$Html$Events$onClick($author$project$Main$OpenFileBrowser),
+								$elm$html$Html$Events$onClick($author$project$Main$ClearWaypoints),
 								$elm$html$Html$Attributes$class('button-4')
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text('upload waypoints')
+								$elm$html$Html$text('clear')
 							]))
 					]))
 			]));
@@ -7953,20 +7977,39 @@ var $author$project$Main$view = function (model) {
 		_List_fromArray(
 			[
 				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('flex-container'),
-						$elm$html$Html$Attributes$class('row')
-					]),
-				_List_fromArray(
-					[
-						$author$project$Main$viewOptions(model.options),
-						A2(
-						$author$project$Main$routeBreakdown,
-						$author$project$Main$routeInfo(model),
-						model.options.itemSpacing)
-					]))
+				$elm$core$Maybe$withDefault,
+				A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('flex-container'),
+							$elm$html$Html$Attributes$class('column')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('hello and welcome'),
+							$author$project$Main$viewUploadButton
+						])),
+				A2(
+					$elm$core$Maybe$map,
+					function (w) {
+						return A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('flex-container'),
+									$elm$html$Html$Attributes$class('row')
+								]),
+							_List_fromArray(
+								[
+									$author$project$Main$viewOptions(model.options),
+									A2(
+									$author$project$Main$routeBreakdown,
+									A2($author$project$Main$routeInfo, w, model.options),
+									model.options.itemSpacing)
+								]));
+					},
+					model.waypoints))
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$application(
@@ -8021,22 +8064,30 @@ _Platform_export({'Main':{'init':$author$project$Main$main(
 					A2(
 						$elm$json$Json$Decode$field,
 						'waypoints',
-						$elm$json$Json$Decode$list(
-							A2(
-								$elm$json$Json$Decode$andThen,
-								function (typ) {
-									return A2(
-										$elm$json$Json$Decode$andThen,
-										function (name) {
-											return A2(
-												$elm$json$Json$Decode$andThen,
-												function (distance) {
-													return $elm$json$Json$Decode$succeed(
-														{distance: distance, name: name, typ: typ});
-												},
-												A2($elm$json$Json$Decode$field, 'distance', $elm$json$Json$Decode$float));
-										},
-										A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string));
-								},
-								A2($elm$json$Json$Decode$field, 'typ', $elm$json$Json$Decode$string))))))
+						$elm$json$Json$Decode$oneOf(
+							_List_fromArray(
+								[
+									$elm$json$Json$Decode$null($elm$core$Maybe$Nothing),
+									A2(
+									$elm$json$Json$Decode$map,
+									$elm$core$Maybe$Just,
+									$elm$json$Json$Decode$list(
+										A2(
+											$elm$json$Json$Decode$andThen,
+											function (typ) {
+												return A2(
+													$elm$json$Json$Decode$andThen,
+													function (name) {
+														return A2(
+															$elm$json$Json$Decode$andThen,
+															function (distance) {
+																return $elm$json$Json$Decode$succeed(
+																	{distance: distance, name: name, typ: typ});
+															},
+															A2($elm$json$Json$Decode$field, 'distance', $elm$json$Json$Decode$float));
+													},
+													A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string));
+											},
+											A2($elm$json$Json$Decode$field, 'typ', $elm$json$Json$Decode$string))))
+								])))))
 			])))(0)}});}(this));

@@ -40,7 +40,7 @@ main =
 
 
 type alias StoredState =
-    { waypoints : List Waypoint
+    { waypoints : Maybe (List Waypoint)
     , totalDistanceDisplay : String
     , locationFilterEnabled : Bool
     , filteredLocationTypes : Json.Decode.Value
@@ -49,7 +49,7 @@ type alias StoredState =
 
 
 type alias Model =
-    { waypoints : List Waypoint
+    { waypoints : Maybe (List Waypoint)
     , options : Options
     }
 
@@ -101,12 +101,12 @@ init maybeState _ _ =
                         state.locationFilterEnabled
                         (Json.Decode.decodeValue (Json.Decode.dict Json.Decode.bool) state.filteredLocationTypes
                             --TODO: handle error
-                            |> Result.withDefault (initialFilteredLocations state.waypoints)
+                            |> Result.withDefault (initialFilteredLocations (Maybe.withDefault [] state.waypoints))
                         )
                         (parseTotalDistanceDisplay state.totalDistanceDisplay |> Maybe.withDefault FromFirst)
                         state.itemSpacing
             )
-        |> Maybe.withDefault (Model [] (Options False Dict.empty FromFirst 20))
+        |> Maybe.withDefault (Model Maybe.Nothing (Options False Dict.empty FromFirst 20))
     , Cmd.none
     )
 
@@ -120,6 +120,7 @@ type Msg
     | OpenFileBrowser
     | FileUploaded File.File
     | CsvDecoded (Result Csv.Decode.Error (List Waypoint))
+    | ClearWaypoints
 
 
 initialOptions : List Waypoint -> Options
@@ -200,6 +201,9 @@ update msg model =
                 |> Result.map (initialModel >> updateModel)
                 |> Result.withDefault ( model, Cmd.none )
 
+        ClearWaypoints ->
+            updateModel { model | waypoints = Maybe.Nothing }
+
         Never ->
             ( model, Cmd.none )
 
@@ -215,7 +219,7 @@ initialModel waypoints =
         sortedWaypoint =
             List.sortBy .distance waypoints
     in
-    Model sortedWaypoint (initialOptions sortedWaypoint)
+    Model (Maybe.Just sortedWaypoint) (initialOptions sortedWaypoint)
 
 
 
@@ -225,10 +229,21 @@ initialModel waypoints =
 view : Model -> Browser.Document Msg
 view model =
     Browser.Document "Route sheet"
-        [ Html.div [ Html.Attributes.class "flex-container", Html.Attributes.class "row" ]
-            [ viewOptions model.options
-            , routeBreakdown (routeInfo model) model.options.itemSpacing
-            ]
+        [ model.waypoints
+            |> Maybe.map
+                (\w ->
+                    Html.div [ Html.Attributes.class "flex-container", Html.Attributes.class "row" ]
+                        [ viewOptions model.options
+                        , routeBreakdown (routeInfo w model.options) model.options.itemSpacing
+                        ]
+                )
+            |> Maybe.withDefault
+                (Html.div
+                    [ Html.Attributes.class "flex-container"
+                    , Html.Attributes.class "column"
+                    ]
+                    [ Html.text "hello and welcome", viewUploadButton ]
+                )
         ]
 
 
@@ -327,11 +342,19 @@ viewOptions options =
                     (Maybe.Just options.itemSpacing)
                 ]
             , Html.hr [] []
+            , viewUploadButton
             , Html.button
-                [ Html.Events.onClick OpenFileBrowser, Html.Attributes.class "button-4" ]
-                [ Html.text "upload waypoints" ]
+                [ Html.Events.onClick ClearWaypoints, Html.Attributes.class "button-4" ]
+                [ Html.text "clear" ]
             ]
         ]
+
+
+viewUploadButton : Html Msg
+viewUploadButton =
+    Html.button
+        [ Html.Events.onClick OpenFileBrowser, Html.Attributes.class "button-4" ]
+        [ Html.text "upload waypoints" ]
 
 
 parseTotalDistanceDisplay : String -> Maybe TotalDistanceDisplay
@@ -363,19 +386,19 @@ formatTotalDistanceDisplay v =
             "hide"
 
 
-routeInfo : Model -> RouteInfo
-routeInfo model =
+routeInfo : List Waypoint -> Options -> RouteInfo
+routeInfo waypoints options =
     List.foldl
         (\el accum ->
             ( Maybe.Just el
             , ([ InfoWaypoint <|
                     DisplayWaypoint el.name
-                        (case model.options.totalDistanceDisplay of
+                        (case options.totalDistanceDisplay of
                             FromFirst ->
                                 Maybe.Just el.distance
 
                             FromLast ->
-                                List.head (List.reverse model.waypoints) |> Maybe.map (\last -> last.distance - el.distance)
+                                List.head (List.reverse waypoints) |> Maybe.map (\last -> last.distance - el.distance)
 
                             None ->
                                 Maybe.Nothing
@@ -396,11 +419,11 @@ routeInfo model =
             )
         )
         ( Maybe.Nothing, [] )
-        (if model.options.locationFilterEnabled then
-            List.filter (\w -> Dict.get w.typ model.options.filteredLocationTypes |> Maybe.withDefault True) model.waypoints
+        (if options.locationFilterEnabled then
+            List.filter (\w -> Dict.get w.typ options.filteredLocationTypes |> Maybe.withDefault True) waypoints
 
          else
-            model.waypoints
+            waypoints
         )
         |> Tuple.second
         |> List.reverse
@@ -558,7 +581,7 @@ checkbox b msg name =
 storeModel : Model -> Cmd msg
 storeModel model =
     Json.Encode.object
-        [ ( "waypoints", encodeWaypoints model.waypoints )
+        [ ( "waypoints", model.waypoints |> Maybe.map encodeWaypoints |> Maybe.withDefault Json.Encode.null )
         , ( "totalDistanceDisplay", Json.Encode.string <| formatTotalDistanceDisplay model.options.totalDistanceDisplay )
         , ( "locationFilterEnabled", Json.Encode.bool model.options.locationFilterEnabled )
         , ( "filteredLocationTypes", Json.Encode.dict identity Json.Encode.bool model.options.filteredLocationTypes )
