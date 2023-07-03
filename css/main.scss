@@ -40,11 +40,11 @@ fieldset {
 }
 
 .column.narrow {
-  flex: 25%;
+  flex-shrink: 1;
 }
 
 .column.wide {
-  flex: 75%;
+  flex-grow: 2;
 }
 
 .route_breakdown {
