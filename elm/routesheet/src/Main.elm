@@ -10,6 +10,7 @@ import File.Select
 import Html exposing (Attribute, Html, div)
 import Html.Attributes
 import Html.Events
+import Json.Decode
 import Json.Encode
 import String
 import Svg
@@ -38,7 +39,10 @@ main =
 
 
 type alias StoredState =
-    { waypoints : List Waypoint }
+    { waypoints : List Waypoint
+    , totalDistanceDisplay : String
+    , types : Json.Decode.Value
+    }
 
 
 type alias Model =
@@ -84,7 +88,20 @@ type Info
 
 init : Maybe StoredState -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
 init maybeState _ _ =
-    ( maybeState |> Maybe.map (\state -> Model state.waypoints <| initialOptions state.waypoints) |> Maybe.withDefault (Model [] (Options Dict.empty FromFirst)), Cmd.none )
+    ( maybeState
+        |> Maybe.map
+            (\state ->
+                Model state.waypoints <|
+                    Options
+                        (Json.Decode.decodeValue (Json.Decode.dict Json.Decode.bool) state.types
+                            --TODO: handle error
+                            |> Result.withDefault (initialTypes state.waypoints)
+                        )
+                        (parseTotalDistanceDisplay state.totalDistanceDisplay |> Maybe.withDefault FromFirst)
+            )
+        |> Maybe.withDefault (Model [] (Options Dict.empty FromFirst))
+    , Cmd.none
+    )
 
 
 type Msg
@@ -113,8 +130,11 @@ update msg model =
             let
                 options =
                     model.options
+
+                newModel =
+                    { model | options = { options | types = Dict.insert typ enabled model.options.types } }
             in
-            ( { model | options = { options | types = Dict.insert typ enabled model.options.types } }, Cmd.none )
+            updateModel newModel
 
         UpdateTotalDistanceDisplay maybeSelection ->
             maybeSelection
@@ -124,7 +144,7 @@ update msg model =
                             options =
                                 model.options
                         in
-                        ( { model | options = { options | totalDistanceDisplay = selection } }, Cmd.none )
+                        updateModel { model | options = { options | totalDistanceDisplay = selection } }
                     )
                 |> Maybe.withDefault ( model, Cmd.none )
 
@@ -149,18 +169,16 @@ update msg model =
 
         CsvDecoded result ->
             result
-                |> Result.map
-                    (\waypoints ->
-                        let
-                            newModel =
-                                initialModel waypoints
-                        in
-                        ( newModel, storeModel newModel )
-                    )
+                |> Result.map (initialModel >> updateModel)
                 |> Result.withDefault ( model, Cmd.none )
 
         Never ->
             ( model, Cmd.none )
+
+
+updateModel : Model -> ( Model, Cmd Msg )
+updateModel model =
+    ( model, storeModel model )
 
 
 initialModel : List Waypoint -> Model
@@ -223,34 +241,48 @@ waypointsAndOptions model =
                             , Dropdown.Item "none" "none" True
                             ]
                             Maybe.Nothing
-                            (\maybeSelection ->
-                                maybeSelection
-                                    |> Maybe.map
-                                        (\selection ->
-                                            case selection of
-                                                "from first" ->
-                                                    UpdateTotalDistanceDisplay (Maybe.Just FromFirst)
-
-                                                "from last" ->
-                                                    UpdateTotalDistanceDisplay (Maybe.Just FromLast)
-
-                                                "none" ->
-                                                    UpdateTotalDistanceDisplay (Maybe.Just None)
-
-                                                _ ->
-                                                    UpdateTotalDistanceDisplay Maybe.Nothing
-                                        )
-                                    |> Maybe.withDefault (UpdateTotalDistanceDisplay Maybe.Nothing)
+                            (Maybe.map parseTotalDistanceDisplay
+                                >> Maybe.withDefault Maybe.Nothing
+                                >> UpdateTotalDistanceDisplay
                             )
                         )
                         []
-                        (Maybe.Just "hello")
+                        Maybe.Nothing
                    ]
             )
         , Html.br [] []
         , Html.h2 [] [ Html.text "Waypoints" ]
         , div [] (List.map (\waypoint -> div [] [ Html.text ((++) (formatFloat waypoint.distance ++ " ") waypoint.name) ]) model.waypoints)
         ]
+
+
+parseTotalDistanceDisplay : String -> Maybe TotalDistanceDisplay
+parseTotalDistanceDisplay v =
+    case v of
+        "from first" ->
+            Maybe.Just FromFirst
+
+        "from last" ->
+            Maybe.Just FromLast
+
+        "none" ->
+            Maybe.Just None
+
+        _ ->
+            Maybe.Nothing
+
+
+formatTotalDistanceDisplay : TotalDistanceDisplay -> String
+formatTotalDistanceDisplay v =
+    case v of
+        FromFirst ->
+            "from first"
+
+        FromLast ->
+            "from last"
+
+        None ->
+            "none"
 
 
 routeInfo : Model -> RouteInfo
@@ -431,12 +463,16 @@ checkbox b msg name =
 
 
 -- STATE
+-- The field names in these encoded JSON objects must match exactly the field names
+-- in the records of the Model to ensure that deserialising works as expected.
 
 
 storeModel : Model -> Cmd msg
 storeModel model =
     Json.Encode.object
         [ ( "waypoints", encodeWaypoints model.waypoints )
+        , ( "totalDistanceDisplay", Json.Encode.string <| formatTotalDistanceDisplay model.options.totalDistanceDisplay )
+        , ( "types", Json.Encode.dict identity Json.Encode.bool model.options.types )
         ]
         |> Json.Encode.encode 2
         |> storeState

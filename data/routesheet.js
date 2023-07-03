@@ -5387,6 +5387,8 @@ var $author$project$Main$Options = F2(
 	function (types, totalDistanceDisplay) {
 		return {totalDistanceDisplay: totalDistanceDisplay, types: types};
 	});
+var $elm$json$Json$Decode$bool = _Json_decodeBool;
+var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $elm$core$Dict$Black = {$: 'Black'};
@@ -5510,6 +5512,13 @@ var $elm$core$Dict$fromList = function (assocs) {
 		$elm$core$Dict$empty,
 		assocs);
 };
+var $elm$json$Json$Decode$keyValuePairs = _Json_decodeKeyValuePairs;
+var $elm$json$Json$Decode$dict = function (decoder) {
+	return A2(
+		$elm$json$Json$Decode$map,
+		$elm$core$Dict$fromList,
+		$elm$json$Json$Decode$keyValuePairs(decoder));
+};
 var $author$project$Main$initialTypes = function (waypoints) {
 	return $elm$core$Dict$fromList(
 		A2(
@@ -5518,12 +5527,6 @@ var $author$project$Main$initialTypes = function (waypoints) {
 				return _Utils_Tuple2(el.typ, true);
 			},
 			waypoints));
-};
-var $author$project$Main$initialOptions = function (waypoints) {
-	return A2(
-		$author$project$Main$Options,
-		$author$project$Main$initialTypes(waypoints),
-		$author$project$Main$FromFirst);
 };
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
@@ -5537,6 +5540,20 @@ var $elm$core$Maybe$map = F2(
 	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $author$project$Main$FromLast = {$: 'FromLast'};
+var $author$project$Main$None = {$: 'None'};
+var $author$project$Main$parseTotalDistanceDisplay = function (v) {
+	switch (v) {
+		case 'from first':
+			return $elm$core$Maybe$Just($author$project$Main$FromFirst);
+		case 'from last':
+			return $elm$core$Maybe$Just($author$project$Main$FromLast);
+		case 'none':
+			return $elm$core$Maybe$Just($author$project$Main$None);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
 		if (maybe.$ === 'Just') {
@@ -5544,6 +5561,15 @@ var $elm$core$Maybe$withDefault = F2(
 			return value;
 		} else {
 			return _default;
+		}
+	});
+var $elm$core$Result$withDefault = F2(
+	function (def, result) {
+		if (result.$ === 'Ok') {
+			var a = result.a;
+			return a;
+		} else {
+			return def;
 		}
 	});
 var $author$project$Main$init = F3(
@@ -5561,7 +5587,19 @@ var $author$project$Main$init = F3(
 						return A2(
 							$author$project$Main$Model,
 							state.waypoints,
-							$author$project$Main$initialOptions(state.waypoints));
+							A2(
+								$author$project$Main$Options,
+								A2(
+									$elm$core$Result$withDefault,
+									$author$project$Main$initialTypes(state.waypoints),
+									A2(
+										$elm$json$Json$Decode$decodeValue,
+										$elm$json$Json$Decode$dict($elm$json$Json$Decode$bool),
+										state.types)),
+								A2(
+									$elm$core$Maybe$withDefault,
+									$author$project$Main$FromFirst,
+									$author$project$Main$parseTotalDistanceDisplay(state.totalDistanceDisplay))));
 					},
 					maybeState)),
 			$elm$core$Platform$Cmd$none);
@@ -5582,6 +5620,11 @@ var $author$project$Main$FileUploaded = function (a) {
 var $author$project$Main$Waypoint = F3(
 	function (name, distance, typ) {
 		return {distance: distance, name: name, typ: typ};
+	});
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
 	});
 var $BrianHicks$elm_csv$Csv$Decode$ParsingError = function (a) {
 	return {$: 'ParsingError', a: a};
@@ -6540,6 +6583,12 @@ var $BrianHicks$elm_csv$Csv$Decode$float = $BrianHicks$elm_csv$Csv$Decode$fromSt
 				$BrianHicks$elm_csv$Csv$Decode$ExpectedFloat(value));
 		}
 	});
+var $author$project$Main$initialOptions = function (waypoints) {
+	return A2(
+		$author$project$Main$Options,
+		$author$project$Main$initialTypes(waypoints),
+		$author$project$Main$FromFirst);
+};
 var $elm$core$List$sortBy = _List_sortBy;
 var $author$project$Main$initialModel = function (waypoints) {
 	var sortedWaypoint = A2(
@@ -6597,6 +6646,50 @@ var $BrianHicks$elm_csv$Csv$Decode$pipeline = $BrianHicks$elm_csv$Csv$Decode$map
 		function (value, fn) {
 			return fn(value);
 		}));
+var $BrianHicks$elm_csv$Csv$Decode$string = $BrianHicks$elm_csv$Csv$Decode$fromString($elm$core$Result$Ok);
+var $elm$file$File$toString = _File_toString;
+var $elm$json$Json$Encode$bool = _Json_wrap;
+var $elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3($elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var $elm$json$Json$Encode$dict = F3(
+	function (toKey, toValue, dictionary) {
+		return _Json_wrap(
+			A3(
+				$elm$core$Dict$foldl,
+				F3(
+					function (key, value, obj) {
+						return A3(
+							_Json_addField,
+							toKey(key),
+							toValue(value),
+							obj);
+					}),
+				_Json_emptyObject(_Utils_Tuple0),
+				dictionary));
+	});
 var $elm$json$Json$Encode$float = _Json_wrap;
 var $elm$json$Json$Encode$list = F2(
 	function (func, entries) {
@@ -6641,6 +6734,16 @@ var $author$project$Main$encodeWaypoints = function (waypoints) {
 		},
 		waypoints);
 };
+var $author$project$Main$formatTotalDistanceDisplay = function (v) {
+	switch (v.$) {
+		case 'FromFirst':
+			return 'from first';
+		case 'FromLast':
+			return 'from last';
+		default:
+			return 'none';
+	}
+};
 var $author$project$Main$storeState = _Platform_outgoingPort('storeState', $elm$json$Json$Encode$string);
 var $author$project$Main$storeModel = function (model) {
 	return $author$project$Main$storeState(
@@ -6652,20 +6755,21 @@ var $author$project$Main$storeModel = function (model) {
 					[
 						_Utils_Tuple2(
 						'waypoints',
-						$author$project$Main$encodeWaypoints(model.waypoints))
+						$author$project$Main$encodeWaypoints(model.waypoints)),
+						_Utils_Tuple2(
+						'totalDistanceDisplay',
+						$elm$json$Json$Encode$string(
+							$author$project$Main$formatTotalDistanceDisplay(model.options.totalDistanceDisplay))),
+						_Utils_Tuple2(
+						'types',
+						A3($elm$json$Json$Encode$dict, $elm$core$Basics$identity, $elm$json$Json$Encode$bool, model.options.types))
 					]))));
 };
-var $BrianHicks$elm_csv$Csv$Decode$string = $BrianHicks$elm_csv$Csv$Decode$fromString($elm$core$Result$Ok);
-var $elm$file$File$toString = _File_toString;
-var $elm$core$Result$withDefault = F2(
-	function (def, result) {
-		if (result.$ === 'Ok') {
-			var a = result.a;
-			return a;
-		} else {
-			return def;
-		}
-	});
+var $author$project$Main$updateModel = function (model) {
+	return _Utils_Tuple2(
+		model,
+		$author$project$Main$storeModel(model));
+};
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -6673,17 +6777,16 @@ var $author$project$Main$update = F2(
 				var typ = msg.a;
 				var enabled = msg.b;
 				var options = model.options;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							options: _Utils_update(
-								options,
-								{
-									types: A3($elm$core$Dict$insert, typ, enabled, model.options.types)
-								})
-						}),
-					$elm$core$Platform$Cmd$none);
+				var newModel = _Utils_update(
+					model,
+					{
+						options: _Utils_update(
+							options,
+							{
+								types: A3($elm$core$Dict$insert, typ, enabled, model.options.types)
+							})
+					});
+				return $author$project$Main$updateModel(newModel);
 			case 'UpdateTotalDistanceDisplay':
 				var maybeSelection = msg.a;
 				return A2(
@@ -6693,15 +6796,14 @@ var $author$project$Main$update = F2(
 						$elm$core$Maybe$map,
 						function (selection) {
 							var options = model.options;
-							return _Utils_Tuple2(
+							return $author$project$Main$updateModel(
 								_Utils_update(
 									model,
 									{
 										options: _Utils_update(
 											options,
 											{totalDistanceDisplay: selection})
-									}),
-								$elm$core$Platform$Cmd$none);
+									}));
 						},
 						maybeSelection));
 			case 'OpenFileBrowser':
@@ -6745,17 +6847,13 @@ var $author$project$Main$update = F2(
 					_Utils_Tuple2(model, $elm$core$Platform$Cmd$none),
 					A2(
 						$elm$core$Result$map,
-						function (waypoints) {
-							var newModel = $author$project$Main$initialModel(waypoints);
-							return _Utils_Tuple2(
-								newModel,
-								$author$project$Main$storeModel(newModel));
-						},
+						A2($elm$core$Basics$composeR, $author$project$Main$initialModel, $author$project$Main$updateModel),
 						result));
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
+var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $elm$browser$Browser$Document = F2(
 	function (title, body) {
 		return {body: body, title: title};
@@ -7157,12 +7255,10 @@ var $author$project$Main$routeInfo = function (model) {
 				},
 				model.waypoints)).b);
 };
-var $author$project$Main$FromLast = {$: 'FromLast'};
 var $abadi199$elm_input_extra$Dropdown$Item = F3(
 	function (value, text, enabled) {
 		return {enabled: enabled, text: text, value: value};
 	});
-var $author$project$Main$None = {$: 'None'};
 var $abadi199$elm_input_extra$Dropdown$Options = F3(
 	function (items, emptyItem, onChange) {
 		return {emptyItem: emptyItem, items: items, onChange: onChange};
@@ -7175,7 +7271,6 @@ var $author$project$Main$UpdateTotalDistanceDisplay = function (a) {
 	return {$: 'UpdateTotalDistanceDisplay', a: a};
 };
 var $elm$html$Html$br = _VirtualDom_node('br');
-var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$html$Html$Attributes$boolProperty = F2(
 	function (key, bool) {
 		return A2(
@@ -7217,11 +7312,6 @@ var $author$project$Main$checkbox = F3(
 	});
 var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
 var $elm$core$Basics$not = _Basics_not;
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
 var $elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
@@ -7380,31 +7470,15 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 										A3($abadi199$elm_input_extra$Dropdown$Item, 'none', 'none', true)
 									]),
 								$elm$core$Maybe$Nothing,
-								function (maybeSelection) {
-									return A2(
-										$elm$core$Maybe$withDefault,
-										$author$project$Main$UpdateTotalDistanceDisplay($elm$core$Maybe$Nothing),
-										A2(
-											$elm$core$Maybe$map,
-											function (selection) {
-												switch (selection) {
-													case 'from first':
-														return $author$project$Main$UpdateTotalDistanceDisplay(
-															$elm$core$Maybe$Just($author$project$Main$FromFirst));
-													case 'from last':
-														return $author$project$Main$UpdateTotalDistanceDisplay(
-															$elm$core$Maybe$Just($author$project$Main$FromLast));
-													case 'none':
-														return $author$project$Main$UpdateTotalDistanceDisplay(
-															$elm$core$Maybe$Just($author$project$Main$None));
-													default:
-														return $author$project$Main$UpdateTotalDistanceDisplay($elm$core$Maybe$Nothing);
-												}
-											},
-											maybeSelection));
-								}),
+								A2(
+									$elm$core$Basics$composeR,
+									$elm$core$Maybe$map($author$project$Main$parseTotalDistanceDisplay),
+									A2(
+										$elm$core$Basics$composeR,
+										$elm$core$Maybe$withDefault($elm$core$Maybe$Nothing),
+										$author$project$Main$UpdateTotalDistanceDisplay))),
 							_List_Nil,
-							$elm$core$Maybe$Just('hello'))
+							$elm$core$Maybe$Nothing)
 						]))),
 				A2($elm$html$Html$br, _List_Nil, _List_Nil),
 				A2(
@@ -7496,8 +7570,18 @@ _Platform_export({'Main':{'init':$author$project$Main$main(
 				A2(
 					$elm$json$Json$Decode$andThen,
 					function (waypoints) {
-						return $elm$json$Json$Decode$succeed(
-							{waypoints: waypoints});
+						return A2(
+							$elm$json$Json$Decode$andThen,
+							function (types) {
+								return A2(
+									$elm$json$Json$Decode$andThen,
+									function (totalDistanceDisplay) {
+										return $elm$json$Json$Decode$succeed(
+											{totalDistanceDisplay: totalDistanceDisplay, types: types, waypoints: waypoints});
+									},
+									A2($elm$json$Json$Decode$field, 'totalDistanceDisplay', $elm$json$Json$Decode$string));
+							},
+							A2($elm$json$Json$Decode$field, 'types', $elm$json$Json$Decode$value));
 					},
 					A2(
 						$elm$json$Json$Decode$field,
