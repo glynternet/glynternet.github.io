@@ -10,6 +10,7 @@ import File.Select
 import Html exposing (Attribute, Html, div)
 import Html.Attributes
 import Html.Events
+import Input.Number
 import Json.Decode
 import Json.Encode
 import String
@@ -43,6 +44,7 @@ type alias StoredState =
     , totalDistanceDisplay : String
     , locationFilterEnabled : Bool
     , filteredLocationTypes : Json.Decode.Value
+    , itemSpacing : Int
     }
 
 
@@ -56,6 +58,7 @@ type alias Options =
     { locationFilterEnabled : Bool
     , filteredLocationTypes : Dict.Dict String Bool
     , totalDistanceDisplay : TotalDistanceDisplay
+    , itemSpacing : Int
     }
 
 
@@ -101,8 +104,9 @@ init maybeState _ _ =
                             |> Result.withDefault (initialFilteredLocations state.waypoints)
                         )
                         (parseTotalDistanceDisplay state.totalDistanceDisplay |> Maybe.withDefault FromFirst)
+                        state.itemSpacing
             )
-        |> Maybe.withDefault (Model [] (Options False Dict.empty FromFirst))
+        |> Maybe.withDefault (Model [] (Options False Dict.empty FromFirst 20))
     , Cmd.none
     )
 
@@ -112,6 +116,7 @@ type Msg
     | TypeEnabled String Bool
     | UpdateTotalDistanceDisplay (Maybe TotalDistanceDisplay)
     | UpdateWaypointSelection (Maybe Bool)
+    | UpdateItemSpacing Int
     | OpenFileBrowser
     | FileUploaded File.File
     | CsvDecoded (Result Csv.Decode.Error (List Waypoint))
@@ -119,7 +124,7 @@ type Msg
 
 initialOptions : List Waypoint -> Options
 initialOptions waypoints =
-    Options False (initialFilteredLocations waypoints) FromFirst
+    Options False (initialFilteredLocations waypoints) FromFirst 20
 
 
 initialFilteredLocations : List Waypoint -> Dict.Dict String Bool
@@ -163,6 +168,13 @@ update msg model =
                         updateModel { model | options = { options | locationFilterEnabled = locationFilterEnabled } }
                     )
                 |> Maybe.withDefault ( model, Cmd.none )
+
+        UpdateItemSpacing spacing ->
+            let
+                options =
+                    model.options
+            in
+            updateModel { model | options = { options | itemSpacing = spacing } }
 
         OpenFileBrowser ->
             ( model, File.Select.file [ "text/csv" ] FileUploaded )
@@ -220,7 +232,7 @@ view model =
             ]
         , Html.div [ Html.Attributes.class "row" ]
             [ waypointsAndOptions model
-            , routeBreakdown (routeInfo model)
+            , routeBreakdown (routeInfo model) model.options.itemSpacing
             ]
         ]
 
@@ -304,6 +316,19 @@ waypointsAndOptions model =
                             []
                             (Maybe.Just <| formatTotalDistanceDisplay model.options.totalDistanceDisplay)
                         ]
+                  , Html.hr [] []
+                  , div []
+                        [ Html.legend [] [ Html.text "Spacing:" ]
+                        , Input.Number.input
+                            { onInput = Maybe.map UpdateItemSpacing >> Maybe.withDefault Never
+                            , maxLength = Nothing
+                            , maxValue = Maybe.Just 100
+                            , minValue = Maybe.Just 1
+                            , hasFocus = Maybe.Nothing
+                            }
+                            []
+                            (Maybe.Just model.options.itemSpacing)
+                        ]
                   ]
                 ]
         ]
@@ -381,12 +406,9 @@ routeInfo model =
         |> List.reverse
 
 
-routeBreakdown : RouteInfo -> Html Msg
-routeBreakdown info =
+routeBreakdown : RouteInfo -> Int -> Html Msg
+routeBreakdown info itemSpacing =
     let
-        itemSpacing =
-            20
-
         svgHeight =
             String.fromInt <| (*) itemSpacing (List.length info)
 
@@ -535,6 +557,7 @@ storeModel model =
         , ( "totalDistanceDisplay", Json.Encode.string <| formatTotalDistanceDisplay model.options.totalDistanceDisplay )
         , ( "locationFilterEnabled", Json.Encode.bool model.options.locationFilterEnabled )
         , ( "filteredLocationTypes", Json.Encode.dict identity Json.Encode.bool model.options.filteredLocationTypes )
+        , ( "itemSpacing", Json.Encode.int model.options.itemSpacing )
         ]
         |> Json.Encode.encode 2
         |> storeState
