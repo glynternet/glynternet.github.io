@@ -52,7 +52,8 @@ type alias Model =
 
 
 type alias Options =
-    { types : Dict.Dict String Bool
+    { locationFilterEnabled : Bool
+    , types : Dict.Dict String Bool
     , totalDistanceDisplay : TotalDistanceDisplay
     }
 
@@ -93,13 +94,14 @@ init maybeState _ _ =
             (\state ->
                 Model state.waypoints <|
                     Options
+                        False
                         (Json.Decode.decodeValue (Json.Decode.dict Json.Decode.bool) state.types
                             --TODO: handle error
                             |> Result.withDefault (initialTypes state.waypoints)
                         )
                         (parseTotalDistanceDisplay state.totalDistanceDisplay |> Maybe.withDefault FromFirst)
             )
-        |> Maybe.withDefault (Model [] (Options Dict.empty FromFirst))
+        |> Maybe.withDefault (Model [] (Options False Dict.empty FromFirst))
     , Cmd.none
     )
 
@@ -108,6 +110,7 @@ type Msg
     = Never
     | TypeEnabled String Bool
     | UpdateTotalDistanceDisplay (Maybe TotalDistanceDisplay)
+    | UpdateWaypointSelection (Maybe Bool)
     | OpenFileBrowser
     | FileUploaded File.File
     | CsvDecoded (Result Csv.Decode.Error (List Waypoint))
@@ -115,7 +118,7 @@ type Msg
 
 initialOptions : List Waypoint -> Options
 initialOptions waypoints =
-    Options (initialTypes waypoints) FromFirst
+    Options False (initialTypes waypoints) FromFirst
 
 
 initialTypes : List Waypoint -> Dict.Dict String Bool
@@ -145,6 +148,18 @@ update msg model =
                                 model.options
                         in
                         updateModel { model | options = { options | totalDistanceDisplay = selection } }
+                    )
+                |> Maybe.withDefault ( model, Cmd.none )
+
+        UpdateWaypointSelection maybeSelection ->
+            maybeSelection
+                |> Maybe.map
+                    (\locationFilterEnabled ->
+                        let
+                            options =
+                                model.options
+                        in
+                        updateModel { model | options = { options | locationFilterEnabled = locationFilterEnabled } }
                     )
                 |> Maybe.withDefault ( model, Cmd.none )
 
@@ -212,44 +227,76 @@ view model =
 waypointsAndOptions : Model -> Html Msg
 waypointsAndOptions model =
     Html.div [ Html.Attributes.class "column", Html.Attributes.class "narrow" ]
-        [ div []
-            [ Html.h2 [] [ Html.text "Options" ]
-            , Html.fieldset []
-                (Html.legend [] [ Html.text "Location types:" ]
-                    :: (model.options.types
-                            |> Dict.toList
-                            |> List.map
-                                (\( typ, included ) ->
-                                    checkbox included
-                                        (TypeEnabled typ (not included))
-                                        (if typ /= "" then
-                                            typ
-
-                                         else
-                                            "none"
-                                        )
-                                )
-                       )
-                )
-            ]
-        , div []
-            (Html.legend [] [ Html.text "Total distance:" ]
-                :: [ Dropdown.dropdown
+        [ div [] <|
+            List.concat
+                [ [ Html.h2 [] [ Html.text "Options" ]
+                  , Html.legend [] [ Html.text "Waypoint selection" ]
+                  , Dropdown.dropdown
                         (Dropdown.Options
-                            [ Dropdown.Item (formatTotalDistanceDisplay FromFirst) (formatTotalDistanceDisplay FromFirst) True
-                            , Dropdown.Item (formatTotalDistanceDisplay FromLast) (formatTotalDistanceDisplay FromLast) True
-                            , Dropdown.Item (formatTotalDistanceDisplay None) (formatTotalDistanceDisplay None) True
+                            [ Dropdown.Item "all" "all" True
+                            , Dropdown.Item "filtered" "filtered" True
                             ]
                             Maybe.Nothing
-                            (Maybe.map parseTotalDistanceDisplay
+                            (Maybe.map
+                                (\selection ->
+                                    case selection of
+                                        "all" ->
+                                            Maybe.Just False
+
+                                        "filtered" ->
+                                            Maybe.Just True
+
+                                        _ ->
+                                            Maybe.Nothing
+                                )
                                 >> Maybe.withDefault Maybe.Nothing
-                                >> UpdateTotalDistanceDisplay
+                                >> UpdateWaypointSelection
                             )
                         )
                         []
                         (Maybe.Just <| formatTotalDistanceDisplay model.options.totalDistanceDisplay)
-                   ]
-            )
+                  ]
+                , if model.options.locationFilterEnabled then
+                    [ Html.fieldset []
+                        (Html.legend [] [ Html.text "Location types:" ]
+                            :: (model.options.types
+                                    |> Dict.toList
+                                    |> List.map
+                                        (\( typ, included ) ->
+                                            checkbox included
+                                                (TypeEnabled typ (not included))
+                                                (if typ /= "" then
+                                                    typ
+
+                                                 else
+                                                    "none"
+                                                )
+                                        )
+                               )
+                        )
+                    ]
+
+                  else
+                    []
+                , [ div []
+                        [ Html.legend [] [ Html.text "Total distance:" ]
+                        , Dropdown.dropdown
+                            (Dropdown.Options
+                                [ Dropdown.Item (formatTotalDistanceDisplay FromFirst) (formatTotalDistanceDisplay FromFirst) True
+                                , Dropdown.Item (formatTotalDistanceDisplay FromLast) (formatTotalDistanceDisplay FromLast) True
+                                , Dropdown.Item (formatTotalDistanceDisplay None) (formatTotalDistanceDisplay None) True
+                                ]
+                                Maybe.Nothing
+                                (Maybe.map parseTotalDistanceDisplay
+                                    >> Maybe.withDefault Maybe.Nothing
+                                    >> UpdateTotalDistanceDisplay
+                                )
+                            )
+                            []
+                            (Maybe.Just <| formatTotalDistanceDisplay model.options.totalDistanceDisplay)
+                        ]
+                  ]
+                ]
         , Html.br [] []
         , Html.h2 [] [ Html.text "Waypoints" ]
         , div [] (List.map (\waypoint -> div [] [ Html.text ((++) (formatFloat waypoint.distance ++ " ") waypoint.name) ]) model.waypoints)
@@ -318,7 +365,12 @@ routeInfo model =
             )
         )
         ( Maybe.Nothing, [] )
-        (List.filter (\w -> Dict.get w.typ model.options.types |> Maybe.withDefault True) model.waypoints)
+        (if model.options.locationFilterEnabled then
+            List.filter (\w -> Dict.get w.typ model.options.types |> Maybe.withDefault True) model.waypoints
+
+         else
+            model.waypoints
+        )
         |> Tuple.second
         |> List.reverse
 

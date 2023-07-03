@@ -5383,9 +5383,9 @@ var $author$project$Main$Model = F2(
 	function (waypoints, options) {
 		return {options: options, waypoints: waypoints};
 	});
-var $author$project$Main$Options = F2(
-	function (types, totalDistanceDisplay) {
-		return {totalDistanceDisplay: totalDistanceDisplay, types: types};
+var $author$project$Main$Options = F3(
+	function (locationFilterEnabled, types, totalDistanceDisplay) {
+		return {locationFilterEnabled: locationFilterEnabled, totalDistanceDisplay: totalDistanceDisplay, types: types};
 	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $elm$json$Json$Decode$decodeValue = _Json_run;
@@ -5580,15 +5580,16 @@ var $author$project$Main$init = F3(
 				A2(
 					$author$project$Main$Model,
 					_List_Nil,
-					A2($author$project$Main$Options, $elm$core$Dict$empty, $author$project$Main$FromFirst)),
+					A3($author$project$Main$Options, false, $elm$core$Dict$empty, $author$project$Main$FromFirst)),
 				A2(
 					$elm$core$Maybe$map,
 					function (state) {
 						return A2(
 							$author$project$Main$Model,
 							state.waypoints,
-							A2(
+							A3(
 								$author$project$Main$Options,
+								false,
 								A2(
 									$elm$core$Result$withDefault,
 									$author$project$Main$initialTypes(state.waypoints),
@@ -6584,8 +6585,9 @@ var $BrianHicks$elm_csv$Csv$Decode$float = $BrianHicks$elm_csv$Csv$Decode$fromSt
 		}
 	});
 var $author$project$Main$initialOptions = function (waypoints) {
-	return A2(
+	return A3(
 		$author$project$Main$Options,
+		false,
 		$author$project$Main$initialTypes(waypoints),
 		$author$project$Main$FromFirst);
 };
@@ -6803,6 +6805,25 @@ var $author$project$Main$update = F2(
 										options: _Utils_update(
 											options,
 											{totalDistanceDisplay: selection})
+									}));
+						},
+						maybeSelection));
+			case 'UpdateWaypointSelection':
+				var maybeSelection = msg.a;
+				return A2(
+					$elm$core$Maybe$withDefault,
+					_Utils_Tuple2(model, $elm$core$Platform$Cmd$none),
+					A2(
+						$elm$core$Maybe$map,
+						function (locationFilterEnabled) {
+							var options = model.options;
+							return $author$project$Main$updateModel(
+								_Utils_update(
+									model,
+									{
+										options: _Utils_update(
+											options,
+											{locationFilterEnabled: locationFilterEnabled})
 									}));
 						},
 						maybeSelection));
@@ -7251,7 +7272,7 @@ var $author$project$Main$routeInfo = function (model) {
 							accum.b));
 				}),
 			_Utils_Tuple2($elm$core$Maybe$Nothing, _List_Nil),
-			A2(
+			model.options.locationFilterEnabled ? A2(
 				$elm$core$List$filter,
 				function (w) {
 					return A2(
@@ -7259,7 +7280,7 @@ var $author$project$Main$routeInfo = function (model) {
 						true,
 						A2($elm$core$Dict$get, w.typ, model.options.types));
 				},
-				model.waypoints)).b);
+				model.waypoints) : model.waypoints).b);
 };
 var $abadi199$elm_input_extra$Dropdown$Item = F3(
 	function (value, text, enabled) {
@@ -7275,6 +7296,9 @@ var $author$project$Main$TypeEnabled = F2(
 	});
 var $author$project$Main$UpdateTotalDistanceDisplay = function (a) {
 	return {$: 'UpdateTotalDistanceDisplay', a: a};
+};
+var $author$project$Main$UpdateWaypointSelection = function (a) {
+	return {$: 'UpdateWaypointSelection', a: a};
 };
 var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$Attributes$boolProperty = F2(
@@ -7316,6 +7340,17 @@ var $author$project$Main$checkbox = F3(
 						]))
 				]));
 	});
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
 var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
 var $elm$core$Basics$not = _Basics_not;
 var $elm$json$Json$Decode$at = F2(
@@ -7418,87 +7453,132 @@ var $author$project$Main$waypointsAndOptions = function (model) {
 				A2(
 				$elm$html$Html$div,
 				_List_Nil,
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$h2,
-						_List_Nil,
-						_List_fromArray(
+				$elm$core$List$concat(
+					_List_fromArray(
+						[
+							_List_fromArray(
 							[
-								$elm$html$Html$text('Options')
-							])),
-						A2(
-						$elm$html$Html$fieldset,
-						_List_Nil,
-						A2(
-							$elm$core$List$cons,
-							A2(
+								A2(
+								$elm$html$Html$h2,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Options')
+									])),
+								A2(
 								$elm$html$Html$legend,
 								_List_Nil,
 								_List_fromArray(
 									[
-										$elm$html$Html$text('Location types:')
+										$elm$html$Html$text('Waypoint selection')
 									])),
-							A2(
-								$elm$core$List$map,
-								function (_v0) {
-									var typ = _v0.a;
-									var included = _v0.b;
-									return A3(
-										$author$project$Main$checkbox,
-										included,
-										A2($author$project$Main$TypeEnabled, typ, !included),
-										(typ !== '') ? typ : 'none');
-								},
-								$elm$core$Dict$toList(model.options.types))))
-					])),
-				A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				A2(
-					$elm$core$List$cons,
-					A2(
-						$elm$html$Html$legend,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Total distance:')
-							])),
-					_List_fromArray(
-						[
-							A3(
-							$abadi199$elm_input_extra$Dropdown$dropdown,
-							A3(
-								$abadi199$elm_input_extra$Dropdown$Options,
-								_List_fromArray(
-									[
-										A3(
-										$abadi199$elm_input_extra$Dropdown$Item,
-										$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromFirst),
-										$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromFirst),
-										true),
-										A3(
-										$abadi199$elm_input_extra$Dropdown$Item,
-										$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromLast),
-										$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromLast),
-										true),
-										A3(
-										$abadi199$elm_input_extra$Dropdown$Item,
-										$author$project$Main$formatTotalDistanceDisplay($author$project$Main$None),
-										$author$project$Main$formatTotalDistanceDisplay($author$project$Main$None),
-										true)
-									]),
-								$elm$core$Maybe$Nothing,
-								A2(
-									$elm$core$Basics$composeR,
-									$elm$core$Maybe$map($author$project$Main$parseTotalDistanceDisplay),
+								A3(
+								$abadi199$elm_input_extra$Dropdown$dropdown,
+								A3(
+									$abadi199$elm_input_extra$Dropdown$Options,
+									_List_fromArray(
+										[
+											A3($abadi199$elm_input_extra$Dropdown$Item, 'all', 'all', true),
+											A3($abadi199$elm_input_extra$Dropdown$Item, 'filtered', 'filtered', true)
+										]),
+									$elm$core$Maybe$Nothing,
 									A2(
 										$elm$core$Basics$composeR,
-										$elm$core$Maybe$withDefault($elm$core$Maybe$Nothing),
-										$author$project$Main$UpdateTotalDistanceDisplay))),
-							_List_Nil,
-							$elm$core$Maybe$Just(
-								$author$project$Main$formatTotalDistanceDisplay(model.options.totalDistanceDisplay)))
+										$elm$core$Maybe$map(
+											function (selection) {
+												switch (selection) {
+													case 'all':
+														return $elm$core$Maybe$Just(false);
+													case 'filtered':
+														return $elm$core$Maybe$Just(true);
+													default:
+														return $elm$core$Maybe$Nothing;
+												}
+											}),
+										A2(
+											$elm$core$Basics$composeR,
+											$elm$core$Maybe$withDefault($elm$core$Maybe$Nothing),
+											$author$project$Main$UpdateWaypointSelection))),
+								_List_Nil,
+								$elm$core$Maybe$Just(
+									$author$project$Main$formatTotalDistanceDisplay(model.options.totalDistanceDisplay)))
+							]),
+							model.options.locationFilterEnabled ? _List_fromArray(
+							[
+								A2(
+								$elm$html$Html$fieldset,
+								_List_Nil,
+								A2(
+									$elm$core$List$cons,
+									A2(
+										$elm$html$Html$legend,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Location types:')
+											])),
+									A2(
+										$elm$core$List$map,
+										function (_v1) {
+											var typ = _v1.a;
+											var included = _v1.b;
+											return A3(
+												$author$project$Main$checkbox,
+												included,
+												A2($author$project$Main$TypeEnabled, typ, !included),
+												(typ !== '') ? typ : 'none');
+										},
+										$elm$core$Dict$toList(model.options.types))))
+							]) : _List_Nil,
+							_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$legend,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Total distance:')
+											])),
+										A3(
+										$abadi199$elm_input_extra$Dropdown$dropdown,
+										A3(
+											$abadi199$elm_input_extra$Dropdown$Options,
+											_List_fromArray(
+												[
+													A3(
+													$abadi199$elm_input_extra$Dropdown$Item,
+													$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromFirst),
+													$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromFirst),
+													true),
+													A3(
+													$abadi199$elm_input_extra$Dropdown$Item,
+													$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromLast),
+													$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromLast),
+													true),
+													A3(
+													$abadi199$elm_input_extra$Dropdown$Item,
+													$author$project$Main$formatTotalDistanceDisplay($author$project$Main$None),
+													$author$project$Main$formatTotalDistanceDisplay($author$project$Main$None),
+													true)
+												]),
+											$elm$core$Maybe$Nothing,
+											A2(
+												$elm$core$Basics$composeR,
+												$elm$core$Maybe$map($author$project$Main$parseTotalDistanceDisplay),
+												A2(
+													$elm$core$Basics$composeR,
+													$elm$core$Maybe$withDefault($elm$core$Maybe$Nothing),
+													$author$project$Main$UpdateTotalDistanceDisplay))),
+										_List_Nil,
+										$elm$core$Maybe$Just(
+											$author$project$Main$formatTotalDistanceDisplay(model.options.totalDistanceDisplay)))
+									]))
+							])
 						]))),
 				A2($elm$html$Html$br, _List_Nil, _List_Nil),
 				A2(
