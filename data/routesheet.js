@@ -5380,13 +5380,17 @@ var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $author$project$Main$FromFirst = {$: 'FromFirst'};
-var $author$project$Main$Model = F2(
-	function (waypoints, options) {
-		return {options: options, waypoints: waypoints};
+var $author$project$Main$Model = F3(
+	function (waypoints, waypointOptions, routeViewOptions) {
+		return {routeViewOptions: routeViewOptions, waypointOptions: waypointOptions, waypoints: waypoints};
 	});
-var $author$project$Main$Options = F4(
-	function (locationFilterEnabled, filteredLocationTypes, totalDistanceDisplay, itemSpacing) {
-		return {filteredLocationTypes: filteredLocationTypes, itemSpacing: itemSpacing, locationFilterEnabled: locationFilterEnabled, totalDistanceDisplay: totalDistanceDisplay};
+var $author$project$Main$RouteViewOptions = F2(
+	function (totalDistanceDisplay, itemSpacing) {
+		return {itemSpacing: itemSpacing, totalDistanceDisplay: totalDistanceDisplay};
+	});
+var $author$project$Main$WaypointsOptions = F2(
+	function (locationFilterEnabled, filteredLocationTypes) {
+		return {filteredLocationTypes: filteredLocationTypes, locationFilterEnabled: locationFilterEnabled};
 	});
 var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
@@ -5577,18 +5581,19 @@ var $author$project$Main$init = F3(
 		return _Utils_Tuple2(
 			A2(
 				$elm$core$Maybe$withDefault,
-				A2(
+				A3(
 					$author$project$Main$Model,
 					$elm$core$Maybe$Nothing,
-					A4($author$project$Main$Options, false, $elm$core$Dict$empty, $author$project$Main$FromFirst, 20)),
+					A2($author$project$Main$WaypointsOptions, false, $elm$core$Dict$empty),
+					A2($author$project$Main$RouteViewOptions, $author$project$Main$FromFirst, 20)),
 				A2(
 					$elm$core$Maybe$map,
 					function (state) {
-						return A2(
+						return A3(
 							$author$project$Main$Model,
 							state.waypoints,
-							A4(
-								$author$project$Main$Options,
+							A2(
+								$author$project$Main$WaypointsOptions,
 								state.locationFilterEnabled,
 								A2(
 									$elm$core$Result$withDefault,
@@ -5597,7 +5602,9 @@ var $author$project$Main$init = F3(
 									A2(
 										$elm$json$Json$Decode$decodeValue,
 										$elm$json$Json$Decode$dict($elm$json$Json$Decode$bool),
-										state.filteredLocationTypes)),
+										state.filteredLocationTypes))),
+							A2(
+								$author$project$Main$RouteViewOptions,
 								A2(
 									$elm$core$Maybe$withDefault,
 									$author$project$Main$FromFirst,
@@ -6587,27 +6594,27 @@ var $BrianHicks$elm_csv$Csv$Decode$float = $BrianHicks$elm_csv$Csv$Decode$fromSt
 				$BrianHicks$elm_csv$Csv$Decode$ExpectedFloat(value));
 		}
 	});
-var $author$project$Main$initialOptions = function (waypoints) {
-	return A4(
-		$author$project$Main$Options,
+var $author$project$Main$initialWaypointOptions = function (waypoints) {
+	return A2(
+		$author$project$Main$WaypointsOptions,
 		false,
-		$author$project$Main$initialFilteredLocations(waypoints),
-		$author$project$Main$FromFirst,
-		20);
+		$author$project$Main$initialFilteredLocations(waypoints));
 };
 var $elm$core$List$sortBy = _List_sortBy;
-var $author$project$Main$initialModel = function (waypoints) {
-	var sortedWaypoint = A2(
-		$elm$core$List$sortBy,
-		function ($) {
-			return $.distance;
-		},
-		waypoints);
-	return A2(
-		$author$project$Main$Model,
-		$elm$core$Maybe$Just(sortedWaypoint),
-		$author$project$Main$initialOptions(sortedWaypoint));
-};
+var $author$project$Main$initialModel = F2(
+	function (routeViewOptions, waypoints) {
+		var sortedWaypoint = A2(
+			$elm$core$List$sortBy,
+			function ($) {
+				return $.distance;
+			},
+			waypoints);
+		return A3(
+			$author$project$Main$Model,
+			$elm$core$Maybe$Just(sortedWaypoint),
+			$author$project$Main$initialWaypointOptions(sortedWaypoint),
+			routeViewOptions);
+	});
 var $BrianHicks$elm_csv$Csv$Decode$succeed = function (value) {
 	return $BrianHicks$elm_csv$Csv$Decode$Decoder(
 		F4(
@@ -6770,16 +6777,16 @@ var $author$project$Main$storeModel = function (model) {
 						_Utils_Tuple2(
 						'totalDistanceDisplay',
 						$elm$json$Json$Encode$string(
-							$author$project$Main$formatTotalDistanceDisplay(model.options.totalDistanceDisplay))),
+							$author$project$Main$formatTotalDistanceDisplay(model.routeViewOptions.totalDistanceDisplay))),
 						_Utils_Tuple2(
 						'locationFilterEnabled',
-						$elm$json$Json$Encode$bool(model.options.locationFilterEnabled)),
+						$elm$json$Json$Encode$bool(model.waypointOptions.locationFilterEnabled)),
 						_Utils_Tuple2(
 						'filteredLocationTypes',
-						A3($elm$json$Json$Encode$dict, $elm$core$Basics$identity, $elm$json$Json$Encode$bool, model.options.filteredLocationTypes)),
+						A3($elm$json$Json$Encode$dict, $elm$core$Basics$identity, $elm$json$Json$Encode$bool, model.waypointOptions.filteredLocationTypes)),
 						_Utils_Tuple2(
 						'itemSpacing',
-						$elm$json$Json$Encode$int(model.options.itemSpacing))
+						$elm$json$Json$Encode$int(model.routeViewOptions.itemSpacing))
 					]))));
 };
 var $author$project$Main$updateModel = function (model) {
@@ -6793,14 +6800,14 @@ var $author$project$Main$update = F2(
 			case 'TypeEnabled':
 				var typ = msg.a;
 				var enabled = msg.b;
-				var options = model.options;
+				var options = model.waypointOptions;
 				var newModel = _Utils_update(
 					model,
 					{
-						options: _Utils_update(
+						waypointOptions: _Utils_update(
 							options,
 							{
-								filteredLocationTypes: A3($elm$core$Dict$insert, typ, enabled, model.options.filteredLocationTypes)
+								filteredLocationTypes: A3($elm$core$Dict$insert, typ, enabled, model.waypointOptions.filteredLocationTypes)
 							})
 					});
 				return $author$project$Main$updateModel(newModel);
@@ -6812,12 +6819,12 @@ var $author$project$Main$update = F2(
 					A2(
 						$elm$core$Maybe$map,
 						function (selection) {
-							var options = model.options;
+							var options = model.routeViewOptions;
 							return $author$project$Main$updateModel(
 								_Utils_update(
 									model,
 									{
-										options: _Utils_update(
+										routeViewOptions: _Utils_update(
 											options,
 											{totalDistanceDisplay: selection})
 									}));
@@ -6831,12 +6838,12 @@ var $author$project$Main$update = F2(
 					A2(
 						$elm$core$Maybe$map,
 						function (locationFilterEnabled) {
-							var options = model.options;
+							var options = model.waypointOptions;
 							return $author$project$Main$updateModel(
 								_Utils_update(
 									model,
 									{
-										options: _Utils_update(
+										waypointOptions: _Utils_update(
 											options,
 											{locationFilterEnabled: locationFilterEnabled})
 									}));
@@ -6844,12 +6851,12 @@ var $author$project$Main$update = F2(
 						maybeSelection));
 			case 'UpdateItemSpacing':
 				var spacing = msg.a;
-				var options = model.options;
+				var options = model.routeViewOptions;
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
 						{
-							options: _Utils_update(
+							routeViewOptions: _Utils_update(
 								options,
 								{itemSpacing: spacing})
 						}));
@@ -6894,7 +6901,10 @@ var $author$project$Main$update = F2(
 					_Utils_Tuple2(model, $elm$core$Platform$Cmd$none),
 					A2(
 						$elm$core$Result$map,
-						A2($elm$core$Basics$composeR, $author$project$Main$initialModel, $author$project$Main$updateModel),
+						A2(
+							$elm$core$Basics$composeR,
+							$author$project$Main$initialModel(model.routeViewOptions),
+							$author$project$Main$updateModel),
 						result));
 			case 'ClearWaypoints':
 				return $author$project$Main$updateModel(
@@ -7236,8 +7246,8 @@ var $elm$core$Tuple$second = function (_v0) {
 	var y = _v0.b;
 	return y;
 };
-var $author$project$Main$routeInfo = F2(
-	function (waypoints, options) {
+var $author$project$Main$routeInfo = F3(
+	function (waypoints, waypointOptions, routeViewOptions) {
 		return $elm$core$List$reverse(
 			A3(
 				$elm$core$List$foldl,
@@ -7254,7 +7264,7 @@ var $author$project$Main$routeInfo = F2(
 												$author$project$Main$DisplayWaypoint,
 												el.name,
 												function () {
-													var _v0 = options.totalDistanceDisplay;
+													var _v0 = routeViewOptions.totalDistanceDisplay;
 													switch (_v0.$) {
 														case 'FromFirst':
 															return $elm$core$Maybe$Just(el.distance);
@@ -7287,13 +7297,13 @@ var $author$project$Main$routeInfo = F2(
 								accum.b));
 					}),
 				_Utils_Tuple2($elm$core$Maybe$Nothing, _List_Nil),
-				options.locationFilterEnabled ? A2(
+				waypointOptions.locationFilterEnabled ? A2(
 					$elm$core$List$filter,
 					function (w) {
 						return A2(
 							$elm$core$Maybe$withDefault,
 							true,
-							A2($elm$core$Dict$get, w.typ, options.filteredLocationTypes));
+							A2($elm$core$Dict$get, w.typ, waypointOptions.filteredLocationTypes));
 					},
 					waypoints) : waypoints).b);
 	});
@@ -7814,162 +7824,163 @@ var $author$project$Main$viewUploadButton = A2(
 		[
 			$elm$html$Html$text('upload waypoints')
 		]));
-var $author$project$Main$viewOptions = function (options) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('column'),
-				$elm$html$Html$Attributes$class('narrow')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('options')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$h2,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Options')
-							])),
-						A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-						A2(
-						$author$project$Main$optionGroup,
-						'Waypoint types',
-						A2(
-							$elm$core$List$cons,
-							A3(
-								$abadi199$elm_input_extra$Dropdown$dropdown,
-								A3(
-									$abadi199$elm_input_extra$Dropdown$Options,
-									_List_fromArray(
-										[
-											A3($abadi199$elm_input_extra$Dropdown$Item, 'all', 'all', true),
-											A3($abadi199$elm_input_extra$Dropdown$Item, 'filtered', 'filtered', true)
-										]),
-									$elm$core$Maybe$Nothing,
-									A2(
-										$elm$core$Basics$composeR,
-										$elm$core$Maybe$map(
-											function (selection) {
-												switch (selection) {
-													case 'all':
-														return $elm$core$Maybe$Just(false);
-													case 'filtered':
-														return $elm$core$Maybe$Just(true);
-													default:
-														return $elm$core$Maybe$Nothing;
-												}
-											}),
-										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$Maybe$withDefault($elm$core$Maybe$Nothing),
-											$author$project$Main$UpdateWaypointSelection))),
-								_List_Nil,
-								$elm$core$Maybe$Just(
-									options.locationFilterEnabled ? 'filtered' : 'all')),
-							options.locationFilterEnabled ? _List_fromArray(
+var $author$project$Main$viewOptions = F2(
+	function (waypointOptions, routeViewOptions) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('column'),
+					$elm$html$Html$Attributes$class('narrow')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('options')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$h2,
+							_List_Nil,
+							_List_fromArray(
 								[
-									A2(
-									$elm$html$Html$fieldset,
-									_List_Nil,
-									A2(
-										$elm$core$List$map,
-										function (_v1) {
-											var typ = _v1.a;
-											var included = _v1.b;
-											return A3(
-												$author$project$Main$checkbox,
-												included,
-												A2($author$project$Main$TypeEnabled, typ, !included),
-												(typ !== '') ? typ : 'unknown');
-										},
-										$elm$core$Dict$toList(options.filteredLocationTypes)))
-								]) : _List_Nil)),
-						A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-						A2(
-						$author$project$Main$optionGroup,
-						'Total distance',
-						_List_fromArray(
-							[
+									$elm$html$Html$text('Options')
+								])),
+							A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+							A2(
+							$author$project$Main$optionGroup,
+							'Waypoint types',
+							A2(
+								$elm$core$List$cons,
 								A3(
-								$abadi199$elm_input_extra$Dropdown$dropdown,
-								A3(
-									$abadi199$elm_input_extra$Dropdown$Options,
-									_List_fromArray(
-										[
-											A3(
-											$abadi199$elm_input_extra$Dropdown$Item,
-											$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromFirst),
-											$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromFirst),
-											true),
-											A3(
-											$abadi199$elm_input_extra$Dropdown$Item,
-											$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromLast),
-											$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromLast),
-											true),
-											A3(
-											$abadi199$elm_input_extra$Dropdown$Item,
-											$author$project$Main$formatTotalDistanceDisplay($author$project$Main$None),
-											$author$project$Main$formatTotalDistanceDisplay($author$project$Main$None),
-											true)
-										]),
-									$elm$core$Maybe$Nothing,
-									A2(
-										$elm$core$Basics$composeR,
-										$elm$core$Maybe$map($author$project$Main$parseTotalDistanceDisplay),
+									$abadi199$elm_input_extra$Dropdown$dropdown,
+									A3(
+										$abadi199$elm_input_extra$Dropdown$Options,
+										_List_fromArray(
+											[
+												A3($abadi199$elm_input_extra$Dropdown$Item, 'all', 'all', true),
+												A3($abadi199$elm_input_extra$Dropdown$Item, 'filtered', 'filtered', true)
+											]),
+										$elm$core$Maybe$Nothing,
 										A2(
 											$elm$core$Basics$composeR,
-											$elm$core$Maybe$withDefault($elm$core$Maybe$Nothing),
-											$author$project$Main$UpdateTotalDistanceDisplay))),
-								_List_Nil,
-								$elm$core$Maybe$Just(
-									$author$project$Main$formatTotalDistanceDisplay(options.totalDistanceDisplay)))
-							])),
-						A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-						A2(
-						$author$project$Main$optionGroup,
-						'Spacing',
-						_List_fromArray(
-							[
-								A3(
-								$abadi199$elm_input_extra$Input$Number$input,
-								{
-									hasFocus: $elm$core$Maybe$Nothing,
-									maxLength: $elm$core$Maybe$Nothing,
-									maxValue: $elm$core$Maybe$Just(100),
-									minValue: $elm$core$Maybe$Just(1),
-									onInput: A2(
-										$elm$core$Basics$composeR,
-										$elm$core$Maybe$map($author$project$Main$UpdateItemSpacing),
-										$elm$core$Maybe$withDefault($author$project$Main$Never))
-								},
-								_List_Nil,
-								$elm$core$Maybe$Just(options.itemSpacing))
-							])),
-						A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-						$author$project$Main$viewUploadButton,
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick($author$project$Main$ClearWaypoints),
-								$elm$html$Html$Attributes$class('button-4')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('clear')
-							]))
-					]))
-			]));
-};
+											$elm$core$Maybe$map(
+												function (selection) {
+													switch (selection) {
+														case 'all':
+															return $elm$core$Maybe$Just(false);
+														case 'filtered':
+															return $elm$core$Maybe$Just(true);
+														default:
+															return $elm$core$Maybe$Nothing;
+													}
+												}),
+											A2(
+												$elm$core$Basics$composeR,
+												$elm$core$Maybe$withDefault($elm$core$Maybe$Nothing),
+												$author$project$Main$UpdateWaypointSelection))),
+									_List_Nil,
+									$elm$core$Maybe$Just(
+										waypointOptions.locationFilterEnabled ? 'filtered' : 'all')),
+								waypointOptions.locationFilterEnabled ? _List_fromArray(
+									[
+										A2(
+										$elm$html$Html$fieldset,
+										_List_Nil,
+										A2(
+											$elm$core$List$map,
+											function (_v1) {
+												var typ = _v1.a;
+												var included = _v1.b;
+												return A3(
+													$author$project$Main$checkbox,
+													included,
+													A2($author$project$Main$TypeEnabled, typ, !included),
+													(typ !== '') ? typ : 'unknown');
+											},
+											$elm$core$Dict$toList(waypointOptions.filteredLocationTypes)))
+									]) : _List_Nil)),
+							A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+							A2(
+							$author$project$Main$optionGroup,
+							'Total distance',
+							_List_fromArray(
+								[
+									A3(
+									$abadi199$elm_input_extra$Dropdown$dropdown,
+									A3(
+										$abadi199$elm_input_extra$Dropdown$Options,
+										_List_fromArray(
+											[
+												A3(
+												$abadi199$elm_input_extra$Dropdown$Item,
+												$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromFirst),
+												$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromFirst),
+												true),
+												A3(
+												$abadi199$elm_input_extra$Dropdown$Item,
+												$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromLast),
+												$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromLast),
+												true),
+												A3(
+												$abadi199$elm_input_extra$Dropdown$Item,
+												$author$project$Main$formatTotalDistanceDisplay($author$project$Main$None),
+												$author$project$Main$formatTotalDistanceDisplay($author$project$Main$None),
+												true)
+											]),
+										$elm$core$Maybe$Nothing,
+										A2(
+											$elm$core$Basics$composeR,
+											$elm$core$Maybe$map($author$project$Main$parseTotalDistanceDisplay),
+											A2(
+												$elm$core$Basics$composeR,
+												$elm$core$Maybe$withDefault($elm$core$Maybe$Nothing),
+												$author$project$Main$UpdateTotalDistanceDisplay))),
+									_List_Nil,
+									$elm$core$Maybe$Just(
+										$author$project$Main$formatTotalDistanceDisplay(routeViewOptions.totalDistanceDisplay)))
+								])),
+							A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+							A2(
+							$author$project$Main$optionGroup,
+							'Spacing',
+							_List_fromArray(
+								[
+									A3(
+									$abadi199$elm_input_extra$Input$Number$input,
+									{
+										hasFocus: $elm$core$Maybe$Nothing,
+										maxLength: $elm$core$Maybe$Nothing,
+										maxValue: $elm$core$Maybe$Just(100),
+										minValue: $elm$core$Maybe$Just(1),
+										onInput: A2(
+											$elm$core$Basics$composeR,
+											$elm$core$Maybe$map($author$project$Main$UpdateItemSpacing),
+											$elm$core$Maybe$withDefault($author$project$Main$Never))
+									},
+									_List_Nil,
+									$elm$core$Maybe$Just(routeViewOptions.itemSpacing))
+								])),
+							A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+							$author$project$Main$viewUploadButton,
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Events$onClick($author$project$Main$ClearWaypoints),
+									$elm$html$Html$Attributes$class('button-4')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('clear')
+								]))
+						]))
+				]));
+	});
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$browser$Browser$Document,
@@ -8002,11 +8013,11 @@ var $author$project$Main$view = function (model) {
 								]),
 							_List_fromArray(
 								[
-									$author$project$Main$viewOptions(model.options),
+									A2($author$project$Main$viewOptions, model.waypointOptions, model.routeViewOptions),
 									A2(
 									$author$project$Main$routeBreakdown,
-									A2($author$project$Main$routeInfo, w, model.options),
-									model.options.itemSpacing)
+									A3($author$project$Main$routeInfo, w, model.waypointOptions, model.routeViewOptions),
+									model.routeViewOptions.itemSpacing)
 								]));
 					},
 					model.waypoints))

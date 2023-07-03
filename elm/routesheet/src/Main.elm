@@ -50,14 +50,19 @@ type alias StoredState =
 
 type alias Model =
     { waypoints : Maybe (List Waypoint)
-    , options : Options
+    , waypointOptions : WaypointsOptions
+    , routeViewOptions : RouteViewOptions
     }
 
 
-type alias Options =
+type alias WaypointsOptions =
     { locationFilterEnabled : Bool
     , filteredLocationTypes : Dict.Dict String Bool
-    , totalDistanceDisplay : TotalDistanceDisplay
+    }
+
+
+type alias RouteViewOptions =
+    { totalDistanceDisplay : TotalDistanceDisplay
     , itemSpacing : Int
     }
 
@@ -96,17 +101,19 @@ init maybeState _ _ =
     ( maybeState
         |> Maybe.map
             (\state ->
-                Model state.waypoints <|
-                    Options
+                Model state.waypoints
+                    (WaypointsOptions
                         state.locationFilterEnabled
                         (Json.Decode.decodeValue (Json.Decode.dict Json.Decode.bool) state.filteredLocationTypes
                             --TODO: handle error
                             |> Result.withDefault (initialFilteredLocations (Maybe.withDefault [] state.waypoints))
                         )
-                        (parseTotalDistanceDisplay state.totalDistanceDisplay |> Maybe.withDefault FromFirst)
+                    )
+                    (RouteViewOptions (parseTotalDistanceDisplay state.totalDistanceDisplay |> Maybe.withDefault FromFirst)
                         state.itemSpacing
+                    )
             )
-        |> Maybe.withDefault (Model Maybe.Nothing (Options False Dict.empty FromFirst 20))
+        |> Maybe.withDefault (Model Maybe.Nothing (WaypointsOptions False Dict.empty) (RouteViewOptions FromFirst 20))
     , Cmd.none
     )
 
@@ -123,9 +130,9 @@ type Msg
     | ClearWaypoints
 
 
-initialOptions : List Waypoint -> Options
-initialOptions waypoints =
-    Options False (initialFilteredLocations waypoints) FromFirst 20
+initialWaypointOptions : List Waypoint -> WaypointsOptions
+initialWaypointOptions waypoints =
+    WaypointsOptions False (initialFilteredLocations waypoints)
 
 
 initialFilteredLocations : List Waypoint -> Dict.Dict String Bool
@@ -139,10 +146,10 @@ update msg model =
         TypeEnabled typ enabled ->
             let
                 options =
-                    model.options
+                    model.waypointOptions
 
                 newModel =
-                    { model | options = { options | filteredLocationTypes = Dict.insert typ enabled model.options.filteredLocationTypes } }
+                    { model | waypointOptions = { options | filteredLocationTypes = Dict.insert typ enabled model.waypointOptions.filteredLocationTypes } }
             in
             updateModel newModel
 
@@ -152,9 +159,9 @@ update msg model =
                     (\selection ->
                         let
                             options =
-                                model.options
+                                model.routeViewOptions
                         in
-                        updateModel { model | options = { options | totalDistanceDisplay = selection } }
+                        updateModel { model | routeViewOptions = { options | totalDistanceDisplay = selection } }
                     )
                 |> Maybe.withDefault ( model, Cmd.none )
 
@@ -164,18 +171,18 @@ update msg model =
                     (\locationFilterEnabled ->
                         let
                             options =
-                                model.options
+                                model.waypointOptions
                         in
-                        updateModel { model | options = { options | locationFilterEnabled = locationFilterEnabled } }
+                        updateModel { model | waypointOptions = { options | locationFilterEnabled = locationFilterEnabled } }
                     )
                 |> Maybe.withDefault ( model, Cmd.none )
 
         UpdateItemSpacing spacing ->
             let
                 options =
-                    model.options
+                    model.routeViewOptions
             in
-            updateModel { model | options = { options | itemSpacing = spacing } }
+            updateModel { model | routeViewOptions = { options | itemSpacing = spacing } }
 
         OpenFileBrowser ->
             ( model, File.Select.file [ "text/csv" ] FileUploaded )
@@ -198,7 +205,7 @@ update msg model =
 
         CsvDecoded result ->
             result
-                |> Result.map (initialModel >> updateModel)
+                |> Result.map (initialModel model.routeViewOptions >> updateModel)
                 |> Result.withDefault ( model, Cmd.none )
 
         ClearWaypoints ->
@@ -213,13 +220,13 @@ updateModel model =
     ( model, storeModel model )
 
 
-initialModel : List Waypoint -> Model
-initialModel waypoints =
+initialModel : RouteViewOptions -> List Waypoint -> Model
+initialModel routeViewOptions waypoints =
     let
         sortedWaypoint =
             List.sortBy .distance waypoints
     in
-    Model (Maybe.Just sortedWaypoint) (initialOptions sortedWaypoint)
+    Model (Maybe.Just sortedWaypoint) (initialWaypointOptions sortedWaypoint) routeViewOptions
 
 
 
@@ -233,8 +240,8 @@ view model =
             |> Maybe.map
                 (\w ->
                     Html.div [ Html.Attributes.class "flex-container", Html.Attributes.class "row" ]
-                        [ viewOptions model.options
-                        , routeBreakdown (routeInfo w model.options) model.options.itemSpacing
+                        [ viewOptions model.waypointOptions model.routeViewOptions
+                        , routeBreakdown (routeInfo w model.waypointOptions model.routeViewOptions) model.routeViewOptions.itemSpacing
                         ]
                 )
             |> Maybe.withDefault
@@ -253,8 +260,8 @@ optionGroup title elements =
         (Html.legend [] [ Html.text title ] :: elements)
 
 
-viewOptions : Options -> Html Msg
-viewOptions options =
+viewOptions : WaypointsOptions -> RouteViewOptions -> Html Msg
+viewOptions waypointOptions routeViewOptions =
     Html.div [ Html.Attributes.class "column", Html.Attributes.class "narrow" ]
         [ Html.div [ Html.Attributes.class "options" ] <|
             [ Html.h2 [] [ Html.text "Options" ]
@@ -284,15 +291,15 @@ viewOptions options =
                     )
                     []
                     (Maybe.Just <|
-                        if options.locationFilterEnabled then
+                        if waypointOptions.locationFilterEnabled then
                             "filtered"
 
                         else
                             "all"
                     )
-                    :: (if options.locationFilterEnabled then
+                    :: (if waypointOptions.locationFilterEnabled then
                             [ Html.fieldset []
-                                (options.filteredLocationTypes
+                                (waypointOptions.filteredLocationTypes
                                     |> Dict.toList
                                     |> List.map
                                         (\( typ, included ) ->
@@ -327,7 +334,7 @@ viewOptions options =
                         )
                     )
                     []
-                    (Maybe.Just <| formatTotalDistanceDisplay options.totalDistanceDisplay)
+                    (Maybe.Just <| formatTotalDistanceDisplay routeViewOptions.totalDistanceDisplay)
                 ]
             , Html.hr [] []
             , optionGroup "Spacing"
@@ -339,7 +346,7 @@ viewOptions options =
                     , hasFocus = Maybe.Nothing
                     }
                     []
-                    (Maybe.Just options.itemSpacing)
+                    (Maybe.Just routeViewOptions.itemSpacing)
                 ]
             , Html.hr [] []
             , viewUploadButton
@@ -386,14 +393,14 @@ formatTotalDistanceDisplay v =
             "hide"
 
 
-routeInfo : List Waypoint -> Options -> RouteInfo
-routeInfo waypoints options =
+routeInfo : List Waypoint -> WaypointsOptions -> RouteViewOptions -> RouteInfo
+routeInfo waypoints waypointOptions routeViewOptions =
     List.foldl
         (\el accum ->
             ( Maybe.Just el
             , ([ InfoWaypoint <|
                     DisplayWaypoint el.name
-                        (case options.totalDistanceDisplay of
+                        (case routeViewOptions.totalDistanceDisplay of
                             FromFirst ->
                                 Maybe.Just el.distance
 
@@ -419,8 +426,8 @@ routeInfo waypoints options =
             )
         )
         ( Maybe.Nothing, [] )
-        (if options.locationFilterEnabled then
-            List.filter (\w -> Dict.get w.typ options.filteredLocationTypes |> Maybe.withDefault True) waypoints
+        (if waypointOptions.locationFilterEnabled then
+            List.filter (\w -> Dict.get w.typ waypointOptions.filteredLocationTypes |> Maybe.withDefault True) waypoints
 
          else
             waypoints
@@ -582,10 +589,10 @@ storeModel : Model -> Cmd msg
 storeModel model =
     Json.Encode.object
         [ ( "waypoints", model.waypoints |> Maybe.map encodeWaypoints |> Maybe.withDefault Json.Encode.null )
-        , ( "totalDistanceDisplay", Json.Encode.string <| formatTotalDistanceDisplay model.options.totalDistanceDisplay )
-        , ( "locationFilterEnabled", Json.Encode.bool model.options.locationFilterEnabled )
-        , ( "filteredLocationTypes", Json.Encode.dict identity Json.Encode.bool model.options.filteredLocationTypes )
-        , ( "itemSpacing", Json.Encode.int model.options.itemSpacing )
+        , ( "totalDistanceDisplay", Json.Encode.string <| formatTotalDistanceDisplay model.routeViewOptions.totalDistanceDisplay )
+        , ( "locationFilterEnabled", Json.Encode.bool model.waypointOptions.locationFilterEnabled )
+        , ( "filteredLocationTypes", Json.Encode.dict identity Json.Encode.bool model.waypointOptions.filteredLocationTypes )
+        , ( "itemSpacing", Json.Encode.int model.routeViewOptions.itemSpacing )
         ]
         |> Json.Encode.encode 2
         |> storeState
