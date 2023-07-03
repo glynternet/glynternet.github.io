@@ -68,7 +68,7 @@ type alias RouteViewOptions =
 
 
 type TotalDistanceDisplay
-    = FromFirst
+    = FromZero
     | FromLast
     | None
 
@@ -80,19 +80,8 @@ type alias Waypoint =
     }
 
 
-type alias DisplayWaypoint =
-    { name : String
-    , distance : Maybe Float
-    , typ : Maybe String
-    }
-
-
-type alias RouteInfo =
-    List Info
-
-
 type Info
-    = InfoWaypoint DisplayWaypoint
+    = InfoWaypoint Waypoint
     | Ride Float
 
 
@@ -109,11 +98,11 @@ init maybeState _ _ =
                             |> Result.withDefault (initialFilteredLocations (Maybe.withDefault [] state.waypoints))
                         )
                     )
-                    (RouteViewOptions (parseTotalDistanceDisplay state.totalDistanceDisplay |> Maybe.withDefault FromFirst)
+                    (RouteViewOptions (parseTotalDistanceDisplay state.totalDistanceDisplay |> Maybe.withDefault FromZero)
                         state.itemSpacing
                     )
             )
-        |> Maybe.withDefault (Model Maybe.Nothing (WaypointsOptions False Dict.empty) (RouteViewOptions FromFirst 20))
+        |> Maybe.withDefault (Model Maybe.Nothing (WaypointsOptions False Dict.empty) (RouteViewOptions FromZero 20))
     , Cmd.none
     )
 
@@ -241,7 +230,7 @@ view model =
                 (\w ->
                     Html.div [ Html.Attributes.class "flex-container", Html.Attributes.class "row" ]
                         [ viewOptions model.waypointOptions model.routeViewOptions
-                        , routeBreakdown (routeInfo w model.waypointOptions model.routeViewOptions) model.routeViewOptions.itemSpacing
+                        , routeBreakdown (routeWaypoints w model.waypointOptions) model.routeViewOptions
                         ]
                 )
             |> Maybe.withDefault
@@ -323,7 +312,7 @@ viewOptions waypointOptions routeViewOptions =
             , optionGroup "Total distance"
                 [ Dropdown.dropdown
                     (Dropdown.Options
-                        [ Dropdown.Item (formatTotalDistanceDisplay FromFirst) (formatTotalDistanceDisplay FromFirst) True
+                        [ Dropdown.Item (formatTotalDistanceDisplay FromZero) (formatTotalDistanceDisplay FromZero) True
                         , Dropdown.Item (formatTotalDistanceDisplay FromLast) (formatTotalDistanceDisplay FromLast) True
                         , Dropdown.Item (formatTotalDistanceDisplay None) (formatTotalDistanceDisplay None) True
                         ]
@@ -367,8 +356,8 @@ viewUploadButton =
 parseTotalDistanceDisplay : String -> Maybe TotalDistanceDisplay
 parseTotalDistanceDisplay v =
     case v of
-        "from first" ->
-            Maybe.Just FromFirst
+        "from zero" ->
+            Maybe.Just FromZero
 
         "from last" ->
             Maybe.Just FromLast
@@ -383,8 +372,8 @@ parseTotalDistanceDisplay v =
 formatTotalDistanceDisplay : TotalDistanceDisplay -> String
 formatTotalDistanceDisplay v =
     case v of
-        FromFirst ->
-            "from first"
+        FromZero ->
+            "from zero"
 
         FromLast ->
             "from last"
@@ -393,60 +382,32 @@ formatTotalDistanceDisplay v =
             "hide"
 
 
-routeInfo : List Waypoint -> WaypointsOptions -> RouteViewOptions -> RouteInfo
-routeInfo waypoints waypointOptions routeViewOptions =
-    List.foldl
-        (\el accum ->
-            ( Maybe.Just el
-            , ([ InfoWaypoint <|
-                    DisplayWaypoint el.name
-                        (case routeViewOptions.totalDistanceDisplay of
-                            FromFirst ->
-                                Maybe.Just el.distance
+routeWaypoints : List Waypoint -> WaypointsOptions -> List Waypoint
+routeWaypoints waypoints waypointOptions =
+    if waypointOptions.locationFilterEnabled then
+        List.filter (\w -> Dict.get w.typ waypointOptions.filteredLocationTypes |> Maybe.withDefault True) waypoints
 
-                            FromLast ->
-                                List.head (List.reverse waypoints) |> Maybe.map (\last -> last.distance - el.distance)
-
-                            None ->
-                                Maybe.Nothing
-                        )
-                        (if el.typ /= "" then
-                            Maybe.Just el.typ
-
-                         else
-                            Maybe.Nothing
-                        )
-               ]
-                ++ (Tuple.first accum
-                        |> Maybe.map (\previous -> [ Ride (el.distance - previous.distance) ])
-                        |> Maybe.withDefault []
-                   )
-              )
-                ++ Tuple.second accum
-            )
-        )
-        ( Maybe.Nothing, [] )
-        (if waypointOptions.locationFilterEnabled then
-            List.filter (\w -> Dict.get w.typ waypointOptions.filteredLocationTypes |> Maybe.withDefault True) waypoints
-
-         else
-            waypoints
-        )
-        |> Tuple.second
-        |> List.reverse
+    else
+        waypoints
 
 
-routeBreakdown : RouteInfo -> Int -> Html Msg
-routeBreakdown info itemSpacing =
+routeBreakdown : List Waypoint -> RouteViewOptions -> Html Msg
+routeBreakdown waypoints routeViewOptions =
     let
+        info =
+            routeInfo waypoints
+
         svgHeight =
-            (*) itemSpacing (List.length info)
+            (*) routeViewOptions.itemSpacing (List.length info)
 
         svgContentLeftStart =
             0
 
         svgContentLeftStartString =
             String.fromInt svgContentLeftStart
+
+        lastWaypointDistance =
+            List.head (List.reverse waypoints) |> Maybe.map .distance
     in
     Html.div [ Html.Attributes.class "column", Html.Attributes.class "wide" ]
         [ Html.h2 [ Html.Attributes.style "text-align" "center" ] [ Html.text "Route breakdown" ]
@@ -461,14 +422,31 @@ routeBreakdown info itemSpacing =
                     (\i item ->
                         let
                             translate =
-                                Svg.Attributes.transform <| "translate(0," ++ (String.fromInt <| i * itemSpacing) ++ ")"
+                                Svg.Attributes.transform <| "translate(0," ++ (String.fromInt <| i * routeViewOptions.itemSpacing) ++ ")"
                         in
                         case item of
                             InfoWaypoint waypoint ->
                                 let
+                                    waypointDistance =
+                                        case routeViewOptions.totalDistanceDisplay of
+                                            None ->
+                                                Maybe.Nothing
+
+                                            FromZero ->
+                                                Maybe.Just (formatFloat waypoint.distance ++ "km")
+
+                                            FromLast ->
+                                                lastWaypointDistance |> Maybe.map (\last -> formatFloat (last - waypoint.distance) ++ "km")
+
                                     waypointInfo =
                                         List.filterMap identity
-                                            [ Maybe.map (\dist -> formatFloat dist ++ "km") waypoint.distance, waypoint.typ ]
+                                            [ waypointDistance
+                                            , if waypoint.typ /= "" then
+                                                Maybe.Just waypoint.typ
+
+                                              else
+                                                Maybe.Nothing
+                                            ]
 
                                     waypointInfoLines =
                                         if List.isEmpty waypointInfo then
@@ -481,7 +459,7 @@ routeBreakdown info itemSpacing =
                                     (Svg.text_
                                         [ Svg.Attributes.x (String.fromInt <| svgContentLeftStart + 10)
                                         , Svg.Attributes.dominantBaseline "middle"
-                                        , Svg.Attributes.y <| String.fromInt (itemSpacing // 2)
+                                        , Svg.Attributes.y <| String.fromInt (routeViewOptions.itemSpacing // 2)
                                         ]
                                         [ Svg.text waypoint.name ]
                                         :: (waypointInfoLines
@@ -489,7 +467,7 @@ routeBreakdown info itemSpacing =
                                                     (\j line ->
                                                         Svg.text_
                                                             [ Svg.Attributes.x svgContentLeftStartString
-                                                            , Svg.Attributes.y <| String.fromInt (itemSpacing // 2)
+                                                            , Svg.Attributes.y <| String.fromInt (routeViewOptions.itemSpacing // 2)
                                                             , Svg.Attributes.dominantBaseline "middle"
                                                             , Svg.Attributes.dy (String.fromFloat (toFloat j - (toFloat <| List.length waypointInfoLines - 1) / 2) ++ "em")
                                                             , Svg.Attributes.textAnchor "end"
@@ -506,10 +484,10 @@ routeBreakdown info itemSpacing =
                                         "2"
 
                                     arrowBottom =
-                                        String.fromInt <| itemSpacing - 2
+                                        String.fromInt <| routeViewOptions.itemSpacing - 2
 
                                     arrowHeadTop =
-                                        String.fromInt <| itemSpacing - 6
+                                        String.fromInt <| routeViewOptions.itemSpacing - 6
 
                                     strokeWidth =
                                         "1"
@@ -544,7 +522,7 @@ routeBreakdown info itemSpacing =
                                         []
                                     , Svg.text_
                                         [ Svg.Attributes.x (String.fromInt <| svgContentLeftStart + 10)
-                                        , Svg.Attributes.y <| String.fromInt (itemSpacing // 2)
+                                        , Svg.Attributes.y <| String.fromInt (routeViewOptions.itemSpacing // 2)
                                         , Svg.Attributes.dominantBaseline "middle"
                                         , Svg.Attributes.fontSize "smaller"
                                         ]
@@ -553,6 +531,26 @@ routeBreakdown info itemSpacing =
                     )
             )
         ]
+
+
+routeInfo : List Waypoint -> List Info
+routeInfo waypoints =
+    List.foldl
+        (\el accum ->
+            ( Maybe.Just el
+            , (InfoWaypoint el
+                :: (Tuple.first accum
+                        |> Maybe.map (\previous -> [ Ride (el.distance - previous.distance) ])
+                        |> Maybe.withDefault []
+                   )
+              )
+                ++ Tuple.second accum
+            )
+        )
+        ( Maybe.Nothing, [] )
+        waypoints
+        |> Tuple.second
+        |> List.reverse
 
 
 formatFloat : Float -> String

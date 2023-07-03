@@ -5379,7 +5379,7 @@ var $elm$browser$Browser$application = _Browser_application;
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
-var $author$project$Main$FromFirst = {$: 'FromFirst'};
+var $author$project$Main$FromZero = {$: 'FromZero'};
 var $author$project$Main$Model = F3(
 	function (waypoints, waypointOptions, routeViewOptions) {
 		return {routeViewOptions: routeViewOptions, waypointOptions: waypointOptions, waypoints: waypoints};
@@ -5548,8 +5548,8 @@ var $author$project$Main$FromLast = {$: 'FromLast'};
 var $author$project$Main$None = {$: 'None'};
 var $author$project$Main$parseTotalDistanceDisplay = function (v) {
 	switch (v) {
-		case 'from first':
-			return $elm$core$Maybe$Just($author$project$Main$FromFirst);
+		case 'from zero':
+			return $elm$core$Maybe$Just($author$project$Main$FromZero);
 		case 'from last':
 			return $elm$core$Maybe$Just($author$project$Main$FromLast);
 		case 'hide':
@@ -5585,7 +5585,7 @@ var $author$project$Main$init = F3(
 					$author$project$Main$Model,
 					$elm$core$Maybe$Nothing,
 					A2($author$project$Main$WaypointsOptions, false, $elm$core$Dict$empty),
-					A2($author$project$Main$RouteViewOptions, $author$project$Main$FromFirst, 20)),
+					A2($author$project$Main$RouteViewOptions, $author$project$Main$FromZero, 20)),
 				A2(
 					$elm$core$Maybe$map,
 					function (state) {
@@ -5607,7 +5607,7 @@ var $author$project$Main$init = F3(
 								$author$project$Main$RouteViewOptions,
 								A2(
 									$elm$core$Maybe$withDefault,
-									$author$project$Main$FromFirst,
+									$author$project$Main$FromZero,
 									$author$project$Main$parseTotalDistanceDisplay(state.totalDistanceDisplay)),
 								state.itemSpacing));
 					},
@@ -6749,8 +6749,8 @@ var $author$project$Main$encodeWaypoints = function (waypoints) {
 };
 var $author$project$Main$formatTotalDistanceDisplay = function (v) {
 	switch (v.$) {
-		case 'FromFirst':
-			return 'from first';
+		case 'FromZero':
+			return 'from zero';
 		case 'FromLast':
 			return 'from last';
 		default:
@@ -7025,6 +7025,46 @@ var $elm$core$List$isEmpty = function (xs) {
 	}
 };
 var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
+var $elm$core$Basics$neq = _Utils_notEqual;
+var $author$project$Main$InfoWaypoint = function (a) {
+	return {$: 'InfoWaypoint', a: a};
+};
+var $author$project$Main$Ride = function (a) {
+	return {$: 'Ride', a: a};
+};
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
+var $author$project$Main$routeInfo = function (waypoints) {
+	return $elm$core$List$reverse(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (el, accum) {
+					return _Utils_Tuple2(
+						$elm$core$Maybe$Just(el),
+						_Utils_ap(
+							A2(
+								$elm$core$List$cons,
+								$author$project$Main$InfoWaypoint(el),
+								A2(
+									$elm$core$Maybe$withDefault,
+									_List_Nil,
+									A2(
+										$elm$core$Maybe$map,
+										function (previous) {
+											return _List_fromArray(
+												[
+													$author$project$Main$Ride(el.distance - previous.distance)
+												]);
+										},
+										accum.a))),
+							accum.b));
+				}),
+			_Utils_Tuple2($elm$core$Maybe$Nothing, _List_Nil),
+			waypoints).b);
+};
 var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
@@ -7045,10 +7085,18 @@ var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
 var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
 var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
 var $author$project$Main$routeBreakdown = F2(
-	function (info, itemSpacing) {
-		var svgHeight = itemSpacing * $elm$core$List$length(info);
+	function (waypoints, routeViewOptions) {
 		var svgContentLeftStart = 0;
 		var svgContentLeftStartString = $elm$core$String$fromInt(svgContentLeftStart);
+		var lastWaypointDistance = A2(
+			$elm$core$Maybe$map,
+			function ($) {
+				return $.distance;
+			},
+			$elm$core$List$head(
+				$elm$core$List$reverse(waypoints)));
+		var info = $author$project$Main$routeInfo(waypoints);
+		var svgHeight = routeViewOptions.itemSpacing * $elm$core$List$length(info);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -7084,21 +7132,33 @@ var $author$project$Main$routeBreakdown = F2(
 						F2(
 							function (i, item) {
 								var translate = $elm$svg$Svg$Attributes$transform(
-									'translate(0,' + ($elm$core$String$fromInt(i * itemSpacing) + ')'));
+									'translate(0,' + ($elm$core$String$fromInt(i * routeViewOptions.itemSpacing) + ')'));
 								if (item.$ === 'InfoWaypoint') {
 									var waypoint = item.a;
+									var waypointDistance = function () {
+										var _v1 = routeViewOptions.totalDistanceDisplay;
+										switch (_v1.$) {
+											case 'None':
+												return $elm$core$Maybe$Nothing;
+											case 'FromZero':
+												return $elm$core$Maybe$Just(
+													$author$project$Main$formatFloat(waypoint.distance) + 'km');
+											default:
+												return A2(
+													$elm$core$Maybe$map,
+													function (last) {
+														return $author$project$Main$formatFloat(last - waypoint.distance) + 'km';
+													},
+													lastWaypointDistance);
+										}
+									}();
 									var waypointInfo = A2(
 										$elm$core$List$filterMap,
 										$elm$core$Basics$identity,
 										_List_fromArray(
 											[
-												A2(
-												$elm$core$Maybe$map,
-												function (dist) {
-													return $author$project$Main$formatFloat(dist) + 'km';
-												},
-												waypoint.distance),
-												waypoint.typ
+												waypointDistance,
+												(waypoint.typ !== '') ? $elm$core$Maybe$Just(waypoint.typ) : $elm$core$Maybe$Nothing
 											]));
 									var waypointInfoLines = $elm$core$List$isEmpty(waypointInfo) ? _List_fromArray(
 										['◉']) : waypointInfo;
@@ -7116,7 +7176,7 @@ var $author$project$Main$routeBreakdown = F2(
 														$elm$core$String$fromInt(svgContentLeftStart + 10)),
 														$elm$svg$Svg$Attributes$dominantBaseline('middle'),
 														$elm$svg$Svg$Attributes$y(
-														$elm$core$String$fromInt((itemSpacing / 2) | 0))
+														$elm$core$String$fromInt((routeViewOptions.itemSpacing / 2) | 0))
 													]),
 												_List_fromArray(
 													[
@@ -7132,7 +7192,7 @@ var $author$project$Main$routeBreakdown = F2(
 																[
 																	$elm$svg$Svg$Attributes$x(svgContentLeftStartString),
 																	$elm$svg$Svg$Attributes$y(
-																	$elm$core$String$fromInt((itemSpacing / 2) | 0)),
+																	$elm$core$String$fromInt((routeViewOptions.itemSpacing / 2) | 0)),
 																	$elm$svg$Svg$Attributes$dominantBaseline('middle'),
 																	$elm$svg$Svg$Attributes$dy(
 																	$elm$core$String$fromFloat(
@@ -7150,8 +7210,8 @@ var $author$project$Main$routeBreakdown = F2(
 									var dist = item.a;
 									var strokeWidth = '1';
 									var arrowTop = '2';
-									var arrowHeadTop = $elm$core$String$fromInt(itemSpacing - 6);
-									var arrowBottom = $elm$core$String$fromInt(itemSpacing - 2);
+									var arrowHeadTop = $elm$core$String$fromInt(routeViewOptions.itemSpacing - 6);
+									var arrowBottom = $elm$core$String$fromInt(routeViewOptions.itemSpacing - 2);
 									return A2(
 										$elm$svg$Svg$g,
 										_List_fromArray(
@@ -7205,7 +7265,7 @@ var $author$project$Main$routeBreakdown = F2(
 														$elm$svg$Svg$Attributes$x(
 														$elm$core$String$fromInt(svgContentLeftStart + 10)),
 														$elm$svg$Svg$Attributes$y(
-														$elm$core$String$fromInt((itemSpacing / 2) | 0)),
+														$elm$core$String$fromInt((routeViewOptions.itemSpacing / 2) | 0)),
 														$elm$svg$Svg$Attributes$dominantBaseline('middle'),
 														$elm$svg$Svg$Attributes$fontSize('smaller')
 													]),
@@ -7220,16 +7280,6 @@ var $author$project$Main$routeBreakdown = F2(
 						info))
 				]));
 	});
-var $author$project$Main$DisplayWaypoint = F3(
-	function (name, distance, typ) {
-		return {distance: distance, name: name, typ: typ};
-	});
-var $author$project$Main$InfoWaypoint = function (a) {
-	return {$: 'InfoWaypoint', a: a};
-};
-var $author$project$Main$Ride = function (a) {
-	return {$: 'Ride', a: a};
-};
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -7241,71 +7291,17 @@ var $elm$core$List$filter = F2(
 			_List_Nil,
 			list);
 	});
-var $elm$core$Basics$neq = _Utils_notEqual;
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
-};
-var $author$project$Main$routeInfo = F3(
-	function (waypoints, waypointOptions, routeViewOptions) {
-		return $elm$core$List$reverse(
-			A3(
-				$elm$core$List$foldl,
-				F2(
-					function (el, accum) {
-						return _Utils_Tuple2(
-							$elm$core$Maybe$Just(el),
-							_Utils_ap(
-								_Utils_ap(
-									_List_fromArray(
-										[
-											$author$project$Main$InfoWaypoint(
-											A3(
-												$author$project$Main$DisplayWaypoint,
-												el.name,
-												function () {
-													var _v0 = routeViewOptions.totalDistanceDisplay;
-													switch (_v0.$) {
-														case 'FromFirst':
-															return $elm$core$Maybe$Just(el.distance);
-														case 'FromLast':
-															return A2(
-																$elm$core$Maybe$map,
-																function (last) {
-																	return last.distance - el.distance;
-																},
-																$elm$core$List$head(
-																	$elm$core$List$reverse(waypoints)));
-														default:
-															return $elm$core$Maybe$Nothing;
-													}
-												}(),
-												(el.typ !== '') ? $elm$core$Maybe$Just(el.typ) : $elm$core$Maybe$Nothing))
-										]),
-									A2(
-										$elm$core$Maybe$withDefault,
-										_List_Nil,
-										A2(
-											$elm$core$Maybe$map,
-											function (previous) {
-												return _List_fromArray(
-													[
-														$author$project$Main$Ride(el.distance - previous.distance)
-													]);
-											},
-											accum.a))),
-								accum.b));
-					}),
-				_Utils_Tuple2($elm$core$Maybe$Nothing, _List_Nil),
-				waypointOptions.locationFilterEnabled ? A2(
-					$elm$core$List$filter,
-					function (w) {
-						return A2(
-							$elm$core$Maybe$withDefault,
-							true,
-							A2($elm$core$Dict$get, w.typ, waypointOptions.filteredLocationTypes));
-					},
-					waypoints) : waypoints).b);
+var $author$project$Main$routeWaypoints = F2(
+	function (waypoints, waypointOptions) {
+		return waypointOptions.locationFilterEnabled ? A2(
+			$elm$core$List$filter,
+			function (w) {
+				return A2(
+					$elm$core$Maybe$withDefault,
+					true,
+					A2($elm$core$Dict$get, w.typ, waypointOptions.filteredLocationTypes));
+			},
+			waypoints) : waypoints;
 	});
 var $author$project$Main$ClearWaypoints = {$: 'ClearWaypoints'};
 var $abadi199$elm_input_extra$Dropdown$Item = F3(
@@ -7918,8 +7914,8 @@ var $author$project$Main$viewOptions = F2(
 											[
 												A3(
 												$abadi199$elm_input_extra$Dropdown$Item,
-												$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromFirst),
-												$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromFirst),
+												$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromZero),
+												$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromZero),
 												true),
 												A3(
 												$abadi199$elm_input_extra$Dropdown$Item,
@@ -8016,8 +8012,8 @@ var $author$project$Main$view = function (model) {
 									A2($author$project$Main$viewOptions, model.waypointOptions, model.routeViewOptions),
 									A2(
 									$author$project$Main$routeBreakdown,
-									A3($author$project$Main$routeInfo, w, model.waypointOptions, model.routeViewOptions),
-									model.routeViewOptions.itemSpacing)
+									A2($author$project$Main$routeWaypoints, w, model.waypointOptions),
+									model.routeViewOptions)
 								]));
 					},
 					model.waypoints))
