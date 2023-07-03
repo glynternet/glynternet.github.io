@@ -20,7 +20,7 @@ routesheet.js:
 	docker run \
 		--volume="${PWD}:/elmapp:Z" \
 		glynternet/elm:latest \
-		sh -c "cd elmapp/elm/routesheet && elm make ./src/Main.elm --output=../../data/$@"
+		sh -c "cd elmapp/elm/routesheet && elm make --optimize ./src/Main.elm --output=../../data/$@"
 
 elm-sh:
 	docker run -it \
