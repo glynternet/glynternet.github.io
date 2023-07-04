@@ -7107,7 +7107,7 @@ var $author$project$Main$routeBreakdown = F2(
 					$elm$svg$Svg$svg,
 					_List_fromArray(
 						[
-							$elm$svg$Svg$Attributes$width('320'),
+							$elm$svg$Svg$Attributes$width('100%'),
 							$elm$svg$Svg$Attributes$height(
 							$elm$core$String$fromInt(svgHeight)),
 							$elm$svg$Svg$Attributes$viewBox(

@@ -480,7 +480,7 @@ routeBreakdown waypoints routeViewOptions =
     Html.div
         [ Svg.Attributes.class "route_breakdown" ]
         [ Svg.svg
-            [ Svg.Attributes.width "320"
+            [ Svg.Attributes.width "100%"
             , Svg.Attributes.height <| String.fromInt svgHeight
             , Svg.Attributes.viewBox <| "-120 -10 240 " ++ String.fromInt (svgHeight + routeViewOptions.itemSpacing)
             ]
