@@ -6,10 +6,12 @@ import Csv.Decode
 import Dict
 import Dropdown
 import File
+import File.Download
 import File.Select
 import Html exposing (Attribute, Html)
 import Html.Attributes
 import Html.Events
+import Http
 import Input.Number
 import Json.Decode
 import Json.Encode
@@ -116,6 +118,8 @@ type Msg
     | OpenFileBrowser
     | FileUploaded File.File
     | CsvDecoded (Result Csv.Decode.Error (List Waypoint))
+    | LoadDemoData
+    | DownloadDemoData
     | ClearWaypoints
 
 
@@ -179,29 +183,40 @@ update msg model =
         FileUploaded file ->
             ( model
             , File.toString file
-                |> Task.map
-                    (\content ->
-                        Csv.Decode.decodeCsv Csv.Decode.FieldNamesFromFirstRow
-                            (Csv.Decode.into Waypoint
-                                |> Csv.Decode.pipeline (Csv.Decode.field "Name" Csv.Decode.string)
-                                |> Csv.Decode.pipeline (Csv.Decode.field "Distance" Csv.Decode.float)
-                                |> Csv.Decode.pipeline (Csv.Decode.field "Type" Csv.Decode.string)
-                            )
-                            content
-                    )
+                |> Task.map decodeCSV
                 |> Task.perform CsvDecoded
             )
 
         CsvDecoded result ->
             result
                 |> Result.map (initialModel model.routeViewOptions >> updateModel)
+                --TODO: handle decode error
                 |> Result.withDefault ( model, Cmd.none )
+
+        LoadDemoData ->
+            decodeCSV demoData
+                |> Result.map (initialModel model.routeViewOptions >> updateModel)
+                --TODO: handle decode error
+                |> Result.withDefault ( model, Cmd.none )
+
+        DownloadDemoData ->
+            ( model, File.Download.string "demo-data.csv" "text/csv" demoData )
 
         ClearWaypoints ->
             updateModel { model | waypoints = Maybe.Nothing }
 
         Never ->
             ( model, Cmd.none )
+
+
+decodeCSV : String -> Result Csv.Decode.Error (List Waypoint)
+decodeCSV =
+    Csv.Decode.decodeCsv Csv.Decode.FieldNamesFromFirstRow
+        (Csv.Decode.into Waypoint
+            |> Csv.Decode.pipeline (Csv.Decode.field "Name" Csv.Decode.string)
+            |> Csv.Decode.pipeline (Csv.Decode.field "Distance" Csv.Decode.float)
+            |> Csv.Decode.pipeline (Csv.Decode.field "Type" Csv.Decode.string)
+        )
 
 
 updateModel : Model -> ( Model, Cmd Msg )
@@ -273,6 +288,13 @@ welcomePage =
         [ Html.p [] [ Html.text "hello and welcome" ]
         , Html.p [] [ Html.text "If you know what you're doing, click the upload button below." ]
         , viewUploadButton
+        , Html.br [] []
+        , Html.p [] [ Html.text "To play with some demo data, click the button below." ]
+        , loadDemoDataButton
+        , Html.br [] []
+        , Html.p [] [ Html.text "To download demo data, click the button below." ]
+        , downloadDemoDataButton
+        , Html.br [] []
         , Html.p [] [ Html.text "Features" ]
         , Html.ul []
             [ Html.li [] [ Html.text "Customise information level" ]
@@ -421,6 +443,20 @@ viewUploadButton =
         [ Html.text "upload waypoints" ]
 
 
+loadDemoDataButton : Html Msg
+loadDemoDataButton =
+    Html.button
+        [ Html.Events.onClick LoadDemoData, Html.Attributes.class "button-4", Html.Attributes.style "max-width" "20em" ]
+        [ Html.text "demo data plz" ]
+
+
+downloadDemoDataButton : Html Msg
+downloadDemoDataButton =
+    Html.button
+        [ Html.Events.onClick DownloadDemoData, Html.Attributes.class "button-4", Html.Attributes.style "max-width" "20em" ]
+        [ Html.text "download demo data plz" ]
+
+
 parseTotalDistanceDisplay : String -> Maybe TotalDistanceDisplay
 parseTotalDistanceDisplay v =
     case v of
@@ -452,7 +488,7 @@ formatTotalDistanceDisplay v =
 
 routeWaypoints : WaypointsOptions -> List Waypoint -> List Waypoint
 routeWaypoints waypointOptions waypoints =
-    if Debug.log "filter enabled" waypointOptions.locationFilterEnabled then
+    if waypointOptions.locationFilterEnabled then
         List.filter (\w -> Dict.get w.typ waypointOptions.filteredLocationTypes |> Maybe.withDefault True) waypoints
 
     else
@@ -681,3 +717,64 @@ encodeWaypoints waypoints =
 
 
 port storeState : String -> Cmd msg
+
+
+
+--- DEMO DATA
+
+
+demoData : String
+demoData =
+    """Distance,Route segment end,Type,Name,Municipality,,Detour,Notes
+0,286,,Start,Warwick,,,
+99.1,286,🛒,Co-op,Hereford,Big town,,Close 22:00
+99.1,286,RS,Something,Hereford,Big town,,Close 22:00
+99.1,286,123,Something Else,Hereford,Big town,,Close 22:00
+125,286,🛒,Spar,,,,Close 22:00
+159,286,🚰,Tap under pub,,,slight,
+159,286,RESUPPLY,Fake place,,,slight,
+165,286,🛒,Abergavenny Esso,Abergavenny,,slight,24h
+230,286,🏙,Bristol,Bristol,City,,
+230,286,toilet,Bristol toilet,Bristol,City,,
+292.5,585,🛒,Morrisons,Bridgwater,Big town,,Opens 07:00
+311.5,585,⛺,Moorhouse Campsite,,,,
+336,585,🏙,Minehead,Minehead,,,
+408.4,585,🍴,Quay Cafe,,,slight,09:00-17:00
+416.5,585,🔄,Detour start A361 bypass,Barnstaple,,,
+417,585,🥤,McDonalds,Barnstaple,Big town,,24h
+417.5,585,🛒,Tesco,Barnstaple,Big town,,06:00-00:00
+435,585,🍴,Griffins Yard,South Molton,Town,Not A316,09:30-17:00
+435,585,🛒,Spar,South Molton,Town,,07:00-22:00
+435,585,🛒,Esso,South Molton,Town,,06:00-21:00
+437,585,⬆,Detour end A361 bypass,South Molton,,,
+494,585,🏙,-,Taunton,Big town,,
+511,585,☕,Monks Yard Cafe,Ilminster,Small town,slight,09:00-16:00
+558.7,585,🥤,Subway,Dorchester,Big town,slight,08:00-18:00
+558.7,585,☕,Coffee #1,Dorchester,Big town,slight,
+560,585,🛒,Tesco,Dorchester,Big town,,
+560,585,🥤,KFC,Dorchester,Big town,,
+597.8,827,🔄,Detour start Dorchester,Weymouth,Town,,
+599.5,827,🚰,Water fountains,Weymouth,Town,,
+633,827,⬆,Detour end Dorchester,,,,
+655,827,🔄,Detour start avoid Salisbury,,,,
+688,827,⬆,Detour end avoid Salisbury,Amesbury,Town,,
+688,827,🛒,Co-op,Amesbury,Town,slight,07:00-22:00
+688,827,🥤,Fish & Chips,Amesbury,Town,slight,11:30-20:30
+729.6,827,🏙,-,Devizes,Big town,,
+732.5,827,❓,Decision: Country road vs A4,Devizes,Big town,,"A4 saves ~15
+but may be busy,
+goes through big towns"
+749,827,🛒,Co-op,Pewsey,Small town,,"Sat: 07-22
+Sun: 10-16"
+756,827,🛒,Esso,,,,24h
+798,827,⬆,A4 rejoin main route,,,,
+810,827,🛒,Lidl,"Calcot, Reading",City,,"Sat: 08-22
+Sun: 10-16"
+813,827,🏙,-,Reading,City,,
+817,827,🛒,Tesco (Esso),Reading,City,,07:00-22:30
+827.6,944.2,🛒,Sainsburys,Henley,Big town,,07:00-23:00
+851.7,944.2,🔄,Detour start Oxford,,,,
+882,944.2,⬆,Detour end Oxford,,,,
+940,944.2,❗,Join cycle path,,,,
+944.2,944.2,,Finish,Warwick,,,
+"""

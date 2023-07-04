@@ -5625,18 +5625,18 @@ var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Main$CsvDecoded = function (a) {
 	return {$: 'CsvDecoded', a: a};
 };
-var $BrianHicks$elm_csv$Csv$Decode$FieldNamesFromFirstRow = {$: 'FieldNamesFromFirstRow'};
 var $author$project$Main$FileUploaded = function (a) {
 	return {$: 'FileUploaded', a: a};
 };
-var $author$project$Main$Waypoint = F3(
-	function (name, distance, typ) {
-		return {distance: distance, name: name, typ: typ};
-	});
 var $elm$core$Basics$composeR = F3(
 	function (f, g, x) {
 		return g(
 			f(x));
+	});
+var $BrianHicks$elm_csv$Csv$Decode$FieldNamesFromFirstRow = {$: 'FieldNamesFromFirstRow'};
+var $author$project$Main$Waypoint = F3(
+	function (name, distance, typ) {
+		return {distance: distance, name: name, typ: typ};
 	});
 var $BrianHicks$elm_csv$Csv$Decode$ParsingError = function (a) {
 	return {$: 'ParsingError', a: a};
@@ -6346,17 +6346,6 @@ var $BrianHicks$elm_csv$Csv$Decode$field = F2(
 						row);
 				}));
 	});
-var $elm$time$Time$Posix = function (a) {
-	return {$: 'Posix', a: a};
-};
-var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
-var $elm$file$File$Select$file = F2(
-	function (mimes, toMsg) {
-		return A2(
-			$elm$core$Task$perform,
-			toMsg,
-			_File_uploadOne(mimes));
-	});
 var $BrianHicks$elm_csv$Csv$Decode$ExpectedFloat = function (a) {
 	return {$: 'ExpectedFloat', a: a};
 };
@@ -6595,27 +6584,6 @@ var $BrianHicks$elm_csv$Csv$Decode$float = $BrianHicks$elm_csv$Csv$Decode$fromSt
 				$BrianHicks$elm_csv$Csv$Decode$ExpectedFloat(value));
 		}
 	});
-var $author$project$Main$initialWaypointOptions = function (waypoints) {
-	return A2(
-		$author$project$Main$WaypointsOptions,
-		false,
-		$author$project$Main$initialFilteredLocations(waypoints));
-};
-var $elm$core$List$sortBy = _List_sortBy;
-var $author$project$Main$initialModel = F2(
-	function (routeViewOptions, waypoints) {
-		var sortedWaypoint = A2(
-			$elm$core$List$sortBy,
-			function ($) {
-				return $.distance;
-			},
-			waypoints);
-		return A3(
-			$author$project$Main$Model,
-			$elm$core$Maybe$Just(sortedWaypoint),
-			$author$project$Main$initialWaypointOptions(sortedWaypoint),
-			routeViewOptions);
-	});
 var $BrianHicks$elm_csv$Csv$Decode$succeed = function (value) {
 	return $BrianHicks$elm_csv$Csv$Decode$Decoder(
 		F4(
@@ -6661,6 +6629,59 @@ var $BrianHicks$elm_csv$Csv$Decode$pipeline = $BrianHicks$elm_csv$Csv$Decode$map
 			return fn(value);
 		}));
 var $BrianHicks$elm_csv$Csv$Decode$string = $BrianHicks$elm_csv$Csv$Decode$fromString($elm$core$Result$Ok);
+var $author$project$Main$decodeCSV = A2(
+	$BrianHicks$elm_csv$Csv$Decode$decodeCsv,
+	$BrianHicks$elm_csv$Csv$Decode$FieldNamesFromFirstRow,
+	A2(
+		$BrianHicks$elm_csv$Csv$Decode$pipeline,
+		A2($BrianHicks$elm_csv$Csv$Decode$field, 'Type', $BrianHicks$elm_csv$Csv$Decode$string),
+		A2(
+			$BrianHicks$elm_csv$Csv$Decode$pipeline,
+			A2($BrianHicks$elm_csv$Csv$Decode$field, 'Distance', $BrianHicks$elm_csv$Csv$Decode$float),
+			A2(
+				$BrianHicks$elm_csv$Csv$Decode$pipeline,
+				A2($BrianHicks$elm_csv$Csv$Decode$field, 'Name', $BrianHicks$elm_csv$Csv$Decode$string),
+				$BrianHicks$elm_csv$Csv$Decode$into($author$project$Main$Waypoint)))));
+var $author$project$Main$demoData = 'Distance,Route segment end,Type,Name,Municipality,,Detour,Notes\n0,286,,Start,Warwick,,,\n99.1,286,🛒,Co-op,Hereford,Big town,,Close 22:00\n99.1,286,RS,Something,Hereford,Big town,,Close 22:00\n99.1,286,123,Something Else,Hereford,Big town,,Close 22:00\n125,286,🛒,Spar,,,,Close 22:00\n159,286,🚰,Tap under pub,,,slight,\n159,286,RESUPPLY,Fake place,,,slight,\n165,286,🛒,Abergavenny Esso,Abergavenny,,slight,24h\n230,286,🏙,Bristol,Bristol,City,,\n230,286,toilet,Bristol toilet,Bristol,City,,\n292.5,585,🛒,Morrisons,Bridgwater,Big town,,Opens 07:00\n311.5,585,⛺,Moorhouse Campsite,,,,\n336,585,🏙,Minehead,Minehead,,,\n408.4,585,🍴,Quay Cafe,,,slight,09:00-17:00\n416.5,585,🔄,Detour start A361 bypass,Barnstaple,,,\n417,585,🥤,McDonalds,Barnstaple,Big town,,24h\n417.5,585,🛒,Tesco,Barnstaple,Big town,,06:00-00:00\n435,585,🍴,Griffins Yard,South Molton,Town,Not A316,09:30-17:00\n435,585,🛒,Spar,South Molton,Town,,07:00-22:00\n435,585,🛒,Esso,South Molton,Town,,06:00-21:00\n437,585,⬆,Detour end A361 bypass,South Molton,,,\n494,585,🏙,-,Taunton,Big town,,\n511,585,☕,Monks Yard Cafe,Ilminster,Small town,slight,09:00-16:00\n558.7,585,🥤,Subway,Dorchester,Big town,slight,08:00-18:00\n558.7,585,☕,Coffee #1,Dorchester,Big town,slight,\n560,585,🛒,Tesco,Dorchester,Big town,,\n560,585,🥤,KFC,Dorchester,Big town,,\n597.8,827,🔄,Detour start Dorchester,Weymouth,Town,,\n599.5,827,🚰,Water fountains,Weymouth,Town,,\n633,827,⬆,Detour end Dorchester,,,,\n655,827,🔄,Detour start avoid Salisbury,,,,\n688,827,⬆,Detour end avoid Salisbury,Amesbury,Town,,\n688,827,🛒,Co-op,Amesbury,Town,slight,07:00-22:00\n688,827,🥤,Fish & Chips,Amesbury,Town,slight,11:30-20:30\n729.6,827,🏙,-,Devizes,Big town,,\n732.5,827,❓,Decision: Country road vs A4,Devizes,Big town,,"A4 saves ~15\nbut may be busy,\ngoes through big towns"\n749,827,🛒,Co-op,Pewsey,Small town,,"Sat: 07-22\nSun: 10-16"\n756,827,🛒,Esso,,,,24h\n798,827,⬆,A4 rejoin main route,,,,\n810,827,🛒,Lidl,"Calcot, Reading",City,,"Sat: 08-22\nSun: 10-16"\n813,827,🏙,-,Reading,City,,\n817,827,🛒,Tesco (Esso),Reading,City,,07:00-22:30\n827.6,944.2,🛒,Sainsburys,Henley,Big town,,07:00-23:00\n851.7,944.2,🔄,Detour start Oxford,,,,\n882,944.2,⬆,Detour end Oxford,,,,\n940,944.2,❗,Join cycle path,,,,\n944.2,944.2,,Finish,Warwick,,,\n';
+var $elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
+};
+var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
+var $elm$file$File$Select$file = F2(
+	function (mimes, toMsg) {
+		return A2(
+			$elm$core$Task$perform,
+			toMsg,
+			_File_uploadOne(mimes));
+	});
+var $author$project$Main$initialWaypointOptions = function (waypoints) {
+	return A2(
+		$author$project$Main$WaypointsOptions,
+		false,
+		$author$project$Main$initialFilteredLocations(waypoints));
+};
+var $elm$core$List$sortBy = _List_sortBy;
+var $author$project$Main$initialModel = F2(
+	function (routeViewOptions, waypoints) {
+		var sortedWaypoint = A2(
+			$elm$core$List$sortBy,
+			function ($) {
+				return $.distance;
+			},
+			waypoints);
+		return A3(
+			$author$project$Main$Model,
+			$elm$core$Maybe$Just(sortedWaypoint),
+			$author$project$Main$initialWaypointOptions(sortedWaypoint),
+			routeViewOptions);
+	});
+var $elm$file$File$Download$string = F3(
+	function (name, mime, content) {
+		return A2(
+			$elm$core$Task$perform,
+			$elm$core$Basics$never,
+			A3(_File_download, name, mime, content));
+	});
 var $elm$file$File$toString = _File_toString;
 var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$core$Dict$foldl = F3(
@@ -6878,22 +6899,7 @@ var $author$project$Main$update = F2(
 						$author$project$Main$CsvDecoded,
 						A2(
 							$elm$core$Task$map,
-							function (content) {
-								return A3(
-									$BrianHicks$elm_csv$Csv$Decode$decodeCsv,
-									$BrianHicks$elm_csv$Csv$Decode$FieldNamesFromFirstRow,
-									A2(
-										$BrianHicks$elm_csv$Csv$Decode$pipeline,
-										A2($BrianHicks$elm_csv$Csv$Decode$field, 'Type', $BrianHicks$elm_csv$Csv$Decode$string),
-										A2(
-											$BrianHicks$elm_csv$Csv$Decode$pipeline,
-											A2($BrianHicks$elm_csv$Csv$Decode$field, 'Distance', $BrianHicks$elm_csv$Csv$Decode$float),
-											A2(
-												$BrianHicks$elm_csv$Csv$Decode$pipeline,
-												A2($BrianHicks$elm_csv$Csv$Decode$field, 'Name', $BrianHicks$elm_csv$Csv$Decode$string),
-												$BrianHicks$elm_csv$Csv$Decode$into($author$project$Main$Waypoint)))),
-									content);
-							},
+							$author$project$Main$decodeCSV,
 							$elm$file$File$toString(file))));
 			case 'CsvDecoded':
 				var result = msg.a;
@@ -6907,6 +6913,21 @@ var $author$project$Main$update = F2(
 							$author$project$Main$initialModel(model.routeViewOptions),
 							$author$project$Main$updateModel),
 						result));
+			case 'LoadDemoData':
+				return A2(
+					$elm$core$Result$withDefault,
+					_Utils_Tuple2(model, $elm$core$Platform$Cmd$none),
+					A2(
+						$elm$core$Result$map,
+						A2(
+							$elm$core$Basics$composeR,
+							$author$project$Main$initialModel(model.routeViewOptions),
+							$author$project$Main$updateModel),
+						$author$project$Main$decodeCSV($author$project$Main$demoData)));
+			case 'DownloadDemoData':
+				return _Utils_Tuple2(
+					model,
+					A3($elm$file$File$Download$string, 'demo-data.csv', 'text/csv', $author$project$Main$demoData));
 			case 'ClearWaypoints':
 				return $author$project$Main$updateModel(
 					_Utils_update(
@@ -7277,10 +7298,9 @@ var $elm$core$List$filter = F2(
 			_List_Nil,
 			list);
 	});
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Main$routeWaypoints = F2(
 	function (waypointOptions, waypoints) {
-		return A2($elm$core$Debug$log, 'filter enabled', waypointOptions.locationFilterEnabled) ? A2(
+		return waypointOptions.locationFilterEnabled ? A2(
 			$elm$core$List$filter,
 			function (w) {
 				return A2(
@@ -7968,8 +7988,35 @@ var $author$project$Main$viewOptions = F2(
 						]))
 				]));
 	});
+var $elm$html$Html$br = _VirtualDom_node('br');
+var $author$project$Main$DownloadDemoData = {$: 'DownloadDemoData'};
+var $author$project$Main$downloadDemoDataButton = A2(
+	$elm$html$Html$button,
+	_List_fromArray(
+		[
+			$elm$html$Html$Events$onClick($author$project$Main$DownloadDemoData),
+			$elm$html$Html$Attributes$class('button-4'),
+			A2($elm$html$Html$Attributes$style, 'max-width', '20em')
+		]),
+	_List_fromArray(
+		[
+			$elm$html$Html$text('download demo data plz')
+		]));
 var $elm$html$Html$h4 = _VirtualDom_node('h4');
 var $elm$html$Html$li = _VirtualDom_node('li');
+var $author$project$Main$LoadDemoData = {$: 'LoadDemoData'};
+var $author$project$Main$loadDemoDataButton = A2(
+	$elm$html$Html$button,
+	_List_fromArray(
+		[
+			$elm$html$Html$Events$onClick($author$project$Main$LoadDemoData),
+			$elm$html$Html$Attributes$class('button-4'),
+			A2($elm$html$Html$Attributes$style, 'max-width', '20em')
+		]),
+	_List_fromArray(
+		[
+			$elm$html$Html$text('demo data plz')
+		]));
 var $elm$core$Dict$map = F2(
 	function (func, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -8031,6 +8078,25 @@ var $author$project$Main$welcomePage = function () {
 						$elm$html$Html$text('If you know what you\'re doing, click the upload button below.')
 					])),
 				$author$project$Main$viewUploadButton,
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				A2(
+				$elm$html$Html$p,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('To play with some demo data, click the button below.')
+					])),
+				$author$project$Main$loadDemoDataButton,
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				A2(
+				$elm$html$Html$p,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('To download demo data, click the button below.')
+					])),
+				$author$project$Main$downloadDemoDataButton,
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
 				A2(
 				$elm$html$Html$p,
 				_List_Nil,
