@@ -224,18 +224,6 @@ initialModel routeViewOptions waypoints =
 
 view : Model -> Browser.Document Msg
 view model =
-    let
-        exampleWaypoints =
-            [ Waypoint "Start" 0.0 ""
-            , Waypoint "Blue shoes" 56.1 "CAFE"
-            , Waypoint "Lungburner" 56.3 "CLIMB"
-            , Waypoint "Steep Street" 63.7 "CLIMB"
-            , Waypoint "Foosville fountain" 98.3 "WATER"
-            , Waypoint "Cosy hedge" 198.2 "😴"
-            , Waypoint "Legburner" 243.8 "CLIMB"
-            , Waypoint "Finish" 273.5 ""
-            ]
-    in
     Browser.Document "Route sheet"
         [ model.waypoints
             |> Maybe.map
@@ -248,35 +236,78 @@ view model =
                         [ viewOptions model.waypointOptions model.routeViewOptions
                         , Html.div [ Html.Attributes.class "column", Html.Attributes.class "wide" ]
                             [ Html.h2 [ Html.Attributes.style "text-align" "center" ] [ Html.text "Route breakdown" ]
-                            , routeBreakdown (routeWaypoints w model.waypointOptions) model.routeViewOptions
+                            , routeBreakdown (routeWaypoints model.waypointOptions w) model.routeViewOptions
                             ]
                         ]
                 )
-            |> Maybe.withDefault
-                (Html.div
-                    [ Html.Attributes.class "flex-container"
-                    , Html.Attributes.class "flex-center"
-                    , Html.Attributes.class "column"
-                    ]
-                    [ Html.p [] [ Html.text "hello and welcome" ]
-                    , Html.p [] [ Html.text "If you know what you're doing, click the upload button below." ]
-                    , viewUploadButton
-                    , Html.p [] [ Html.text "Examples:" ]
-                    , Html.div
-                        [ Html.Attributes.style "width" "100%"
-                        , Html.Attributes.style "justify-content" "space-evenly"
-                        , Html.Attributes.class "flex-container"
-                        , Html.Attributes.class "flex-center"
-                        , Html.Attributes.class "row"
-                        ]
-                        (List.map (\( desc, opts ) -> Html.div [] [ Html.h3 [ Html.Attributes.style "text-align" "center" ] [ Html.text desc ], routeBreakdown exampleWaypoints opts ])
-                            [ ( "Distance from zero", RouteViewOptions FromZero defaultSpacing )
-                            , ( "Distance to go", RouteViewOptions FromLast defaultSpacing )
-                            , ( "Distance between", RouteViewOptions None defaultSpacing )
-                            ]
+            |> Maybe.withDefault welcomePage
+        ]
+
+
+welcomePage : Html Msg
+welcomePage =
+    let
+        climbType =
+            "CLIMB"
+
+        cafeType =
+            "CAFE"
+
+        exampleWaypoints =
+            [ Waypoint "Start" 0.0 ""
+            , Waypoint "Blue shoes" 56.1 cafeType
+            , Waypoint "Lungburner" 56.3 climbType
+            , Waypoint "Steep Street" 63.7 climbType
+            , Waypoint "Foosville fountain" 98.3 "WATER"
+            , Waypoint "Cosy hedge" 198.2 "😴"
+            , Waypoint "Legburner" 243.8 climbType
+            , Waypoint "Finish" 273.5 ""
+            ]
+    in
+    Html.div
+        [ Html.Attributes.class "flex-container"
+        , Html.Attributes.class "flex-center"
+        , Html.Attributes.class "column"
+        , Html.Attributes.class "examples"
+        ]
+        [ Html.p [] [ Html.text "hello and welcome" ]
+        , Html.p [] [ Html.text "If you know what you're doing, click the upload button below." ]
+        , viewUploadButton
+        , Html.p [] [ Html.text "Features" ]
+        , Html.ul []
+            [ Html.li [] [ Html.text "Customise information level" ]
+            , Html.li [] [ Html.text "Compact or spacious view" ]
+            , Html.li [] [ Html.text "User-defined location types" ]
+            , Html.li [] [ Html.text "Filter location types" ]
+            , Html.li [] [ Html.text "...and more." ]
+            ]
+        , Html.p [] [ Html.text "Examples:" ]
+        , Html.div
+            [ Html.Attributes.style "width" "100%"
+            , Html.Attributes.style "justify-content" "space-evenly"
+            , Html.Attributes.class "flex-container"
+            , Html.Attributes.class "flex-center"
+            , Html.Attributes.class "flex-wrap"
+            , Html.Attributes.class "wide-row-narrow-column"
+            ]
+            (List.map (\( desc, waypointModifier, opts ) -> Html.div [] [ Html.h4 [ Html.Attributes.style "text-align" "center" ] [ Html.text desc ], routeBreakdown (waypointModifier exampleWaypoints) opts ])
+                [ ( "Distance from zero", identity, RouteViewOptions FromZero defaultSpacing )
+                , ( "Distance to go", identity, RouteViewOptions FromLast defaultSpacing )
+                , ( "Custom location types"
+                  , List.map
+                        (\w ->
+                            { w
+                                | typ =
+                                    Dict.get w.typ (Dict.fromList [ ( cafeType, "☕" ), ( climbType, "⛰️" ) ])
+                                        |> Maybe.withDefault ""
+                            }
                         )
-                    ]
-                )
+                  , RouteViewOptions None defaultSpacing
+                  )
+                , ( "Custom spacing", identity, RouteViewOptions None (defaultSpacing - 10) )
+                , ( "Filter location types", routeWaypoints (WaypointsOptions True (initialFilteredLocations exampleWaypoints |> Dict.map (\k _ -> k == climbType || k == ""))), RouteViewOptions None defaultSpacing )
+                ]
+            )
         ]
 
 
@@ -419,9 +450,9 @@ formatTotalDistanceDisplay v =
             "hide"
 
 
-routeWaypoints : List Waypoint -> WaypointsOptions -> List Waypoint
-routeWaypoints waypoints waypointOptions =
-    if waypointOptions.locationFilterEnabled then
+routeWaypoints : WaypointsOptions -> List Waypoint -> List Waypoint
+routeWaypoints waypointOptions waypoints =
+    if Debug.log "filter enabled" waypointOptions.locationFilterEnabled then
         List.filter (\w -> Dict.get w.typ waypointOptions.filteredLocationTypes |> Maybe.withDefault True) waypoints
 
     else
