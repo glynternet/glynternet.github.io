@@ -114,7 +114,7 @@ type Msg
     | TypeEnabled String Bool
     | UpdateTotalDistanceDisplay (Maybe TotalDistanceDisplay)
     | UpdateWaypointSelection (Maybe Bool)
-    | UpdateItemSpacing Int
+    | UpdateItemSpacing String
     | OpenFileBrowser
     | FileUploaded File.File
     | CsvDecoded (Result Csv.Decode.Error (List Waypoint))
@@ -175,7 +175,7 @@ update msg model =
                 options =
                     model.routeViewOptions
             in
-            updateModel { model | routeViewOptions = { options | itemSpacing = spacing } }
+            updateModel { model | routeViewOptions = { options | itemSpacing = String.toInt spacing |> Maybe.withDefault defaultSpacing } }
 
         OpenFileBrowser ->
             ( model, File.Select.file [ "text/csv" ] FileUploaded )
@@ -417,15 +417,14 @@ viewOptions waypointOptions routeViewOptions =
                 ]
             , Html.hr [] []
             , optionGroup "Spacing"
-                [ Input.Number.input
-                    { onInput = Maybe.map UpdateItemSpacing >> Maybe.withDefault Never
-                    , maxLength = Nothing
-                    , maxValue = Maybe.Just 100
-                    , minValue = Maybe.Just 1
-                    , hasFocus = Maybe.Nothing
-                    }
+                [ Html.input
+                    [ Html.Attributes.type_ "range"
+                    , Html.Attributes.min "1"
+                    , Html.Attributes.max "50"
+                    , Html.Attributes.value <| String.fromInt routeViewOptions.itemSpacing
+                    , Html.Events.onInput UpdateItemSpacing
+                    ]
                     []
-                    (Maybe.Just routeViewOptions.itemSpacing)
                 ]
             , Html.hr [] []
             , viewUploadButton

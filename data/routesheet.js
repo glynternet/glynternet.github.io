@@ -6880,7 +6880,12 @@ var $author$project$Main$update = F2(
 						{
 							routeViewOptions: _Utils_update(
 								options,
-								{itemSpacing: spacing})
+								{
+									itemSpacing: A2(
+										$elm$core$Maybe$withDefault,
+										$author$project$Main$defaultSpacing,
+										$elm$core$String$toInt(spacing))
+								})
 						}));
 			case 'OpenFileBrowser':
 				return _Utils_Tuple2(
@@ -7481,91 +7486,8 @@ var $abadi199$elm_input_extra$Dropdown$dropdown = F3(
 	});
 var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
 var $elm$html$Html$hr = _VirtualDom_node('hr');
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
 var $elm$html$Html$Attributes$max = $elm$html$Html$Attributes$stringProperty('max');
 var $elm$html$Html$Attributes$min = $elm$html$Html$Attributes$stringProperty('min');
-var $elm$html$Html$Events$onBlur = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'blur',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $elm$core$Maybe$map2 = F3(
-	function (func, ma, mb) {
-		if (ma.$ === 'Nothing') {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var a = ma.a;
-			if (mb.$ === 'Nothing') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var b = mb.a;
-				return $elm$core$Maybe$Just(
-					A2(func, a, b));
-			}
-		}
-	});
-var $abadi199$elm_input_extra$Input$Number$exceedMaxValue = F2(
-	function (maxValue, maybeNumber) {
-		return A2(
-			$elm$core$Maybe$withDefault,
-			false,
-			A3(
-				$elm$core$Maybe$map2,
-				F2(
-					function (max, number) {
-						return _Utils_cmp(number, max) > 0;
-					}),
-				maxValue,
-				maybeNumber));
-	});
-var $abadi199$elm_input_extra$Input$Number$lessThanMinValue = F2(
-	function (minValue, maybeNumber) {
-		return A2(
-			$elm$core$Maybe$withDefault,
-			false,
-			A3(
-				$elm$core$Maybe$map2,
-				F2(
-					function (min, number) {
-						return _Utils_cmp(number, min) < 0;
-					}),
-				minValue,
-				maybeNumber));
-	});
-var $abadi199$elm_input_extra$Input$Number$onChange = function (options) {
-	var checkWithMinValue = function (number) {
-		return A2($abadi199$elm_input_extra$Input$Number$lessThanMinValue, options.minValue, number) ? options.minValue : number;
-	};
-	var checkWithMaxValue = function (number) {
-		return A2($abadi199$elm_input_extra$Input$Number$exceedMaxValue, options.maxValue, number) ? options.maxValue : number;
-	};
-	var toInt = function (string) {
-		return checkWithMaxValue(
-			checkWithMinValue(
-				$elm$core$String$toInt(string)));
-	};
-	return A2(
-		$elm$html$Html$Events$on,
-		'change',
-		A2(
-			$elm$json$Json$Decode$map,
-			A2($elm$core$Basics$composeR, toInt, options.onInput),
-			$elm$html$Html$Events$targetValue));
-};
-var $elm$html$Html$Events$onFocus = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'focus',
-		$elm$json$Json$Decode$succeed(msg));
-};
 var $elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
 };
@@ -7588,215 +7510,6 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			$elm$html$Html$Events$alwaysStop,
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
-var $abadi199$elm_input_extra$Input$KeyCode$alt = 18;
-var $abadi199$elm_input_extra$Input$KeyCode$backspace = 8;
-var $abadi199$elm_input_extra$Input$KeyCode$capsLock = 20;
-var $abadi199$elm_input_extra$Input$KeyCode$ctrl = 17;
-var $abadi199$elm_input_extra$Input$KeyCode$delete = 46;
-var $abadi199$elm_input_extra$Input$KeyCode$downArrow = 40;
-var $abadi199$elm_input_extra$Input$KeyCode$enter = 13;
-var $abadi199$elm_input_extra$Input$KeyCode$leftArrow = 37;
-var $abadi199$elm_input_extra$Input$KeyCode$rightArrow = 39;
-var $abadi199$elm_input_extra$Input$KeyCode$shift = 16;
-var $abadi199$elm_input_extra$Input$KeyCode$tab = 9;
-var $abadi199$elm_input_extra$Input$KeyCode$upArrow = 38;
-var $abadi199$elm_input_extra$Input$KeyCode$allowedKeyCodes = _List_fromArray(
-	[$abadi199$elm_input_extra$Input$KeyCode$leftArrow, $abadi199$elm_input_extra$Input$KeyCode$upArrow, $abadi199$elm_input_extra$Input$KeyCode$rightArrow, $abadi199$elm_input_extra$Input$KeyCode$downArrow, $abadi199$elm_input_extra$Input$KeyCode$backspace, $abadi199$elm_input_extra$Input$KeyCode$ctrl, $abadi199$elm_input_extra$Input$KeyCode$alt, $abadi199$elm_input_extra$Input$KeyCode$delete, $abadi199$elm_input_extra$Input$KeyCode$tab, $abadi199$elm_input_extra$Input$KeyCode$enter, $abadi199$elm_input_extra$Input$KeyCode$shift, $abadi199$elm_input_extra$Input$KeyCode$capsLock]);
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var $abadi199$elm_input_extra$Input$Decoder$Event = F5(
-	function (keyCode, ctrlKey, altKey, metaKey, shiftKey) {
-		return {altKey: altKey, ctrlKey: ctrlKey, keyCode: keyCode, metaKey: metaKey, shiftKey: shiftKey};
-	});
-var $elm$json$Json$Decode$map5 = _Json_map5;
-var $abadi199$elm_input_extra$Input$Decoder$eventDecoder = A6(
-	$elm$json$Json$Decode$map5,
-	$abadi199$elm_input_extra$Input$Decoder$Event,
-	A2($elm$json$Json$Decode$field, 'keyCode', $elm$json$Json$Decode$int),
-	A2($elm$json$Json$Decode$field, 'ctrlKey', $elm$json$Json$Decode$bool),
-	A2($elm$json$Json$Decode$field, 'altKey', $elm$json$Json$Decode$bool),
-	A2($elm$json$Json$Decode$field, 'metaKey', $elm$json$Json$Decode$bool),
-	A2($elm$json$Json$Decode$field, 'shiftKey', $elm$json$Json$Decode$bool));
-var $elm$core$Char$fromCode = _Char_fromCode;
-var $abadi199$elm_input_extra$Input$Number$exceedMaxLength = F2(
-	function (maybeMaxLength, value) {
-		return A2(
-			$elm$core$Maybe$withDefault,
-			false,
-			A2(
-				$elm$core$Maybe$map,
-				$elm$core$Basics$not,
-				A2(
-					$elm$core$Maybe$map,
-					function (maxLength) {
-						return _Utils_cmp(
-							maxLength,
-							$elm$core$String$length(value)) > -1;
-					},
-					maybeMaxLength)));
-	});
-var $abadi199$elm_input_extra$Input$Number$isValid = F2(
-	function (newValue, options) {
-		var updatedNumber = $elm$core$String$toInt(newValue);
-		return (!A2($abadi199$elm_input_extra$Input$Number$exceedMaxLength, options.maxLength, newValue)) && (!A2($abadi199$elm_input_extra$Input$Number$exceedMaxValue, options.maxValue, updatedNumber));
-	});
-var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
-	return {$: 'MayPreventDefault', a: a};
-};
-var $elm$html$Html$Events$preventDefaultOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
-	});
-var $abadi199$elm_input_extra$Input$Number$onKeyDown = F2(
-	function (options, currentValue) {
-		var newValue = function (keyCode) {
-			return _Utils_ap(
-				A2(
-					$elm$core$Maybe$withDefault,
-					'',
-					A2($elm$core$Maybe$map, $elm$core$String$fromInt, currentValue)),
-				$elm$core$String$fromChar(
-					$elm$core$Char$fromCode(keyCode)));
-		};
-		var isNumber = function (keyCode) {
-			return (keyCode >= 48) && (keyCode <= 57);
-		};
-		var isNumPad = function (keyCode) {
-			return (keyCode >= 96) && (keyCode <= 105);
-		};
-		var filterKey = function (event) {
-			return (event.ctrlKey || (event.altKey || event.metaKey)) ? _Utils_Tuple2(
-				options.onInput(currentValue),
-				false) : (event.shiftKey ? _Utils_Tuple2(
-				options.onInput(currentValue),
-				false) : (A2(
-				$elm$core$List$any,
-				$elm$core$Basics$eq(event.keyCode),
-				$abadi199$elm_input_extra$Input$KeyCode$allowedKeyCodes) ? _Utils_Tuple2(
-				options.onInput(currentValue),
-				false) : (((isNumber(event.keyCode) || isNumPad(event.keyCode)) && A2(
-				$abadi199$elm_input_extra$Input$Number$isValid,
-				newValue(event.keyCode),
-				options)) ? _Utils_Tuple2(
-				options.onInput(
-					$elm$core$String$toInt(
-						newValue(event.keyCode))),
-				true) : _Utils_Tuple2(
-				options.onInput(currentValue),
-				true))));
-		};
-		var decoder = A2($elm$json$Json$Decode$map, filterKey, $abadi199$elm_input_extra$Input$Decoder$eventDecoder);
-		return A2($elm$html$Html$Events$preventDefaultOn, 'keydown', decoder);
-	});
-var $abadi199$elm_input_extra$Input$Number$input = F3(
-	function (options, attributes, currentValue) {
-		var toArray = function (a) {
-			return A2($elm$core$List$cons, a, _List_Nil);
-		};
-		var onFocusAttribute = A2(
-			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2(
-				$elm$core$Maybe$map,
-				toArray,
-				A2(
-					$elm$core$Maybe$map,
-					$elm$html$Html$Events$onFocus,
-					A2(
-						$elm$core$Maybe$map,
-						function (f) {
-							return f(true);
-						},
-						options.hasFocus))));
-		var onBlurAttribute = A2(
-			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2(
-				$elm$core$Maybe$map,
-				toArray,
-				A2(
-					$elm$core$Maybe$map,
-					$elm$html$Html$Events$onBlur,
-					A2(
-						$elm$core$Maybe$map,
-						function (f) {
-							return f(false);
-						},
-						options.hasFocus))));
-		var minAttribute = A2(
-			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2(
-				$elm$core$Maybe$map,
-				toArray,
-				A2(
-					$elm$core$Maybe$map,
-					$elm$html$Html$Attributes$min,
-					A2($elm$core$Maybe$map, $elm$core$String$fromInt, options.minValue))));
-		var maxAttribute = A2(
-			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2(
-				$elm$core$Maybe$map,
-				toArray,
-				A2(
-					$elm$core$Maybe$map,
-					$elm$html$Html$Attributes$max,
-					A2($elm$core$Maybe$map, $elm$core$String$fromInt, options.maxValue))));
-		return A2(
-			$elm$html$Html$input,
-			A2(
-				$elm$core$List$append,
-				minAttribute,
-				A2(
-					$elm$core$List$append,
-					maxAttribute,
-					A2(
-						$elm$core$List$append,
-						onBlurAttribute,
-						A2(
-							$elm$core$List$append,
-							onFocusAttribute,
-							A2(
-								$elm$core$List$append,
-								attributes,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$value(
-										A2(
-											$elm$core$Maybe$withDefault,
-											'',
-											A2($elm$core$Maybe$map, $elm$core$String$fromInt, currentValue))),
-										A2($abadi199$elm_input_extra$Input$Number$onKeyDown, options, currentValue),
-										$elm$html$Html$Events$onInput(
-										A2($elm$core$Basics$composeR, $elm$core$String$toInt, options.onInput)),
-										$abadi199$elm_input_extra$Input$Number$onChange(options),
-										$elm$html$Html$Attributes$type_('number')
-									])))))),
-			_List_Nil);
-	});
 var $elm$html$Html$legend = _VirtualDom_node('legend');
 var $author$project$Main$optionGroup = F2(
 	function (title, elements) {
@@ -7957,20 +7670,18 @@ var $author$project$Main$viewOptions = F2(
 							'Spacing',
 							_List_fromArray(
 								[
-									A3(
-									$abadi199$elm_input_extra$Input$Number$input,
-									{
-										hasFocus: $elm$core$Maybe$Nothing,
-										maxLength: $elm$core$Maybe$Nothing,
-										maxValue: $elm$core$Maybe$Just(100),
-										minValue: $elm$core$Maybe$Just(1),
-										onInput: A2(
-											$elm$core$Basics$composeR,
-											$elm$core$Maybe$map($author$project$Main$UpdateItemSpacing),
-											$elm$core$Maybe$withDefault($author$project$Main$Never))
-									},
-									_List_Nil,
-									$elm$core$Maybe$Just(routeViewOptions.itemSpacing))
+									A2(
+									$elm$html$Html$input,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$type_('range'),
+											$elm$html$Html$Attributes$min('1'),
+											$elm$html$Html$Attributes$max('50'),
+											$elm$html$Html$Attributes$value(
+											$elm$core$String$fromInt(routeViewOptions.itemSpacing)),
+											$elm$html$Html$Events$onInput($author$project$Main$UpdateItemSpacing)
+										]),
+									_List_Nil)
 								])),
 							A2($elm$html$Html$hr, _List_Nil, _List_Nil),
 							$author$project$Main$viewUploadButton,
