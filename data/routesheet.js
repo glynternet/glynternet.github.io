@@ -5384,15 +5384,16 @@ var $author$project$Main$Model = F3(
 	function (waypoints, waypointOptions, routeViewOptions) {
 		return {routeViewOptions: routeViewOptions, waypointOptions: waypointOptions, waypoints: waypoints};
 	});
-var $author$project$Main$RouteViewOptions = F2(
-	function (totalDistanceDisplay, itemSpacing) {
-		return {itemSpacing: itemSpacing, totalDistanceDisplay: totalDistanceDisplay};
+var $author$project$Main$RouteViewOptions = F3(
+	function (totalDistanceDisplay, itemSpacing, distanceDetail) {
+		return {distanceDetail: distanceDetail, itemSpacing: itemSpacing, totalDistanceDisplay: totalDistanceDisplay};
 	});
 var $author$project$Main$WaypointsOptions = F2(
 	function (locationFilterEnabled, filteredLocationTypes) {
 		return {filteredLocationTypes: filteredLocationTypes, locationFilterEnabled: locationFilterEnabled};
 	});
 var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $author$project$Main$defaultDistanceDetail = 1;
 var $author$project$Main$defaultSpacing = 25;
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
@@ -5586,7 +5587,7 @@ var $author$project$Main$init = F3(
 					$author$project$Main$Model,
 					$elm$core$Maybe$Nothing,
 					A2($author$project$Main$WaypointsOptions, false, $elm$core$Dict$empty),
-					A2($author$project$Main$RouteViewOptions, $author$project$Main$FromZero, $author$project$Main$defaultSpacing)),
+					A3($author$project$Main$RouteViewOptions, $author$project$Main$FromZero, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail)),
 				A2(
 					$elm$core$Maybe$map,
 					function (state) {
@@ -5604,13 +5605,14 @@ var $author$project$Main$init = F3(
 										$elm$json$Json$Decode$decodeValue,
 										$elm$json$Json$Decode$dict($elm$json$Json$Decode$bool),
 										state.filteredLocationTypes))),
-							A2(
+							A3(
 								$author$project$Main$RouteViewOptions,
 								A2(
 									$elm$core$Maybe$withDefault,
 									$author$project$Main$FromZero,
 									$author$project$Main$parseTotalDistanceDisplay(state.totalDistanceDisplay)),
-								state.itemSpacing));
+								state.itemSpacing,
+								state.distanceDetail));
 					},
 					maybeState)),
 			$elm$core$Platform$Cmd$none);
@@ -6642,7 +6644,7 @@ var $author$project$Main$decodeCSV = A2(
 				$BrianHicks$elm_csv$Csv$Decode$pipeline,
 				A2($BrianHicks$elm_csv$Csv$Decode$field, 'Name', $BrianHicks$elm_csv$Csv$Decode$string),
 				$BrianHicks$elm_csv$Csv$Decode$into($author$project$Main$Waypoint)))));
-var $author$project$Main$demoData = 'Distance,Route segment end,Type,Name,Municipality,,Detour,Notes\n0,286,,Start,Warwick,,,\n99.1,286,🛒,Co-op,Hereford,Big town,,Close 22:00\n99.1,286,RS,Something,Hereford,Big town,,Close 22:00\n99.1,286,123,Something Else,Hereford,Big town,,Close 22:00\n125,286,🛒,Spar,,,,Close 22:00\n159,286,🚰,Tap under pub,,,slight,\n159,286,RESUPPLY,Fake place,,,slight,\n165,286,🛒,Abergavenny Esso,Abergavenny,,slight,24h\n230,286,🏙,Bristol,Bristol,City,,\n230,286,toilet,Bristol toilet,Bristol,City,,\n292.5,585,🛒,Morrisons,Bridgwater,Big town,,Opens 07:00\n311.5,585,⛺,Moorhouse Campsite,,,,\n336,585,🏙,Minehead,Minehead,,,\n408.4,585,🍴,Quay Cafe,,,slight,09:00-17:00\n416.5,585,🔄,Detour start A361 bypass,Barnstaple,,,\n417,585,🥤,McDonalds,Barnstaple,Big town,,24h\n417.5,585,🛒,Tesco,Barnstaple,Big town,,06:00-00:00\n435,585,🍴,Griffins Yard,South Molton,Town,Not A316,09:30-17:00\n435,585,🛒,Spar,South Molton,Town,,07:00-22:00\n435,585,🛒,Esso,South Molton,Town,,06:00-21:00\n437,585,⬆,Detour end A361 bypass,South Molton,,,\n494,585,🏙,-,Taunton,Big town,,\n511,585,☕,Monks Yard Cafe,Ilminster,Small town,slight,09:00-16:00\n558.7,585,🥤,Subway,Dorchester,Big town,slight,08:00-18:00\n558.7,585,☕,Coffee #1,Dorchester,Big town,slight,\n560,585,🛒,Tesco,Dorchester,Big town,,\n560,585,🥤,KFC,Dorchester,Big town,,\n597.8,827,🔄,Detour start Dorchester,Weymouth,Town,,\n599.5,827,🚰,Water fountains,Weymouth,Town,,\n633,827,⬆,Detour end Dorchester,,,,\n655,827,🔄,Detour start avoid Salisbury,,,,\n688,827,⬆,Detour end avoid Salisbury,Amesbury,Town,,\n688,827,🛒,Co-op,Amesbury,Town,slight,07:00-22:00\n688,827,🥤,Fish & Chips,Amesbury,Town,slight,11:30-20:30\n729.6,827,🏙,-,Devizes,Big town,,\n732.5,827,❓,Decision: Country road vs A4,Devizes,Big town,,"A4 saves ~15\nbut may be busy,\ngoes through big towns"\n749,827,🛒,Co-op,Pewsey,Small town,,"Sat: 07-22\nSun: 10-16"\n756,827,🛒,Esso,,,,24h\n798,827,⬆,A4 rejoin main route,,,,\n810,827,🛒,Lidl,"Calcot, Reading",City,,"Sat: 08-22\nSun: 10-16"\n813,827,🏙,-,Reading,City,,\n817,827,🛒,Tesco (Esso),Reading,City,,07:00-22:30\n827.6,944.2,🛒,Sainsburys,Henley,Big town,,07:00-23:00\n851.7,944.2,🔄,Detour start Oxford,,,,\n882,944.2,⬆,Detour end Oxford,,,,\n940,944.2,❗,Join cycle path,,,,\n944.2,944.2,,Finish,Warwick,,,\n';
+var $author$project$Main$demoData = 'Distance,Route segment end,Type,Name,Municipality,,Detour,Notes\n0,286,,Start,Warwick,,,\n125,286,RS,Kwik-E-Mart,,,,Close 22:00\n292.5,585,RS,Morrisons,Bridgwater,Big town,,Opens 07:00\n311.5,585,⛺,Moorhouse Campsite,,,,\n408.4,585,🍴,Quay Cafe,,,slight,09:00-17:00\n417,585,RS,Des\' Veg,South Molton,Town,,06:00-21:00\n435,585,🍴,Griffins Yard,South Molton,Town,Not A316,09:30-17:00\n437,585,❗,Detour end A361 bypass,South Molton,,,\n511,585,🍴,Monks Yard Cafe,Ilminster,Small town,slight,09:00-16:00\n558.7,585,🥤,Subway,Dorchester,Big town,slight,08:00-18:00\n560,585,RS,Co-op,Dorchester,Big town,,\n599.5,827,🚰,Water fountains,Weymouth,Town,,\n633,827,❗,Detour end Dorchester,,,,\n655,827,❗,Detour start avoid Salisbury,,,,\n688,827,❗,Detour end avoid Salisbury,Amesbury,Town,,\n688,827,🥤,Fish & Chips,Amesbury,Town,slight,11:30-20:30\n732.5,827,❗,Decision: Country road vs A4,Devizes,Big town,,"A4 saves ~15\nbut may be busy,\ngoes through big towns"\n749,827,RS,Co-op,Pewsey,Small town,,"Sat: 07-22\nSun: 10-16"\n798,827,❗,A4 rejoin main route,,,,\n827.6,944.2,RS,Sainos,Henley,Big town,,07:00-23:00\n940,944.2,❗,Join cycle path,,,,\n944.2,944.2,,Finish,Warwick,,,\n';
 var $elm$time$Time$Posix = function (a) {
 	return {$: 'Posix', a: a};
 };
@@ -6801,6 +6803,9 @@ var $author$project$Main$storeModel = function (model) {
 						$elm$json$Json$Encode$string(
 							$author$project$Main$formatTotalDistanceDisplay(model.routeViewOptions.totalDistanceDisplay))),
 						_Utils_Tuple2(
+						'distanceDetail',
+						$elm$json$Json$Encode$int(model.routeViewOptions.distanceDetail)),
+						_Utils_Tuple2(
 						'locationFilterEnabled',
 						$elm$json$Json$Encode$bool(model.waypointOptions.locationFilterEnabled)),
 						_Utils_Tuple2(
@@ -6882,6 +6887,17 @@ var $author$project$Main$update = F2(
 								options,
 								{itemSpacing: spacing})
 						}));
+			case 'UpdateDistanceDetail':
+				var detail = msg.a;
+				var options = model.routeViewOptions;
+				return $author$project$Main$updateModel(
+					_Utils_update(
+						model,
+						{
+							routeViewOptions: _Utils_update(
+								options,
+								{distanceDetail: detail})
+						}));
 			case 'OpenFileBrowser':
 				return _Utils_Tuple2(
 					model,
@@ -6951,7 +6967,6 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
 var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
 var $elm$svg$Svg$Attributes$dy = _VirtualDom_attribute('dy');
@@ -6974,7 +6989,83 @@ var $elm$core$List$filterMap = F2(
 			xs);
 	});
 var $elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
+var $elm$core$Basics$not = _Basics_not;
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$Basics$neq = _Utils_notEqual;
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $myrho$elm_round$Round$addSign = F2(
+	function (signed, str) {
+		var isNotZero = A2(
+			$elm$core$List$any,
+			function (c) {
+				return (!_Utils_eq(
+					c,
+					_Utils_chr('0'))) && (!_Utils_eq(
+					c,
+					_Utils_chr('.')));
+			},
+			$elm$core$String$toList(str));
+		return _Utils_ap(
+			(signed && isNotZero) ? '-' : '',
+			str);
+	});
 var $elm$core$String$fromFloat = _String_fromNumber;
+var $elm$core$Char$fromCode = _Char_fromCode;
+var $myrho$elm_round$Round$increaseNum = function (_v0) {
+	var head = _v0.a;
+	var tail = _v0.b;
+	if (_Utils_eq(
+		head,
+		_Utils_chr('9'))) {
+		var _v1 = $elm$core$String$uncons(tail);
+		if (_v1.$ === 'Nothing') {
+			return '01';
+		} else {
+			var headtail = _v1.a;
+			return A2(
+				$elm$core$String$cons,
+				_Utils_chr('0'),
+				$myrho$elm_round$Round$increaseNum(headtail));
+		}
+	} else {
+		var c = $elm$core$Char$toCode(head);
+		return ((c >= 48) && (c < 57)) ? A2(
+			$elm$core$String$cons,
+			$elm$core$Char$fromCode(c + 1),
+			tail) : '0';
+	}
+};
+var $elm$core$Basics$isInfinite = _Basics_isInfinite;
+var $elm$core$Basics$isNaN = _Basics_isNaN;
 var $elm$core$Bitwise$and = _Bitwise_and;
 var $elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
 var $elm$core$String$repeatHelp = F3(
@@ -6998,44 +7089,170 @@ var $elm$core$String$padRight = F3(
 				n - $elm$core$String$length(string),
 				$elm$core$String$fromChar(_char)));
 	});
-var $author$project$Main$formatFloat = function (value) {
+var $elm$core$String$reverse = _String_reverse;
+var $myrho$elm_round$Round$splitComma = function (str) {
+	var _v0 = A2($elm$core$String$split, '.', str);
+	if (_v0.b) {
+		if (_v0.b.b) {
+			var before = _v0.a;
+			var _v1 = _v0.b;
+			var after = _v1.a;
+			return _Utils_Tuple2(before, after);
+		} else {
+			var before = _v0.a;
+			return _Utils_Tuple2(before, '0');
+		}
+	} else {
+		return _Utils_Tuple2('0', '0');
+	}
+};
+var $elm$core$Tuple$mapFirst = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			func(x),
+			y);
+	});
+var $myrho$elm_round$Round$toDecimal = function (fl) {
 	var _v0 = A2(
 		$elm$core$String$split,
-		'.',
-		$elm$core$String$fromFloat(value));
-	_v0$2:
-	while (true) {
-		if (_v0.b) {
-			if (!_v0.b.b) {
-				var val = _v0.a;
-				return val + '.00';
+		'e',
+		$elm$core$String$fromFloat(
+			$elm$core$Basics$abs(fl)));
+	if (_v0.b) {
+		if (_v0.b.b) {
+			var num = _v0.a;
+			var _v1 = _v0.b;
+			var exp = _v1.a;
+			var e = A2(
+				$elm$core$Maybe$withDefault,
+				0,
+				$elm$core$String$toInt(
+					A2($elm$core$String$startsWith, '+', exp) ? A2($elm$core$String$dropLeft, 1, exp) : exp));
+			var _v2 = $myrho$elm_round$Round$splitComma(num);
+			var before = _v2.a;
+			var after = _v2.b;
+			var total = _Utils_ap(before, after);
+			var zeroed = (e < 0) ? A2(
+				$elm$core$Maybe$withDefault,
+				'0',
+				A2(
+					$elm$core$Maybe$map,
+					function (_v3) {
+						var a = _v3.a;
+						var b = _v3.b;
+						return a + ('.' + b);
+					},
+					A2(
+						$elm$core$Maybe$map,
+						$elm$core$Tuple$mapFirst($elm$core$String$fromChar),
+						$elm$core$String$uncons(
+							_Utils_ap(
+								A2(
+									$elm$core$String$repeat,
+									$elm$core$Basics$abs(e),
+									'0'),
+								total))))) : A3(
+				$elm$core$String$padRight,
+				e + 1,
+				_Utils_chr('0'),
+				total);
+			return _Utils_ap(
+				(fl < 0) ? '-' : '',
+				zeroed);
+		} else {
+			var num = _v0.a;
+			return _Utils_ap(
+				(fl < 0) ? '-' : '',
+				num);
+		}
+	} else {
+		return '';
+	}
+};
+var $myrho$elm_round$Round$roundFun = F3(
+	function (functor, s, fl) {
+		if ($elm$core$Basics$isInfinite(fl) || $elm$core$Basics$isNaN(fl)) {
+			return $elm$core$String$fromFloat(fl);
+		} else {
+			var signed = fl < 0;
+			var _v0 = $myrho$elm_round$Round$splitComma(
+				$myrho$elm_round$Round$toDecimal(
+					$elm$core$Basics$abs(fl)));
+			var before = _v0.a;
+			var after = _v0.b;
+			var r = $elm$core$String$length(before) + s;
+			var normalized = _Utils_ap(
+				A2($elm$core$String$repeat, (-r) + 1, '0'),
+				A3(
+					$elm$core$String$padRight,
+					r,
+					_Utils_chr('0'),
+					_Utils_ap(before, after)));
+			var totalLen = $elm$core$String$length(normalized);
+			var roundDigitIndex = A2($elm$core$Basics$max, 1, r);
+			var increase = A2(
+				functor,
+				signed,
+				A3($elm$core$String$slice, roundDigitIndex, totalLen, normalized));
+			var remains = A3($elm$core$String$slice, 0, roundDigitIndex, normalized);
+			var num = increase ? $elm$core$String$reverse(
+				A2(
+					$elm$core$Maybe$withDefault,
+					'1',
+					A2(
+						$elm$core$Maybe$map,
+						$myrho$elm_round$Round$increaseNum,
+						$elm$core$String$uncons(
+							$elm$core$String$reverse(remains))))) : remains;
+			var numLen = $elm$core$String$length(num);
+			var numZeroed = (num === '0') ? num : ((s <= 0) ? _Utils_ap(
+				num,
+				A2(
+					$elm$core$String$repeat,
+					$elm$core$Basics$abs(s),
+					'0')) : ((_Utils_cmp(
+				s,
+				$elm$core$String$length(after)) < 0) ? (A3($elm$core$String$slice, 0, numLen - s, num) + ('.' + A3($elm$core$String$slice, numLen - s, numLen, num))) : _Utils_ap(
+				before + '.',
+				A3(
+					$elm$core$String$padRight,
+					s,
+					_Utils_chr('0'),
+					after))));
+			return A2($myrho$elm_round$Round$addSign, signed, numZeroed);
+		}
+	});
+var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
+	F2(
+		function (signed, str) {
+			var _v0 = $elm$core$String$uncons(str);
+			if (_v0.$ === 'Nothing') {
+				return false;
 			} else {
-				if (!_v0.b.b.b) {
-					var val = _v0.a;
-					var _v1 = _v0.b;
-					var dec = _v1.a;
-					return A2(
-						$elm$core$String$join,
-						'.',
-						_List_fromArray(
-							[
-								val,
-								A3(
-								$elm$core$String$padRight,
-								2,
-								_Utils_chr('0'),
-								A2($elm$core$String$left, 2, dec))
-							]));
+				if ('5' === _v0.a.a.valueOf()) {
+					if (_v0.a.b === '') {
+						var _v1 = _v0.a;
+						return !signed;
+					} else {
+						var _v2 = _v0.a;
+						return true;
+					}
 				} else {
-					break _v0$2;
+					var _v3 = _v0.a;
+					var _int = _v3.a;
+					return function (i) {
+						return ((i > 53) && signed) || ((i >= 53) && (!signed));
+					}(
+						$elm$core$Char$toCode(_int));
 				}
 			}
-		} else {
-			break _v0$2;
-		}
-	}
-	return 'please contact Glyn';
-};
+		}));
+var $author$project$Main$formatFloat = F2(
+	function (decimalPlaces, value) {
+		return A2($myrho$elm_round$Round$round, decimalPlaces, value);
+	});
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
@@ -7047,7 +7264,6 @@ var $elm$core$List$isEmpty = function (xs) {
 	}
 };
 var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
-var $elm$core$Basics$neq = _Utils_notEqual;
 var $author$project$Main$InfoWaypoint = function (a) {
 	return {$: 'InfoWaypoint', a: a};
 };
@@ -7149,12 +7365,12 @@ var $author$project$Main$routeBreakdown = F2(
 												return $elm$core$Maybe$Nothing;
 											case 'FromZero':
 												return $elm$core$Maybe$Just(
-													$author$project$Main$formatFloat(waypoint.distance) + 'km');
+													A2($author$project$Main$formatFloat, routeViewOptions.distanceDetail, waypoint.distance) + 'km');
 											default:
 												return A2(
 													$elm$core$Maybe$map,
 													function (last) {
-														return $author$project$Main$formatFloat(last - waypoint.distance) + 'km';
+														return A2($author$project$Main$formatFloat, routeViewOptions.distanceDetail, last - waypoint.distance) + 'km';
 													},
 													lastWaypointDistance);
 										}
@@ -7279,7 +7495,7 @@ var $author$project$Main$routeBreakdown = F2(
 												_List_fromArray(
 													[
 														$elm$svg$Svg$text(
-														$author$project$Main$formatFloat(dist) + 'km')
+														A2($author$project$Main$formatFloat, routeViewOptions.distanceDetail, dist) + 'km')
 													]))
 											]));
 								}
@@ -7310,9 +7526,6 @@ var $author$project$Main$routeWaypoints = F2(
 			},
 			waypoints) : waypoints;
 	});
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Main$ClearWaypoints = {$: 'ClearWaypoints'};
 var $abadi199$elm_input_extra$Dropdown$Item = F3(
 	function (value, text, enabled) {
@@ -7326,6 +7539,9 @@ var $author$project$Main$TypeEnabled = F2(
 	function (a, b) {
 		return {$: 'TypeEnabled', a: a, b: b};
 	});
+var $author$project$Main$UpdateDistanceDetail = function (a) {
+	return {$: 'UpdateDistanceDetail', a: a};
+};
 var $author$project$Main$UpdateItemSpacing = function (a) {
 	return {$: 'UpdateItemSpacing', a: a};
 };
@@ -7363,6 +7579,7 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $author$project$Main$checkbox = F3(
 	function (b, msg, name) {
@@ -7393,7 +7610,6 @@ var $author$project$Main$checkbox = F3(
 				]));
 	});
 var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
-var $elm$core$Basics$not = _Basics_not;
 var $elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
@@ -7480,6 +7696,7 @@ var $abadi199$elm_input_extra$Dropdown$dropdown = F3(
 			A2($elm$core$List$map, toOption, itemsWithEmptyItems));
 	});
 var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
+var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$html$Html$hr = _VirtualDom_node('hr');
 var $elm$html$Html$Attributes$max = $elm$html$Html$Attributes$stringProperty('max');
 var $elm$html$Html$Attributes$min = $elm$html$Html$Attributes$stringProperty('min');
@@ -7526,6 +7743,8 @@ var $author$project$Main$optionGroup = F2(
 						])),
 				elements));
 	});
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Main$OpenFileBrowser = {$: 'OpenFileBrowser'};
 var $author$project$Main$viewUploadButton = A2(
 	$elm$html$Html$button,
@@ -7689,6 +7908,32 @@ var $author$project$Main$viewOptions = F2(
 									_List_Nil)
 								])),
 							A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+							A2(
+							$author$project$Main$optionGroup,
+							'Distance detail',
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$input,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$type_('range'),
+											$elm$html$Html$Attributes$min('0'),
+											$elm$html$Html$Attributes$max('3'),
+											$elm$html$Html$Attributes$value(
+											$elm$core$String$fromInt(routeViewOptions.distanceDetail)),
+											$elm$html$Html$Events$onInput(
+											A2(
+												$elm$core$Basics$composeR,
+												$elm$core$String$toInt,
+												A2(
+													$elm$core$Basics$composeR,
+													$elm$core$Maybe$withDefault($author$project$Main$defaultDistanceDetail),
+													$author$project$Main$UpdateDistanceDetail)))
+										]),
+									_List_Nil)
+								])),
+							A2($elm$html$Html$hr, _List_Nil, _List_Nil),
 							$author$project$Main$viewUploadButton,
 							A2(
 							$elm$html$Html$button,
@@ -7716,8 +7961,9 @@ var $author$project$Main$downloadDemoDataButton = A2(
 		]),
 	_List_fromArray(
 		[
-			$elm$html$Html$text('download demo data plz')
+			$elm$html$Html$text('download example waypoints')
 		]));
+var $elm$html$Html$h3 = _VirtualDom_node('h3');
 var $elm$html$Html$h4 = _VirtualDom_node('h4');
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $author$project$Main$LoadDemoData = {$: 'LoadDemoData'};
@@ -7731,7 +7977,7 @@ var $author$project$Main$loadDemoDataButton = A2(
 		]),
 	_List_fromArray(
 		[
-			$elm$html$Html$text('demo data plz')
+			$elm$html$Html$text('play with demo')
 		]));
 var $elm$core$Dict$map = F2(
 	function (func, dict) {
@@ -7780,46 +8026,21 @@ var $author$project$Main$welcomePage = function () {
 		_List_fromArray(
 			[
 				A2(
-				$elm$html$Html$p,
+				$elm$html$Html$h2,
 				_List_Nil,
 				_List_fromArray(
 					[
-						$elm$html$Html$text('hello and welcome')
+						$elm$html$Html$text('Route breakdown builder')
 					])),
-				A2(
-				$elm$html$Html$p,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text('If you know what you\'re doing, click the upload button below.')
-					])),
-				$author$project$Main$viewUploadButton,
 				A2($elm$html$Html$br, _List_Nil, _List_Nil),
 				A2(
-				$elm$html$Html$p,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text('To play with some demo data, click the button below.')
-					])),
-				$author$project$Main$loadDemoDataButton,
-				A2($elm$html$Html$br, _List_Nil, _List_Nil),
-				A2(
-				$elm$html$Html$p,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text('To download demo data, click the button below.')
-					])),
-				$author$project$Main$downloadDemoDataButton,
-				A2($elm$html$Html$br, _List_Nil, _List_Nil),
-				A2(
-				$elm$html$Html$p,
+				$elm$html$Html$h3,
 				_List_Nil,
 				_List_fromArray(
 					[
 						$elm$html$Html$text('Features')
 					])),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
 				A2(
 				$elm$html$Html$ul,
 				_List_Nil,
@@ -7861,13 +8082,80 @@ var $author$project$Main$welcomePage = function () {
 								$elm$html$Html$text('...and more.')
 							]))
 					])),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				A2(
+				$elm$html$Html$h3,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Instructions')
+					])),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
 				A2(
 				$elm$html$Html$p,
 				_List_Nil,
 				_List_fromArray(
 					[
-						$elm$html$Html$text('Examples:')
+						$elm$html$Html$text('To make your route breakdown,')
 					])),
+				A2(
+				$elm$html$Html$p,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('upload a CSV file with column titles')
+					])),
+				A2(
+				$elm$html$Html$p,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('\"Type\", \"Distance\", \"Name\" (all other columns are ignored)')
+					])),
+				A2(
+				$elm$html$Html$p,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('and a row per waypoint.')
+					])),
+				$author$project$Main$viewUploadButton,
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				A2(
+				$elm$html$Html$p,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('CSV can be downloaded from Google Sheets or exported from Excel.')
+					])),
+				A2(
+				$elm$html$Html$p,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('For an example file, please click the button below.')
+					])),
+				$author$project$Main$downloadDemoDataButton,
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				A2(
+				$elm$html$Html$h3,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('...or play with a demo and see some examples')
+					])),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				$author$project$Main$loadDemoDataButton,
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				A2(
+				$elm$html$Html$h3,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('See some examples...')
+					])),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
 				A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -7911,11 +8199,11 @@ var $author$project$Main$welcomePage = function () {
 							_Utils_Tuple3(
 							'Distance from zero',
 							$elm$core$Basics$identity,
-							A2($author$project$Main$RouteViewOptions, $author$project$Main$FromZero, $author$project$Main$defaultSpacing)),
+							A3($author$project$Main$RouteViewOptions, $author$project$Main$FromZero, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail)),
 							_Utils_Tuple3(
 							'Distance to go',
 							$elm$core$Basics$identity,
-							A2($author$project$Main$RouteViewOptions, $author$project$Main$FromLast, $author$project$Main$defaultSpacing)),
+							A3($author$project$Main$RouteViewOptions, $author$project$Main$FromLast, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail)),
 							_Utils_Tuple3(
 							'Custom location types',
 							$elm$core$List$map(
@@ -7937,11 +8225,11 @@ var $author$project$Main$welcomePage = function () {
 															]))))
 										});
 								}),
-							A2($author$project$Main$RouteViewOptions, $author$project$Main$None, $author$project$Main$defaultSpacing)),
+							A3($author$project$Main$RouteViewOptions, $author$project$Main$None, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail)),
 							_Utils_Tuple3(
 							'Custom spacing',
 							$elm$core$Basics$identity,
-							A2($author$project$Main$RouteViewOptions, $author$project$Main$None, $author$project$Main$defaultSpacing - 10)),
+							A3($author$project$Main$RouteViewOptions, $author$project$Main$None, $author$project$Main$defaultSpacing - 10, $author$project$Main$defaultDistanceDetail)),
 							_Utils_Tuple3(
 							'Filter location types',
 							$author$project$Main$routeWaypoints(
@@ -7955,7 +8243,7 @@ var $author$project$Main$welcomePage = function () {
 												return _Utils_eq(k, climbType) || (k === '');
 											}),
 										$author$project$Main$initialFilteredLocations(exampleWaypoints)))),
-							A2($author$project$Main$RouteViewOptions, $author$project$Main$None, $author$project$Main$defaultSpacing))
+							A3($author$project$Main$RouteViewOptions, $author$project$Main$None, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail))
 						])))
 			]));
 }();
@@ -7991,16 +8279,6 @@ var $author$project$Main$view = function (model) {
 										]),
 									_List_fromArray(
 										[
-											A2(
-											$elm$html$Html$h2,
-											_List_fromArray(
-												[
-													A2($elm$html$Html$Attributes$style, 'text-align', 'center')
-												]),
-											_List_fromArray(
-												[
-													$elm$html$Html$text('Route breakdown')
-												])),
 											A2(
 											$author$project$Main$routeBreakdown,
 											A2($author$project$Main$routeWaypoints, model.waypointOptions, w),
@@ -8049,8 +8327,13 @@ _Platform_export({'Main':{'init':$author$project$Main$main(
 												return A2(
 													$elm$json$Json$Decode$andThen,
 													function (filteredLocationTypes) {
-														return $elm$json$Json$Decode$succeed(
-															{filteredLocationTypes: filteredLocationTypes, itemSpacing: itemSpacing, locationFilterEnabled: locationFilterEnabled, totalDistanceDisplay: totalDistanceDisplay, waypoints: waypoints});
+														return A2(
+															$elm$json$Json$Decode$andThen,
+															function (distanceDetail) {
+																return $elm$json$Json$Decode$succeed(
+																	{distanceDetail: distanceDetail, filteredLocationTypes: filteredLocationTypes, itemSpacing: itemSpacing, locationFilterEnabled: locationFilterEnabled, totalDistanceDisplay: totalDistanceDisplay, waypoints: waypoints});
+															},
+															A2($elm$json$Json$Decode$field, 'distanceDetail', $elm$json$Json$Decode$int));
 													},
 													A2($elm$json$Json$Decode$field, 'filteredLocationTypes', $elm$json$Json$Decode$value));
 											},

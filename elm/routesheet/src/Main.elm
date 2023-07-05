@@ -260,8 +260,7 @@ view model =
                         ]
                         [ viewOptions model.waypointOptions model.routeViewOptions
                         , Html.div [ Html.Attributes.class "column", Html.Attributes.class "wide" ]
-                            [ Html.h2 [ Html.Attributes.style "text-align" "center" ] [ Html.text "Route breakdown" ]
-                            , routeBreakdown (routeWaypoints model.waypointOptions w) model.routeViewOptions
+                            [ routeBreakdown (routeWaypoints model.waypointOptions w) model.routeViewOptions
                             ]
                         ]
                 )
@@ -295,17 +294,10 @@ welcomePage =
         , Html.Attributes.class "column"
         , Html.Attributes.class "examples"
         ]
-        [ Html.p [] [ Html.text "hello and welcome" ]
-        , Html.p [] [ Html.text "If you know what you're doing, click the upload button below." ]
-        , viewUploadButton
+        [ Html.h2 [] [ Html.text "Route breakdown builder" ]
         , Html.br [] []
-        , Html.p [] [ Html.text "To play with some demo data, click the button below." ]
-        , loadDemoDataButton
+        , Html.h3 [] [ Html.text "Features" ]
         , Html.br [] []
-        , Html.p [] [ Html.text "To download demo data, click the button below." ]
-        , downloadDemoDataButton
-        , Html.br [] []
-        , Html.p [] [ Html.text "Features" ]
         , Html.ul []
             [ Html.li [] [ Html.text "Customise information level" ]
             , Html.li [] [ Html.text "Compact or spacious view" ]
@@ -313,7 +305,26 @@ welcomePage =
             , Html.li [] [ Html.text "Filter location types" ]
             , Html.li [] [ Html.text "...and more." ]
             ]
-        , Html.p [] [ Html.text "Examples:" ]
+        , Html.br [] []
+        , Html.h3 [] [ Html.text "Instructions" ]
+        , Html.br [] []
+        , Html.p [] [ Html.text "To make your route breakdown," ]
+        , Html.p [] [ Html.text "upload a CSV file with column titles" ]
+        , Html.p [] [ Html.text "\"Type\", \"Distance\", \"Name\" (all other columns are ignored)" ]
+        , Html.p [] [ Html.text "and a row per waypoint." ]
+        , viewUploadButton
+        , Html.br [] []
+        , Html.p [] [ Html.text "CSV can be downloaded from Google Sheets or exported from Excel." ]
+        , Html.p [] [ Html.text "For an example file, please click the button below." ]
+        , downloadDemoDataButton
+        , Html.br [] []
+        , Html.h3 [] [ Html.text "...or play with a demo and see some examples" ]
+        , Html.br [] []
+        , loadDemoDataButton
+        , Html.br [] []
+        , Html.br [] []
+        , Html.h3 [] [ Html.text "See some examples..." ]
+        , Html.br [] []
         , Html.div
             [ Html.Attributes.style "width" "100%"
             , Html.Attributes.style "justify-content" "space-evenly"
@@ -473,14 +484,14 @@ loadDemoDataButton : Html Msg
 loadDemoDataButton =
     Html.button
         [ Html.Events.onClick LoadDemoData, Html.Attributes.class "button-4", Html.Attributes.style "max-width" "20em" ]
-        [ Html.text "demo data plz" ]
+        [ Html.text "play with demo" ]
 
 
 downloadDemoDataButton : Html Msg
 downloadDemoDataButton =
     Html.button
         [ Html.Events.onClick DownloadDemoData, Html.Attributes.class "button-4", Html.Attributes.style "max-width" "20em" ]
-        [ Html.text "download demo data plz" ]
+        [ Html.text "download example waypoints" ]
 
 
 parseTotalDistanceDisplay : String -> Maybe TotalDistanceDisplay
@@ -747,54 +758,28 @@ demoData : String
 demoData =
     """Distance,Route segment end,Type,Name,Municipality,,Detour,Notes
 0,286,,Start,Warwick,,,
-99.1,286,🛒,Co-op,Hereford,Big town,,Close 22:00
-99.1,286,RS,Something,Hereford,Big town,,Close 22:00
-99.1,286,123,Something Else,Hereford,Big town,,Close 22:00
-125,286,🛒,Spar,,,,Close 22:00
-159,286,🚰,Tap under pub,,,slight,
-159,286,RESUPPLY,Fake place,,,slight,
-165,286,🛒,Abergavenny Esso,Abergavenny,,slight,24h
-230,286,🏙,Bristol,Bristol,City,,
-230,286,toilet,Bristol toilet,Bristol,City,,
-292.5,585,🛒,Morrisons,Bridgwater,Big town,,Opens 07:00
+125,286,RS,Kwik-E-Mart,,,,Close 22:00
+292.5,585,RS,Morrisons,Bridgwater,Big town,,Opens 07:00
 311.5,585,⛺,Moorhouse Campsite,,,,
-336,585,🏙,Minehead,Minehead,,,
 408.4,585,🍴,Quay Cafe,,,slight,09:00-17:00
-416.5,585,🔄,Detour start A361 bypass,Barnstaple,,,
-417,585,🥤,McDonalds,Barnstaple,Big town,,24h
-417.5,585,🛒,Tesco,Barnstaple,Big town,,06:00-00:00
+417,585,RS,Des' Veg,South Molton,Town,,06:00-21:00
 435,585,🍴,Griffins Yard,South Molton,Town,Not A316,09:30-17:00
-435,585,🛒,Spar,South Molton,Town,,07:00-22:00
-435,585,🛒,Esso,South Molton,Town,,06:00-21:00
-437,585,⬆,Detour end A361 bypass,South Molton,,,
-494,585,🏙,-,Taunton,Big town,,
-511,585,☕,Monks Yard Cafe,Ilminster,Small town,slight,09:00-16:00
+437,585,❗,Detour end A361 bypass,South Molton,,,
+511,585,🍴,Monks Yard Cafe,Ilminster,Small town,slight,09:00-16:00
 558.7,585,🥤,Subway,Dorchester,Big town,slight,08:00-18:00
-558.7,585,☕,Coffee #1,Dorchester,Big town,slight,
-560,585,🛒,Tesco,Dorchester,Big town,,
-560,585,🥤,KFC,Dorchester,Big town,,
-597.8,827,🔄,Detour start Dorchester,Weymouth,Town,,
+560,585,RS,Co-op,Dorchester,Big town,,
 599.5,827,🚰,Water fountains,Weymouth,Town,,
-633,827,⬆,Detour end Dorchester,,,,
-655,827,🔄,Detour start avoid Salisbury,,,,
-688,827,⬆,Detour end avoid Salisbury,Amesbury,Town,,
-688,827,🛒,Co-op,Amesbury,Town,slight,07:00-22:00
+633,827,❗,Detour end Dorchester,,,,
+655,827,❗,Detour start avoid Salisbury,,,,
+688,827,❗,Detour end avoid Salisbury,Amesbury,Town,,
 688,827,🥤,Fish & Chips,Amesbury,Town,slight,11:30-20:30
-729.6,827,🏙,-,Devizes,Big town,,
-732.5,827,❓,Decision: Country road vs A4,Devizes,Big town,,"A4 saves ~15
+732.5,827,❗,Decision: Country road vs A4,Devizes,Big town,,"A4 saves ~15
 but may be busy,
 goes through big towns"
-749,827,🛒,Co-op,Pewsey,Small town,,"Sat: 07-22
+749,827,RS,Co-op,Pewsey,Small town,,"Sat: 07-22
 Sun: 10-16"
-756,827,🛒,Esso,,,,24h
-798,827,⬆,A4 rejoin main route,,,,
-810,827,🛒,Lidl,"Calcot, Reading",City,,"Sat: 08-22
-Sun: 10-16"
-813,827,🏙,-,Reading,City,,
-817,827,🛒,Tesco (Esso),Reading,City,,07:00-22:30
-827.6,944.2,🛒,Sainsburys,Henley,Big town,,07:00-23:00
-851.7,944.2,🔄,Detour start Oxford,,,,
-882,944.2,⬆,Detour end Oxford,,,,
+798,827,❗,A4 rejoin main route,,,,
+827.6,944.2,RS,Sainos,Henley,Big town,,07:00-23:00
 940,944.2,❗,Join cycle path,,,,
 944.2,944.2,,Finish,Warwick,,,
 """
