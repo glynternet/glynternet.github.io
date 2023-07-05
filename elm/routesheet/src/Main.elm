@@ -309,13 +309,20 @@ welcomePage =
         , Html.h3 [] [ Html.text "Instructions" ]
         , Html.br [] []
         , Html.p [] [ Html.text "To make your route breakdown," ]
-        , Html.p [] [ Html.text "upload a CSV file with column titles" ]
-        , Html.p [] [ Html.text "\"Type\", \"Distance\", \"Name\" (all other columns are ignored)" ]
-        , Html.p [] [ Html.text "and a row per waypoint." ]
+        , Html.p [] [ Html.text "upload a CSV file with the following columns, including title at top:" ]
+        , Html.p [] [ Html.text "and a row per waypoint:" ]
+        , Html.br [] []
+        , Html.ul []
+            [ Html.ul [] [ Html.b [] [ Html.text "\"Type\"" ], Html.text " - Supports emojis, advice is to keep it short." ]
+            , Html.ul [] [ Html.b [] [ Html.text "\"Distance\"" ], Html.text " - Just the number, no units." ]
+            , Html.ul [] [ Html.b [] [ Html.text "\"Name\"" ], Html.text " - Supports emojis." ]
+            ]
+        , Html.br [] []
         , viewUploadButton
         , Html.br [] []
         , Html.p [] [ Html.text "CSV can be downloaded from Google Sheets or exported from Excel." ]
         , Html.p [] [ Html.text "For an example file, please click the button below." ]
+        , Html.br [] []
         , downloadDemoDataButton
         , Html.br [] []
         , Html.h3 [] [ Html.text "...or play with a demo and see some examples" ]
@@ -491,7 +498,7 @@ downloadDemoDataButton : Html Msg
 downloadDemoDataButton =
     Html.button
         [ Html.Events.onClick DownloadDemoData, Html.Attributes.class "button-4", Html.Attributes.style "max-width" "20em" ]
-        [ Html.text "download example waypoints" ]
+        [ Html.text "download example CSV" ]
 
 
 parseTotalDistanceDisplay : String -> Maybe TotalDistanceDisplay

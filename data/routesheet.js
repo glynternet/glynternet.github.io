@@ -7949,6 +7949,7 @@ var $author$project$Main$viewOptions = F2(
 						]))
 				]));
 	});
+var $elm$html$Html$b = _VirtualDom_node('b');
 var $elm$html$Html$br = _VirtualDom_node('br');
 var $author$project$Main$DownloadDemoData = {$: 'DownloadDemoData'};
 var $author$project$Main$downloadDemoDataButton = A2(
@@ -7961,7 +7962,7 @@ var $author$project$Main$downloadDemoDataButton = A2(
 		]),
 	_List_fromArray(
 		[
-			$elm$html$Html$text('download example waypoints')
+			$elm$html$Html$text('download example CSV')
 		]));
 var $elm$html$Html$h3 = _VirtualDom_node('h3');
 var $elm$html$Html$h4 = _VirtualDom_node('h4');
@@ -8103,22 +8104,65 @@ var $author$project$Main$welcomePage = function () {
 				_List_Nil,
 				_List_fromArray(
 					[
-						$elm$html$Html$text('upload a CSV file with column titles')
+						$elm$html$Html$text('upload a CSV file with the following columns, including title at top:')
 					])),
 				A2(
 				$elm$html$Html$p,
 				_List_Nil,
 				_List_fromArray(
 					[
-						$elm$html$Html$text('\"Type\", \"Distance\", \"Name\" (all other columns are ignored)')
+						$elm$html$Html$text('and a row per waypoint:')
 					])),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
 				A2(
-				$elm$html$Html$p,
+				$elm$html$Html$ul,
 				_List_Nil,
 				_List_fromArray(
 					[
-						$elm$html$Html$text('and a row per waypoint.')
+						A2(
+						$elm$html$Html$ul,
+						_List_Nil,
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$b,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('\"Type\"')
+									])),
+								$elm$html$Html$text(' - Supports emojis, advice is to keep it short.')
+							])),
+						A2(
+						$elm$html$Html$ul,
+						_List_Nil,
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$b,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('\"Distance\"')
+									])),
+								$elm$html$Html$text(' - Just the number, no units.')
+							])),
+						A2(
+						$elm$html$Html$ul,
+						_List_Nil,
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$b,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('\"Name\"')
+									])),
+								$elm$html$Html$text(' - Supports emojis.')
+							]))
 					])),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
 				$author$project$Main$viewUploadButton,
 				A2($elm$html$Html$br, _List_Nil, _List_Nil),
 				A2(
@@ -8135,6 +8179,7 @@ var $author$project$Main$welcomePage = function () {
 					[
 						$elm$html$Html$text('For an example file, please click the button below.')
 					])),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
 				$author$project$Main$downloadDemoDataButton,
 				A2($elm$html$Html$br, _List_Nil, _List_Nil),
 				A2(
