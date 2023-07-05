@@ -11,8 +11,6 @@ import File.Select
 import Html exposing (Attribute, Html)
 import Html.Attributes
 import Html.Events
-import Http
-import Input.Number
 import Json.Decode
 import Json.Encode
 import String
@@ -114,7 +112,7 @@ type Msg
     | TypeEnabled String Bool
     | UpdateTotalDistanceDisplay (Maybe TotalDistanceDisplay)
     | UpdateWaypointSelection (Maybe Bool)
-    | UpdateItemSpacing String
+    | UpdateItemSpacing Int
     | OpenFileBrowser
     | FileUploaded File.File
     | CsvDecoded (Result Csv.Decode.Error (List Waypoint))
@@ -175,7 +173,7 @@ update msg model =
                 options =
                     model.routeViewOptions
             in
-            updateModel { model | routeViewOptions = { options | itemSpacing = String.toInt spacing |> Maybe.withDefault defaultSpacing } }
+            updateModel { model | routeViewOptions = { options | itemSpacing = spacing } }
 
         OpenFileBrowser ->
             ( model, File.Select.file [ "text/csv" ] FileUploaded )
@@ -341,7 +339,13 @@ optionGroup title elements =
 
 viewOptions : WaypointsOptions -> RouteViewOptions -> Html Msg
 viewOptions waypointOptions routeViewOptions =
-    Html.div [ Html.Attributes.class "column", Html.Attributes.class "narrow" ]
+    Html.div
+        [ Html.Attributes.class "flex-container"
+        , Html.Attributes.class "column"
+        , Html.Attributes.style "justify-content" "center"
+        , Html.Attributes.style "overflow" "auto"
+        , Html.Attributes.class "narrow"
+        ]
         [ Html.div [ Html.Attributes.class "options" ] <|
             [ Html.h2 [] [ Html.text "Options" ]
             , Html.hr [] []
@@ -422,7 +426,7 @@ viewOptions waypointOptions routeViewOptions =
                     , Html.Attributes.min "1"
                     , Html.Attributes.max "50"
                     , Html.Attributes.value <| String.fromInt routeViewOptions.itemSpacing
-                    , Html.Events.onInput UpdateItemSpacing
+                    , Html.Events.onInput (String.toInt >> Maybe.withDefault defaultSpacing >> UpdateItemSpacing)
                     ]
                     []
                 ]

@@ -6880,12 +6880,7 @@ var $author$project$Main$update = F2(
 						{
 							routeViewOptions: _Utils_update(
 								options,
-								{
-									itemSpacing: A2(
-										$elm$core$Maybe$withDefault,
-										$author$project$Main$defaultSpacing,
-										$elm$core$String$toInt(spacing))
-								})
+								{itemSpacing: spacing})
 						}));
 			case 'OpenFileBrowser':
 				return _Utils_Tuple2(
@@ -7550,7 +7545,10 @@ var $author$project$Main$viewOptions = F2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
+					$elm$html$Html$Attributes$class('flex-container'),
 					$elm$html$Html$Attributes$class('column'),
+					A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
+					A2($elm$html$Html$Attributes$style, 'overflow', 'auto'),
 					$elm$html$Html$Attributes$class('narrow')
 				]),
 			_List_fromArray(
@@ -7679,7 +7677,14 @@ var $author$project$Main$viewOptions = F2(
 											$elm$html$Html$Attributes$max('50'),
 											$elm$html$Html$Attributes$value(
 											$elm$core$String$fromInt(routeViewOptions.itemSpacing)),
-											$elm$html$Html$Events$onInput($author$project$Main$UpdateItemSpacing)
+											$elm$html$Html$Events$onInput(
+											A2(
+												$elm$core$Basics$composeR,
+												$elm$core$String$toInt,
+												A2(
+													$elm$core$Basics$composeR,
+													$elm$core$Maybe$withDefault($author$project$Main$defaultSpacing),
+													$author$project$Main$UpdateItemSpacing)))
 										]),
 									_List_Nil)
 								])),
