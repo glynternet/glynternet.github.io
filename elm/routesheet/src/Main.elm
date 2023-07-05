@@ -13,6 +13,7 @@ import Html.Attributes
 import Html.Events
 import Json.Decode
 import Json.Encode
+import Round
 import String
 import Svg
 import Svg.Attributes
@@ -45,6 +46,7 @@ type alias StoredState =
     , locationFilterEnabled : Bool
     , filteredLocationTypes : Json.Decode.Value
     , itemSpacing : Int
+    , distanceDetail : Int
     }
 
 
@@ -64,6 +66,7 @@ type alias WaypointsOptions =
 type alias RouteViewOptions =
     { totalDistanceDisplay : TotalDistanceDisplay
     , itemSpacing : Int
+    , distanceDetail : Int
     }
 
 
@@ -100,9 +103,10 @@ init maybeState _ _ =
                     )
                     (RouteViewOptions (parseTotalDistanceDisplay state.totalDistanceDisplay |> Maybe.withDefault FromZero)
                         state.itemSpacing
+                        state.distanceDetail
                     )
             )
-        |> Maybe.withDefault (Model Maybe.Nothing (WaypointsOptions False Dict.empty) (RouteViewOptions FromZero defaultSpacing))
+        |> Maybe.withDefault (Model Maybe.Nothing (WaypointsOptions False Dict.empty) (RouteViewOptions FromZero defaultSpacing defaultDistanceDetail))
     , Cmd.none
     )
 
@@ -113,6 +117,7 @@ type Msg
     | UpdateTotalDistanceDisplay (Maybe TotalDistanceDisplay)
     | UpdateWaypointSelection (Maybe Bool)
     | UpdateItemSpacing Int
+    | UpdateDistanceDetail Int
     | OpenFileBrowser
     | FileUploaded File.File
     | CsvDecoded (Result Csv.Decode.Error (List Waypoint))
@@ -174,6 +179,13 @@ update msg model =
                     model.routeViewOptions
             in
             updateModel { model | routeViewOptions = { options | itemSpacing = spacing } }
+
+        UpdateDistanceDetail detail ->
+            let
+                options =
+                    model.routeViewOptions
+            in
+            updateModel { model | routeViewOptions = { options | distanceDetail = detail } }
 
         OpenFileBrowser ->
             ( model, File.Select.file [ "text/csv" ] FileUploaded )
@@ -311,8 +323,8 @@ welcomePage =
             , Html.Attributes.class "wide-row-narrow-column"
             ]
             (List.map (\( desc, waypointModifier, opts ) -> Html.div [] [ Html.h4 [ Html.Attributes.style "text-align" "center" ] [ Html.text desc ], routeBreakdown (waypointModifier exampleWaypoints) opts ])
-                [ ( "Distance from zero", identity, RouteViewOptions FromZero defaultSpacing )
-                , ( "Distance to go", identity, RouteViewOptions FromLast defaultSpacing )
+                [ ( "Distance from zero", identity, RouteViewOptions FromZero defaultSpacing defaultDistanceDetail )
+                , ( "Distance to go", identity, RouteViewOptions FromLast defaultSpacing defaultDistanceDetail )
                 , ( "Custom location types"
                   , List.map
                         (\w ->
@@ -322,10 +334,10 @@ welcomePage =
                                         |> Maybe.withDefault ""
                             }
                         )
-                  , RouteViewOptions None defaultSpacing
+                  , RouteViewOptions None defaultSpacing defaultDistanceDetail
                   )
-                , ( "Custom spacing", identity, RouteViewOptions None (defaultSpacing - 10) )
-                , ( "Filter location types", routeWaypoints (WaypointsOptions True (initialFilteredLocations exampleWaypoints |> Dict.map (\k _ -> k == climbType || k == ""))), RouteViewOptions None defaultSpacing )
+                , ( "Custom spacing", identity, RouteViewOptions None (defaultSpacing - 10) defaultDistanceDetail )
+                , ( "Filter location types", routeWaypoints (WaypointsOptions True (initialFilteredLocations exampleWaypoints |> Dict.map (\k _ -> k == climbType || k == ""))), RouteViewOptions None defaultSpacing defaultDistanceDetail )
                 ]
             )
         ]
@@ -427,6 +439,17 @@ viewOptions waypointOptions routeViewOptions =
                     , Html.Attributes.max "50"
                     , Html.Attributes.value <| String.fromInt routeViewOptions.itemSpacing
                     , Html.Events.onInput (String.toInt >> Maybe.withDefault defaultSpacing >> UpdateItemSpacing)
+                    ]
+                    []
+                ]
+            , Html.hr [] []
+            , optionGroup "Distance detail"
+                [ Html.input
+                    [ Html.Attributes.type_ "range"
+                    , Html.Attributes.min "0"
+                    , Html.Attributes.max "3"
+                    , Html.Attributes.value <| String.fromInt routeViewOptions.distanceDetail
+                    , Html.Events.onInput (String.toInt >> Maybe.withDefault defaultDistanceDetail >> UpdateDistanceDetail)
                     ]
                     []
                 ]
@@ -539,10 +562,10 @@ routeBreakdown waypoints routeViewOptions =
                                                 Maybe.Nothing
 
                                             FromZero ->
-                                                Maybe.Just (formatFloat waypoint.distance ++ "km")
+                                                Maybe.Just (formatFloat routeViewOptions.distanceDetail waypoint.distance ++ "km")
 
                                             FromLast ->
-                                                lastWaypointDistance |> Maybe.map (\last -> formatFloat (last - waypoint.distance) ++ "km")
+                                                lastWaypointDistance |> Maybe.map (\last -> formatFloat routeViewOptions.distanceDetail (last - waypoint.distance) ++ "km")
 
                                     waypointInfo =
                                         List.filterMap identity
@@ -632,7 +655,7 @@ routeBreakdown waypoints routeViewOptions =
                                         , Svg.Attributes.dominantBaseline "middle"
                                         , Svg.Attributes.fontSize "smaller"
                                         ]
-                                        [ Svg.text <| formatFloat dist ++ "km" ]
+                                        [ Svg.text <| formatFloat routeViewOptions.distanceDetail dist ++ "km" ]
                                     ]
                     )
             )
@@ -659,20 +682,9 @@ routeInfo waypoints =
         |> List.reverse
 
 
-formatFloat : Float -> String
-formatFloat value =
-    case String.split "." (String.fromFloat value) of
-        [ val ] ->
-            val ++ ".00"
-
-        [ val, dec ] ->
-            String.join "."
-                [ val
-                , String.left 2 dec |> String.padRight 2 '0'
-                ]
-
-        _ ->
-            "please contact Glyn"
+formatFloat : Int -> Float -> String
+formatFloat decimalPlaces value =
+    Round.round decimalPlaces value
 
 
 checkbox : Bool -> msg -> String -> Html msg
@@ -687,6 +699,10 @@ defaultSpacing =
     25
 
 
+defaultDistanceDetail =
+    1
+
+
 
 -- STATE
 -- The field names in these encoded JSON objects must match exactly the field names
@@ -698,6 +714,7 @@ storeModel model =
     Json.Encode.object
         [ ( "waypoints", model.waypoints |> Maybe.map encodeWaypoints |> Maybe.withDefault Json.Encode.null )
         , ( "totalDistanceDisplay", Json.Encode.string <| formatTotalDistanceDisplay model.routeViewOptions.totalDistanceDisplay )
+        , ( "distanceDetail", Json.Encode.int model.routeViewOptions.distanceDetail )
         , ( "locationFilterEnabled", Json.Encode.bool model.waypointOptions.locationFilterEnabled )
         , ( "filteredLocationTypes", Json.Encode.dict identity Json.Encode.bool model.waypointOptions.filteredLocationTypes )
         , ( "itemSpacing", Json.Encode.int model.routeViewOptions.itemSpacing )
