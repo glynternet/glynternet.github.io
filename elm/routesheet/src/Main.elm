@@ -42,11 +42,11 @@ main =
 
 type alias StoredState =
     { waypoints : Maybe (List Waypoint)
-    , totalDistanceDisplay : String
-    , locationFilterEnabled : Bool
-    , filteredLocationTypes : Json.Decode.Value
-    , itemSpacing : Int
-    , distanceDetail : Int
+    , totalDistanceDisplay : Maybe String
+    , locationFilterEnabled : Maybe Bool
+    , filteredLocationTypes : Maybe (Dict.Dict String Bool)
+    , itemSpacing : Maybe Int
+    , distanceDetail : Maybe Int
     }
 
 
@@ -89,27 +89,27 @@ type Info
     | Ride Float
 
 
-init : Maybe StoredState -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
+init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
 init maybeState _ _ =
-    ( maybeState
+    maybeState
         |> Maybe.map
-            (\state ->
-                Model state.waypoints
-                    (WaypointsOptions
-                        state.locationFilterEnabled
-                        (Json.Decode.decodeValue (Json.Decode.dict Json.Decode.bool) state.filteredLocationTypes
-                            -- if error during decode of filtered types, reset filter based on waypoints
-                            |> Result.withDefault (initialFilteredLocations (Maybe.withDefault [] state.waypoints))
-                        )
-                    )
-                    (RouteViewOptions (parseTotalDistanceDisplay state.totalDistanceDisplay |> Maybe.withDefault FromZero)
-                        state.itemSpacing
-                        state.distanceDetail
-                    )
+            (Json.Decode.decodeValue decodeStoredState
+                >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
+                >> (\storedState ->
+                        Model storedState.waypoints
+                            (WaypointsOptions
+                                (storedState.locationFilterEnabled |> Maybe.withDefault False)
+                                (storedState.filteredLocationTypes |> Maybe.withDefault (initialFilteredLocations <| (storedState.waypoints |> Maybe.withDefault [])))
+                            )
+                            (RouteViewOptions
+                                (storedState.totalDistanceDisplay |> Maybe.andThen parseTotalDistanceDisplay |> Maybe.withDefault FromZero)
+                                (Maybe.withDefault defaultSpacing storedState.itemSpacing)
+                                (Maybe.withDefault defaultDistanceDetail storedState.distanceDetail)
+                            )
+                   )
             )
         |> Maybe.withDefault (Model Maybe.Nothing (WaypointsOptions False Dict.empty) (RouteViewOptions FromZero defaultSpacing defaultDistanceDetail))
-    , Cmd.none
-    )
+        |> updateModel
 
 
 type Msg
@@ -748,6 +748,27 @@ storeModel model =
         ]
         |> Json.Encode.encode 2
         |> storeState
+
+
+decodeStoredState : Json.Decode.Decoder StoredState
+decodeStoredState =
+    Json.Decode.map6 StoredState
+        (Json.Decode.maybe (Json.Decode.field "waypoints" decodeWaypoints))
+        (Json.Decode.maybe (Json.Decode.field "totalDistanceDisplay" Json.Decode.string))
+        (Json.Decode.maybe (Json.Decode.field "locationFilterEnabled" Json.Decode.bool))
+        (Json.Decode.maybe (Json.Decode.field "filteredLocationTypes" (Json.Decode.dict Json.Decode.bool)))
+        (Json.Decode.maybe (Json.Decode.field "itemSpacing" Json.Decode.int))
+        (Json.Decode.maybe (Json.Decode.field "distanceDetail" Json.Decode.int))
+
+
+decodeWaypoints : Json.Decode.Decoder (List Waypoint)
+decodeWaypoints =
+    Json.Decode.list
+        (Json.Decode.map3 Waypoint
+            (Json.Decode.field "name" Json.Decode.string)
+            (Json.Decode.field "distance" Json.Decode.float)
+            (Json.Decode.field "typ" Json.Decode.string)
+        )
 
 
 encodeWaypoints : List Waypoint -> Json.Encode.Value
