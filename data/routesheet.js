@@ -6967,7 +6967,6 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
 var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
 var $elm$svg$Svg$Attributes$dy = _VirtualDom_attribute('dy');
 var $elm$core$List$maybeCons = F3(
@@ -7336,7 +7335,7 @@ var $author$project$Main$routeBreakdown = F2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$elm$svg$Svg$Attributes$class('route_breakdown')
+					$elm$html$Html$Attributes$class('route_breakdown')
 				]),
 			_List_fromArray(
 				[
@@ -7526,6 +7525,8 @@ var $author$project$Main$routeWaypoints = F2(
 			},
 			waypoints) : waypoints;
 	});
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Main$ClearWaypoints = {$: 'ClearWaypoints'};
 var $abadi199$elm_input_extra$Dropdown$Item = F3(
 	function (value, text, enabled) {
@@ -7743,8 +7744,6 @@ var $author$project$Main$optionGroup = F2(
 						])),
 				elements));
 	});
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Main$OpenFileBrowser = {$: 'OpenFileBrowser'};
 var $author$project$Main$viewUploadButton = A2(
 	$elm$html$Html$button,
@@ -8310,7 +8309,8 @@ var $author$project$Main$view = function (model) {
 								[
 									$elm$html$Html$Attributes$class('flex-container'),
 									$elm$html$Html$Attributes$class('row'),
-									$elm$html$Html$Attributes$class('page')
+									$elm$html$Html$Attributes$class('page'),
+									A2($elm$html$Html$Attributes$style, 'height', '100%')
 								]),
 							_List_fromArray(
 								[
@@ -8319,8 +8319,11 @@ var $author$project$Main$view = function (model) {
 									$elm$html$Html$div,
 									_List_fromArray(
 										[
+											$elm$html$Html$Attributes$class('flex-container'),
 											$elm$html$Html$Attributes$class('column'),
-											$elm$html$Html$Attributes$class('wide')
+											$elm$html$Html$Attributes$class('wide'),
+											A2($elm$html$Html$Attributes$style, 'height', '100%'),
+											A2($elm$html$Html$Attributes$style, 'justify-content', 'center')
 										]),
 									_List_fromArray(
 										[

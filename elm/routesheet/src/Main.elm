@@ -58,7 +58,8 @@ type alias Model =
 
 
 type alias WaypointsOptions =
-    { locationFilterEnabled : Bool
+    { -- TODO: combine filter enabled and dict into single Maybe then deserialise from null or object
+      locationFilterEnabled : Bool
     , filteredLocationTypes : Dict.Dict String Bool
     }
 
@@ -97,7 +98,7 @@ init maybeState _ _ =
                     (WaypointsOptions
                         state.locationFilterEnabled
                         (Json.Decode.decodeValue (Json.Decode.dict Json.Decode.bool) state.filteredLocationTypes
-                            --TODO: handle error
+                            -- if error during decode of filtered types, reset filter based on waypoints
                             |> Result.withDefault (initialFilteredLocations (Maybe.withDefault [] state.waypoints))
                         )
                     )
@@ -257,9 +258,16 @@ view model =
                         [ Html.Attributes.class "flex-container"
                         , Html.Attributes.class "row"
                         , Html.Attributes.class "page"
+                        , Html.Attributes.style "height" "100%"
                         ]
                         [ viewOptions model.waypointOptions model.routeViewOptions
-                        , Html.div [ Html.Attributes.class "column", Html.Attributes.class "wide" ]
+                        , Html.div
+                            [ Html.Attributes.class "flex-container"
+                            , Html.Attributes.class "column"
+                            , Html.Attributes.class "wide"
+                            , Html.Attributes.style "height" "100%"
+                            , Html.Attributes.style "justify-content" "center"
+                            ]
                             [ routeBreakdown (routeWaypoints model.waypointOptions w) model.routeViewOptions
                             ]
                         ]
@@ -558,7 +566,8 @@ routeBreakdown waypoints routeViewOptions =
             List.head (List.reverse waypoints) |> Maybe.map .distance
     in
     Html.div
-        [ Svg.Attributes.class "route_breakdown" ]
+        [ Html.Attributes.class "route_breakdown"
+        ]
         [ Svg.svg
             [ Svg.Attributes.width "100%"
             , Svg.Attributes.height <| String.fromInt svgHeight
