@@ -60,13 +60,24 @@ type alias StoredState =
 
 
 type alias Model =
-    { waypoints : Maybe (List Waypoint)
+    { page : Page
     , csvDecodeError : Maybe String
     , showOptions : Bool
-    , waypointOptions : WaypointsOptions
     , routeViewOptions : RouteViewOptions
     , showQR : Bool
     , url : Url.Url
+    }
+
+
+type Page
+    = WelcomePage
+    | GetStartedPage
+    | RoutePage RouteModel
+
+
+type alias RouteModel =
+    { waypoints : List Waypoint
+    , waypointOptions : WaypointsOptions
     }
 
 
@@ -117,17 +128,18 @@ init maybeState url key =
                 |> Maybe.andThen (Json.Decode.decodeString (storedStateDecoder shortFieldNames) >> Result.toMaybe)
     in
     (case queryState of
-        Just model ->
-            storedStateModel url model
+        Just storedState ->
+            storedStateModel url storedState
 
         Nothing ->
             maybeState
                 |> Maybe.map
                     (Json.Decode.decodeValue (storedStateDecoder longFieldNames)
+                        -- TODO: handle error
                         >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
                         >> storedStateModel url
                     )
-                |> Maybe.withDefault (Model Maybe.Nothing Maybe.Nothing True (WaypointsOptions False Dict.empty) (RouteViewOptions FromZero defaultSpacing defaultDistanceDetail) False url)
+                |> Maybe.withDefault (Model WelcomePage Maybe.Nothing True (RouteViewOptions FromZero defaultSpacing defaultDistanceDetail) False url)
     )
         |> updateModel
         |> Tuple.mapSecond
@@ -143,13 +155,21 @@ init maybeState url key =
 
 storedStateModel : Url.Url -> StoredState -> Model
 storedStateModel url state =
-    Model state.waypoints
+    Model
+        (state.waypoints
+            |> Maybe.map
+                (\ws ->
+                    RouteModel ws
+                        (WaypointsOptions
+                            (state.locationFilterEnabled |> Maybe.withDefault False)
+                            (state.filteredLocationTypes |> Maybe.withDefault (initialFilteredLocations ws))
+                        )
+                        |> RoutePage
+                )
+            |> Maybe.withDefault WelcomePage
+        )
         Maybe.Nothing
         True
-        (WaypointsOptions
-            (state.locationFilterEnabled |> Maybe.withDefault False)
-            (state.filteredLocationTypes |> Maybe.withDefault (initialFilteredLocations <| (state.waypoints |> Maybe.withDefault [])))
-        )
         (RouteViewOptions
             (state.totalDistanceDisplay |> Maybe.andThen parseTotalDistanceDisplay |> Maybe.withDefault FromZero)
             (Maybe.withDefault defaultSpacing state.itemSpacing)
@@ -161,6 +181,7 @@ storedStateModel url state =
 
 type Msg
     = Never
+    | ShowPage Page
     | TypeEnabled String Bool
     | ShowOptions Bool
     | UpdateTotalDistanceDisplay (Maybe TotalDistanceDisplay)
@@ -172,7 +193,6 @@ type Msg
     | CsvDecoded (Result Csv.Decode.Error (List Waypoint))
     | LoadDemoData
     | DownloadDemoData
-    | ClearWaypoints
     | ShowQR
     | CloseQR
 
@@ -190,15 +210,23 @@ initialFilteredLocations waypoints =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        TypeEnabled typ enabled ->
-            let
-                options =
-                    model.waypointOptions
+        ShowPage page ->
+            updateModel { model | page = page }
 
-                newModel =
-                    { model | waypointOptions = { options | filteredLocationTypes = Dict.insert typ enabled model.waypointOptions.filteredLocationTypes } }
-            in
-            updateModel newModel
+        TypeEnabled typ enabled ->
+            case model.page of
+                RoutePage routeModel ->
+                    let
+                        options =
+                            routeModel.waypointOptions
+
+                        newRouteModel =
+                            { routeModel | waypointOptions = { options | filteredLocationTypes = Dict.insert typ enabled routeModel.waypointOptions.filteredLocationTypes } }
+                    in
+                    updateRouteModel model newRouteModel
+
+                _ ->
+                    ( model, Cmd.none )
 
         ShowOptions show ->
             ( { model | showOptions = show }, Cmd.none )
@@ -216,16 +244,24 @@ update msg model =
                 |> Maybe.withDefault ( model, Cmd.none )
 
         UpdateWaypointSelection maybeSelection ->
-            maybeSelection
-                |> Maybe.map
-                    (\locationFilterEnabled ->
-                        let
-                            options =
-                                model.waypointOptions
-                        in
-                        updateModel { model | waypointOptions = { options | locationFilterEnabled = locationFilterEnabled } }
-                    )
-                |> Maybe.withDefault ( model, Cmd.none )
+            case model.page of
+                RoutePage routeModel ->
+                    maybeSelection
+                        |> Maybe.map
+                            (\locationFilterEnabled ->
+                                let
+                                    options =
+                                        routeModel.waypointOptions
+
+                                    newRouteModel =
+                                        { routeModel | waypointOptions = { options | locationFilterEnabled = locationFilterEnabled } }
+                                in
+                                updateRouteModel model newRouteModel
+                            )
+                        |> Maybe.withDefault ( model, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
         UpdateItemSpacing spacing ->
             let
@@ -260,9 +296,6 @@ update msg model =
         DownloadDemoData ->
             ( model, File.Download.string "demo-data.csv" "text/csv" demoData )
 
-        ClearWaypoints ->
-            updateModel { model | waypoints = Maybe.Nothing, csvDecodeError = Maybe.Nothing }
-
         ShowQR ->
             updateModel { model | showQR = True }
 
@@ -271,6 +304,11 @@ update msg model =
 
         Never ->
             ( model, Cmd.none )
+
+
+updateRouteModel : Model -> RouteModel -> ( Model, Cmd Msg )
+updateRouteModel model routeModel =
+    updateModel <| { model | page = RoutePage routeModel }
 
 
 decodeCSV : String -> Result Csv.Decode.Error (List Waypoint)
@@ -296,19 +334,19 @@ updateCSVDecodeModel : Model -> Result Csv.Decode.Error (List Waypoint) -> ( Mod
 updateCSVDecodeModel model result =
     case result of
         Ok waypoints ->
-            initialModel model.routeViewOptions waypoints model.url |> updateModel
+            { model | page = RoutePage <| initialRouteModel waypoints } |> updateModel
 
         Err err ->
             ( { model | csvDecodeError = Maybe.Just <| Csv.Decode.errorToString err }, Cmd.none )
 
 
-initialModel : RouteViewOptions -> List Waypoint -> Url.Url -> Model
-initialModel routeViewOptions waypoints url =
+initialRouteModel : List Waypoint -> RouteModel
+initialRouteModel waypoints =
     let
         sortedWaypoint =
             List.sortBy .distance waypoints
     in
-    Model (Maybe.Just sortedWaypoint) Maybe.Nothing True (initialWaypointOptions sortedWaypoint) routeViewOptions False url
+    RouteModel sortedWaypoint (initialWaypointOptions sortedWaypoint)
 
 
 
@@ -317,110 +355,114 @@ initialModel routeViewOptions waypoints url =
 
 view : Model -> Browser.Document Msg
 view model =
+    -- TODO: better title plz
     Browser.Document "Route sheet"
-        [ model.waypoints
-            |> Maybe.map
-                (\w ->
-                    if model.showQR then
-                        Html.div
+        [ case model.page of
+            RoutePage routeModel ->
+                if model.showQR then
+                    Html.div
+                        [ Html.Attributes.class "flex-container"
+                        , Html.Attributes.class "column"
+                        , Html.Attributes.class "page"
+                        , Html.Attributes.style "height" "100%"
+                        , Html.Attributes.style "justify-content" "center"
+                        , Html.Attributes.style "align-items" "center"
+                        ]
+                        (encodeSavedState shortFieldNames model
+                            |> Bytes.Encode.string
+                            |> Bytes.Encode.encode
+                            |> Flate.deflateGZip
+                            |> Base64.fromBytes
+                            |> Maybe.map (stateUrl model.url)
+                            |> Maybe.map
+                                (\url ->
+                                    -- WEBrick has max URL length of around 2090 (form local testing), picking 1800 as max to be safe
+                                    if String.length url > 1800 then
+                                        [ viewErrorPanel "😞 the URL created for sharing would be too long for the current method,\n\nplease let me know and I will work out a new way to do this!" ]
+
+                                    else
+                                        QRCode.fromStringWith QRCode.Medium url
+                                            |> Result.map
+                                                (\qr ->
+                                                    [ QRCode.toSvg [ Svg.Attributes.width "500", Svg.Attributes.height "500" ] qr
+                                                    , Html.br [] []
+                                                    , Html.p [] [ Html.text "Scan the QR code above on your device" ]
+                                                    , Html.p [] [ Html.text "and follow the link to load in the current route." ]
+                                                    , Html.br [] []
+                                                    , Html.p [] [ Html.text "Alternatively, copy this link and send to your device through some other means..." ]
+                                                    , Html.br [] []
+                                                    , Html.p
+                                                        [ Html.Attributes.style "word-break" "break-all"
+                                                        , Html.Attributes.style "white-space" "normal"
+                                                        ]
+                                                        [ Html.text url ]
+                                                    ]
+                                                )
+                                            |> Result.mapError
+                                                (\err ->
+                                                    case err of
+                                                        QRCode.AlignmentPatternNotFound ->
+                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: AlignmentPatternNotFound" ]
+
+                                                        QRCode.InvalidNumericChar ->
+                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidNumericChar" ]
+
+                                                        QRCode.InvalidAlphanumericChar ->
+                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidAlphanumericChar" ]
+
+                                                        QRCode.InvalidUTF8Char ->
+                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidUTF8Char" ]
+
+                                                        QRCode.LogTableException table ->
+                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: LogTableException" ]
+
+                                                        QRCode.PolynomialMultiplyException ->
+                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: PolynomialMultiplyException" ]
+
+                                                        QRCode.PolynomialModException ->
+                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: PolynomialModException" ]
+
+                                                        QRCode.InputLengthOverflow ->
+                                                            [ viewErrorPanel "😞 sadly the data you are using is too large for the current sharing mechanism.\n\nPlease contact me and I will try to rectify the issue!" ]
+                                                )
+                                            |> resultCollect
+                                )
+                            -- error with creating base64 bytes, should never happen according to the docs
+                            |> Maybe.withDefault [ viewErrorPanel "😞 there was an error preparing your QR code, so sorry.\n\nPlease contact me and I will try to rectify the issue!" ]
+                            |> (\els ->
+                                    els
+                                        ++ [ Html.br [] []
+                                           , Html.button
+                                                [ Html.Events.onClick CloseQR, Html.Attributes.class "button-4" ]
+                                                [ Html.text "Close" ]
+                                           ]
+                               )
+                        )
+
+                else
+                    Html.div
+                        [ Html.Attributes.class "flex-container"
+                        , Html.Attributes.class "row"
+                        , Html.Attributes.class "page"
+                        , Html.Attributes.style "height" "100%"
+                        ]
+                        [ viewOptions model.showOptions routeModel.waypointOptions model.routeViewOptions model.csvDecodeError
+                        , Html.div
                             [ Html.Attributes.class "flex-container"
                             , Html.Attributes.class "column"
-                            , Html.Attributes.class "page"
+                            , Html.Attributes.class "wide"
                             , Html.Attributes.style "height" "100%"
                             , Html.Attributes.style "justify-content" "center"
-                            , Html.Attributes.style "align-items" "center"
                             ]
-                            (encodeSavedState shortFieldNames model
-                                |> Bytes.Encode.string
-                                |> Bytes.Encode.encode
-                                |> Flate.deflateGZip
-                                |> Base64.fromBytes
-                                |> Maybe.map (stateUrl model.url)
-                                |> Maybe.map
-                                    (\url ->
-                                        -- WEBrick has max URL length of around 2090 (form local testing), picking 1800 as max to be safe
-                                        if String.length url > 1800 then
-                                            [ viewErrorPanel "😞 the URL created for sharing would be too long for the current method,\n\nplease let me know and I will work out a new way to do this!" ]
-
-                                        else
-                                            QRCode.fromStringWith QRCode.Medium url
-                                                |> Result.map
-                                                    (\qr ->
-                                                        [ QRCode.toSvg [ Svg.Attributes.width "500", Svg.Attributes.height "500" ] qr
-                                                        , Html.br [] []
-                                                        , Html.p [] [ Html.text "Scan the QR code above on your device" ]
-                                                        , Html.p [] [ Html.text "and follow the link to load in the current route." ]
-                                                        , Html.br [] []
-                                                        , Html.p [] [ Html.text "Alternatively, copy this link and send to your device through some other means..." ]
-                                                        , Html.br [] []
-                                                        , Html.p
-                                                            [ Html.Attributes.style "word-break" "break-all"
-                                                            , Html.Attributes.style "white-space" "normal"
-                                                            ]
-                                                            [ Html.text url ]
-                                                        ]
-                                                    )
-                                                |> Result.mapError
-                                                    (\err ->
-                                                        case err of
-                                                            QRCode.AlignmentPatternNotFound ->
-                                                                [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: AlignmentPatternNotFound" ]
-
-                                                            QRCode.InvalidNumericChar ->
-                                                                [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidNumericChar" ]
-
-                                                            QRCode.InvalidAlphanumericChar ->
-                                                                [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidAlphanumericChar" ]
-
-                                                            QRCode.InvalidUTF8Char ->
-                                                                [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidUTF8Char" ]
-
-                                                            QRCode.LogTableException table ->
-                                                                [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: LogTableException" ]
-
-                                                            QRCode.PolynomialMultiplyException ->
-                                                                [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: PolynomialMultiplyException" ]
-
-                                                            QRCode.PolynomialModException ->
-                                                                [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: PolynomialModException" ]
-
-                                                            QRCode.InputLengthOverflow ->
-                                                                [ viewErrorPanel "😞 sadly the data you are using is too large for the current sharing mechanism.\n\nPlease contact me and I will try to rectify the issue!" ]
-                                                    )
-                                                |> resultCollect
-                                    )
-                                -- error with creating base64 bytes, should never happen according to the docs
-                                |> Maybe.withDefault [ viewErrorPanel "😞 there was an error preparing your QR code, so sorry.\n\nPlease contact me and I will try to rectify the issue!" ]
-                                |> (\els ->
-                                        els
-                                            ++ [ Html.br [] []
-                                               , Html.button
-                                                    [ Html.Events.onClick CloseQR, Html.Attributes.class "button-4" ]
-                                                    [ Html.text "Close" ]
-                                               ]
-                                   )
-                            )
-
-                    else
-                        Html.div
-                            [ Html.Attributes.class "flex-container"
-                            , Html.Attributes.class "row"
-                            , Html.Attributes.class "page"
-                            , Html.Attributes.style "height" "100%"
+                            [ routeBreakdown (routeWaypoints routeModel.waypointOptions routeModel.waypoints) model.routeViewOptions
                             ]
-                            [ viewOptions model.showOptions model.waypointOptions model.routeViewOptions model.csvDecodeError
-                            , Html.div
-                                [ Html.Attributes.class "flex-container"
-                                , Html.Attributes.class "column"
-                                , Html.Attributes.class "wide"
-                                , Html.Attributes.style "height" "100%"
-                                , Html.Attributes.style "justify-content" "center"
-                                ]
-                                [ routeBreakdown (routeWaypoints model.waypointOptions w) model.routeViewOptions
-                                ]
-                            ]
-                )
-            |> Maybe.withDefault (welcomePage model.csvDecodeError)
+                        ]
+
+            WelcomePage ->
+                welcomePage
+
+            GetStartedPage ->
+                getStartedPage model.csvDecodeError
         ]
 
 
@@ -443,8 +485,8 @@ stateUrl url encodedState =
         }
 
 
-welcomePage : Maybe String -> Html Msg
-welcomePage decodeError =
+welcomePage : Html Msg
+welcomePage =
     let
         climbType =
             "CLIMB"
@@ -467,7 +509,6 @@ welcomePage decodeError =
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "flex-center"
         , Html.Attributes.class "column"
-        , Html.Attributes.class "examples"
         ]
         (List.concat
             [ [ Html.h2 [] [ Html.text "Route breakdown builder" ]
@@ -483,33 +524,18 @@ welcomePage decodeError =
                     , Html.li [] [ Html.text "...and more." ]
                     ]
               , Html.br [] []
-              , Html.h3 [] [ Html.text "Instructions" ]
               , Html.br [] []
-              , Html.p [] [ Html.text "To make your route breakdown," ]
-              , Html.p [] [ Html.text "upload a CSV file with the following columns, including title at top:" ]
-              , Html.p [] [ Html.text "and a row per waypoint:" ]
+
+              --, Html.h3 [] [ Html.text "Get started..." ]
+              --, Html.br [] []
+              , viewButton "Get started..." <| ShowPage GetStartedPage
               , Html.br [] []
-              , Html.ul []
-                    [ Html.ul [] [ Html.b [] [ Html.text "\"Type\"" ], Html.text " - Supports emojis, advice is to keep it short." ]
-                    , Html.ul [] [ Html.b [] [ Html.text "\"Distance\"" ], Html.text " - Just the number, no units." ]
-                    , Html.ul [] [ Html.b [] [ Html.text "\"Name\"" ], Html.text " - Supports emojis." ]
-                    ]
+
+              --, Html.h3 [] [ Html.text "...play with a demo..." ]
+              --, Html.br [] []
+              , viewButton "...play with demo..." LoadDemoData
               , Html.br [] []
-              , viewButton "upload waypoints" OpenFileBrowser
-              ]
-            , decodeError |> Maybe.map (\err -> [ Html.br [] [], viewCSVDecodeErrorPanel err ]) |> Maybe.withDefault [ Html.div [] [] ]
-            , [ Html.br [] []
-              , Html.p [] [ Html.text "CSV can be downloaded from Google Sheets or exported from Excel." ]
-              , Html.p [] [ Html.text "For an example file, please click the button below." ]
-              , Html.br [] []
-              , viewButton "download example CSV" DownloadDemoData
-              , Html.br [] []
-              , Html.h3 [] [ Html.text "...or play with a demo and see some examples" ]
-              , Html.br [] []
-              , viewButton "play with demo" LoadDemoData
-              , Html.br [] []
-              , Html.br [] []
-              , Html.h3 [] [ Html.text "See some examples..." ]
+              , Html.h3 [] [ Html.text "...or see some examples" ]
               , Html.br [] []
               , Html.div
                     [ Html.Attributes.style "width" "100%"
@@ -537,6 +563,47 @@ welcomePage decodeError =
                         , ( "Filter location types", routeWaypoints (WaypointsOptions True (initialFilteredLocations exampleWaypoints |> Dict.map (\k _ -> k == climbType || k == ""))), RouteViewOptions None defaultSpacing defaultDistanceDetail )
                         ]
                     )
+              ]
+            ]
+        )
+
+
+getStartedPage : Maybe String -> Html Msg
+getStartedPage decodeError =
+    Html.div
+        [ Html.Attributes.class "flex-container"
+        , Html.Attributes.class "flex-center"
+        , Html.Attributes.class "column"
+        ]
+        (List.concat
+            [ [ Html.h2 [] [ Html.text "Route breakdown builder" ]
+              , Html.br [] []
+              , Html.h3 [] [ Html.text "Instructions" ]
+              , Html.br [] []
+              , Html.p [] [ Html.text "To make your route breakdown," ]
+              , Html.p [] [ Html.text "upload a CSV file with the following columns, including title at top:" ]
+              , Html.p [] [ Html.text "and a row per waypoint:" ]
+              , Html.br [] []
+              , Html.ul []
+                    [ Html.li [] [ Html.b [] [ Html.text "\"Type\"" ], Html.text " - Supports emojis, advice is to keep it short." ]
+                    , Html.li [] [ Html.b [] [ Html.text "\"Distance\"" ], Html.text " - Just the number, no units." ]
+                    , Html.li [] [ Html.b [] [ Html.text "\"Name\"" ], Html.text " - Supports emojis." ]
+                    ]
+              , Html.br [] []
+              , viewButton "upload waypoints" OpenFileBrowser
+              ]
+            , decodeError |> Maybe.map (\err -> [ Html.br [] [], viewCSVDecodeErrorPanel err ]) |> Maybe.withDefault []
+            , [ Html.br [] []
+              , Html.p [] [ Html.text "CSV can be downloaded from Google Sheets or exported from Excel." ]
+              , Html.p [] [ Html.text "For an example file, please click the button below." ]
+              , Html.br [] []
+              , viewButton "download example CSV" DownloadDemoData
+              , Html.br [] []
+              , Html.h3 [] [ Html.text "...or play with a demo and see some examples" ]
+              , Html.br [] []
+              , viewButton "play with demo" LoadDemoData
+              , Html.br [] []
+              , Html.br [] []
               ]
             ]
         )
@@ -671,7 +738,7 @@ viewOptions show waypointOptions routeViewOptions decodeError =
                             , Html.Attributes.style "align-items" "center"
                             ]
                             [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "upload waypoints" OpenFileBrowser
-                            , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "clear" ClearWaypoints
+                            , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "clear" (ShowPage WelcomePage)
                             , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "share / send to device" ShowQR
                             ]
                         ]
@@ -980,13 +1047,21 @@ shortFieldNames =
 encodeSavedState : StoredStateCodeFields -> Model -> String
 encodeSavedState fieldNames model =
     Json.Encode.object
-        [ ( fieldNames.waypoints, model.waypoints |> Maybe.map (encodeWaypoints fieldNames) |> Maybe.withDefault Json.Encode.null )
-        , ( fieldNames.totalDistanceDisplay, Json.Encode.string <| formatTotalDistanceDisplay model.routeViewOptions.totalDistanceDisplay )
-        , ( fieldNames.distanceDetail, Json.Encode.int model.routeViewOptions.distanceDetail )
-        , ( fieldNames.locationFilterEnabled, Json.Encode.bool model.waypointOptions.locationFilterEnabled )
-        , ( fieldNames.filteredLocationTypes, Json.Encode.dict identity Json.Encode.bool model.waypointOptions.filteredLocationTypes )
-        , ( fieldNames.itemSpacing, Json.Encode.int model.routeViewOptions.itemSpacing )
-        ]
+        ((case model.page of
+            RoutePage routeModel ->
+                [ ( fieldNames.waypoints, encodeWaypoints fieldNames routeModel.waypoints )
+                , ( fieldNames.locationFilterEnabled, Json.Encode.bool routeModel.waypointOptions.locationFilterEnabled )
+                , ( fieldNames.filteredLocationTypes, Json.Encode.dict identity Json.Encode.bool routeModel.waypointOptions.filteredLocationTypes )
+                ]
+
+            _ ->
+                []
+         )
+            ++ [ ( fieldNames.totalDistanceDisplay, Json.Encode.string <| formatTotalDistanceDisplay model.routeViewOptions.totalDistanceDisplay )
+               , ( fieldNames.distanceDetail, Json.Encode.int model.routeViewOptions.distanceDetail )
+               , ( fieldNames.itemSpacing, Json.Encode.int model.routeViewOptions.itemSpacing )
+               ]
+        )
         |> Json.Encode.encode 0
 
 

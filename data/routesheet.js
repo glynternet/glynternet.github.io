@@ -5672,9 +5672,9 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$application = _Browser_application;
 var $author$project$Main$FromZero = {$: 'FromZero'};
-var $author$project$Main$Model = F7(
-	function (waypoints, csvDecodeError, showOptions, waypointOptions, routeViewOptions, showQR, url) {
-		return {csvDecodeError: csvDecodeError, routeViewOptions: routeViewOptions, showOptions: showOptions, showQR: showQR, url: url, waypointOptions: waypointOptions, waypoints: waypoints};
+var $author$project$Main$Model = F6(
+	function (page, csvDecodeError, showOptions, routeViewOptions, showQR, url) {
+		return {csvDecodeError: csvDecodeError, page: page, routeViewOptions: routeViewOptions, showOptions: showOptions, showQR: showQR, url: url};
 	});
 var $author$project$Main$RouteViewOptions = F3(
 	function (totalDistanceDisplay, itemSpacing, distanceDetail) {
@@ -5684,10 +5684,7 @@ var $author$project$Main$StoredState = F6(
 	function (waypoints, totalDistanceDisplay, locationFilterEnabled, filteredLocationTypes, itemSpacing, distanceDetail) {
 		return {distanceDetail: distanceDetail, filteredLocationTypes: filteredLocationTypes, itemSpacing: itemSpacing, locationFilterEnabled: locationFilterEnabled, totalDistanceDisplay: totalDistanceDisplay, waypoints: waypoints};
 	});
-var $author$project$Main$WaypointsOptions = F2(
-	function (locationFilterEnabled, filteredLocationTypes) {
-		return {filteredLocationTypes: filteredLocationTypes, locationFilterEnabled: locationFilterEnabled};
-	});
+var $author$project$Main$WelcomePage = {$: 'WelcomePage'};
 var $elm$core$Basics$always = F2(
 	function (a, _v0) {
 		return a;
@@ -5839,8 +5836,6 @@ var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $author$project$Main$defaultDistanceDetail = 1;
 var $author$project$Main$defaultSpacing = 25;
-var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
-var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $elm$core$Bitwise$and = _Bitwise_and;
 var $elm$bytes$Bytes$Decode$Decoder = function (a) {
 	return {$: 'Decoder', a: a};
@@ -6594,6 +6589,8 @@ var $folkertdev$elm_flate$Experimental$ByteArray$appendBytes = F2(
 			return barray;
 		}
 	});
+var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $elm$core$Dict$foldl = F3(
 	function (func, acc, dict) {
 		foldl:
@@ -9002,6 +8999,17 @@ var $author$project$Main$storedStateDecoder = function (fieldNames) {
 		$elm$json$Json$Decode$maybe(
 			A2($elm$json$Json$Decode$field, fieldNames.distanceDetail, $elm$json$Json$Decode$int)));
 };
+var $author$project$Main$RouteModel = F2(
+	function (waypoints, waypointOptions) {
+		return {waypointOptions: waypointOptions, waypoints: waypoints};
+	});
+var $author$project$Main$RoutePage = function (a) {
+	return {$: 'RoutePage', a: a};
+};
+var $author$project$Main$WaypointsOptions = F2(
+	function (locationFilterEnabled, filteredLocationTypes) {
+		return {filteredLocationTypes: filteredLocationTypes, locationFilterEnabled: locationFilterEnabled};
+	});
 var $author$project$Main$initialFilteredLocations = function (waypoints) {
 	return $elm$core$Dict$fromList(
 		A2(
@@ -9027,19 +9035,29 @@ var $author$project$Main$parseTotalDistanceDisplay = function (v) {
 };
 var $author$project$Main$storedStateModel = F2(
 	function (url, state) {
-		return A7(
+		return A6(
 			$author$project$Main$Model,
-			state.waypoints,
+			A2(
+				$elm$core$Maybe$withDefault,
+				$author$project$Main$WelcomePage,
+				A2(
+					$elm$core$Maybe$map,
+					function (ws) {
+						return $author$project$Main$RoutePage(
+							A2(
+								$author$project$Main$RouteModel,
+								ws,
+								A2(
+									$author$project$Main$WaypointsOptions,
+									A2($elm$core$Maybe$withDefault, false, state.locationFilterEnabled),
+									A2(
+										$elm$core$Maybe$withDefault,
+										$author$project$Main$initialFilteredLocations(ws),
+										state.filteredLocationTypes))));
+					},
+					state.waypoints)),
 			$elm$core$Maybe$Nothing,
 			true,
-			A2(
-				$author$project$Main$WaypointsOptions,
-				A2($elm$core$Maybe$withDefault, false, state.locationFilterEnabled),
-				A2(
-					$elm$core$Maybe$withDefault,
-					$author$project$Main$initialFilteredLocations(
-						A2($elm$core$Maybe$withDefault, _List_Nil, state.waypoints)),
-					state.filteredLocationTypes)),
 			A3(
 				$author$project$Main$RouteViewOptions,
 				A2(
@@ -9382,41 +9400,46 @@ var $author$project$Main$formatTotalDistanceDisplay = function (v) {
 	}
 };
 var $elm$json$Json$Encode$int = _Json_wrap;
-var $elm$json$Json$Encode$null = _Json_encodeNull;
 var $author$project$Main$encodeSavedState = F2(
 	function (fieldNames, model) {
 		return A2(
 			$elm$json$Json$Encode$encode,
 			0,
 			$elm$json$Json$Encode$object(
-				_List_fromArray(
-					[
-						_Utils_Tuple2(
-						fieldNames.waypoints,
-						A2(
-							$elm$core$Maybe$withDefault,
-							$elm$json$Json$Encode$null,
-							A2(
-								$elm$core$Maybe$map,
-								$author$project$Main$encodeWaypoints(fieldNames),
-								model.waypoints))),
-						_Utils_Tuple2(
-						fieldNames.totalDistanceDisplay,
-						$elm$json$Json$Encode$string(
-							$author$project$Main$formatTotalDistanceDisplay(model.routeViewOptions.totalDistanceDisplay))),
-						_Utils_Tuple2(
-						fieldNames.distanceDetail,
-						$elm$json$Json$Encode$int(model.routeViewOptions.distanceDetail)),
-						_Utils_Tuple2(
-						fieldNames.locationFilterEnabled,
-						$elm$json$Json$Encode$bool(model.waypointOptions.locationFilterEnabled)),
-						_Utils_Tuple2(
-						fieldNames.filteredLocationTypes,
-						A3($elm$json$Json$Encode$dict, $elm$core$Basics$identity, $elm$json$Json$Encode$bool, model.waypointOptions.filteredLocationTypes)),
-						_Utils_Tuple2(
-						fieldNames.itemSpacing,
-						$elm$json$Json$Encode$int(model.routeViewOptions.itemSpacing))
-					])));
+				_Utils_ap(
+					function () {
+						var _v0 = model.page;
+						if (_v0.$ === 'RoutePage') {
+							var routeModel = _v0.a;
+							return _List_fromArray(
+								[
+									_Utils_Tuple2(
+									fieldNames.waypoints,
+									A2($author$project$Main$encodeWaypoints, fieldNames, routeModel.waypoints)),
+									_Utils_Tuple2(
+									fieldNames.locationFilterEnabled,
+									$elm$json$Json$Encode$bool(routeModel.waypointOptions.locationFilterEnabled)),
+									_Utils_Tuple2(
+									fieldNames.filteredLocationTypes,
+									A3($elm$json$Json$Encode$dict, $elm$core$Basics$identity, $elm$json$Json$Encode$bool, routeModel.waypointOptions.filteredLocationTypes))
+								]);
+						} else {
+							return _List_Nil;
+						}
+					}(),
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							fieldNames.totalDistanceDisplay,
+							$elm$json$Json$Encode$string(
+								$author$project$Main$formatTotalDistanceDisplay(model.routeViewOptions.totalDistanceDisplay))),
+							_Utils_Tuple2(
+							fieldNames.distanceDetail,
+							$elm$json$Json$Encode$int(model.routeViewOptions.distanceDetail)),
+							_Utils_Tuple2(
+							fieldNames.itemSpacing,
+							$elm$json$Json$Encode$int(model.routeViewOptions.itemSpacing))
+						]))));
 	});
 var $author$project$Main$storeState = _Platform_outgoingPort('storeState', $elm$json$Json$Encode$string);
 var $author$project$Main$updateModel = function (model) {
@@ -9496,17 +9519,16 @@ var $author$project$Main$init = F3(
 			$author$project$Main$updateModel(
 				function () {
 					if (queryState.$ === 'Just') {
-						var model = queryState.a;
-						return A2($author$project$Main$storedStateModel, url, model);
+						var storedState = queryState.a;
+						return A2($author$project$Main$storedStateModel, url, storedState);
 					} else {
 						return A2(
 							$elm$core$Maybe$withDefault,
-							A7(
+							A6(
 								$author$project$Main$Model,
-								$elm$core$Maybe$Nothing,
+								$author$project$Main$WelcomePage,
 								$elm$core$Maybe$Nothing,
 								true,
-								A2($author$project$Main$WaypointsOptions, false, $elm$core$Dict$empty),
 								A3($author$project$Main$RouteViewOptions, $author$project$Main$FromZero, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail),
 								false,
 								url),
@@ -10635,30 +10657,29 @@ var $author$project$Main$initialWaypointOptions = function (waypoints) {
 		$author$project$Main$initialFilteredLocations(waypoints));
 };
 var $elm$core$List$sortBy = _List_sortBy;
-var $author$project$Main$initialModel = F3(
-	function (routeViewOptions, waypoints, url) {
-		var sortedWaypoint = A2(
-			$elm$core$List$sortBy,
-			function ($) {
-				return $.distance;
-			},
-			waypoints);
-		return A7(
-			$author$project$Main$Model,
-			$elm$core$Maybe$Just(sortedWaypoint),
-			$elm$core$Maybe$Nothing,
-			true,
-			$author$project$Main$initialWaypointOptions(sortedWaypoint),
-			routeViewOptions,
-			false,
-			url);
-	});
+var $author$project$Main$initialRouteModel = function (waypoints) {
+	var sortedWaypoint = A2(
+		$elm$core$List$sortBy,
+		function ($) {
+			return $.distance;
+		},
+		waypoints);
+	return A2(
+		$author$project$Main$RouteModel,
+		sortedWaypoint,
+		$author$project$Main$initialWaypointOptions(sortedWaypoint));
+};
 var $author$project$Main$updateCSVDecodeModel = F2(
 	function (model, result) {
 		if (result.$ === 'Ok') {
 			var waypoints = result.a;
 			return $author$project$Main$updateModel(
-				A3($author$project$Main$initialModel, model.routeViewOptions, waypoints, model.url));
+				_Utils_update(
+					model,
+					{
+						page: $author$project$Main$RoutePage(
+							$author$project$Main$initialRouteModel(waypoints))
+					}));
 		} else {
 			var err = result.a;
 			return _Utils_Tuple2(
@@ -10671,23 +10692,44 @@ var $author$project$Main$updateCSVDecodeModel = F2(
 				$elm$core$Platform$Cmd$none);
 		}
 	});
+var $author$project$Main$updateRouteModel = F2(
+	function (model, routeModel) {
+		return $author$project$Main$updateModel(
+			_Utils_update(
+				model,
+				{
+					page: $author$project$Main$RoutePage(routeModel)
+				}));
+	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
+			case 'ShowPage':
+				var page = msg.a;
+				return $author$project$Main$updateModel(
+					_Utils_update(
+						model,
+						{page: page}));
 			case 'TypeEnabled':
 				var typ = msg.a;
 				var enabled = msg.b;
-				var options = model.waypointOptions;
-				var newModel = _Utils_update(
-					model,
-					{
-						waypointOptions: _Utils_update(
-							options,
-							{
-								filteredLocationTypes: A3($elm$core$Dict$insert, typ, enabled, model.waypointOptions.filteredLocationTypes)
-							})
-					});
-				return $author$project$Main$updateModel(newModel);
+				var _v1 = model.page;
+				if (_v1.$ === 'RoutePage') {
+					var routeModel = _v1.a;
+					var options = routeModel.waypointOptions;
+					var newRouteModel = _Utils_update(
+						routeModel,
+						{
+							waypointOptions: _Utils_update(
+								options,
+								{
+									filteredLocationTypes: A3($elm$core$Dict$insert, typ, enabled, routeModel.waypointOptions.filteredLocationTypes)
+								})
+						});
+					return A2($author$project$Main$updateRouteModel, model, newRouteModel);
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
 			case 'ShowOptions':
 				var show = msg.a;
 				return _Utils_Tuple2(
@@ -10716,23 +10758,29 @@ var $author$project$Main$update = F2(
 						maybeSelection));
 			case 'UpdateWaypointSelection':
 				var maybeSelection = msg.a;
-				return A2(
-					$elm$core$Maybe$withDefault,
-					_Utils_Tuple2(model, $elm$core$Platform$Cmd$none),
-					A2(
-						$elm$core$Maybe$map,
-						function (locationFilterEnabled) {
-							var options = model.waypointOptions;
-							return $author$project$Main$updateModel(
-								_Utils_update(
-									model,
+				var _v2 = model.page;
+				if (_v2.$ === 'RoutePage') {
+					var routeModel = _v2.a;
+					return A2(
+						$elm$core$Maybe$withDefault,
+						_Utils_Tuple2(model, $elm$core$Platform$Cmd$none),
+						A2(
+							$elm$core$Maybe$map,
+							function (locationFilterEnabled) {
+								var options = routeModel.waypointOptions;
+								var newRouteModel = _Utils_update(
+									routeModel,
 									{
 										waypointOptions: _Utils_update(
 											options,
 											{locationFilterEnabled: locationFilterEnabled})
-									}));
-						},
-						maybeSelection));
+									});
+								return A2($author$project$Main$updateRouteModel, model, newRouteModel);
+							},
+							maybeSelection));
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
 			case 'UpdateItemSpacing':
 				var spacing = msg.a;
 				var options = model.routeViewOptions;
@@ -10786,11 +10834,6 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					model,
 					A3($elm$file$File$Download$string, 'demo-data.csv', 'text/csv', $author$project$Main$demoData));
-			case 'ClearWaypoints':
-				return $author$project$Main$updateModel(
-					_Utils_update(
-						model,
-						{csvDecodeError: $elm$core$Maybe$Nothing, waypoints: $elm$core$Maybe$Nothing}));
 			case 'ShowQR':
 				return $author$project$Main$updateModel(
 					_Utils_update(
@@ -17001,7 +17044,17 @@ var $pablohirafuji$elm_qrcode$QRCode$fromStringWith = F2(
 					input,
 					$pablohirafuji$elm_qrcode$QRCode$convertEC(ecLevel))));
 	});
-var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $author$project$Main$DownloadDemoData = {$: 'DownloadDemoData'};
+var $author$project$Main$LoadDemoData = {$: 'LoadDemoData'};
+var $author$project$Main$OpenFileBrowser = {$: 'OpenFileBrowser'};
+var $elm$html$Html$b = _VirtualDom_node('b');
+var $elm$html$Html$h2 = _VirtualDom_node('h2');
+var $elm$html$Html$h3 = _VirtualDom_node('h3');
+var $elm$html$Html$li = _VirtualDom_node('li');
+var $elm$html$Html$p = _VirtualDom_node('p');
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -17019,7 +17072,196 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $elm$html$Html$p = _VirtualDom_node('p');
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$Main$viewButtonWithAttributes = F3(
+	function (attrs, text, msg) {
+		return A2(
+			$elm$html$Html$button,
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(msg),
+						$elm$html$Html$Attributes$class('button-4'),
+						A2($elm$html$Html$Attributes$style, 'max-width', '20em')
+					]),
+				attrs),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(text)
+				]));
+	});
+var $author$project$Main$viewButton = F2(
+	function (text, msg) {
+		return A3($author$project$Main$viewButtonWithAttributes, _List_Nil, text, msg);
+	});
+var $author$project$Main$viewErrorPanel = function (error) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('error_panel')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(error)
+			]));
+};
+var $author$project$Main$viewCSVDecodeErrorPanel = function (error) {
+	return $author$project$Main$viewErrorPanel(
+		'There was an error decoding your CSV. Please fix any error and try again 😇\n\nThe first few errors can be seen below.\n\n' + (A2($elm$core$String$left, 1000, error) + '...'));
+};
+var $author$project$Main$getStartedPage = function (decodeError) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('flex-container'),
+				$elm$html$Html$Attributes$class('flex-center'),
+				$elm$html$Html$Attributes$class('column')
+			]),
+		$elm$core$List$concat(
+			_List_fromArray(
+				[
+					_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$h2,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Route breakdown builder')
+							])),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2(
+						$elm$html$Html$h3,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Instructions')
+							])),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2(
+						$elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('To make your route breakdown,')
+							])),
+						A2(
+						$elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('upload a CSV file with the following columns, including title at top:')
+							])),
+						A2(
+						$elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('and a row per waypoint:')
+							])),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2(
+						$elm$html$Html$ul,
+						_List_Nil,
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$li,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$b,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('\"Type\"')
+											])),
+										$elm$html$Html$text(' - Supports emojis, advice is to keep it short.')
+									])),
+								A2(
+								$elm$html$Html$li,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$b,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('\"Distance\"')
+											])),
+										$elm$html$Html$text(' - Just the number, no units.')
+									])),
+								A2(
+								$elm$html$Html$li,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$b,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('\"Name\"')
+											])),
+										$elm$html$Html$text(' - Supports emojis.')
+									]))
+							])),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2($author$project$Main$viewButton, 'upload waypoints', $author$project$Main$OpenFileBrowser)
+					]),
+					A2(
+					$elm$core$Maybe$withDefault,
+					_List_Nil,
+					A2(
+						$elm$core$Maybe$map,
+						function (err) {
+							return _List_fromArray(
+								[
+									A2($elm$html$Html$br, _List_Nil, _List_Nil),
+									$author$project$Main$viewCSVDecodeErrorPanel(err)
+								]);
+						},
+						decodeError)),
+					_List_fromArray(
+					[
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2(
+						$elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('CSV can be downloaded from Google Sheets or exported from Excel.')
+							])),
+						A2(
+						$elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('For an example file, please click the button below.')
+							])),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2($author$project$Main$viewButton, 'download example CSV', $author$project$Main$DownloadDemoData),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2(
+						$elm$html$Html$h3,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('...or play with a demo and see some examples')
+							])),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2($author$project$Main$viewButton, 'play with demo', $author$project$Main$LoadDemoData),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil)
+					])
+				])));
+};
+var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
 var $author$project$Main$resultCollect = function (res) {
 	if (res.$ === 'Ok') {
 		var ok = res.a;
@@ -17322,7 +17564,6 @@ var $author$project$Main$routeInfo = function (waypoints) {
 var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
 var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
@@ -17573,9 +17814,6 @@ var $author$project$Main$stateUrl = F2(
 									A2($elm$url$Url$Builder$string, 'state', encodedState)))))
 				}));
 	});
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $pablohirafuji$elm_qrcode$QRCode$Render$Svg$moduleSize = 5;
 var $pablohirafuji$elm_qrcode$QRCode$Render$Svg$appendLastRect = function (_v0) {
 	var lastRect = _v0.a;
@@ -17684,30 +17922,19 @@ var $pablohirafuji$elm_qrcode$QRCode$toSvg = F2(
 		var matrix = _v0.a.matrix;
 		return A2($pablohirafuji$elm_qrcode$QRCode$Render$Svg$view, extraAttrs, matrix);
 	});
-var $author$project$Main$viewErrorPanel = function (error) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('error_panel')
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text(error)
-			]));
-};
-var $author$project$Main$ClearWaypoints = {$: 'ClearWaypoints'};
 var $abadi199$elm_input_extra$Dropdown$Item = F3(
 	function (value, text, enabled) {
 		return {enabled: enabled, text: text, value: value};
 	});
-var $author$project$Main$OpenFileBrowser = {$: 'OpenFileBrowser'};
 var $abadi199$elm_input_extra$Dropdown$Options = F3(
 	function (items, emptyItem, onChange) {
 		return {emptyItem: emptyItem, items: items, onChange: onChange};
 	});
 var $author$project$Main$ShowOptions = function (a) {
 	return {$: 'ShowOptions', a: a};
+};
+var $author$project$Main$ShowPage = function (a) {
+	return {$: 'ShowPage', a: a};
 };
 var $author$project$Main$ShowQR = {$: 'ShowQR'};
 var $author$project$Main$TypeEnabled = F2(
@@ -17852,7 +18079,6 @@ var $abadi199$elm_input_extra$Dropdown$dropdown = F3(
 			A2($elm$core$List$map, toOption, itemsWithEmptyItems));
 	});
 var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
-var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$html$Html$hr = _VirtualDom_node('hr');
 var $elm$html$Html$Attributes$max = $elm$html$Html$Attributes$stringProperty('max');
 var $elm$html$Html$Attributes$min = $elm$html$Html$Attributes$stringProperty('min');
@@ -17899,27 +18125,6 @@ var $author$project$Main$optionGroup = F2(
 						])),
 				elements));
 	});
-var $author$project$Main$viewButtonWithAttributes = F3(
-	function (attrs, text, msg) {
-		return A2(
-			$elm$html$Html$button,
-			_Utils_ap(
-				_List_fromArray(
-					[
-						$elm$html$Html$Events$onClick(msg),
-						$elm$html$Html$Attributes$class('button-4'),
-						A2($elm$html$Html$Attributes$style, 'max-width', '20em')
-					]),
-				attrs),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(text)
-				]));
-	});
-var $author$project$Main$viewCSVDecodeErrorPanel = function (error) {
-	return $author$project$Main$viewErrorPanel(
-		'There was an error decoding your CSV. Please fix any error and try again 😇\n\nThe first few errors can be seen below.\n\n' + (A2($elm$core$String$left, 1000, error) + '...'));
-};
 var $author$project$Main$viewOptions = F4(
 	function (show, waypointOptions, routeViewOptions, decodeError) {
 		return A2(
@@ -18150,7 +18355,7 @@ var $author$project$Main$viewOptions = F4(
 													A2($elm$html$Html$Attributes$style, 'width', '100%')
 												]),
 											'clear',
-											$author$project$Main$ClearWaypoints),
+											$author$project$Main$ShowPage($author$project$Main$WelcomePage)),
 											A3(
 											$author$project$Main$viewButtonWithAttributes,
 											_List_fromArray(
@@ -18180,12 +18385,8 @@ var $author$project$Main$viewOptions = F4(
 							decodeError))
 					])));
 	});
-var $author$project$Main$DownloadDemoData = {$: 'DownloadDemoData'};
-var $author$project$Main$LoadDemoData = {$: 'LoadDemoData'};
-var $elm$html$Html$b = _VirtualDom_node('b');
-var $elm$html$Html$h3 = _VirtualDom_node('h3');
+var $author$project$Main$GetStartedPage = {$: 'GetStartedPage'};
 var $elm$html$Html$h4 = _VirtualDom_node('h4');
-var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$core$Dict$map = F2(
 	function (func, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -18205,12 +18406,7 @@ var $elm$core$Dict$map = F2(
 				A2($elm$core$Dict$map, func, right));
 		}
 	});
-var $elm$html$Html$ul = _VirtualDom_node('ul');
-var $author$project$Main$viewButton = F2(
-	function (text, msg) {
-		return A3($author$project$Main$viewButtonWithAttributes, _List_Nil, text, msg);
-	});
-var $author$project$Main$welcomePage = function (decodeError) {
+var $author$project$Main$welcomePage = function () {
 	var climbType = 'CLIMB';
 	var cafeType = 'CAFE';
 	var exampleWaypoints = _List_fromArray(
@@ -18230,8 +18426,7 @@ var $author$project$Main$welcomePage = function (decodeError) {
 			[
 				$elm$html$Html$Attributes$class('flex-container'),
 				$elm$html$Html$Attributes$class('flex-center'),
-				$elm$html$Html$Attributes$class('column'),
-				$elm$html$Html$Attributes$class('examples')
+				$elm$html$Html$Attributes$class('column')
 			]),
 		$elm$core$List$concat(
 			_List_fromArray(
@@ -18303,140 +18498,20 @@ var $author$project$Main$welcomePage = function (decodeError) {
 									]))
 							])),
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),
-						A2(
-						$elm$html$Html$h3,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Instructions')
-							])),
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						A2(
-						$elm$html$Html$p,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text('To make your route breakdown,')
-							])),
-						A2(
-						$elm$html$Html$p,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text('upload a CSV file with the following columns, including title at top:')
-							])),
-						A2(
-						$elm$html$Html$p,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text('and a row per waypoint:')
-							])),
+						$author$project$Main$viewButton,
+						'Get started...',
+						$author$project$Main$ShowPage($author$project$Main$GetStartedPage)),
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),
-						A2(
-						$elm$html$Html$ul,
-						_List_Nil,
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$ul,
-								_List_Nil,
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$b,
-										_List_Nil,
-										_List_fromArray(
-											[
-												$elm$html$Html$text('\"Type\"')
-											])),
-										$elm$html$Html$text(' - Supports emojis, advice is to keep it short.')
-									])),
-								A2(
-								$elm$html$Html$ul,
-								_List_Nil,
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$b,
-										_List_Nil,
-										_List_fromArray(
-											[
-												$elm$html$Html$text('\"Distance\"')
-											])),
-										$elm$html$Html$text(' - Just the number, no units.')
-									])),
-								A2(
-								$elm$html$Html$ul,
-								_List_Nil,
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$b,
-										_List_Nil,
-										_List_fromArray(
-											[
-												$elm$html$Html$text('\"Name\"')
-											])),
-										$elm$html$Html$text(' - Supports emojis.')
-									]))
-							])),
-						A2($elm$html$Html$br, _List_Nil, _List_Nil),
-						A2($author$project$Main$viewButton, 'upload waypoints', $author$project$Main$OpenFileBrowser)
-					]),
-					A2(
-					$elm$core$Maybe$withDefault,
-					_List_fromArray(
-						[
-							A2($elm$html$Html$div, _List_Nil, _List_Nil)
-						]),
-					A2(
-						$elm$core$Maybe$map,
-						function (err) {
-							return _List_fromArray(
-								[
-									A2($elm$html$Html$br, _List_Nil, _List_Nil),
-									$author$project$Main$viewCSVDecodeErrorPanel(err)
-								]);
-						},
-						decodeError)),
-					_List_fromArray(
-					[
-						A2($elm$html$Html$br, _List_Nil, _List_Nil),
-						A2(
-						$elm$html$Html$p,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text('CSV can be downloaded from Google Sheets or exported from Excel.')
-							])),
-						A2(
-						$elm$html$Html$p,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text('For an example file, please click the button below.')
-							])),
-						A2($elm$html$Html$br, _List_Nil, _List_Nil),
-						A2($author$project$Main$viewButton, 'download example CSV', $author$project$Main$DownloadDemoData),
+						A2($author$project$Main$viewButton, '...play with demo...', $author$project$Main$LoadDemoData),
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						A2(
 						$elm$html$Html$h3,
 						_List_Nil,
 						_List_fromArray(
 							[
-								$elm$html$Html$text('...or play with a demo and see some examples')
-							])),
-						A2($elm$html$Html$br, _List_Nil, _List_Nil),
-						A2($author$project$Main$viewButton, 'play with demo', $author$project$Main$LoadDemoData),
-						A2($elm$html$Html$br, _List_Nil, _List_Nil),
-						A2($elm$html$Html$br, _List_Nil, _List_Nil),
-						A2(
-						$elm$html$Html$h3,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text('See some examples...')
+								$elm$html$Html$text('...or see some examples')
 							])),
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						A2(
@@ -18530,19 +18605,18 @@ var $author$project$Main$welcomePage = function (decodeError) {
 								])))
 					])
 				])));
-};
+}();
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$browser$Browser$Document,
 		'Route sheet',
 		_List_fromArray(
 			[
-				A2(
-				$elm$core$Maybe$withDefault,
-				$author$project$Main$welcomePage(model.csvDecodeError),
-				A2(
-					$elm$core$Maybe$map,
-					function (w) {
+				function () {
+				var _v0 = model.page;
+				switch (_v0.$) {
+					case 'RoutePage':
+						var routeModel = _v0.a;
 						return model.showQR ? A2(
 							$elm$html$Html$div,
 							_List_fromArray(
@@ -18703,7 +18777,7 @@ var $author$project$Main$view = function (model) {
 								]),
 							_List_fromArray(
 								[
-									A4($author$project$Main$viewOptions, model.showOptions, model.waypointOptions, model.routeViewOptions, model.csvDecodeError),
+									A4($author$project$Main$viewOptions, model.showOptions, routeModel.waypointOptions, model.routeViewOptions, model.csvDecodeError),
 									A2(
 									$elm$html$Html$div,
 									_List_fromArray(
@@ -18718,12 +18792,16 @@ var $author$project$Main$view = function (model) {
 										[
 											A2(
 											$author$project$Main$routeBreakdown,
-											A2($author$project$Main$routeWaypoints, model.waypointOptions, w),
+											A2($author$project$Main$routeWaypoints, routeModel.waypointOptions, routeModel.waypoints),
 											model.routeViewOptions)
 										]))
 								]));
-					},
-					model.waypoints))
+					case 'WelcomePage':
+						return $author$project$Main$welcomePage;
+					default:
+						return $author$project$Main$getStartedPage(model.csvDecodeError);
+				}
+			}()
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$application(
