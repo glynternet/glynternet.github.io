@@ -52,6 +52,7 @@ type alias StoredState =
 
 type alias Model =
     { waypoints : Maybe (List Waypoint)
+    , csvDecodeError : Maybe String
     , waypointOptions : WaypointsOptions
     , routeViewOptions : RouteViewOptions
     }
@@ -97,6 +98,7 @@ init maybeState _ _ =
                 >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
                 >> (\storedState ->
                         Model storedState.waypoints
+                            Maybe.Nothing
                             (WaypointsOptions
                                 (storedState.locationFilterEnabled |> Maybe.withDefault False)
                                 (storedState.filteredLocationTypes |> Maybe.withDefault (initialFilteredLocations <| (storedState.waypoints |> Maybe.withDefault [])))
@@ -108,7 +110,7 @@ init maybeState _ _ =
                             )
                    )
             )
-        |> Maybe.withDefault (Model Maybe.Nothing (WaypointsOptions False Dict.empty) (RouteViewOptions FromZero defaultSpacing defaultDistanceDetail))
+        |> Maybe.withDefault (Model Maybe.Nothing Maybe.Nothing (WaypointsOptions False Dict.empty) (RouteViewOptions FromZero defaultSpacing defaultDistanceDetail))
         |> updateModel
 
 
@@ -199,22 +201,16 @@ update msg model =
             )
 
         CsvDecoded result ->
-            result
-                |> Result.map (initialModel model.routeViewOptions >> updateModel)
-                --TODO: handle decode error
-                |> Result.withDefault ( model, Cmd.none )
+            updateCSVDecodeModel model result
 
         LoadDemoData ->
-            decodeCSV demoData
-                |> Result.map (initialModel model.routeViewOptions >> updateModel)
-                --TODO: handle decode error
-                |> Result.withDefault ( model, Cmd.none )
+            decodeCSV demoData |> updateCSVDecodeModel model
 
         DownloadDemoData ->
             ( model, File.Download.string "demo-data.csv" "text/csv" demoData )
 
         ClearWaypoints ->
-            updateModel { model | waypoints = Maybe.Nothing }
+            updateModel { model | waypoints = Maybe.Nothing, csvDecodeError = Maybe.Nothing }
 
         Never ->
             ( model, Cmd.none )
@@ -235,13 +231,23 @@ updateModel model =
     ( model, storeModel model )
 
 
+updateCSVDecodeModel : Model -> Result Csv.Decode.Error (List Waypoint) -> ( Model, Cmd Msg )
+updateCSVDecodeModel model result =
+    case result of
+        Ok waypoints ->
+            initialModel model.routeViewOptions waypoints |> updateModel
+
+        Err err ->
+            ( { model | csvDecodeError = Maybe.Just <| Csv.Decode.errorToString err }, Cmd.none )
+
+
 initialModel : RouteViewOptions -> List Waypoint -> Model
 initialModel routeViewOptions waypoints =
     let
         sortedWaypoint =
             List.sortBy .distance waypoints
     in
-    Model (Maybe.Just sortedWaypoint) (initialWaypointOptions sortedWaypoint) routeViewOptions
+    Model (Maybe.Just sortedWaypoint) Maybe.Nothing (initialWaypointOptions sortedWaypoint) routeViewOptions
 
 
 
@@ -260,7 +266,7 @@ view model =
                         , Html.Attributes.class "page"
                         , Html.Attributes.style "height" "100%"
                         ]
-                        [ viewOptions model.waypointOptions model.routeViewOptions
+                        [ viewOptions model.waypointOptions model.routeViewOptions model.csvDecodeError
                         , Html.div
                             [ Html.Attributes.class "flex-container"
                             , Html.Attributes.class "column"
@@ -272,12 +278,12 @@ view model =
                             ]
                         ]
                 )
-            |> Maybe.withDefault welcomePage
+            |> Maybe.withDefault (welcomePage model.csvDecodeError)
         ]
 
 
-welcomePage : Html Msg
-welcomePage =
+welcomePage : Maybe String -> Html Msg
+welcomePage decodeError =
     let
         climbType =
             "CLIMB"
@@ -302,71 +308,76 @@ welcomePage =
         , Html.Attributes.class "column"
         , Html.Attributes.class "examples"
         ]
-        [ Html.h2 [] [ Html.text "Route breakdown builder" ]
-        , Html.br [] []
-        , Html.h3 [] [ Html.text "Features" ]
-        , Html.br [] []
-        , Html.ul []
-            [ Html.li [] [ Html.text "Customise information level" ]
-            , Html.li [] [ Html.text "Compact or spacious view" ]
-            , Html.li [] [ Html.text "User-defined location types" ]
-            , Html.li [] [ Html.text "Filter location types" ]
-            , Html.li [] [ Html.text "...and more." ]
+        (List.concat
+            [ [ Html.h2 [] [ Html.text "Route breakdown builder" ]
+              , Html.br [] []
+              , Html.h3 [] [ Html.text "Features" ]
+              , Html.br [] []
+              , Html.ul []
+                    [ Html.li [] [ Html.text "Customise information level" ]
+                    , Html.li [] [ Html.text "Compact or spacious view" ]
+                    , Html.li [] [ Html.text "User-defined location types" ]
+                    , Html.li [] [ Html.text "Filter location types" ]
+                    , Html.li [] [ Html.text "...and more." ]
+                    ]
+              , Html.br [] []
+              , Html.h3 [] [ Html.text "Instructions" ]
+              , Html.br [] []
+              , Html.p [] [ Html.text "To make your route breakdown," ]
+              , Html.p [] [ Html.text "upload a CSV file with the following columns, including title at top:" ]
+              , Html.p [] [ Html.text "and a row per waypoint:" ]
+              , Html.br [] []
+              , Html.ul []
+                    [ Html.ul [] [ Html.b [] [ Html.text "\"Type\"" ], Html.text " - Supports emojis, advice is to keep it short." ]
+                    , Html.ul [] [ Html.b [] [ Html.text "\"Distance\"" ], Html.text " - Just the number, no units." ]
+                    , Html.ul [] [ Html.b [] [ Html.text "\"Name\"" ], Html.text " - Supports emojis." ]
+                    ]
+              , Html.br [] []
+              , viewUploadButton
+              ]
+            , decodeError |> Maybe.map (\err -> [ Html.br [] [], viewCSVDecodeErrorPanel err ]) |> Maybe.withDefault [ Html.div [] [] ]
+            , [ Html.br [] []
+              , Html.p [] [ Html.text "CSV can be downloaded from Google Sheets or exported from Excel." ]
+              , Html.p [] [ Html.text "For an example file, please click the button below." ]
+              , Html.br [] []
+              , downloadDemoDataButton
+              , Html.br [] []
+              , Html.h3 [] [ Html.text "...or play with a demo and see some examples" ]
+              , Html.br [] []
+              , loadDemoDataButton
+              , Html.br [] []
+              , Html.br [] []
+              , Html.h3 [] [ Html.text "See some examples..." ]
+              , Html.br [] []
+              , Html.div
+                    [ Html.Attributes.style "width" "100%"
+                    , Html.Attributes.style "justify-content" "space-evenly"
+                    , Html.Attributes.class "flex-container"
+                    , Html.Attributes.class "flex-center"
+                    , Html.Attributes.class "flex-wrap"
+                    , Html.Attributes.class "wide-row-narrow-column"
+                    ]
+                    (List.map (\( desc, waypointModifier, opts ) -> Html.div [] [ Html.h4 [ Html.Attributes.style "text-align" "center" ] [ Html.text desc ], routeBreakdown (waypointModifier exampleWaypoints) opts ])
+                        [ ( "Distance from zero", identity, RouteViewOptions FromZero defaultSpacing defaultDistanceDetail )
+                        , ( "Distance to go", identity, RouteViewOptions FromLast defaultSpacing defaultDistanceDetail )
+                        , ( "Custom location types"
+                          , List.map
+                                (\w ->
+                                    { w
+                                        | typ =
+                                            Dict.get w.typ (Dict.fromList [ ( cafeType, "☕" ), ( climbType, "⛰️" ) ])
+                                                |> Maybe.withDefault ""
+                                    }
+                                )
+                          , RouteViewOptions None defaultSpacing defaultDistanceDetail
+                          )
+                        , ( "Custom spacing", identity, RouteViewOptions None (defaultSpacing - 10) defaultDistanceDetail )
+                        , ( "Filter location types", routeWaypoints (WaypointsOptions True (initialFilteredLocations exampleWaypoints |> Dict.map (\k _ -> k == climbType || k == ""))), RouteViewOptions None defaultSpacing defaultDistanceDetail )
+                        ]
+                    )
+              ]
             ]
-        , Html.br [] []
-        , Html.h3 [] [ Html.text "Instructions" ]
-        , Html.br [] []
-        , Html.p [] [ Html.text "To make your route breakdown," ]
-        , Html.p [] [ Html.text "upload a CSV file with the following columns, including title at top:" ]
-        , Html.p [] [ Html.text "and a row per waypoint:" ]
-        , Html.br [] []
-        , Html.ul []
-            [ Html.ul [] [ Html.b [] [ Html.text "\"Type\"" ], Html.text " - Supports emojis, advice is to keep it short." ]
-            , Html.ul [] [ Html.b [] [ Html.text "\"Distance\"" ], Html.text " - Just the number, no units." ]
-            , Html.ul [] [ Html.b [] [ Html.text "\"Name\"" ], Html.text " - Supports emojis." ]
-            ]
-        , Html.br [] []
-        , viewUploadButton
-        , Html.br [] []
-        , Html.p [] [ Html.text "CSV can be downloaded from Google Sheets or exported from Excel." ]
-        , Html.p [] [ Html.text "For an example file, please click the button below." ]
-        , Html.br [] []
-        , downloadDemoDataButton
-        , Html.br [] []
-        , Html.h3 [] [ Html.text "...or play with a demo and see some examples" ]
-        , Html.br [] []
-        , loadDemoDataButton
-        , Html.br [] []
-        , Html.br [] []
-        , Html.h3 [] [ Html.text "See some examples..." ]
-        , Html.br [] []
-        , Html.div
-            [ Html.Attributes.style "width" "100%"
-            , Html.Attributes.style "justify-content" "space-evenly"
-            , Html.Attributes.class "flex-container"
-            , Html.Attributes.class "flex-center"
-            , Html.Attributes.class "flex-wrap"
-            , Html.Attributes.class "wide-row-narrow-column"
-            ]
-            (List.map (\( desc, waypointModifier, opts ) -> Html.div [] [ Html.h4 [ Html.Attributes.style "text-align" "center" ] [ Html.text desc ], routeBreakdown (waypointModifier exampleWaypoints) opts ])
-                [ ( "Distance from zero", identity, RouteViewOptions FromZero defaultSpacing defaultDistanceDetail )
-                , ( "Distance to go", identity, RouteViewOptions FromLast defaultSpacing defaultDistanceDetail )
-                , ( "Custom location types"
-                  , List.map
-                        (\w ->
-                            { w
-                                | typ =
-                                    Dict.get w.typ (Dict.fromList [ ( cafeType, "☕" ), ( climbType, "⛰️" ) ])
-                                        |> Maybe.withDefault ""
-                            }
-                        )
-                  , RouteViewOptions None defaultSpacing defaultDistanceDetail
-                  )
-                , ( "Custom spacing", identity, RouteViewOptions None (defaultSpacing - 10) defaultDistanceDetail )
-                , ( "Filter location types", routeWaypoints (WaypointsOptions True (initialFilteredLocations exampleWaypoints |> Dict.map (\k _ -> k == climbType || k == ""))), RouteViewOptions None defaultSpacing defaultDistanceDetail )
-                ]
-            )
-        ]
+        )
 
 
 optionGroup : String -> List (Html Msg) -> Html Msg
@@ -375,8 +386,8 @@ optionGroup title elements =
         (Html.legend [] [ Html.text title ] :: elements)
 
 
-viewOptions : WaypointsOptions -> RouteViewOptions -> Html Msg
-viewOptions waypointOptions routeViewOptions =
+viewOptions : WaypointsOptions -> RouteViewOptions -> Maybe String -> Html Msg
+viewOptions waypointOptions routeViewOptions decodeError =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "column"
@@ -384,115 +395,123 @@ viewOptions waypointOptions routeViewOptions =
         , Html.Attributes.style "overflow" "auto"
         , Html.Attributes.class "narrow"
         ]
-        [ Html.div [ Html.Attributes.class "options" ] <|
-            [ Html.h2 [] [ Html.text "Options" ]
-            , Html.hr [] []
-            , optionGroup "Waypoint types"
-                (Dropdown.dropdown
-                    (Dropdown.Options
-                        [ Dropdown.Item "all" "all" True
-                        , Dropdown.Item "filtered" "filtered" True
-                        ]
-                        Maybe.Nothing
-                        (Maybe.map
-                            (\selection ->
-                                case selection of
-                                    "all" ->
-                                        Maybe.Just False
+        (List.concat
+            [ [ Html.div [ Html.Attributes.class "options" ] <|
+                    [ Html.h2 [] [ Html.text "Options" ]
+                    , Html.hr [] []
+                    , optionGroup "Waypoint types"
+                        (Dropdown.dropdown
+                            (Dropdown.Options
+                                [ Dropdown.Item "all" "all" True
+                                , Dropdown.Item "filtered" "filtered" True
+                                ]
+                                Maybe.Nothing
+                                (Maybe.map
+                                    (\selection ->
+                                        case selection of
+                                            "all" ->
+                                                Maybe.Just False
 
-                                    "filtered" ->
-                                        Maybe.Just True
+                                            "filtered" ->
+                                                Maybe.Just True
 
-                                    _ ->
-                                        Maybe.Nothing
+                                            _ ->
+                                                Maybe.Nothing
+                                    )
+                                    >> Maybe.withDefault Maybe.Nothing
+                                    >> UpdateWaypointSelection
+                                )
                             )
-                            >> Maybe.withDefault Maybe.Nothing
-                            >> UpdateWaypointSelection
-                        )
-                    )
-                    []
-                    (Maybe.Just <|
-                        if waypointOptions.locationFilterEnabled then
-                            "filtered"
+                            []
+                            (Maybe.Just <|
+                                if waypointOptions.locationFilterEnabled then
+                                    "filtered"
 
-                        else
-                            "all"
-                    )
-                    :: (if waypointOptions.locationFilterEnabled then
-                            [ Html.fieldset []
-                                (waypointOptions.filteredLocationTypes
-                                    |> Dict.toList
-                                    |> List.map
-                                        (\( typ, included ) ->
-                                            checkbox included
-                                                (TypeEnabled typ (not included))
-                                                (if typ /= "" then
-                                                    typ
+                                else
+                                    "all"
+                            )
+                            :: (if waypointOptions.locationFilterEnabled then
+                                    [ Html.fieldset []
+                                        (waypointOptions.filteredLocationTypes
+                                            |> Dict.toList
+                                            |> List.map
+                                                (\( typ, included ) ->
+                                                    checkbox included
+                                                        (TypeEnabled typ (not included))
+                                                        (if typ /= "" then
+                                                            typ
 
-                                                 else
-                                                    "unknown"
+                                                         else
+                                                            "unknown"
+                                                        )
                                                 )
                                         )
-                                )
-                            ]
+                                    ]
 
-                        else
-                            []
-                       )
-                )
-            , Html.hr [] []
-            , optionGroup "Total distance"
-                [ Dropdown.dropdown
-                    (Dropdown.Options
-                        [ Dropdown.Item (formatTotalDistanceDisplay FromZero) (formatTotalDistanceDisplay FromZero) True
-                        , Dropdown.Item (formatTotalDistanceDisplay FromLast) (formatTotalDistanceDisplay FromLast) True
-                        , Dropdown.Item (formatTotalDistanceDisplay None) (formatTotalDistanceDisplay None) True
-                        ]
-                        Maybe.Nothing
-                        (Maybe.map parseTotalDistanceDisplay
-                            >> Maybe.withDefault Maybe.Nothing
-                            >> UpdateTotalDistanceDisplay
+                                else
+                                    []
+                               )
                         )
-                    )
-                    []
-                    (Maybe.Just <| formatTotalDistanceDisplay routeViewOptions.totalDistanceDisplay)
-                ]
-            , Html.hr [] []
-            , optionGroup "Spacing"
-                [ Html.input
-                    [ Html.Attributes.type_ "range"
-                    , Html.Attributes.min "1"
-                    , Html.Attributes.max "50"
-                    , Html.Attributes.value <| String.fromInt routeViewOptions.itemSpacing
-                    , Html.Events.onInput (String.toInt >> Maybe.withDefault defaultSpacing >> UpdateItemSpacing)
+                    , Html.hr [] []
+                    , optionGroup "Total distance"
+                        [ Dropdown.dropdown
+                            (Dropdown.Options
+                                [ Dropdown.Item (formatTotalDistanceDisplay FromZero) (formatTotalDistanceDisplay FromZero) True
+                                , Dropdown.Item (formatTotalDistanceDisplay FromLast) (formatTotalDistanceDisplay FromLast) True
+                                , Dropdown.Item (formatTotalDistanceDisplay None) (formatTotalDistanceDisplay None) True
+                                ]
+                                Maybe.Nothing
+                                (Maybe.map parseTotalDistanceDisplay
+                                    >> Maybe.withDefault Maybe.Nothing
+                                    >> UpdateTotalDistanceDisplay
+                                )
+                            )
+                            []
+                            (Maybe.Just <| formatTotalDistanceDisplay routeViewOptions.totalDistanceDisplay)
+                        ]
+                    , Html.hr [] []
+                    , optionGroup "Spacing"
+                        [ Html.input
+                            [ Html.Attributes.type_ "range"
+                            , Html.Attributes.min "1"
+                            , Html.Attributes.max "50"
+                            , Html.Attributes.value <| String.fromInt routeViewOptions.itemSpacing
+                            , Html.Events.onInput (String.toInt >> Maybe.withDefault defaultSpacing >> UpdateItemSpacing)
+                            ]
+                            []
+                        ]
+                    , Html.hr [] []
+                    , optionGroup "Distance detail"
+                        [ Html.input
+                            [ Html.Attributes.type_ "range"
+                            , Html.Attributes.min "0"
+                            , Html.Attributes.max "3"
+                            , Html.Attributes.value <| String.fromInt routeViewOptions.distanceDetail
+                            , Html.Events.onInput (String.toInt >> Maybe.withDefault defaultDistanceDetail >> UpdateDistanceDetail)
+                            ]
+                            []
+                        ]
+                    , Html.hr [] []
+                    , viewUploadButton
+                    , Html.button
+                        [ Html.Events.onClick ClearWaypoints, Html.Attributes.class "button-4" ]
+                        [ Html.text "clear" ]
                     ]
-                    []
-                ]
-            , Html.hr [] []
-            , optionGroup "Distance detail"
-                [ Html.input
-                    [ Html.Attributes.type_ "range"
-                    , Html.Attributes.min "0"
-                    , Html.Attributes.max "3"
-                    , Html.Attributes.value <| String.fromInt routeViewOptions.distanceDetail
-                    , Html.Events.onInput (String.toInt >> Maybe.withDefault defaultDistanceDetail >> UpdateDistanceDetail)
-                    ]
-                    []
-                ]
-            , Html.hr [] []
-            , viewUploadButton
-            , Html.button
-                [ Html.Events.onClick ClearWaypoints, Html.Attributes.class "button-4" ]
-                [ Html.text "clear" ]
+              ]
+            , decodeError |> Maybe.map (\err -> [ Html.br [] [], viewCSVDecodeErrorPanel err ]) |> Maybe.withDefault [ Html.div [] [] ]
             ]
-        ]
+        )
 
 
 viewUploadButton : Html Msg
 viewUploadButton =
-    Html.button
-        [ Html.Events.onClick OpenFileBrowser, Html.Attributes.class "button-4", Html.Attributes.style "max-width" "20em" ]
-        [ Html.text "upload waypoints" ]
+    Html.div []
+        [ Html.button [ Html.Events.onClick OpenFileBrowser, Html.Attributes.class "button-4", Html.Attributes.style "max-width" "20em" ] [ Html.text "upload waypoints" ] ]
+
+
+viewCSVDecodeErrorPanel : String -> Html Msg
+viewCSVDecodeErrorPanel error =
+    Html.div [ Html.Attributes.class "error_panel" ] [ Html.text (Debug.log "err" ("There was an error decoding your CSV. Please fix any error and try again 😇\n\nThe first few errors can be seen below.\n\n" ++ String.left 1000 error ++ "...")) ]
 
 
 loadDemoDataButton : Html Msg
