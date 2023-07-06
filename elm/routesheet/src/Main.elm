@@ -43,17 +43,28 @@ main =
 type alias StoredState =
     { waypoints : Maybe (List Waypoint)
     , totalDistanceDisplay : String
-    , locationFilterEnabled : Bool
-    , filteredLocationTypes : Json.Decode.Value
+    , locationFilterEnabled : Maybe Bool
+    , filteredLocationTypes : Maybe Json.Decode.Value
     , itemSpacing : Int
     , distanceDetail : Int
     }
 
 
 type alias Model =
-    { waypoints : Maybe (List Waypoint)
-    , waypointOptions : WaypointsOptions
+    { page : Page
     , routeViewOptions : RouteViewOptions
+    }
+
+
+type Page
+    = WelcomePage
+    | GetStartedPage
+    | RoutePage RouteModel
+
+
+type alias RouteModel =
+    { waypoints : List Waypoint
+    , waypointOptions : WaypointsOptions
     }
 
 
@@ -91,25 +102,34 @@ type Info
 
 init : Maybe StoredState -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
 init maybeState _ _ =
-    ( maybeState
-        |> Maybe.map
-            (\state ->
-                Model state.waypoints
-                    (WaypointsOptions
-                        state.locationFilterEnabled
-                        (Json.Decode.decodeValue (Json.Decode.dict Json.Decode.bool) state.filteredLocationTypes
-                            -- if error during decode of filtered types, reset filter based on waypoints
-                            |> Result.withDefault (initialFilteredLocations (Maybe.withDefault [] state.waypoints))
-                        )
-                    )
-                    (RouteViewOptions (parseTotalDistanceDisplay state.totalDistanceDisplay |> Maybe.withDefault FromZero)
-                        state.itemSpacing
-                        state.distanceDetail
-                    )
-            )
-        |> Maybe.withDefault (Model Maybe.Nothing (WaypointsOptions False Dict.empty) (RouteViewOptions FromZero defaultSpacing defaultDistanceDetail))
-    , Cmd.none
-    )
+    case maybeState of
+        Nothing ->
+            ( Model WelcomePage (RouteViewOptions FromZero defaultSpacing defaultDistanceDetail), Cmd.none )
+
+        Just state ->
+            let
+                page =
+                    state.waypoints
+                        |> Maybe.map
+                            (\ws ->
+                                RoutePage
+                                    (RouteModel ws
+                                        (WaypointsOptions
+                                            (state.locationFilterEnabled |> Maybe.withDefault False)
+                                            (state.filteredLocationTypes
+                                                |> Maybe.map
+                                                    (Json.Decode.decodeValue (Json.Decode.dict Json.Decode.bool)
+                                                        -- if error during decode of filtered types, reset filter based on waypoints
+                                                        >> Result.withDefault (initialFilteredLocations ws)
+                                                    )
+                                                |> Maybe.withDefault (initialFilteredLocations ws)
+                                            )
+                                        )
+                                    )
+                            )
+                        |> Maybe.withDefault WelcomePage
+            in
+            ( Model page (RouteViewOptions (parseTotalDistanceDisplay state.totalDistanceDisplay |> Maybe.withDefault FromZero) state.itemSpacing state.distanceDetail), Cmd.none )
 
 
 type Msg
@@ -122,6 +142,7 @@ type Msg
     | OpenFileBrowser
     | FileUploaded File.File
     | CsvDecoded (Result Csv.Decode.Error (List Waypoint))
+    | GetStarted
     | LoadDemoData
     | DownloadDemoData
     | ClearWaypoints
@@ -141,14 +162,19 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TypeEnabled typ enabled ->
-            let
-                options =
-                    model.waypointOptions
+            case model.page of
+                RoutePage routeModel ->
+                    let
+                        options =
+                            routeModel.waypointOptions
 
-                newModel =
-                    { model | waypointOptions = { options | filteredLocationTypes = Dict.insert typ enabled model.waypointOptions.filteredLocationTypes } }
-            in
-            updateModel newModel
+                        newRouteModel =
+                            { routeModel | waypointOptions = { options | filteredLocationTypes = Dict.insert typ enabled routeModel.waypointOptions.filteredLocationTypes } }
+                    in
+                    updateRouteModel model newRouteModel
+
+                _ ->
+                    ( model, Cmd.none )
 
         UpdateTotalDistanceDisplay maybeSelection ->
             maybeSelection
@@ -163,16 +189,24 @@ update msg model =
                 |> Maybe.withDefault ( model, Cmd.none )
 
         UpdateWaypointSelection maybeSelection ->
-            maybeSelection
-                |> Maybe.map
-                    (\locationFilterEnabled ->
-                        let
-                            options =
-                                model.waypointOptions
-                        in
-                        updateModel { model | waypointOptions = { options | locationFilterEnabled = locationFilterEnabled } }
-                    )
-                |> Maybe.withDefault ( model, Cmd.none )
+            case model.page of
+                RoutePage routeModel ->
+                    maybeSelection
+                        |> Maybe.map
+                            (\locationFilterEnabled ->
+                                let
+                                    options =
+                                        routeModel.waypointOptions
+
+                                    newRouteModel =
+                                        { routeModel | waypointOptions = { options | locationFilterEnabled = locationFilterEnabled } }
+                                in
+                                updateRouteModel model newRouteModel
+                            )
+                        |> Maybe.withDefault ( model, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
         UpdateItemSpacing spacing ->
             let
@@ -200,13 +234,16 @@ update msg model =
 
         CsvDecoded result ->
             result
-                |> Result.map (initialModel model.routeViewOptions >> updateModel)
+                |> Result.map (initialModel >> updateRouteModel model)
                 --TODO: handle decode error
                 |> Result.withDefault ( model, Cmd.none )
 
+        GetStarted ->
+            ( { model | page = GetStartedPage }, Cmd.none )
+
         LoadDemoData ->
             decodeCSV demoData
-                |> Result.map (initialModel model.routeViewOptions >> updateModel)
+                |> Result.map (initialModel >> updateRouteModel model)
                 --TODO: handle decode error
                 |> Result.withDefault ( model, Cmd.none )
 
@@ -214,10 +251,15 @@ update msg model =
             ( model, File.Download.string "demo-data.csv" "text/csv" demoData )
 
         ClearWaypoints ->
-            updateModel { model | waypoints = Maybe.Nothing }
+            updateModel { model | page = WelcomePage }
 
         Never ->
             ( model, Cmd.none )
+
+
+updateRouteModel : Model -> RouteModel -> ( Model, Cmd Msg )
+updateRouteModel model routeModel =
+    updateModel <| { model | page = RoutePage routeModel }
 
 
 decodeCSV : String -> Result Csv.Decode.Error (List Waypoint)
@@ -235,13 +277,13 @@ updateModel model =
     ( model, storeModel model )
 
 
-initialModel : RouteViewOptions -> List Waypoint -> Model
-initialModel routeViewOptions waypoints =
+initialModel : List Waypoint -> RouteModel
+initialModel waypoints =
     let
         sortedWaypoint =
             List.sortBy .distance waypoints
     in
-    Model (Maybe.Just sortedWaypoint) (initialWaypointOptions sortedWaypoint) routeViewOptions
+    RouteModel sortedWaypoint (initialWaypointOptions sortedWaypoint)
 
 
 
@@ -251,28 +293,34 @@ initialModel routeViewOptions waypoints =
 view : Model -> Browser.Document Msg
 view model =
     Browser.Document "Route sheet"
-        [ model.waypoints
-            |> Maybe.map
-                (\w ->
-                    Html.div
-                        [ Html.Attributes.class "flex-container"
-                        , Html.Attributes.class "row"
-                        , Html.Attributes.class "page"
-                        , Html.Attributes.style "height" "100%"
-                        ]
-                        [ viewOptions model.waypointOptions model.routeViewOptions
-                        , Html.div
-                            [ Html.Attributes.class "flex-container"
-                            , Html.Attributes.class "column"
-                            , Html.Attributes.class "wide"
-                            , Html.Attributes.style "height" "100%"
-                            , Html.Attributes.style "justify-content" "center"
-                            ]
-                            [ routeBreakdown (routeWaypoints model.waypointOptions w) model.routeViewOptions
-                            ]
-                        ]
-                )
-            |> Maybe.withDefault welcomePage
+        [ case model.page of
+            RoutePage routeModel ->
+                routeModel.waypoints
+                    |> (\w ->
+                            Html.div
+                                [ Html.Attributes.class "flex-container"
+                                , Html.Attributes.class "row"
+                                , Html.Attributes.class "page"
+                                , Html.Attributes.style "height" "100%"
+                                ]
+                                [ viewOptions routeModel.waypointOptions model.routeViewOptions
+                                , Html.div
+                                    [ Html.Attributes.class "flex-container"
+                                    , Html.Attributes.class "column"
+                                    , Html.Attributes.class "wide"
+                                    , Html.Attributes.style "height" "100%"
+                                    , Html.Attributes.style "justify-content" "center"
+                                    ]
+                                    [ routeBreakdown (routeWaypoints routeModel.waypointOptions w) model.routeViewOptions
+                                    ]
+                                ]
+                       )
+
+            WelcomePage ->
+                welcomePage
+
+            GetStartedPage ->
+                getStartedPage
         ]
 
 
@@ -300,7 +348,6 @@ welcomePage =
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "flex-center"
         , Html.Attributes.class "column"
-        , Html.Attributes.class "examples"
         ]
         [ Html.h2 [] [ Html.text "Route breakdown builder" ]
         , Html.br [] []
@@ -313,6 +360,60 @@ welcomePage =
             , Html.li [] [ Html.text "Filter location types" ]
             , Html.li [] [ Html.text "...and more." ]
             ]
+        , Html.br [] []
+        , Html.h3 [] [ Html.text "Get started..." ]
+        , Html.br [] []
+        , getStartedButton
+        , Html.br [] []
+        , Html.h3 [] [ Html.text "...play with a demo..." ]
+        , Html.br [] []
+        , loadDemoDataButton
+        , Html.br [] []
+        , Html.h3 [] [ Html.text "...or see some examples" ]
+        , Html.br [] []
+        , Html.div
+            [ Html.Attributes.style "width" "100%"
+            , Html.Attributes.style "justify-content" "space-evenly"
+            , Html.Attributes.class "flex-container"
+            , Html.Attributes.class "flex-center"
+            , Html.Attributes.class "flex-wrap"
+            , Html.Attributes.class "wide-row-narrow-column"
+            ]
+            (List.map (\( desc, waypointModifier, opts ) -> Html.div [] [ Html.h4 [ Html.Attributes.style "text-align" "center" ] [ Html.text desc ], routeBreakdown (waypointModifier exampleWaypoints) opts ])
+                [ ( "Distance from zero", identity, RouteViewOptions FromZero defaultSpacing defaultDistanceDetail )
+                , ( "Distance to go"
+                  , identity
+                  , RouteViewOptions
+                        FromLast
+                        defaultSpacing
+                        defaultDistanceDetail
+                  )
+                , ( "Custom location types"
+                  , List.map
+                        (\w ->
+                            { w
+                                | typ =
+                                    Dict.get w.typ (Dict.fromList [ ( cafeType, "☕" ), ( climbType, "⛰️" ) ])
+                                        |> Maybe.withDefault ""
+                            }
+                        )
+                  , RouteViewOptions None defaultSpacing defaultDistanceDetail
+                  )
+                , ( "Custom spacing", identity, RouteViewOptions None (defaultSpacing - 10) defaultDistanceDetail )
+                , ( "Filter location types", routeWaypoints (WaypointsOptions True (initialFilteredLocations exampleWaypoints |> Dict.map (\k _ -> k == climbType || k == ""))), RouteViewOptions None defaultSpacing defaultDistanceDetail )
+                ]
+            )
+        ]
+
+
+getStartedPage : Html Msg
+getStartedPage =
+    Html.div
+        [ Html.Attributes.class "flex-container"
+        , Html.Attributes.class "flex-center"
+        , Html.Attributes.class "column"
+        ]
+        [ Html.h2 [] [ Html.text "Route breakdown builder" ]
         , Html.br [] []
         , Html.h3 [] [ Html.text "Instructions" ]
         , Html.br [] []
@@ -332,40 +433,6 @@ welcomePage =
         , Html.p [] [ Html.text "For an example file, please click the button below." ]
         , Html.br [] []
         , downloadDemoDataButton
-        , Html.br [] []
-        , Html.h3 [] [ Html.text "...or play with a demo and see some examples" ]
-        , Html.br [] []
-        , loadDemoDataButton
-        , Html.br [] []
-        , Html.br [] []
-        , Html.h3 [] [ Html.text "See some examples..." ]
-        , Html.br [] []
-        , Html.div
-            [ Html.Attributes.style "width" "100%"
-            , Html.Attributes.style "justify-content" "space-evenly"
-            , Html.Attributes.class "flex-container"
-            , Html.Attributes.class "flex-center"
-            , Html.Attributes.class "flex-wrap"
-            , Html.Attributes.class "wide-row-narrow-column"
-            ]
-            (List.map (\( desc, waypointModifier, opts ) -> Html.div [] [ Html.h4 [ Html.Attributes.style "text-align" "center" ] [ Html.text desc ], routeBreakdown (waypointModifier exampleWaypoints) opts ])
-                [ ( "Distance from zero", identity, RouteViewOptions FromZero defaultSpacing defaultDistanceDetail )
-                , ( "Distance to go", identity, RouteViewOptions FromLast defaultSpacing defaultDistanceDetail )
-                , ( "Custom location types"
-                  , List.map
-                        (\w ->
-                            { w
-                                | typ =
-                                    Dict.get w.typ (Dict.fromList [ ( cafeType, "☕" ), ( climbType, "⛰️" ) ])
-                                        |> Maybe.withDefault ""
-                            }
-                        )
-                  , RouteViewOptions None defaultSpacing defaultDistanceDetail
-                  )
-                , ( "Custom spacing", identity, RouteViewOptions None (defaultSpacing - 10) defaultDistanceDetail )
-                , ( "Filter location types", routeWaypoints (WaypointsOptions True (initialFilteredLocations exampleWaypoints |> Dict.map (\k _ -> k == climbType || k == ""))), RouteViewOptions None defaultSpacing defaultDistanceDetail )
-                ]
-            )
         ]
 
 
@@ -493,6 +560,13 @@ viewUploadButton =
     Html.button
         [ Html.Events.onClick OpenFileBrowser, Html.Attributes.class "button-4", Html.Attributes.style "max-width" "20em" ]
         [ Html.text "upload waypoints" ]
+
+
+getStartedButton : Html Msg
+getStartedButton =
+    Html.button
+        [ Html.Events.onClick GetStarted, Html.Attributes.class "button-4", Html.Attributes.style "max-width" "20em" ]
+        [ Html.text "get started" ]
 
 
 loadDemoDataButton : Html Msg
@@ -739,13 +813,22 @@ defaultDistanceDetail =
 storeModel : Model -> Cmd msg
 storeModel model =
     Json.Encode.object
-        [ ( "waypoints", model.waypoints |> Maybe.map encodeWaypoints |> Maybe.withDefault Json.Encode.null )
-        , ( "totalDistanceDisplay", Json.Encode.string <| formatTotalDistanceDisplay model.routeViewOptions.totalDistanceDisplay )
-        , ( "distanceDetail", Json.Encode.int model.routeViewOptions.distanceDetail )
-        , ( "locationFilterEnabled", Json.Encode.bool model.waypointOptions.locationFilterEnabled )
-        , ( "filteredLocationTypes", Json.Encode.dict identity Json.Encode.bool model.waypointOptions.filteredLocationTypes )
-        , ( "itemSpacing", Json.Encode.int model.routeViewOptions.itemSpacing )
-        ]
+        (List.concat
+            [ case model.page of
+                RoutePage routeModel ->
+                    [ ( "waypoints", encodeWaypoints routeModel.waypoints )
+                    , ( "locationFilterEnabled", Json.Encode.bool routeModel.waypointOptions.locationFilterEnabled )
+                    , ( "filteredLocationTypes", Json.Encode.dict identity Json.Encode.bool routeModel.waypointOptions.filteredLocationTypes )
+                    ]
+
+                _ ->
+                    []
+            , [ ( "totalDistanceDisplay", Json.Encode.string <| formatTotalDistanceDisplay model.routeViewOptions.totalDistanceDisplay )
+              , ( "distanceDetail", Json.Encode.int model.routeViewOptions.distanceDetail )
+              , ( "itemSpacing", Json.Encode.int model.routeViewOptions.itemSpacing )
+              ]
+            ]
+        )
         |> Json.Encode.encode 2
         |> storeState
 
@@ -755,6 +838,7 @@ encodeWaypoints waypoints =
     Json.Encode.list
         (\waypoint ->
             Json.Encode.object
+                Json.Decode.nullable
                 [ ( "name", Json.Encode.string waypoint.name )
                 , ( "distance", Json.Encode.float waypoint.distance )
                 , ( "typ", Json.Encode.string waypoint.typ )
