@@ -5,6 +5,7 @@ import Browser
 import Browser.Navigation
 import Bytes
 import Bytes.Decode
+import Bytes.Encode
 import Csv.Decode
 import Dict
 import Dropdown
@@ -17,12 +18,14 @@ import Html.Attributes
 import Html.Events
 import Json.Decode
 import Json.Encode
+import QRCode
 import Round
 import String
 import Svg
 import Svg.Attributes
 import Task
 import Url exposing (Protocol(..))
+import Url.Builder
 import Url.Parser exposing ((</>), (<?>))
 import Url.Parser.Query
 
@@ -61,6 +64,8 @@ type alias Model =
     , csvDecodeError : Maybe String
     , waypointOptions : WaypointsOptions
     , routeViewOptions : RouteViewOptions
+    , showQR : Bool
+    , url : Url.Url
     }
 
 
@@ -97,7 +102,7 @@ type Info
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
-init maybeState url _ =
+init maybeState url key =
     let
         queryState =
             -- snap the url path to empty to skip handling of url segments
@@ -107,26 +112,36 @@ init maybeState url _ =
                 |> Maybe.andThen Flate.inflateGZip
                 -- example from https://package.elm-lang.org/packages/folkertdev/elm-flate/latest/Flate
                 |> Maybe.andThen (\buf -> Bytes.Decode.decode (Bytes.Decode.string (Bytes.width buf)) buf)
-                -- TODO: handle decode error
+                -- TODO: handle decode error, get user to send me the state
                 |> Maybe.andThen (Json.Decode.decodeString (storedStateDecoder shortFieldNames) >> Result.toMaybe)
     in
-    case queryState of
+    (case queryState of
         Just model ->
-            updateModel (storedStateModel model)
+            storedStateModel url model
 
         Nothing ->
             maybeState
                 |> Maybe.map
                     (Json.Decode.decodeValue (storedStateDecoder longFieldNames)
                         >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
-                        >> storedStateModel
+                        >> storedStateModel url
                     )
-                |> Maybe.withDefault (Model Maybe.Nothing Maybe.Nothing (WaypointsOptions False Dict.empty) (RouteViewOptions FromZero defaultSpacing defaultDistanceDetail))
-                |> updateModel
+                |> Maybe.withDefault (Model Maybe.Nothing Maybe.Nothing (WaypointsOptions False Dict.empty) (RouteViewOptions FromZero defaultSpacing defaultDistanceDetail) False url)
+    )
+        |> updateModel
+        |> Tuple.mapSecond
+            (\cmd ->
+                -- if state from query was successful, remove query from URL
+                (queryState |> Maybe.map (always (Browser.Navigation.replaceUrl key <| Url.toString { url | query = Maybe.Nothing })))
+                    |> Maybe.map List.singleton
+                    |> Maybe.withDefault []
+                    |> (::) cmd
+                    |> Cmd.batch
+            )
 
 
-storedStateModel : StoredState -> Model
-storedStateModel state =
+storedStateModel : Url.Url -> StoredState -> Model
+storedStateModel url state =
     Model state.waypoints
         Maybe.Nothing
         (WaypointsOptions
@@ -138,6 +153,8 @@ storedStateModel state =
             (Maybe.withDefault defaultSpacing state.itemSpacing)
             (Maybe.withDefault defaultDistanceDetail state.distanceDetail)
         )
+        False
+        url
 
 
 type Msg
@@ -153,6 +170,8 @@ type Msg
     | LoadDemoData
     | DownloadDemoData
     | ClearWaypoints
+    | ShowQR
+    | CloseQR
 
 
 initialWaypointOptions : List Waypoint -> WaypointsOptions
@@ -238,6 +257,12 @@ update msg model =
         ClearWaypoints ->
             updateModel { model | waypoints = Maybe.Nothing, csvDecodeError = Maybe.Nothing }
 
+        ShowQR ->
+            updateModel { model | showQR = True }
+
+        CloseQR ->
+            updateModel { model | showQR = False }
+
         Never ->
             ( model, Cmd.none )
 
@@ -265,19 +290,19 @@ updateCSVDecodeModel : Model -> Result Csv.Decode.Error (List Waypoint) -> ( Mod
 updateCSVDecodeModel model result =
     case result of
         Ok waypoints ->
-            initialModel model.routeViewOptions waypoints |> updateModel
+            initialModel model.routeViewOptions waypoints model.url |> updateModel
 
         Err err ->
             ( { model | csvDecodeError = Maybe.Just <| Csv.Decode.errorToString err }, Cmd.none )
 
 
-initialModel : RouteViewOptions -> List Waypoint -> Model
-initialModel routeViewOptions waypoints =
+initialModel : RouteViewOptions -> List Waypoint -> Url.Url -> Model
+initialModel routeViewOptions waypoints url =
     let
         sortedWaypoint =
             List.sortBy .distance waypoints
     in
-    Model (Maybe.Just sortedWaypoint) Maybe.Nothing (initialWaypointOptions sortedWaypoint) routeViewOptions
+    Model (Maybe.Just sortedWaypoint) Maybe.Nothing (initialWaypointOptions sortedWaypoint) routeViewOptions False url
 
 
 
@@ -290,26 +315,121 @@ view model =
         [ model.waypoints
             |> Maybe.map
                 (\w ->
-                    Html.div
-                        [ Html.Attributes.class "flex-container"
-                        , Html.Attributes.class "row"
-                        , Html.Attributes.class "page"
-                        , Html.Attributes.style "height" "100%"
-                        ]
-                        [ viewOptions model.waypointOptions model.routeViewOptions model.csvDecodeError
-                        , Html.div
+                    if model.showQR then
+                        Html.div
                             [ Html.Attributes.class "flex-container"
                             , Html.Attributes.class "column"
-                            , Html.Attributes.class "wide"
+                            , Html.Attributes.class "page"
                             , Html.Attributes.style "height" "100%"
                             , Html.Attributes.style "justify-content" "center"
+                            , Html.Attributes.style "align-items" "center"
                             ]
-                            [ routeBreakdown (routeWaypoints model.waypointOptions w) model.routeViewOptions
+                            (encodeSavedState shortFieldNames model
+                                |> Bytes.Encode.string
+                                |> Bytes.Encode.encode
+                                |> Flate.deflateGZip
+                                |> Base64.fromBytes
+                                |> Maybe.map (stateUrl model.url)
+                                |> Maybe.map
+                                    (\url ->
+                                        QRCode.fromStringWith QRCode.Medium url
+                                            |> Result.map
+                                                (\qr ->
+                                                    [ QRCode.toSvg [ Svg.Attributes.width "500", Svg.Attributes.height "500" ] qr
+                                                    , Html.br [] []
+                                                    , Html.p [] [ Html.text "Scan the QR code above on your device" ]
+                                                    , Html.p [] [ Html.text "and follow the link to load in the current route." ]
+                                                    , Html.br [] []
+                                                    , Html.p [] [ Html.text "Alternatively, copy this link and send to your device through some other means..." ]
+                                                    , Html.br [] []
+                                                    , Html.p
+                                                        [ Html.Attributes.style "word-break" "break-all"
+                                                        , Html.Attributes.style "white-space" "normal"
+                                                        ]
+                                                        [ Html.text url ]
+                                                    ]
+                                                )
+                                            |> Result.mapError
+                                                (\err ->
+                                                    case err of
+                                                        QRCode.AlignmentPatternNotFound ->
+                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: AlignmentPatternNotFound" ]
+
+                                                        QRCode.InvalidNumericChar ->
+                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidNumericChar" ]
+
+                                                        QRCode.InvalidAlphanumericChar ->
+                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidAlphanumericChar" ]
+
+                                                        QRCode.InvalidUTF8Char ->
+                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidUTF8Char" ]
+
+                                                        QRCode.LogTableException table ->
+                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: LogTableException" ]
+
+                                                        QRCode.PolynomialMultiplyException ->
+                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: PolynomialMultiplyException" ]
+
+                                                        QRCode.PolynomialModException ->
+                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: PolynomialModException" ]
+
+                                                        QRCode.InputLengthOverflow ->
+                                                            [ viewErrorPanel "😞 sadly the data you are using is too large for the current sharing mechanism.\n\nPlease contact me and I will try to rectify the issue!" ]
+                                                )
+                                            |> resultCollect
+                                    )
+                                -- error with creating base64 bytes, should never happen according to the docs
+                                |> Maybe.withDefault [ viewErrorPanel "😞 there was an error preparing your QR code, so sorry.\n\nPlease contact me and I will try to rectify the issue!" ]
+                                |> (\els ->
+                                        els
+                                            ++ [ Html.br [] []
+                                               , Html.button
+                                                    [ Html.Events.onClick CloseQR, Html.Attributes.class "button-4" ]
+                                                    [ Html.text "Close" ]
+                                               ]
+                                   )
+                            )
+
+                    else
+                        Html.div
+                            [ Html.Attributes.class "flex-container"
+                            , Html.Attributes.class "row"
+                            , Html.Attributes.class "page"
+                            , Html.Attributes.style "height" "100%"
                             ]
-                        ]
+                            [ viewOptions model.waypointOptions model.routeViewOptions model.csvDecodeError
+                            , Html.div
+                                [ Html.Attributes.class "flex-container"
+                                , Html.Attributes.class "column"
+                                , Html.Attributes.class "wide"
+                                , Html.Attributes.style "height" "100%"
+                                , Html.Attributes.style "justify-content" "center"
+                                ]
+                                [ routeBreakdown (routeWaypoints model.waypointOptions w) model.routeViewOptions
+                                ]
+                            ]
                 )
             |> Maybe.withDefault (welcomePage model.csvDecodeError)
         ]
+
+
+resultCollect : Result a a -> a
+resultCollect res =
+    case res of
+        Ok ok ->
+            ok
+
+        Err err ->
+            err
+
+
+stateUrl : Url.Url -> String -> String
+stateUrl url encodedState =
+    Url.toString
+        { url
+          --drop first letter of query which is '?' and gets prepended again by the Url.toString call
+            | query = encodedState |> Url.Builder.string "state" |> List.singleton |> Url.Builder.toQuery |> String.dropLeft 1 |> Maybe.Just
+        }
 
 
 welcomePage : Maybe String -> Html Msg
@@ -363,18 +483,18 @@ welcomePage decodeError =
                     , Html.ul [] [ Html.b [] [ Html.text "\"Name\"" ], Html.text " - Supports emojis." ]
                     ]
               , Html.br [] []
-              , viewUploadButton
+              , viewButton "upload waypoints" OpenFileBrowser
               ]
             , decodeError |> Maybe.map (\err -> [ Html.br [] [], viewCSVDecodeErrorPanel err ]) |> Maybe.withDefault [ Html.div [] [] ]
             , [ Html.br [] []
               , Html.p [] [ Html.text "CSV can be downloaded from Google Sheets or exported from Excel." ]
               , Html.p [] [ Html.text "For an example file, please click the button below." ]
               , Html.br [] []
-              , downloadDemoDataButton
+              , viewButton "download example CSV" DownloadDemoData
               , Html.br [] []
               , Html.h3 [] [ Html.text "...or play with a demo and see some examples" ]
               , Html.br [] []
-              , loadDemoDataButton
+              , viewButton "play with demo" LoadDemoData
               , Html.br [] []
               , Html.br [] []
               , Html.h3 [] [ Html.text "See some examples..." ]
@@ -522,10 +642,16 @@ viewOptions waypointOptions routeViewOptions decodeError =
                             []
                         ]
                     , Html.hr [] []
-                    , viewUploadButton
-                    , Html.button
-                        [ Html.Events.onClick ClearWaypoints, Html.Attributes.class "button-4" ]
-                        [ Html.text "clear" ]
+                    , Html.div
+                        [ Html.Attributes.class "flex-container"
+                        , Html.Attributes.class "column"
+                        , Html.Attributes.style "justify-content" "center"
+                        , Html.Attributes.style "align-items" "center"
+                        ]
+                        [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "upload waypoints" OpenFileBrowser
+                        , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "clear" ClearWaypoints
+                        , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "share / send to device" ShowQR
+                        ]
                     ]
               ]
             , decodeError |> Maybe.map (\err -> [ Html.br [] [], viewCSVDecodeErrorPanel err ]) |> Maybe.withDefault [ Html.div [] [] ]
@@ -533,29 +659,26 @@ viewOptions waypointOptions routeViewOptions decodeError =
         )
 
 
-viewUploadButton : Html Msg
-viewUploadButton =
-    Html.div []
-        [ Html.button [ Html.Events.onClick OpenFileBrowser, Html.Attributes.class "button-4", Html.Attributes.style "max-width" "20em" ] [ Html.text "upload waypoints" ] ]
-
-
 viewCSVDecodeErrorPanel : String -> Html Msg
 viewCSVDecodeErrorPanel error =
-    Html.div [ Html.Attributes.class "error_panel" ] [ Html.text (Debug.log "err" ("There was an error decoding your CSV. Please fix any error and try again 😇\n\nThe first few errors can be seen below.\n\n" ++ String.left 1000 error ++ "...")) ]
+    viewErrorPanel <| ("There was an error decoding your CSV. Please fix any error and try again 😇\n\nThe first few errors can be seen below.\n\n" ++ String.left 1000 error ++ "...")
 
 
-loadDemoDataButton : Html Msg
-loadDemoDataButton =
+viewErrorPanel : String -> Html Msg
+viewErrorPanel error =
+    Html.div [ Html.Attributes.class "error_panel" ] [ Html.text error ]
+
+
+viewButton : String -> Msg -> Html Msg
+viewButton text msg =
+    viewButtonWithAttributes [] text msg
+
+
+viewButtonWithAttributes : List (Html.Attribute Msg) -> String -> Msg -> Html Msg
+viewButtonWithAttributes attrs text msg =
     Html.button
-        [ Html.Events.onClick LoadDemoData, Html.Attributes.class "button-4", Html.Attributes.style "max-width" "20em" ]
-        [ Html.text "play with demo" ]
-
-
-downloadDemoDataButton : Html Msg
-downloadDemoDataButton =
-    Html.button
-        [ Html.Events.onClick DownloadDemoData, Html.Attributes.class "button-4", Html.Attributes.style "max-width" "20em" ]
-        [ Html.text "download example CSV" ]
+        ([ Html.Events.onClick msg, Html.Attributes.class "button-4", Html.Attributes.style "max-width" "20em" ] ++ attrs)
+        [ Html.text text ]
 
 
 parseTotalDistanceDisplay : String -> Maybe TotalDistanceDisplay
