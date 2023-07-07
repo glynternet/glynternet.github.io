@@ -1,13 +1,17 @@
 port module Main exposing (storeState)
 
+import Base64
 import Browser
 import Browser.Navigation
+import Bytes
+import Bytes.Decode
 import Csv.Decode
 import Dict
 import Dropdown
 import File
 import File.Download
 import File.Select
+import Flate
 import Html exposing (Attribute, Html)
 import Html.Attributes
 import Html.Events
@@ -19,6 +23,8 @@ import Svg
 import Svg.Attributes
 import Task
 import Url exposing (Protocol(..))
+import Url.Parser exposing ((</>), (<?>))
+import Url.Parser.Query
 
 
 
@@ -91,27 +97,47 @@ type Info
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
-init maybeState _ _ =
-    maybeState
-        |> Maybe.map
-            (Json.Decode.decodeValue decodeStoredState
-                >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
-                >> (\storedState ->
-                        Model storedState.waypoints
-                            Maybe.Nothing
-                            (WaypointsOptions
-                                (storedState.locationFilterEnabled |> Maybe.withDefault False)
-                                (storedState.filteredLocationTypes |> Maybe.withDefault (initialFilteredLocations <| (storedState.waypoints |> Maybe.withDefault [])))
-                            )
-                            (RouteViewOptions
-                                (storedState.totalDistanceDisplay |> Maybe.andThen parseTotalDistanceDisplay |> Maybe.withDefault FromZero)
-                                (Maybe.withDefault defaultSpacing storedState.itemSpacing)
-                                (Maybe.withDefault defaultDistanceDetail storedState.distanceDetail)
-                            )
-                   )
-            )
-        |> Maybe.withDefault (Model Maybe.Nothing Maybe.Nothing (WaypointsOptions False Dict.empty) (RouteViewOptions FromZero defaultSpacing defaultDistanceDetail))
-        |> updateModel
+init maybeState url _ =
+    let
+        queryState =
+            -- snap the url path to empty to skip handling of url segments
+            Url.Parser.parse (Url.Parser.query (Url.Parser.Query.string "state")) { url | path = "" }
+                |> Maybe.withDefault Maybe.Nothing
+                |> Maybe.andThen Base64.toBytes
+                |> Maybe.andThen Flate.inflateGZip
+                -- example from https://package.elm-lang.org/packages/folkertdev/elm-flate/latest/Flate
+                |> Maybe.andThen (\buf -> Bytes.Decode.decode (Bytes.Decode.string (Bytes.width buf)) buf)
+                -- TODO: handle decode error
+                |> Maybe.andThen (Json.Decode.decodeString storedStateDecoder >> Result.toMaybe)
+    in
+    case queryState of
+        Just model ->
+            updateModel (storedStateModel model)
+
+        Nothing ->
+            maybeState
+                |> Maybe.map
+                    (Json.Decode.decodeValue storedStateDecoder
+                        >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
+                        >> storedStateModel
+                    )
+                |> Maybe.withDefault (Model Maybe.Nothing Maybe.Nothing (WaypointsOptions False Dict.empty) (RouteViewOptions FromZero defaultSpacing defaultDistanceDetail))
+                |> updateModel
+
+
+storedStateModel : StoredState -> Model
+storedStateModel state =
+    Model state.waypoints
+        Maybe.Nothing
+        (WaypointsOptions
+            (state.locationFilterEnabled |> Maybe.withDefault False)
+            (state.filteredLocationTypes |> Maybe.withDefault (initialFilteredLocations <| (state.waypoints |> Maybe.withDefault [])))
+        )
+        (RouteViewOptions
+            (state.totalDistanceDisplay |> Maybe.andThen parseTotalDistanceDisplay |> Maybe.withDefault FromZero)
+            (Maybe.withDefault defaultSpacing state.itemSpacing)
+            (Maybe.withDefault defaultDistanceDetail state.distanceDetail)
+        )
 
 
 type Msg
@@ -765,12 +791,12 @@ storeModel model =
         , ( "filteredLocationTypes", Json.Encode.dict identity Json.Encode.bool model.waypointOptions.filteredLocationTypes )
         , ( "itemSpacing", Json.Encode.int model.routeViewOptions.itemSpacing )
         ]
-        |> Json.Encode.encode 2
+        |> Json.Encode.encode 0
         |> storeState
 
 
-decodeStoredState : Json.Decode.Decoder StoredState
-decodeStoredState =
+storedStateDecoder : Json.Decode.Decoder StoredState
+storedStateDecoder =
     Json.Decode.map6 StoredState
         (Json.Decode.maybe (Json.Decode.field "waypoints" decodeWaypoints))
         (Json.Decode.maybe (Json.Decode.field "totalDistanceDisplay" Json.Decode.string))
