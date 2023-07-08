@@ -8659,6 +8659,7 @@ var $folkertdev$elm_flate$Inflate$GZip$inflate = function (buffer) {
 };
 var $folkertdev$elm_flate$Inflate$Inflate$inflateGZip = $folkertdev$elm_flate$Inflate$GZip$inflate;
 var $folkertdev$elm_flate$Flate$inflateGZip = $folkertdev$elm_flate$Inflate$Inflate$inflateGZip;
+var $author$project$Main$longFieldNames = {distanceDetail: 'distanceDetail', filteredLocationTypes: 'filteredLocationTypes', itemSpacing: 'itemSpacing', locationFilterEnabled: 'locationFilterEnabled', totalDistanceDisplay: 'totalDistanceDisplay', waypointDistance: 'distance', waypointName: 'name', waypointType: 'typ', waypoints: 'waypoints'};
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (maybe.$ === 'Just') {
@@ -8813,6 +8814,7 @@ var $elm$url$Url$Parser$query = function (_v0) {
 				]);
 		});
 };
+var $author$project$Main$shortFieldNames = {distanceDetail: 'dd', filteredLocationTypes: 'flt', itemSpacing: 'is', locationFilterEnabled: 'lfe', totalDistanceDisplay: 'tdd', waypointDistance: 'd', waypointName: 'n', waypointType: 't', waypoints: 'w'};
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $author$project$Main$Waypoint = F3(
 	function (name, distance, typ) {
@@ -8823,13 +8825,15 @@ var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $elm$json$Json$Decode$list = _Json_decodeList;
 var $elm$json$Json$Decode$map3 = _Json_map3;
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Main$decodeWaypoints = $elm$json$Json$Decode$list(
-	A4(
-		$elm$json$Json$Decode$map3,
-		$author$project$Main$Waypoint,
-		A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
-		A2($elm$json$Json$Decode$field, 'distance', $elm$json$Json$Decode$float),
-		A2($elm$json$Json$Decode$field, 'typ', $elm$json$Json$Decode$string)));
+var $author$project$Main$decodeWaypoints = function (fieldNames) {
+	return $elm$json$Json$Decode$list(
+		A4(
+			$elm$json$Json$Decode$map3,
+			$author$project$Main$Waypoint,
+			A2($elm$json$Json$Decode$field, fieldNames.waypointName, $elm$json$Json$Decode$string),
+			A2($elm$json$Json$Decode$field, fieldNames.waypointDistance, $elm$json$Json$Decode$float),
+			A2($elm$json$Json$Decode$field, fieldNames.waypointType, $elm$json$Json$Decode$string)));
+};
 var $elm$core$Dict$fromList = function (assocs) {
 	return A3(
 		$elm$core$List$foldl,
@@ -8860,24 +8864,29 @@ var $elm$json$Json$Decode$maybe = function (decoder) {
 				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
 			]));
 };
-var $author$project$Main$storedStateDecoder = A7(
-	$elm$json$Json$Decode$map6,
-	$author$project$Main$StoredState,
-	$elm$json$Json$Decode$maybe(
-		A2($elm$json$Json$Decode$field, 'waypoints', $author$project$Main$decodeWaypoints)),
-	$elm$json$Json$Decode$maybe(
-		A2($elm$json$Json$Decode$field, 'totalDistanceDisplay', $elm$json$Json$Decode$string)),
-	$elm$json$Json$Decode$maybe(
-		A2($elm$json$Json$Decode$field, 'locationFilterEnabled', $elm$json$Json$Decode$bool)),
-	$elm$json$Json$Decode$maybe(
-		A2(
-			$elm$json$Json$Decode$field,
-			'filteredLocationTypes',
-			$elm$json$Json$Decode$dict($elm$json$Json$Decode$bool))),
-	$elm$json$Json$Decode$maybe(
-		A2($elm$json$Json$Decode$field, 'itemSpacing', $elm$json$Json$Decode$int)),
-	$elm$json$Json$Decode$maybe(
-		A2($elm$json$Json$Decode$field, 'distanceDetail', $elm$json$Json$Decode$int)));
+var $author$project$Main$storedStateDecoder = function (fieldNames) {
+	return A7(
+		$elm$json$Json$Decode$map6,
+		$author$project$Main$StoredState,
+		$elm$json$Json$Decode$maybe(
+			A2(
+				$elm$json$Json$Decode$field,
+				fieldNames.waypoints,
+				$author$project$Main$decodeWaypoints(fieldNames))),
+		$elm$json$Json$Decode$maybe(
+			A2($elm$json$Json$Decode$field, fieldNames.totalDistanceDisplay, $elm$json$Json$Decode$string)),
+		$elm$json$Json$Decode$maybe(
+			A2($elm$json$Json$Decode$field, fieldNames.locationFilterEnabled, $elm$json$Json$Decode$bool)),
+		$elm$json$Json$Decode$maybe(
+			A2(
+				$elm$json$Json$Decode$field,
+				fieldNames.filteredLocationTypes,
+				$elm$json$Json$Decode$dict($elm$json$Json$Decode$bool))),
+		$elm$json$Json$Decode$maybe(
+			A2($elm$json$Json$Decode$field, fieldNames.itemSpacing, $elm$json$Json$Decode$int)),
+		$elm$json$Json$Decode$maybe(
+			A2($elm$json$Json$Decode$field, fieldNames.distanceDetail, $elm$json$Json$Decode$int)));
+};
 var $author$project$Main$initialFilteredLocations = function (waypoints) {
 	return $elm$core$Dict$fromList(
 		A2(
@@ -9178,26 +9187,27 @@ var $elm$json$Json$Encode$object = function (pairs) {
 			pairs));
 };
 var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$Main$encodeWaypoints = function (waypoints) {
-	return A2(
-		$elm$json$Json$Encode$list,
-		function (waypoint) {
-			return $elm$json$Json$Encode$object(
-				_List_fromArray(
-					[
-						_Utils_Tuple2(
-						'name',
-						$elm$json$Json$Encode$string(waypoint.name)),
-						_Utils_Tuple2(
-						'distance',
-						$elm$json$Json$Encode$float(waypoint.distance)),
-						_Utils_Tuple2(
-						'typ',
-						$elm$json$Json$Encode$string(waypoint.typ))
-					]));
-		},
-		waypoints);
-};
+var $author$project$Main$encodeWaypoints = F2(
+	function (fieldNames, waypoints) {
+		return A2(
+			$elm$json$Json$Encode$list,
+			function (waypoint) {
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							fieldNames.waypointName,
+							$elm$json$Json$Encode$string(waypoint.name)),
+							_Utils_Tuple2(
+							fieldNames.waypointDistance,
+							$elm$json$Json$Encode$float(waypoint.distance)),
+							_Utils_Tuple2(
+							fieldNames.waypointType,
+							$elm$json$Json$Encode$string(waypoint.typ))
+						]));
+			},
+			waypoints);
+	});
 var $author$project$Main$formatTotalDistanceDisplay = function (v) {
 	switch (v.$) {
 		case 'FromZero':
@@ -9210,43 +9220,47 @@ var $author$project$Main$formatTotalDistanceDisplay = function (v) {
 };
 var $elm$json$Json$Encode$int = _Json_wrap;
 var $elm$json$Json$Encode$null = _Json_encodeNull;
-var $author$project$Main$storeState = _Platform_outgoingPort('storeState', $elm$json$Json$Encode$string);
-var $author$project$Main$storeModel = function (model) {
-	return $author$project$Main$storeState(
-		A2(
+var $author$project$Main$encodeSavedState = F2(
+	function (fieldNames, model) {
+		return A2(
 			$elm$json$Json$Encode$encode,
 			0,
 			$elm$json$Json$Encode$object(
 				_List_fromArray(
 					[
 						_Utils_Tuple2(
-						'waypoints',
+						fieldNames.waypoints,
 						A2(
 							$elm$core$Maybe$withDefault,
 							$elm$json$Json$Encode$null,
-							A2($elm$core$Maybe$map, $author$project$Main$encodeWaypoints, model.waypoints))),
+							A2(
+								$elm$core$Maybe$map,
+								$author$project$Main$encodeWaypoints(fieldNames),
+								model.waypoints))),
 						_Utils_Tuple2(
-						'totalDistanceDisplay',
+						fieldNames.totalDistanceDisplay,
 						$elm$json$Json$Encode$string(
 							$author$project$Main$formatTotalDistanceDisplay(model.routeViewOptions.totalDistanceDisplay))),
 						_Utils_Tuple2(
-						'distanceDetail',
+						fieldNames.distanceDetail,
 						$elm$json$Json$Encode$int(model.routeViewOptions.distanceDetail)),
 						_Utils_Tuple2(
-						'locationFilterEnabled',
+						fieldNames.locationFilterEnabled,
 						$elm$json$Json$Encode$bool(model.waypointOptions.locationFilterEnabled)),
 						_Utils_Tuple2(
-						'filteredLocationTypes',
+						fieldNames.filteredLocationTypes,
 						A3($elm$json$Json$Encode$dict, $elm$core$Basics$identity, $elm$json$Json$Encode$bool, model.waypointOptions.filteredLocationTypes)),
 						_Utils_Tuple2(
-						'itemSpacing',
+						fieldNames.itemSpacing,
 						$elm$json$Json$Encode$int(model.routeViewOptions.itemSpacing))
-					]))));
-};
+					])));
+	});
+var $author$project$Main$storeState = _Platform_outgoingPort('storeState', $elm$json$Json$Encode$string);
 var $author$project$Main$updateModel = function (model) {
+	var localStoredState = A2($author$project$Main$encodeSavedState, $author$project$Main$longFieldNames, model);
 	return _Utils_Tuple2(
 		model,
-		$author$project$Main$storeModel(model));
+		$author$project$Main$storeState(localStoredState));
 };
 var $elm$core$Result$withDefault = F2(
 	function (def, result) {
@@ -9263,7 +9277,8 @@ var $author$project$Main$init = F3(
 			$elm$core$Maybe$andThen,
 			A2(
 				$elm$core$Basics$composeR,
-				$elm$json$Json$Decode$decodeString($author$project$Main$storedStateDecoder),
+				$elm$json$Json$Decode$decodeString(
+					$author$project$Main$storedStateDecoder($author$project$Main$shortFieldNames)),
 				$elm$core$Result$toMaybe),
 			A2(
 				$elm$core$Maybe$andThen,
@@ -9308,7 +9323,8 @@ var $author$project$Main$init = F3(
 						$elm$core$Maybe$map,
 						A2(
 							$elm$core$Basics$composeR,
-							$elm$json$Json$Decode$decodeValue($author$project$Main$storedStateDecoder),
+							$elm$json$Json$Decode$decodeValue(
+								$author$project$Main$storedStateDecoder($author$project$Main$longFieldNames)),
 							A2(
 								$elm$core$Basics$composeR,
 								$elm$core$Result$withDefault(

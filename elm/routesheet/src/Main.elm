@@ -108,7 +108,7 @@ init maybeState url _ =
                 -- example from https://package.elm-lang.org/packages/folkertdev/elm-flate/latest/Flate
                 |> Maybe.andThen (\buf -> Bytes.Decode.decode (Bytes.Decode.string (Bytes.width buf)) buf)
                 -- TODO: handle decode error
-                |> Maybe.andThen (Json.Decode.decodeString storedStateDecoder >> Result.toMaybe)
+                |> Maybe.andThen (Json.Decode.decodeString (storedStateDecoder shortFieldNames) >> Result.toMaybe)
     in
     case queryState of
         Just model ->
@@ -117,7 +117,7 @@ init maybeState url _ =
         Nothing ->
             maybeState
                 |> Maybe.map
-                    (Json.Decode.decodeValue storedStateDecoder
+                    (Json.Decode.decodeValue (storedStateDecoder longFieldNames)
                         >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
                         >> storedStateModel
                     )
@@ -254,7 +254,11 @@ decodeCSV =
 
 updateModel : Model -> ( Model, Cmd Msg )
 updateModel model =
-    ( model, storeModel model )
+    let
+        localStoredState =
+            encodeSavedState longFieldNames model
+    in
+    ( model, storeState localStoredState )
 
 
 updateCSVDecodeModel : Model -> Result Csv.Decode.Error (List Waypoint) -> ( Model, Cmd Msg )
@@ -781,49 +785,95 @@ defaultDistanceDetail =
 -- in the records of the Model to ensure that deserialising works as expected.
 
 
-storeModel : Model -> Cmd msg
-storeModel model =
+type alias StoredStateCodeFields =
+    { waypoints : String
+    , waypointName : String
+    , waypointDistance : String
+    , waypointType : String
+    , totalDistanceDisplay : String
+    , distanceDetail : String
+    , locationFilterEnabled : String
+    , filteredLocationTypes : String
+    , itemSpacing : String
+    }
+
+
+longFieldNames : StoredStateCodeFields
+longFieldNames =
+    { waypoints = "waypoints"
+    , waypointName = "name"
+    , waypointDistance = "distance"
+    , waypointType = "typ"
+    , totalDistanceDisplay = "totalDistanceDisplay"
+    , distanceDetail = "distanceDetail"
+    , locationFilterEnabled = "locationFilterEnabled"
+    , filteredLocationTypes = "filteredLocationTypes"
+    , itemSpacing = "itemSpacing"
+    }
+
+
+{-| shortFieldNames are used within the QR code to reduce the payload size,
+as when the state is transferred as a query param it's easy to overload
+the server used under the hood for jekyll and get the following error
+which results in a 404:
+ERROR WEBrick::HTTPStatus::RequestURITooLarge
+-}
+shortFieldNames : StoredStateCodeFields
+shortFieldNames =
+    { waypoints = "w"
+    , waypointName = "n"
+    , waypointDistance = "d"
+    , waypointType = "t"
+    , totalDistanceDisplay = "tdd"
+    , distanceDetail = "dd"
+    , locationFilterEnabled = "lfe"
+    , filteredLocationTypes = "flt"
+    , itemSpacing = "is"
+    }
+
+
+encodeSavedState : StoredStateCodeFields -> Model -> String
+encodeSavedState fieldNames model =
     Json.Encode.object
-        [ ( "waypoints", model.waypoints |> Maybe.map encodeWaypoints |> Maybe.withDefault Json.Encode.null )
-        , ( "totalDistanceDisplay", Json.Encode.string <| formatTotalDistanceDisplay model.routeViewOptions.totalDistanceDisplay )
-        , ( "distanceDetail", Json.Encode.int model.routeViewOptions.distanceDetail )
-        , ( "locationFilterEnabled", Json.Encode.bool model.waypointOptions.locationFilterEnabled )
-        , ( "filteredLocationTypes", Json.Encode.dict identity Json.Encode.bool model.waypointOptions.filteredLocationTypes )
-        , ( "itemSpacing", Json.Encode.int model.routeViewOptions.itemSpacing )
+        [ ( fieldNames.waypoints, model.waypoints |> Maybe.map (encodeWaypoints fieldNames) |> Maybe.withDefault Json.Encode.null )
+        , ( fieldNames.totalDistanceDisplay, Json.Encode.string <| formatTotalDistanceDisplay model.routeViewOptions.totalDistanceDisplay )
+        , ( fieldNames.distanceDetail, Json.Encode.int model.routeViewOptions.distanceDetail )
+        , ( fieldNames.locationFilterEnabled, Json.Encode.bool model.waypointOptions.locationFilterEnabled )
+        , ( fieldNames.filteredLocationTypes, Json.Encode.dict identity Json.Encode.bool model.waypointOptions.filteredLocationTypes )
+        , ( fieldNames.itemSpacing, Json.Encode.int model.routeViewOptions.itemSpacing )
         ]
         |> Json.Encode.encode 0
-        |> storeState
 
 
-storedStateDecoder : Json.Decode.Decoder StoredState
-storedStateDecoder =
+storedStateDecoder : StoredStateCodeFields -> Json.Decode.Decoder StoredState
+storedStateDecoder fieldNames =
     Json.Decode.map6 StoredState
-        (Json.Decode.maybe (Json.Decode.field "waypoints" decodeWaypoints))
-        (Json.Decode.maybe (Json.Decode.field "totalDistanceDisplay" Json.Decode.string))
-        (Json.Decode.maybe (Json.Decode.field "locationFilterEnabled" Json.Decode.bool))
-        (Json.Decode.maybe (Json.Decode.field "filteredLocationTypes" (Json.Decode.dict Json.Decode.bool)))
-        (Json.Decode.maybe (Json.Decode.field "itemSpacing" Json.Decode.int))
-        (Json.Decode.maybe (Json.Decode.field "distanceDetail" Json.Decode.int))
+        (Json.Decode.maybe (Json.Decode.field fieldNames.waypoints (decodeWaypoints fieldNames)))
+        (Json.Decode.maybe (Json.Decode.field fieldNames.totalDistanceDisplay Json.Decode.string))
+        (Json.Decode.maybe (Json.Decode.field fieldNames.locationFilterEnabled Json.Decode.bool))
+        (Json.Decode.maybe (Json.Decode.field fieldNames.filteredLocationTypes (Json.Decode.dict Json.Decode.bool)))
+        (Json.Decode.maybe (Json.Decode.field fieldNames.itemSpacing Json.Decode.int))
+        (Json.Decode.maybe (Json.Decode.field fieldNames.distanceDetail Json.Decode.int))
 
 
-decodeWaypoints : Json.Decode.Decoder (List Waypoint)
-decodeWaypoints =
+decodeWaypoints : StoredStateCodeFields -> Json.Decode.Decoder (List Waypoint)
+decodeWaypoints fieldNames =
     Json.Decode.list
         (Json.Decode.map3 Waypoint
-            (Json.Decode.field "name" Json.Decode.string)
-            (Json.Decode.field "distance" Json.Decode.float)
-            (Json.Decode.field "typ" Json.Decode.string)
+            (Json.Decode.field fieldNames.waypointName Json.Decode.string)
+            (Json.Decode.field fieldNames.waypointDistance Json.Decode.float)
+            (Json.Decode.field fieldNames.waypointType Json.Decode.string)
         )
 
 
-encodeWaypoints : List Waypoint -> Json.Encode.Value
-encodeWaypoints waypoints =
+encodeWaypoints : StoredStateCodeFields -> List Waypoint -> Json.Encode.Value
+encodeWaypoints fieldNames waypoints =
     Json.Encode.list
         (\waypoint ->
             Json.Encode.object
-                [ ( "name", Json.Encode.string waypoint.name )
-                , ( "distance", Json.Encode.float waypoint.distance )
-                , ( "typ", Json.Encode.string waypoint.typ )
+                [ ( fieldNames.waypointName, Json.Encode.string waypoint.name )
+                , ( fieldNames.waypointDistance, Json.Encode.float waypoint.distance )
+                , ( fieldNames.waypointType, Json.Encode.string waypoint.typ )
                 ]
         )
         waypoints
