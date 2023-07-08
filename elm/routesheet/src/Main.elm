@@ -62,6 +62,7 @@ type alias StoredState =
 type alias Model =
     { waypoints : Maybe (List Waypoint)
     , csvDecodeError : Maybe String
+    , showOptions : Bool
     , waypointOptions : WaypointsOptions
     , routeViewOptions : RouteViewOptions
     , showQR : Bool
@@ -126,7 +127,7 @@ init maybeState url key =
                         >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
                         >> storedStateModel url
                     )
-                |> Maybe.withDefault (Model Maybe.Nothing Maybe.Nothing (WaypointsOptions False Dict.empty) (RouteViewOptions FromZero defaultSpacing defaultDistanceDetail) False url)
+                |> Maybe.withDefault (Model Maybe.Nothing Maybe.Nothing True (WaypointsOptions False Dict.empty) (RouteViewOptions FromZero defaultSpacing defaultDistanceDetail) False url)
     )
         |> updateModel
         |> Tuple.mapSecond
@@ -144,6 +145,7 @@ storedStateModel : Url.Url -> StoredState -> Model
 storedStateModel url state =
     Model state.waypoints
         Maybe.Nothing
+        True
         (WaypointsOptions
             (state.locationFilterEnabled |> Maybe.withDefault False)
             (state.filteredLocationTypes |> Maybe.withDefault (initialFilteredLocations <| (state.waypoints |> Maybe.withDefault [])))
@@ -160,6 +162,7 @@ storedStateModel url state =
 type Msg
     = Never
     | TypeEnabled String Bool
+    | ShowOptions Bool
     | UpdateTotalDistanceDisplay (Maybe TotalDistanceDisplay)
     | UpdateWaypointSelection (Maybe Bool)
     | UpdateItemSpacing Int
@@ -196,6 +199,9 @@ update msg model =
                     { model | waypointOptions = { options | filteredLocationTypes = Dict.insert typ enabled model.waypointOptions.filteredLocationTypes } }
             in
             updateModel newModel
+
+        ShowOptions show ->
+            ( { model | showOptions = show }, Cmd.none )
 
         UpdateTotalDistanceDisplay maybeSelection ->
             maybeSelection
@@ -302,7 +308,7 @@ initialModel routeViewOptions waypoints url =
         sortedWaypoint =
             List.sortBy .distance waypoints
     in
-    Model (Maybe.Just sortedWaypoint) Maybe.Nothing (initialWaypointOptions sortedWaypoint) routeViewOptions False url
+    Model (Maybe.Just sortedWaypoint) Maybe.Nothing True (initialWaypointOptions sortedWaypoint) routeViewOptions False url
 
 
 
@@ -402,7 +408,7 @@ view model =
                             , Html.Attributes.class "page"
                             , Html.Attributes.style "height" "100%"
                             ]
-                            [ viewOptions model.waypointOptions model.routeViewOptions model.csvDecodeError
+                            [ viewOptions model.showOptions model.waypointOptions model.routeViewOptions model.csvDecodeError
                             , Html.div
                                 [ Html.Attributes.class "flex-container"
                                 , Html.Attributes.class "column"
@@ -541,8 +547,8 @@ optionGroup title elements =
         (Html.legend [] [ Html.text title ] :: elements)
 
 
-viewOptions : WaypointsOptions -> RouteViewOptions -> Maybe String -> Html Msg
-viewOptions waypointOptions routeViewOptions decodeError =
+viewOptions : Bool -> WaypointsOptions -> RouteViewOptions -> Maybe String -> Html Msg
+viewOptions show waypointOptions routeViewOptions decodeError =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "column"
@@ -550,117 +556,127 @@ viewOptions waypointOptions routeViewOptions decodeError =
         , Html.Attributes.style "overflow" "auto"
         , Html.Attributes.class "narrow"
         ]
-        (List.concat
-            [ [ Html.div [ Html.Attributes.class "options" ] <|
-                    [ Html.h2 [] [ Html.text "Options" ]
-                    , Html.hr [] []
-                    , optionGroup "Waypoint types"
-                        (Dropdown.dropdown
-                            (Dropdown.Options
-                                [ Dropdown.Item "all" "all" True
-                                , Dropdown.Item "filtered" "filtered" True
-                                ]
-                                Maybe.Nothing
-                                (Maybe.map
-                                    (\selection ->
-                                        case selection of
-                                            "all" ->
-                                                Maybe.Just False
-
-                                            "filtered" ->
-                                                Maybe.Just True
-
-                                            _ ->
-                                                Maybe.Nothing
-                                    )
-                                    >> Maybe.withDefault Maybe.Nothing
-                                    >> UpdateWaypointSelection
-                                )
-                            )
-                            []
-                            (Maybe.Just <|
-                                if waypointOptions.locationFilterEnabled then
-                                    "filtered"
-
-                                else
-                                    "all"
-                            )
-                            :: (if waypointOptions.locationFilterEnabled then
-                                    [ Html.fieldset []
-                                        (waypointOptions.filteredLocationTypes
-                                            |> Dict.toList
-                                            |> List.map
-                                                (\( typ, included ) ->
-                                                    checkbox included
-                                                        (TypeEnabled typ (not included))
-                                                        (if typ /= "" then
-                                                            typ
-
-                                                         else
-                                                            "unknown"
-                                                        )
-                                                )
-                                        )
-                                    ]
-
-                                else
-                                    []
-                               )
-                        )
-                    , Html.hr [] []
-                    , optionGroup "Total distance"
-                        [ Dropdown.dropdown
-                            (Dropdown.Options
-                                [ Dropdown.Item (formatTotalDistanceDisplay FromZero) (formatTotalDistanceDisplay FromZero) True
-                                , Dropdown.Item (formatTotalDistanceDisplay FromLast) (formatTotalDistanceDisplay FromLast) True
-                                , Dropdown.Item (formatTotalDistanceDisplay None) (formatTotalDistanceDisplay None) True
-                                ]
-                                Maybe.Nothing
-                                (Maybe.map parseTotalDistanceDisplay
-                                    >> Maybe.withDefault Maybe.Nothing
-                                    >> UpdateTotalDistanceDisplay
-                                )
-                            )
-                            []
-                            (Maybe.Just <| formatTotalDistanceDisplay routeViewOptions.totalDistanceDisplay)
-                        ]
-                    , Html.hr [] []
-                    , optionGroup "Spacing"
-                        [ Html.input
-                            [ Html.Attributes.type_ "range"
-                            , Html.Attributes.min "1"
-                            , Html.Attributes.max "50"
-                            , Html.Attributes.value <| String.fromInt routeViewOptions.itemSpacing
-                            , Html.Events.onInput (String.toInt >> Maybe.withDefault defaultSpacing >> UpdateItemSpacing)
-                            ]
-                            []
-                        ]
-                    , Html.hr [] []
-                    , optionGroup "Distance detail"
-                        [ Html.input
-                            [ Html.Attributes.type_ "range"
-                            , Html.Attributes.min "0"
-                            , Html.Attributes.max "3"
-                            , Html.Attributes.value <| String.fromInt routeViewOptions.distanceDetail
-                            , Html.Events.onInput (String.toInt >> Maybe.withDefault defaultDistanceDetail >> UpdateDistanceDetail)
-                            ]
-                            []
-                        ]
-                    , Html.hr [] []
-                    , Html.div
-                        [ Html.Attributes.class "flex-container"
-                        , Html.Attributes.class "column"
-                        , Html.Attributes.style "justify-content" "center"
-                        , Html.Attributes.style "align-items" "center"
-                        ]
-                        [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "upload waypoints" OpenFileBrowser
-                        , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "clear" ClearWaypoints
-                        , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "share / send to device" ShowQR
-                        ]
-                    ]
-              ]
-            , decodeError |> Maybe.map (\err -> [ Html.br [] [], viewCSVDecodeErrorPanel err ]) |> Maybe.withDefault [ Html.div [] [] ]
+        (if not show then
+            [ Html.p
+                [ Html.Events.onClick <| ShowOptions True
+                , Html.Attributes.style "transform" "rotate(90deg)"
+                ]
+                [ Html.text "(show options)" ]
             ]
+
+         else
+            List.concat
+                [ [ Html.div [ Html.Attributes.class "options" ] <|
+                        [ Html.h2 [] [ Html.text "Options" ]
+                        , Html.p [ Html.Events.onClick <| ShowOptions False ] [ Html.text "(hide)" ]
+                        , Html.hr [] []
+                        , optionGroup "Waypoint types"
+                            (Dropdown.dropdown
+                                (Dropdown.Options
+                                    [ Dropdown.Item "all" "all" True
+                                    , Dropdown.Item "filtered" "filtered" True
+                                    ]
+                                    Maybe.Nothing
+                                    (Maybe.map
+                                        (\selection ->
+                                            case selection of
+                                                "all" ->
+                                                    Maybe.Just False
+
+                                                "filtered" ->
+                                                    Maybe.Just True
+
+                                                _ ->
+                                                    Maybe.Nothing
+                                        )
+                                        >> Maybe.withDefault Maybe.Nothing
+                                        >> UpdateWaypointSelection
+                                    )
+                                )
+                                []
+                                (Maybe.Just <|
+                                    if waypointOptions.locationFilterEnabled then
+                                        "filtered"
+
+                                    else
+                                        "all"
+                                )
+                                :: (if waypointOptions.locationFilterEnabled then
+                                        [ Html.fieldset []
+                                            (waypointOptions.filteredLocationTypes
+                                                |> Dict.toList
+                                                |> List.map
+                                                    (\( typ, included ) ->
+                                                        checkbox included
+                                                            (TypeEnabled typ (not included))
+                                                            (if typ /= "" then
+                                                                typ
+
+                                                             else
+                                                                "unknown"
+                                                            )
+                                                    )
+                                            )
+                                        ]
+
+                                    else
+                                        []
+                                   )
+                            )
+                        , Html.hr [] []
+                        , optionGroup "Total distance"
+                            [ Dropdown.dropdown
+                                (Dropdown.Options
+                                    [ Dropdown.Item (formatTotalDistanceDisplay FromZero) (formatTotalDistanceDisplay FromZero) True
+                                    , Dropdown.Item (formatTotalDistanceDisplay FromLast) (formatTotalDistanceDisplay FromLast) True
+                                    , Dropdown.Item (formatTotalDistanceDisplay None) (formatTotalDistanceDisplay None) True
+                                    ]
+                                    Maybe.Nothing
+                                    (Maybe.map parseTotalDistanceDisplay
+                                        >> Maybe.withDefault Maybe.Nothing
+                                        >> UpdateTotalDistanceDisplay
+                                    )
+                                )
+                                []
+                                (Maybe.Just <| formatTotalDistanceDisplay routeViewOptions.totalDistanceDisplay)
+                            ]
+                        , Html.hr [] []
+                        , optionGroup "Spacing"
+                            [ Html.input
+                                [ Html.Attributes.type_ "range"
+                                , Html.Attributes.min "1"
+                                , Html.Attributes.max "50"
+                                , Html.Attributes.value <| String.fromInt routeViewOptions.itemSpacing
+                                , Html.Events.onInput (String.toInt >> Maybe.withDefault defaultSpacing >> UpdateItemSpacing)
+                                ]
+                                []
+                            ]
+                        , Html.hr [] []
+                        , optionGroup "Distance detail"
+                            [ Html.input
+                                [ Html.Attributes.type_ "range"
+                                , Html.Attributes.min "0"
+                                , Html.Attributes.max "3"
+                                , Html.Attributes.value <| String.fromInt routeViewOptions.distanceDetail
+                                , Html.Events.onInput (String.toInt >> Maybe.withDefault defaultDistanceDetail >> UpdateDistanceDetail)
+                                ]
+                                []
+                            ]
+                        , Html.hr [] []
+                        , Html.div
+                            [ Html.Attributes.class "flex-container"
+                            , Html.Attributes.class "column"
+                            , Html.Attributes.style "justify-content" "center"
+                            , Html.Attributes.style "align-items" "center"
+                            ]
+                            [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "upload waypoints" OpenFileBrowser
+                            , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "clear" ClearWaypoints
+                            , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "share / send to device" ShowQR
+                            ]
+                        ]
+                  ]
+                , decodeError |> Maybe.map (\err -> [ Html.br [] [], viewCSVDecodeErrorPanel err ]) |> Maybe.withDefault [ Html.div [] [] ]
+                ]
         )
 
 

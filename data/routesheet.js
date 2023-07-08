@@ -5672,9 +5672,9 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$application = _Browser_application;
 var $author$project$Main$FromZero = {$: 'FromZero'};
-var $author$project$Main$Model = F6(
-	function (waypoints, csvDecodeError, waypointOptions, routeViewOptions, showQR, url) {
-		return {csvDecodeError: csvDecodeError, routeViewOptions: routeViewOptions, showQR: showQR, url: url, waypointOptions: waypointOptions, waypoints: waypoints};
+var $author$project$Main$Model = F7(
+	function (waypoints, csvDecodeError, showOptions, waypointOptions, routeViewOptions, showQR, url) {
+		return {csvDecodeError: csvDecodeError, routeViewOptions: routeViewOptions, showOptions: showOptions, showQR: showQR, url: url, waypointOptions: waypointOptions, waypoints: waypoints};
 	});
 var $author$project$Main$RouteViewOptions = F3(
 	function (totalDistanceDisplay, itemSpacing, distanceDetail) {
@@ -9027,10 +9027,11 @@ var $author$project$Main$parseTotalDistanceDisplay = function (v) {
 };
 var $author$project$Main$storedStateModel = F2(
 	function (url, state) {
-		return A6(
+		return A7(
 			$author$project$Main$Model,
 			state.waypoints,
 			$elm$core$Maybe$Nothing,
+			true,
 			A2(
 				$author$project$Main$WaypointsOptions,
 				A2($elm$core$Maybe$withDefault, false, state.locationFilterEnabled),
@@ -9500,10 +9501,11 @@ var $author$project$Main$init = F3(
 					} else {
 						return A2(
 							$elm$core$Maybe$withDefault,
-							A6(
+							A7(
 								$author$project$Main$Model,
 								$elm$core$Maybe$Nothing,
 								$elm$core$Maybe$Nothing,
+								true,
 								A2($author$project$Main$WaypointsOptions, false, $elm$core$Dict$empty),
 								A3($author$project$Main$RouteViewOptions, $author$project$Main$FromZero, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail),
 								false,
@@ -10641,10 +10643,11 @@ var $author$project$Main$initialModel = F3(
 				return $.distance;
 			},
 			waypoints);
-		return A6(
+		return A7(
 			$author$project$Main$Model,
 			$elm$core$Maybe$Just(sortedWaypoint),
 			$elm$core$Maybe$Nothing,
+			true,
 			$author$project$Main$initialWaypointOptions(sortedWaypoint),
 			routeViewOptions,
 			false,
@@ -10685,6 +10688,13 @@ var $author$project$Main$update = F2(
 							})
 					});
 				return $author$project$Main$updateModel(newModel);
+			case 'ShowOptions':
+				var show = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{showOptions: show}),
+					$elm$core$Platform$Cmd$none);
 			case 'UpdateTotalDistanceDisplay':
 				var maybeSelection = msg.a;
 				return A2(
@@ -17696,6 +17706,9 @@ var $abadi199$elm_input_extra$Dropdown$Options = F3(
 	function (items, emptyItem, onChange) {
 		return {emptyItem: emptyItem, items: items, onChange: onChange};
 	});
+var $author$project$Main$ShowOptions = function (a) {
+	return {$: 'ShowOptions', a: a};
+};
 var $author$project$Main$ShowQR = {$: 'ShowQR'};
 var $author$project$Main$TypeEnabled = F2(
 	function (a, b) {
@@ -17907,8 +17920,8 @@ var $author$project$Main$viewCSVDecodeErrorPanel = function (error) {
 	return $author$project$Main$viewErrorPanel(
 		'There was an error decoding your CSV. Please fix any error and try again 😇\n\nThe first few errors can be seen below.\n\n' + (A2($elm$core$String$left, 1000, error) + '...'));
 };
-var $author$project$Main$viewOptions = F3(
-	function (waypointOptions, routeViewOptions, decodeError) {
+var $author$project$Main$viewOptions = F4(
+	function (show, waypointOptions, routeViewOptions, decodeError) {
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -17919,7 +17932,21 @@ var $author$project$Main$viewOptions = F3(
 					A2($elm$html$Html$Attributes$style, 'overflow', 'auto'),
 					$elm$html$Html$Attributes$class('narrow')
 				]),
-			$elm$core$List$concat(
+			(!show) ? _List_fromArray(
+				[
+					A2(
+					$elm$html$Html$p,
+					_List_fromArray(
+						[
+							$elm$html$Html$Events$onClick(
+							$author$project$Main$ShowOptions(true)),
+							A2($elm$html$Html$Attributes$style, 'transform', 'rotate(90deg)')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('(show options)')
+						]))
+				]) : $elm$core$List$concat(
 				_List_fromArray(
 					[
 						_List_fromArray(
@@ -17938,6 +17965,17 @@ var $author$project$Main$viewOptions = F3(
 									_List_fromArray(
 										[
 											$elm$html$Html$text('Options')
+										])),
+									A2(
+									$elm$html$Html$p,
+									_List_fromArray(
+										[
+											$elm$html$Html$Events$onClick(
+											$author$project$Main$ShowOptions(false))
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('(hide)')
 										])),
 									A2($elm$html$Html$hr, _List_Nil, _List_Nil),
 									A2(
@@ -18658,7 +18696,7 @@ var $author$project$Main$view = function (model) {
 								]),
 							_List_fromArray(
 								[
-									A3($author$project$Main$viewOptions, model.waypointOptions, model.routeViewOptions, model.csvDecodeError),
+									A4($author$project$Main$viewOptions, model.showOptions, model.waypointOptions, model.routeViewOptions, model.csvDecodeError),
 									A2(
 									$elm$html$Html$div,
 									_List_fromArray(
