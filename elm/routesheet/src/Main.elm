@@ -479,6 +479,7 @@ welcomePage decodeError =
                     , Html.li [] [ Html.text "Compact or spacious view" ]
                     , Html.li [] [ Html.text "User-defined location types" ]
                     , Html.li [] [ Html.text "Filter location types" ]
+                    , Html.li [] [ Html.text "Design on desktop, send to device" ]
                     , Html.li [] [ Html.text "...and more." ]
                     ]
               , Html.br [] []

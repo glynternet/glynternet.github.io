@@ -18292,6 +18292,13 @@ var $author$project$Main$welcomePage = function (decodeError) {
 								_List_Nil,
 								_List_fromArray(
 									[
+										$elm$html$Html$text('Design on desktop, send to device')
+									])),
+								A2(
+								$elm$html$Html$li,
+								_List_Nil,
+								_List_fromArray(
+									[
 										$elm$html$Html$text('...and more.')
 									]))
 							])),
