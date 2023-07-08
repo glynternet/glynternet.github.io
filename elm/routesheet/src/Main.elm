@@ -332,51 +332,56 @@ view model =
                                 |> Maybe.map (stateUrl model.url)
                                 |> Maybe.map
                                     (\url ->
-                                        QRCode.fromStringWith QRCode.Medium url
-                                            |> Result.map
-                                                (\qr ->
-                                                    [ QRCode.toSvg [ Svg.Attributes.width "500", Svg.Attributes.height "500" ] qr
-                                                    , Html.br [] []
-                                                    , Html.p [] [ Html.text "Scan the QR code above on your device" ]
-                                                    , Html.p [] [ Html.text "and follow the link to load in the current route." ]
-                                                    , Html.br [] []
-                                                    , Html.p [] [ Html.text "Alternatively, copy this link and send to your device through some other means..." ]
-                                                    , Html.br [] []
-                                                    , Html.p
-                                                        [ Html.Attributes.style "word-break" "break-all"
-                                                        , Html.Attributes.style "white-space" "normal"
+                                        -- WEBrick has max URL length of around 2090 (form local testing), picking 1800 as max to be safe
+                                        if String.length url > 1800 then
+                                            [ viewErrorPanel "😞 the URL created for sharing would be too long for the current method,\n\nplease let me know and I will work out a new way to do this!" ]
+
+                                        else
+                                            QRCode.fromStringWith QRCode.Medium url
+                                                |> Result.map
+                                                    (\qr ->
+                                                        [ QRCode.toSvg [ Svg.Attributes.width "500", Svg.Attributes.height "500" ] qr
+                                                        , Html.br [] []
+                                                        , Html.p [] [ Html.text "Scan the QR code above on your device" ]
+                                                        , Html.p [] [ Html.text "and follow the link to load in the current route." ]
+                                                        , Html.br [] []
+                                                        , Html.p [] [ Html.text "Alternatively, copy this link and send to your device through some other means..." ]
+                                                        , Html.br [] []
+                                                        , Html.p
+                                                            [ Html.Attributes.style "word-break" "break-all"
+                                                            , Html.Attributes.style "white-space" "normal"
+                                                            ]
+                                                            [ Html.text url ]
                                                         ]
-                                                        [ Html.text url ]
-                                                    ]
-                                                )
-                                            |> Result.mapError
-                                                (\err ->
-                                                    case err of
-                                                        QRCode.AlignmentPatternNotFound ->
-                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: AlignmentPatternNotFound" ]
+                                                    )
+                                                |> Result.mapError
+                                                    (\err ->
+                                                        case err of
+                                                            QRCode.AlignmentPatternNotFound ->
+                                                                [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: AlignmentPatternNotFound" ]
 
-                                                        QRCode.InvalidNumericChar ->
-                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidNumericChar" ]
+                                                            QRCode.InvalidNumericChar ->
+                                                                [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidNumericChar" ]
 
-                                                        QRCode.InvalidAlphanumericChar ->
-                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidAlphanumericChar" ]
+                                                            QRCode.InvalidAlphanumericChar ->
+                                                                [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidAlphanumericChar" ]
 
-                                                        QRCode.InvalidUTF8Char ->
-                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidUTF8Char" ]
+                                                            QRCode.InvalidUTF8Char ->
+                                                                [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidUTF8Char" ]
 
-                                                        QRCode.LogTableException table ->
-                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: LogTableException" ]
+                                                            QRCode.LogTableException table ->
+                                                                [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: LogTableException" ]
 
-                                                        QRCode.PolynomialMultiplyException ->
-                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: PolynomialMultiplyException" ]
+                                                            QRCode.PolynomialMultiplyException ->
+                                                                [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: PolynomialMultiplyException" ]
 
-                                                        QRCode.PolynomialModException ->
-                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: PolynomialModException" ]
+                                                            QRCode.PolynomialModException ->
+                                                                [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: PolynomialModException" ]
 
-                                                        QRCode.InputLengthOverflow ->
-                                                            [ viewErrorPanel "😞 sadly the data you are using is too large for the current sharing mechanism.\n\nPlease contact me and I will try to rectify the issue!" ]
-                                                )
-                                            |> resultCollect
+                                                            QRCode.InputLengthOverflow ->
+                                                                [ viewErrorPanel "😞 sadly the data you are using is too large for the current sharing mechanism.\n\nPlease contact me and I will try to rectify the issue!" ]
+                                                    )
+                                                |> resultCollect
                                     )
                                 -- error with creating base64 bytes, should never happen according to the docs
                                 |> Maybe.withDefault [ viewErrorPanel "😞 there was an error preparing your QR code, so sorry.\n\nPlease contact me and I will try to rectify the issue!" ]

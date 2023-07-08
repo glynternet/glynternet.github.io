@@ -18537,7 +18537,10 @@ var $author$project$Main$view = function (model) {
 									A2(
 										$elm$core$Maybe$map,
 										function (url) {
-											return $author$project$Main$resultCollect(
+											return ($elm$core$String$length(url) > 1800) ? _List_fromArray(
+												[
+													$author$project$Main$viewErrorPanel('😞 the URL created for sharing would be too long for the current method,\n\nplease let me know and I will work out a new way to do this!')
+												]) : $author$project$Main$resultCollect(
 												A2(
 													$elm$core$Result$mapError,
 													function (err) {
