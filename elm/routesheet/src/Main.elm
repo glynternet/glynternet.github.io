@@ -24,6 +24,7 @@ import String
 import Svg
 import Svg.Attributes
 import Task
+import Time
 import Url exposing (Protocol(..))
 import Url.Builder
 import Url.Parser exposing ((</>), (<?>))
@@ -39,7 +40,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = always <| Time.every 1500 (always Tick)
         , onUrlRequest = \_ -> Never
         , onUrlChange = \_ -> Never
         }
@@ -70,7 +71,7 @@ type alias Model =
 
 
 type Page
-    = WelcomePage
+    = WelcomePage Bool
     | GetStartedPage
     | RoutePage RouteModel
 
@@ -139,7 +140,7 @@ init maybeState url key =
                         >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
                         >> storedStateModel url
                     )
-                |> Maybe.withDefault (Model WelcomePage Maybe.Nothing True (RouteViewOptions FromZero defaultSpacing defaultDistanceDetail) False url)
+                |> Maybe.withDefault (Model (WelcomePage False) Maybe.Nothing True (RouteViewOptions FromZero defaultSpacing defaultDistanceDetail) False url)
     )
         |> updateModel
         |> Tuple.mapSecond
@@ -166,7 +167,7 @@ storedStateModel url state =
                         )
                         |> RoutePage
                 )
-            |> Maybe.withDefault WelcomePage
+            |> Maybe.withDefault (WelcomePage False)
         )
         Maybe.Nothing
         True
@@ -195,6 +196,7 @@ type Msg
     | DownloadDemoData
     | ShowQR
     | CloseQR
+    | Tick
 
 
 initialWaypointOptions : List Waypoint -> WaypointsOptions
@@ -304,6 +306,14 @@ update msg model =
 
         Never ->
             ( model, Cmd.none )
+
+        Tick ->
+            case model.page of
+                WelcomePage val ->
+                    ( { model | page = WelcomePage (not val) }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
 
 updateRouteModel : Model -> RouteModel -> ( Model, Cmd Msg )
@@ -458,8 +468,8 @@ view model =
                             ]
                         ]
 
-            WelcomePage ->
-                welcomePage
+            WelcomePage val ->
+                welcomePage val
 
             GetStartedPage ->
                 getStartedPage model.csvDecodeError
@@ -485,8 +495,8 @@ stateUrl url encodedState =
         }
 
 
-welcomePage : Html Msg
-welcomePage =
+welcomePage : Bool -> Html Msg
+welcomePage toGo =
     let
         climbType =
             "CLIMB"
@@ -546,8 +556,11 @@ welcomePage =
                     , Html.Attributes.class "wide-row-narrow-column"
                     ]
                     (List.map (\( desc, waypointModifier, opts ) -> Html.div [] [ Html.h4 [ Html.Attributes.style "text-align" "center" ] [ Html.text desc ], routeBreakdown (waypointModifier exampleWaypoints) opts ])
-                        [ ( "Distance from zero", identity, RouteViewOptions FromZero defaultSpacing defaultDistanceDetail )
-                        , ( "Distance to go", identity, RouteViewOptions FromLast defaultSpacing defaultDistanceDetail )
+                        [ if toGo then
+                            ( "Distance to go", identity, RouteViewOptions FromLast defaultSpacing defaultDistanceDetail )
+
+                          else
+                            ( "Distance from zero", identity, RouteViewOptions FromZero defaultSpacing defaultDistanceDetail )
                         , ( "Custom location types"
                           , List.map
                                 (\w ->
@@ -740,7 +753,7 @@ viewOptions show waypointOptions routeViewOptions decodeError =
                             , Html.Attributes.style "align-items" "center"
                             ]
                             [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "upload waypoints" OpenFileBrowser
-                            , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "clear" (ShowPage WelcomePage)
+                            , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "clear" (ShowPage <| WelcomePage False)
                             , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "share / send to device" ShowQR
                             ]
                         ]
