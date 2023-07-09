@@ -628,6 +628,8 @@ viewOptions show waypointOptions routeViewOptions decodeError =
             [ Html.p
                 [ Html.Events.onClick <| ShowOptions True
                 , Html.Attributes.style "transform" "rotate(90deg)"
+                , Html.Attributes.style "white-space" "nowrap"
+                , Html.Attributes.style "width" "1em"
                 ]
                 [ Html.text "(show options)" ]
             ]

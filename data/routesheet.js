@@ -18145,7 +18145,9 @@ var $author$project$Main$viewOptions = F4(
 						[
 							$elm$html$Html$Events$onClick(
 							$author$project$Main$ShowOptions(true)),
-							A2($elm$html$Html$Attributes$style, 'transform', 'rotate(90deg)')
+							A2($elm$html$Html$Attributes$style, 'transform', 'rotate(90deg)'),
+							A2($elm$html$Html$Attributes$style, 'white-space', 'nowrap'),
+							A2($elm$html$Html$Attributes$style, 'width', '1em')
 						]),
 					_List_fromArray(
 						[
