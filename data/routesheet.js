@@ -18809,6 +18809,7 @@ var $author$project$Main$welcomePage = function (toGo) {
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						A2($author$project$Main$viewButton, '...play with demo...', $author$project$Main$LoadDemoData),
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						A2(
 						$elm$html$Html$h3,
 						_List_Nil,
@@ -18816,6 +18817,7 @@ var $author$project$Main$welcomePage = function (toGo) {
 							[
 								$elm$html$Html$text('...or see some examples')
 							])),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						A2(
 						$elm$html$Html$div,

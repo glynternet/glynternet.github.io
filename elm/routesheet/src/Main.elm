@@ -535,17 +535,13 @@ welcomePage toGo =
                     ]
               , Html.br [] []
               , Html.br [] []
-
-              --, Html.h3 [] [ Html.text "Get started..." ]
-              --, Html.br [] []
               , viewButton "Get started..." <| ShowPage GetStartedPage
               , Html.br [] []
-
-              --, Html.h3 [] [ Html.text "...play with a demo..." ]
-              --, Html.br [] []
               , viewButton "...play with demo..." LoadDemoData
               , Html.br [] []
+              , Html.br [] []
               , Html.h3 [] [ Html.text "...or see some examples" ]
+              , Html.br [] []
               , Html.br [] []
               , Html.div
                     [ Html.Attributes.style "width" "100%"
