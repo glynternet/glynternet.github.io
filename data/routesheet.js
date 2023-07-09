@@ -17153,7 +17153,7 @@ var $author$project$Main$getStartedPage = function (decodeError) {
 						_List_Nil,
 						_List_fromArray(
 							[
-								$elm$html$Html$text('upload a CSV file with the following columns, including title at top:')
+								$elm$html$Html$text('upload a CSV file with the following columns, including title at top')
 							])),
 						A2(
 						$elm$html$Html$p,

@@ -581,7 +581,7 @@ getStartedPage decodeError =
               , Html.h3 [] [ Html.text "Instructions" ]
               , Html.br [] []
               , Html.p [] [ Html.text "To make your route breakdown," ]
-              , Html.p [] [ Html.text "upload a CSV file with the following columns, including title at top:" ]
+              , Html.p [] [ Html.text "upload a CSV file with the following columns, including title at top" ]
               , Html.p [] [ Html.text "and a row per waypoint:" ]
               , Html.br [] []
               , Html.ul []
