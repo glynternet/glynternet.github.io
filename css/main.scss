@@ -135,14 +135,14 @@ fieldset div {
   font-weight: 500;
   line-height: 20px;
   list-style: none;
-  padding: 6px 16px;
+  padding: 4px 12px;
   position: relative;
   transition: background-color 0.2s cubic-bezier(0.3, 0, 0.5, 1);
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
   vertical-align: middle;
-  word-wrap: break-word;
+  word-wrap: inherit;
 }
 
 .button-4:hover {
