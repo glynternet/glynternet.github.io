@@ -1,0 +1,16 @@
+{
+  "short_name": "{{ page.short_name }}",
+  "name": "{{ page.name_ }}",
+  "description": "{{ page.description }}",
+  "icons": [
+    {
+      "src": "/data/{{ page.icon }}",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ],
+  "start_url": "{{ page.start_url }}",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
+  "display": "fullscreen"
+}
