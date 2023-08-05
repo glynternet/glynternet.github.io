@@ -36,7 +36,7 @@ tags: cycling
 * [Wild Cycling](https://www.goodreads.com/book/show/35099598-wild-cycling)
 * [Really Wild Cycling](https://www.goodreads.com/book/show/54144328-really-wild-cycling)
 * [Big Rides: Great Britain and Ireland](https://www.adventurebooks.com/products/big_rides-_great_britain_-_ireland) - Long-distance road, gravel and MTB rides curated by Kathy Rogers & Markus Stitz.
-* [Great British Gravel Rides](https://www.goodreads.com/book/show/61206527-great-british-gravel-rides) - 25 gravel routes from passionate gravel enthusiasts, curated by Markus Stitz.
+* [Great British Gravel Rides](https://www.goodreads.com/book/show/61206527-great-british-gravel-rides)  [(GPX)](https://www.adventurebooks.com/GBGR-GPX) - 25 gravel routes from passionate gravel enthusiasts, curated by Markus Stitz.
 * [Epic Bike Rides of the World](https://www.goodreads.com/book/show/28236759-epic-bike-rides-of-the-world) - Worldwide bucket-list road rides.
 * [Epic Bike Rides of Europe](https://www.goodreads.com/book/show/50822569-epic-bike-rides-of-europe) - European bucket-list road rides.
 
