@@ -13,7 +13,7 @@ tags: cycling
 * [cycle.travel](https://cycle.travel) - Easily build routes on quiet lanes.
 * [OpenCycleMap](https://www.opencyclemap.org/)
 * [UK National Cycle Network](https://osmaps.ordnancesurvey.co.uk/ncn)
-* [UK National Rail Maps](https://www.nationalrail.co.uk/stations_destinations/rail-maps.aspx)
+* [UK National Rail Maps](https://www.nationalrail.co.uk/travel-information/maps-of-the-national-rail-network/)
 * [Halfway Coffee](http://halfwaycoffee.com/) - Map of cyclist-friendly cafés around the UK.
 * TFL [cycle routes](https://tfl.gov.uk/maps/cycle) and [bikes on trains map](https://content.tfl.gov.uk/cycles-on-public-transport.pdf)
 * [Rail Hike Camp](https://felt.com/map/Rail-Hike-Camp-kv9BQ3TnpTvud8TM43gTqpB) - Campsites close to train stations.
