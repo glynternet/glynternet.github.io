@@ -18,13 +18,24 @@ Take a backup of the current project before starting this.
 
 ### Windows: start an application at startup
 
-`Super + R`, then `shell:startup`
-
-Create batch file to start application, probably like this content
+Create `.bat` file for application, probably like this content
 ```
 cd %USERPROFILE%\avva\APPLICATION\
 APPLICATION.exe
 pause
 ```
 
+#### With popup
+
+`Super + R`, then `shell:startup`
+
 Create shortcut to batch file and move it to the startup directory.
+
+#### Without popup
+
+Open Task Scheduler
+Create basic task
+Configure for startup on login (probably don't need always?)
+Give .bat script as path
+
+https://superuser.com/a/1168592
