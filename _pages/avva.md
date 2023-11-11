@@ -20,6 +20,7 @@ Take a backup of the current project before starting this.
 
 Create `.bat` file for application, probably like this content
 ```
+:: if running as SYSTEM, cannot use %USERPROFILE%
 cd %USERPROFILE%\avva\APPLICATION\
 powershell "./APPLICATION.exe 2>&1 | tee -a APPLICATION.log"
 pause
