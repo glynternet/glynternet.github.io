@@ -21,7 +21,7 @@ Take a backup of the current project before starting this.
 Create `.bat` file for application, probably like this content
 ```
 cd %USERPROFILE%\avva\APPLICATION\
-APPLICATION.exe
+powershell "./APPLICATION.exe 2>&1 | tee -a APPLICATION.log"
 pause
 ```
 
@@ -39,3 +39,5 @@ Configure for startup on login (probably don't need always?)
 Give .bat script as path
 
 https://superuser.com/a/1168592
+
+To debug, enable history: https://pureinfotech.com/enable-task-scheduler-history-windows-11/
