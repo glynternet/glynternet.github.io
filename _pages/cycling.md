@@ -7,7 +7,8 @@ tags: cycling
 
 # 🚴
 
-[🗺️](/cycling/routes)
+[🧭](/cycling/routes)
+[🗺️](/cycling/maps)
 [🍌](/cycling/nutrition)
 [☕](/data/halfway-coffee.gpx)
 [🛠️](/cycling/tools)

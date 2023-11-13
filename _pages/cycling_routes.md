@@ -8,19 +8,23 @@ tags: cycling
 ## 🛠️🗜️ Route-design tools/resources 🪚🪛
 
 ### Websites
-* [Free Open-source Garmin maps](https://garmin3.bbbike.org/)
 * [Bifurkate](http://bifurkate.com/) - Build custom maps of strava activities, with clickable links. Really good for finding old activities that you can't quite remember the names of but you can kind of remember the time range that you did it in.
 * [cycle.travel](https://cycle.travel) - Easily build routes on quiet lanes.
 * [OpenCycleMap](https://www.opencyclemap.org/)
-* [UK National Cycle Network](https://osmaps.ordnancesurvey.co.uk/ncn)
-* [UK National Rail Maps](https://www.nationalrail.co.uk/travel-information/maps-of-the-national-rail-network/)
 * [Halfway Coffee](http://halfwaycoffee.com/) - Map of cyclist-friendly cafés around the UK.
-* TFL [cycle routes](https://tfl.gov.uk/maps/cycle) and [bikes on trains map](https://content.tfl.gov.uk/cycles-on-public-transport.pdf)
 * [Rail Hike Camp](https://felt.com/map/Rail-Hike-Camp-kv9BQ3TnpTvud8TM43gTqpB) - Campsites close to train stations.
-* [Fastest known times (UK)](https://fastestknowntimes.org.uk/) - FKTs for long distance multi-terrain cycling routes throughout the UK. Useful for list of named routes.
 * [Fastest known times](https://www.cyclingfkt.com/fkts.html) - FKTs for long distance multi-terrain cycling routes throughout the world. Useful for list of named routes.
 * [Trailforks](https://www.trailforks.com/trails/map/) - MTB trails to spice up a ride.
 * [Parkopedia](https://www.parkopedia.com/) - Parking spots with opening times and prices.
+
+#### Open source maps
+* [Free Open-source Garmin maps](https://garmin3.bbbike.org/)
+
+#### UK
+* [Fastest known times (UK)](https://fastestknowntimes.org.uk/) - FKTs for long distance multi-terrain cycling routes throughout the UK. Useful for list of named routes.
+* TFL [cycle routes](https://tfl.gov.uk/maps/cycle) and [bikes on trains map](https://content.tfl.gov.uk/cycles-on-public-transport.pdf)
+* [UK National Cycle Network](https://osmaps.ordnancesurvey.co.uk/ncn)
+* [UK National Rail Maps](https://www.nationalrail.co.uk/travel-information/maps-of-the-national-rail-network/)
 
 ### Event & event sites
 * [Audax UK](https://audax.uk/)
