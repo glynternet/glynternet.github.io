@@ -9,7 +9,7 @@ tags: cycling
 
 ### Websites
 * [Bifurkate](http://bifurkate.com/) - Build custom maps of strava activities, with clickable links. Really good for finding old activities that you can't quite remember the names of but you can kind of remember the time range that you did it in.
-* [cycle.travel](https://cycle.travel) - Easily build routes on quiet lanes.
+* [BRouter](https://brouter.de/brouter-web/) - Route planner with many many configuration options.
 * [OpenCycleMap](https://www.opencyclemap.org/)
 * [Halfway Coffee](http://halfwaycoffee.com/) - Map of cyclist-friendly cafés around the UK.
 * [Rail Hike Camp](https://felt.com/map/Rail-Hike-Camp-kv9BQ3TnpTvud8TM43gTqpB) - Campsites close to train stations.
