@@ -9,20 +9,13 @@ tags: cycling
 
 ### Essentials
 - Pump
-- Presta Schrader adapter
-- Tyre boot
 - Tyre levers
 - Hex keys
 - Torx driver
 - Screwdriver
 - Quick link(s)
-- Chain tool
-- Super glue
-- Zip tie
-- Gear cable end [(for this)](https://electricbikeaction.com/bike-hacks-how-to-survive-with-a-broken-derailleur-cable/)
-- Power meter battery
-- Lube
-- Dust cap
+- Chain tool/breaker
+- Gear cable end (for this)
 - Lint-free cloth / blue roll
 - Spoke tool
 
@@ -36,12 +29,26 @@ tags: cycling
 - Tubeless plug kit w/ blade for excess
 - Tubeless sealant
 
-### Extended
-- Derailleur hanger
+### Extended / Comprehensive
+- Power meter battery
+- Chain lube
+- Dust cap
+- Super glue
+- Zip tie
+- Presta Schrader adapter
+- Tyre boot
 - Needle & thread
+- Gaffer or duct tape
+- Electrical tape
+- Safety pin
+- Emergency suncream
+
+### Touring / bikepacking
 - Spare brake pads
 - Spare cleats
-- Gaffer or duct tape
+- Chain link removal tool
+- Emergency phone holder setup
+- Derailleur hanger
 
 ### Other people's lists and guidance
 - [Huli "tools map"](https://www.huli.life/post/the-tools-map)
