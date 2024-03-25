@@ -29,7 +29,7 @@
     'vendor/highlight';
 
 /**
- * ALL STUFF SPECIFIC FOR ROUTESHEET PAGE THAT MAY NEED MAKING ONLY AVAILABLE THERE
+ * ALL STUFF SPECIFIC FOR CUESHEET PAGE THAT MAY NEED MAKING ONLY AVAILABLE THERE
  */
 
  fieldset {
@@ -91,14 +91,14 @@
 }
 
 @media screen {
-  .route_breakdown {
+  .cuesheet {
     padding: 10px;
     overflow: auto;
   }
 }
 
 @media print {
-  .route_breakdown {
+  .cuesheet {
     overflow: visible;
   }
 }

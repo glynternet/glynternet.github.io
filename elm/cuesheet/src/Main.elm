@@ -64,7 +64,7 @@ type alias Model =
     { page : Page
     , csvDecodeError : Maybe String
     , showOptions : Bool
-    , routeViewOptions : RouteViewOptions
+    , cuesViewOptions : CuesViewOptions
     , showQR : Bool
     , url : Url.Url
     }
@@ -73,10 +73,10 @@ type alias Model =
 type Page
     = WelcomePage Bool
     | GetStartedPage
-    | RoutePage RouteModel
+    | CuesheetPage CuesModel
 
 
-type alias RouteModel =
+type alias CuesModel =
     { waypoints : List Waypoint
     , waypointOptions : WaypointsOptions
     }
@@ -89,7 +89,7 @@ type alias WaypointsOptions =
     }
 
 
-type alias RouteViewOptions =
+type alias CuesViewOptions =
     { totalDistanceDisplay : TotalDistanceDisplay
     , itemSpacing : Int
     , distanceDetail : Int
@@ -140,7 +140,7 @@ init maybeState url key =
                         >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
                         >> storedStateModel url
                     )
-                |> Maybe.withDefault (Model (WelcomePage False) Maybe.Nothing True (RouteViewOptions FromZero defaultSpacing defaultDistanceDetail) False url)
+                |> Maybe.withDefault (Model (WelcomePage False) Maybe.Nothing True (CuesViewOptions FromZero defaultSpacing defaultDistanceDetail) False url)
     )
         |> updateModel
         |> Tuple.mapSecond
@@ -160,18 +160,18 @@ storedStateModel url state =
         (state.waypoints
             |> Maybe.map
                 (\ws ->
-                    RouteModel ws
+                    CuesModel ws
                         (WaypointsOptions
                             (state.locationFilterEnabled |> Maybe.withDefault False)
                             (state.filteredLocationTypes |> Maybe.withDefault (initialFilteredLocations ws))
                         )
-                        |> RoutePage
+                        |> CuesheetPage
                 )
             |> Maybe.withDefault (WelcomePage False)
         )
         Maybe.Nothing
         True
-        (RouteViewOptions
+        (CuesViewOptions
             (state.totalDistanceDisplay |> Maybe.andThen parseTotalDistanceDisplay |> Maybe.withDefault FromZero)
             (Maybe.withDefault defaultSpacing state.itemSpacing)
             (Maybe.withDefault defaultDistanceDetail state.distanceDetail)
@@ -217,15 +217,15 @@ update msg model =
 
         TypeEnabled typ enabled ->
             case model.page of
-                RoutePage routeModel ->
+                CuesheetPage cuesModel ->
                     let
                         options =
-                            routeModel.waypointOptions
+                            cuesModel.waypointOptions
 
-                        newRouteModel =
-                            { routeModel | waypointOptions = { options | filteredLocationTypes = Dict.insert typ enabled routeModel.waypointOptions.filteredLocationTypes } }
+                        newCuesModel =
+                            { cuesModel | waypointOptions = { options | filteredLocationTypes = Dict.insert typ enabled cuesModel.waypointOptions.filteredLocationTypes } }
                     in
-                    updateRouteModel model newRouteModel
+                    updateCuesModel model newCuesModel
 
                 _ ->
                     ( model, Cmd.none )
@@ -239,26 +239,26 @@ update msg model =
                     (\selection ->
                         let
                             options =
-                                model.routeViewOptions
+                                model.cuesViewOptions
                         in
-                        updateModel { model | routeViewOptions = { options | totalDistanceDisplay = selection } }
+                        updateModel { model | cuesViewOptions = { options | totalDistanceDisplay = selection } }
                     )
                 |> Maybe.withDefault ( model, Cmd.none )
 
         UpdateWaypointSelection maybeSelection ->
             case model.page of
-                RoutePage routeModel ->
+                CuesheetPage cuesModel ->
                     maybeSelection
                         |> Maybe.map
                             (\locationFilterEnabled ->
                                 let
                                     options =
-                                        routeModel.waypointOptions
+                                        cuesModel.waypointOptions
 
-                                    newRouteModel =
-                                        { routeModel | waypointOptions = { options | locationFilterEnabled = locationFilterEnabled } }
+                                    newCuesModel =
+                                        { cuesModel | waypointOptions = { options | locationFilterEnabled = locationFilterEnabled } }
                                 in
-                                updateRouteModel model newRouteModel
+                                updateCuesModel model newCuesModel
                             )
                         |> Maybe.withDefault ( model, Cmd.none )
 
@@ -268,16 +268,16 @@ update msg model =
         UpdateItemSpacing spacing ->
             let
                 options =
-                    model.routeViewOptions
+                    model.cuesViewOptions
             in
-            updateModel { model | routeViewOptions = { options | itemSpacing = spacing } }
+            updateModel { model | cuesViewOptions = { options | itemSpacing = spacing } }
 
         UpdateDistanceDetail detail ->
             let
                 options =
-                    model.routeViewOptions
+                    model.cuesViewOptions
             in
-            updateModel { model | routeViewOptions = { options | distanceDetail = detail } }
+            updateModel { model | cuesViewOptions = { options | distanceDetail = detail } }
 
         OpenFileBrowser ->
             ( model, File.Select.file [ "text/csv" ] FileUploaded )
@@ -316,9 +316,9 @@ update msg model =
                     ( model, Cmd.none )
 
 
-updateRouteModel : Model -> RouteModel -> ( Model, Cmd Msg )
-updateRouteModel model routeModel =
-    updateModel <| { model | page = RoutePage routeModel }
+updateCuesModel : Model -> CuesModel -> ( Model, Cmd Msg )
+updateCuesModel model cuesModel =
+    updateModel <| { model | page = CuesheetPage cuesModel }
 
 
 decodeCSV : String -> Result Csv.Decode.Error (List Waypoint)
@@ -344,19 +344,19 @@ updateCSVDecodeModel : Model -> Result Csv.Decode.Error (List Waypoint) -> ( Mod
 updateCSVDecodeModel model result =
     case result of
         Ok waypoints ->
-            { model | page = RoutePage <| initialRouteModel waypoints } |> updateModel
+            { model | page = CuesheetPage <| initialCuesModel waypoints } |> updateModel
 
         Err err ->
             ( { model | csvDecodeError = Maybe.Just <| Csv.Decode.errorToString err }, Cmd.none )
 
 
-initialRouteModel : List Waypoint -> RouteModel
-initialRouteModel waypoints =
+initialCuesModel : List Waypoint -> CuesModel
+initialCuesModel waypoints =
     let
         sortedWaypoint =
             List.sortBy .distance waypoints
     in
-    RouteModel sortedWaypoint (initialWaypointOptions sortedWaypoint)
+    CuesModel sortedWaypoint (initialWaypointOptions sortedWaypoint)
 
 
 
@@ -366,9 +366,9 @@ initialRouteModel waypoints =
 view : Model -> Browser.Document Msg
 view model =
     -- TODO: better title plz
-    Browser.Document "Route sheet"
+    Browser.Document "Cuesheet"
         [ case model.page of
-            RoutePage routeModel ->
+            CuesheetPage cuesheetModel ->
                 if model.showQR then
                     Html.div
                         [ Html.Attributes.class "flex-container"
@@ -397,7 +397,7 @@ view model =
                                                     [ QRCode.toSvg [ Svg.Attributes.width "500", Svg.Attributes.height "500" ] qr
                                                     , Html.br [] []
                                                     , Html.p [] [ Html.text "Scan the QR code above on your device" ]
-                                                    , Html.p [] [ Html.text "and follow the link to load in the current route." ]
+                                                    , Html.p [] [ Html.text "and follow the link to load in the current cues." ]
                                                     , Html.br [] []
                                                     , Html.p [] [ Html.text "Alternatively, copy this link and send to your device through some other means..." ]
                                                     , Html.br [] []
@@ -456,7 +456,7 @@ view model =
                         , Html.Attributes.class "page"
                         , Html.Attributes.style "height" "100%"
                         ]
-                        [ viewOptions model.showOptions routeModel.waypointOptions model.routeViewOptions model.csvDecodeError
+                        [ viewOptions model.showOptions cuesheetModel.waypointOptions model.cuesViewOptions model.csvDecodeError
                         , Html.div
                             [ Html.Attributes.class "flex-container"
                             , Html.Attributes.class "column"
@@ -464,7 +464,7 @@ view model =
                             , Html.Attributes.style "height" "100%"
                             , Html.Attributes.style "justify-content" "center"
                             ]
-                            [ routeBreakdown (routeWaypoints routeModel.waypointOptions routeModel.waypoints) model.routeViewOptions
+                            [ cuesheet (cues cuesheetModel.waypointOptions cuesheetModel.waypoints) model.cuesViewOptions
                             ]
                         ]
 
@@ -521,7 +521,7 @@ welcomePage toGo =
         , Html.Attributes.class "column"
         ]
         (List.concat
-            [ [ Html.h2 [] [ Html.text "Route breakdown builder" ]
+            [ [ Html.h2 [] [ Html.text "Cuesheet builder" ]
               , Html.br [] []
               , Html.h3 [] [ Html.text "Features" ]
               , Html.br [] []
@@ -551,12 +551,12 @@ welcomePage toGo =
                     , Html.Attributes.class "flex-wrap"
                     , Html.Attributes.class "wide-row-narrow-column"
                     ]
-                    (List.map (\( desc, waypointModifier, opts ) -> Html.div [] [ Html.h4 [ Html.Attributes.style "text-align" "center" ] [ Html.text desc ], routeBreakdown (waypointModifier exampleWaypoints) opts ])
+                    (List.map (\( desc, waypointModifier, opts ) -> Html.div [] [ Html.h4 [ Html.Attributes.style "text-align" "center" ] [ Html.text desc ], cuesheet (waypointModifier exampleWaypoints) opts ])
                         [ if toGo then
-                            ( "Distance to go", identity, RouteViewOptions FromLast defaultSpacing defaultDistanceDetail )
+                            ( "Distance to go", identity, CuesViewOptions FromLast defaultSpacing defaultDistanceDetail )
 
                           else
-                            ( "Distance from zero", identity, RouteViewOptions FromZero defaultSpacing defaultDistanceDetail )
+                            ( "Distance from zero", identity, CuesViewOptions FromZero defaultSpacing defaultDistanceDetail )
                         , ( "Custom location types"
                           , List.map
                                 (\w ->
@@ -566,10 +566,10 @@ welcomePage toGo =
                                                 |> Maybe.withDefault ""
                                     }
                                 )
-                          , RouteViewOptions None defaultSpacing defaultDistanceDetail
+                          , CuesViewOptions None defaultSpacing defaultDistanceDetail
                           )
-                        , ( "Custom spacing", identity, RouteViewOptions None (defaultSpacing - 10) defaultDistanceDetail )
-                        , ( "Filter location types", routeWaypoints (WaypointsOptions True (initialFilteredLocations exampleWaypoints |> Dict.map (\k _ -> k == climbType || k == ""))), RouteViewOptions None defaultSpacing defaultDistanceDetail )
+                        , ( "Custom spacing", identity, CuesViewOptions None (defaultSpacing - 10) defaultDistanceDetail )
+                        , ( "Filter location types", cues (WaypointsOptions True (initialFilteredLocations exampleWaypoints |> Dict.map (\k _ -> k == climbType || k == ""))), CuesViewOptions None defaultSpacing defaultDistanceDetail )
                         ]
                     )
               ]
@@ -585,11 +585,11 @@ getStartedPage decodeError =
         , Html.Attributes.class "column"
         ]
         (List.concat
-            [ [ Html.h2 [] [ Html.text "Route breakdown builder" ]
+            [ [ Html.h2 [] [ Html.text "Cuesheet builder" ]
               , Html.br [] []
               , Html.h3 [] [ Html.text "Instructions" ]
               , Html.br [] []
-              , Html.p [] [ Html.text "To make your route breakdown," ]
+              , Html.p [] [ Html.text "To make your cuesheet," ]
               , Html.p [] [ Html.text "upload a CSV file with the following columns, including title at top" ]
               , Html.p [] [ Html.text "and a row per waypoint:" ]
               , Html.br [] []
@@ -624,8 +624,8 @@ optionGroup title elements =
         (Html.legend [] [ Html.text title ] :: elements)
 
 
-viewOptions : Bool -> WaypointsOptions -> RouteViewOptions -> Maybe String -> Html Msg
-viewOptions show waypointOptions routeViewOptions decodeError =
+viewOptions : Bool -> WaypointsOptions -> CuesViewOptions -> Maybe String -> Html Msg
+viewOptions show waypointOptions cuesViewOptions decodeError =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "column"
@@ -717,7 +717,7 @@ viewOptions show waypointOptions routeViewOptions decodeError =
                                     )
                                 )
                                 []
-                                (Maybe.Just <| formatTotalDistanceDisplay routeViewOptions.totalDistanceDisplay)
+                                (Maybe.Just <| formatTotalDistanceDisplay cuesViewOptions.totalDistanceDisplay)
                             ]
                         , Html.hr [] []
                         , optionGroup "Spacing"
@@ -725,7 +725,7 @@ viewOptions show waypointOptions routeViewOptions decodeError =
                                 [ Html.Attributes.type_ "range"
                                 , Html.Attributes.min "1"
                                 , Html.Attributes.max "50"
-                                , Html.Attributes.value <| String.fromInt routeViewOptions.itemSpacing
+                                , Html.Attributes.value <| String.fromInt cuesViewOptions.itemSpacing
                                 , Html.Events.onInput (String.toInt >> Maybe.withDefault defaultSpacing >> UpdateItemSpacing)
                                 ]
                                 []
@@ -736,7 +736,7 @@ viewOptions show waypointOptions routeViewOptions decodeError =
                                 [ Html.Attributes.type_ "range"
                                 , Html.Attributes.min "0"
                                 , Html.Attributes.max "3"
-                                , Html.Attributes.value <| String.fromInt routeViewOptions.distanceDetail
+                                , Html.Attributes.value <| String.fromInt cuesViewOptions.distanceDetail
                                 , Html.Events.onInput (String.toInt >> Maybe.withDefault defaultDistanceDetail >> UpdateDistanceDetail)
                                 ]
                                 []
@@ -810,8 +810,8 @@ formatTotalDistanceDisplay v =
             "hide"
 
 
-routeWaypoints : WaypointsOptions -> List Waypoint -> List Waypoint
-routeWaypoints waypointOptions waypoints =
+cues : WaypointsOptions -> List Waypoint -> List Waypoint
+cues waypointOptions waypoints =
     if waypointOptions.locationFilterEnabled then
         List.filter (\w -> Dict.get w.typ waypointOptions.filteredLocationTypes |> Maybe.withDefault True) waypoints
 
@@ -819,14 +819,14 @@ routeWaypoints waypointOptions waypoints =
         waypoints
 
 
-routeBreakdown : List Waypoint -> RouteViewOptions -> Html Msg
-routeBreakdown waypoints routeViewOptions =
+cuesheet : List Waypoint -> CuesViewOptions -> Html Msg
+cuesheet waypoints cuesViewOptions =
     let
         info =
-            routeInfo waypoints
+            waypointInfos waypoints
 
         svgHeight =
-            (*) routeViewOptions.itemSpacing (List.length info)
+            (*) cuesViewOptions.itemSpacing (List.length info)
 
         svgContentLeftStart =
             0
@@ -838,33 +838,33 @@ routeBreakdown waypoints routeViewOptions =
             List.head (List.reverse waypoints) |> Maybe.map .distance
     in
     Html.div
-        [ Html.Attributes.class "route_breakdown"
+        [ Html.Attributes.class "cuesheet"
         ]
         [ Svg.svg
             [ Svg.Attributes.width "100%"
             , Svg.Attributes.height <| String.fromInt svgHeight
-            , Svg.Attributes.viewBox <| "-120 -10 240 " ++ String.fromInt (svgHeight + routeViewOptions.itemSpacing)
+            , Svg.Attributes.viewBox <| "-120 -10 240 " ++ String.fromInt (svgHeight + cuesViewOptions.itemSpacing)
             ]
             (info
                 |> List.indexedMap
                     (\i item ->
                         let
                             translate =
-                                Svg.Attributes.transform <| "translate(0," ++ (String.fromInt <| i * routeViewOptions.itemSpacing) ++ ")"
+                                Svg.Attributes.transform <| "translate(0," ++ (String.fromInt <| i * cuesViewOptions.itemSpacing) ++ ")"
                         in
                         case item of
                             InfoWaypoint waypoint ->
                                 let
                                     waypointDistance =
-                                        case routeViewOptions.totalDistanceDisplay of
+                                        case cuesViewOptions.totalDistanceDisplay of
                                             None ->
                                                 Maybe.Nothing
 
                                             FromZero ->
-                                                Maybe.Just (formatFloat routeViewOptions.distanceDetail waypoint.distance ++ "km")
+                                                Maybe.Just (formatFloat cuesViewOptions.distanceDetail waypoint.distance ++ "km")
 
                                             FromLast ->
-                                                lastWaypointDistance |> Maybe.map (\last -> formatFloat routeViewOptions.distanceDetail (last - waypoint.distance) ++ "km")
+                                                lastWaypointDistance |> Maybe.map (\last -> formatFloat cuesViewOptions.distanceDetail (last - waypoint.distance) ++ "km")
 
                                     waypointInfo =
                                         List.filterMap identity
@@ -887,7 +887,7 @@ routeBreakdown waypoints routeViewOptions =
                                     (Svg.text_
                                         [ Svg.Attributes.x (String.fromInt <| svgContentLeftStart + 10)
                                         , Svg.Attributes.dominantBaseline "middle"
-                                        , Svg.Attributes.y <| String.fromInt (routeViewOptions.itemSpacing // 2)
+                                        , Svg.Attributes.y <| String.fromInt (cuesViewOptions.itemSpacing // 2)
                                         ]
                                         [ Svg.text waypoint.name ]
                                         :: (waypointInfoLines
@@ -895,7 +895,7 @@ routeBreakdown waypoints routeViewOptions =
                                                     (\j line ->
                                                         Svg.text_
                                                             [ Svg.Attributes.x svgContentLeftStartString
-                                                            , Svg.Attributes.y <| String.fromInt (routeViewOptions.itemSpacing // 2)
+                                                            , Svg.Attributes.y <| String.fromInt (cuesViewOptions.itemSpacing // 2)
                                                             , Svg.Attributes.dominantBaseline "middle"
                                                             , Svg.Attributes.dy (String.fromFloat (toFloat j - (toFloat <| List.length waypointInfoLines - 1) / 2) ++ "em")
                                                             , Svg.Attributes.textAnchor "end"
@@ -912,10 +912,10 @@ routeBreakdown waypoints routeViewOptions =
                                         "2"
 
                                     arrowBottom =
-                                        String.fromInt <| routeViewOptions.itemSpacing - 2
+                                        String.fromInt <| cuesViewOptions.itemSpacing - 2
 
                                     arrowHeadTop =
-                                        String.fromInt <| routeViewOptions.itemSpacing - 6
+                                        String.fromInt <| cuesViewOptions.itemSpacing - 6
 
                                     strokeWidth =
                                         "1"
@@ -950,19 +950,19 @@ routeBreakdown waypoints routeViewOptions =
                                         []
                                     , Svg.text_
                                         [ Svg.Attributes.x (String.fromInt <| svgContentLeftStart + 10)
-                                        , Svg.Attributes.y <| String.fromInt (routeViewOptions.itemSpacing // 2)
+                                        , Svg.Attributes.y <| String.fromInt (cuesViewOptions.itemSpacing // 2)
                                         , Svg.Attributes.dominantBaseline "middle"
                                         , Svg.Attributes.fontSize "smaller"
                                         ]
-                                        [ Svg.text <| formatFloat routeViewOptions.distanceDetail dist ++ "km" ]
+                                        [ Svg.text <| formatFloat cuesViewOptions.distanceDetail dist ++ "km" ]
                                     ]
                     )
             )
         ]
 
 
-routeInfo : List Waypoint -> List Info
-routeInfo waypoints =
+waypointInfos : List Waypoint -> List Info
+waypointInfos waypoints =
     List.foldl
         (\el accum ->
             ( Maybe.Just el
@@ -1059,18 +1059,18 @@ encodeSavedState : StoredStateCodeFields -> Model -> String
 encodeSavedState fieldNames model =
     Json.Encode.object
         ((case model.page of
-            RoutePage routeModel ->
-                [ ( fieldNames.waypoints, encodeWaypoints fieldNames routeModel.waypoints )
-                , ( fieldNames.locationFilterEnabled, Json.Encode.bool routeModel.waypointOptions.locationFilterEnabled )
-                , ( fieldNames.filteredLocationTypes, Json.Encode.dict identity Json.Encode.bool routeModel.waypointOptions.filteredLocationTypes )
+            CuesheetPage cuesModel ->
+                [ ( fieldNames.waypoints, encodeWaypoints fieldNames cuesModel.waypoints )
+                , ( fieldNames.locationFilterEnabled, Json.Encode.bool cuesModel.waypointOptions.locationFilterEnabled )
+                , ( fieldNames.filteredLocationTypes, Json.Encode.dict identity Json.Encode.bool cuesModel.waypointOptions.filteredLocationTypes )
                 ]
 
             _ ->
                 []
          )
-            ++ [ ( fieldNames.totalDistanceDisplay, Json.Encode.string <| formatTotalDistanceDisplay model.routeViewOptions.totalDistanceDisplay )
-               , ( fieldNames.distanceDetail, Json.Encode.int model.routeViewOptions.distanceDetail )
-               , ( fieldNames.itemSpacing, Json.Encode.int model.routeViewOptions.itemSpacing )
+            ++ [ ( fieldNames.totalDistanceDisplay, Json.Encode.string <| formatTotalDistanceDisplay model.cuesViewOptions.totalDistanceDisplay )
+               , ( fieldNames.distanceDetail, Json.Encode.int model.cuesViewOptions.distanceDetail )
+               , ( fieldNames.itemSpacing, Json.Encode.int model.cuesViewOptions.itemSpacing )
                ]
         )
         |> Json.Encode.encode 0
@@ -1119,7 +1119,7 @@ port storeState : String -> Cmd msg
 
 demoData : String
 demoData =
-    """Distance,Route segment end,Type,Name,Municipality,,Detour,Notes
+    """Distance,Segment end,Type,Name,Municipality,,Detour,Notes
 0,286,,Start,Warwick,,,
 125,286,RS,Kwik-E-Mart,,,,Close 22:00
 292.5,585,RS,Morrisons,Bridgwater,Big town,,Opens 07:00
