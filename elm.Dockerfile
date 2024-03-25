@@ -1,3 +1,3 @@
-FROM node:20.3-alpine3.17
+FROM node:21-alpine3.18
 
 RUN npm install -g elm
