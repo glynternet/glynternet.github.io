@@ -1,0 +1,32 @@
+---
+layout: page
+title: Doom 24
+permalink: /cycling/doom24
+tags: cycling
+---
+
+# 👻 DOOM 24 (29th March 2024 - ???)👻
+
+_"A beautifully evil bikepacking event in the south."_
+
+656.5km with 13,301m of climbing
+
+## Info
+- [Official site](https://www.ozarkgravelcyclists.com/doom)
+- [Tracking Trackleaders](https://trackleaders.com/doom24)
+- [Caltopo custom map and live tracking](https://caltopo.com/m/NJ2AU) - Contains POIs, route and just my live tracker.
+- [My stories/updates](https://instagr.am/glynhanmer)
+- [Strava uploads will be available](https://strava.com/athletes/glynhanmer)
+
+## Route
+
+- Full route - [Ride With GPS](https://ridewithgps.com/routes/45392659) - [Cuesheet](https://www.glyn.io/cycling/cuesheet?state=H4sIAAAAAAAA%2F51Wy27jNhT9FUKLaQpkDD0s2c6miDV5NUntxga8KLqgZdoSLJMBRcfwBNl1WwRoUaDILKaLousuCvSxmX%2FJD3Q%2BoVfiQ1KsTtPZ2KRwDu%2FluS%2FeWhvr4Ktbi1oH1injGcliRlCI6ZZRdIVpFFv71sw6sPctARDrbl9iR9fJggmEBQrXXIOcTiuQuPdvH3412O5yhfrr%2BRynDA3WYsYYRyGhghM0SugiJYLjaCmPcB19wM8%2FmgNyY9paXJrz3Jav0RVzgwwv4Aop3m4YX2YSG3RbXYm9Ghnk53005ngGPqBwIHHdXdSQrxMhcmSSxgTPJNBx2i1PYifh87E1T0PMbwhogVfXC87WVMO9oNVrgOcyKBVKERzfawRfJVGcYjorTkd7KdsgkpIbLBJGP1XUTlC6df%2FD33%2FcfyS7IsAxTtNczwkWcLN8pwLgdDtltL7%2FfYewKQhxnoIoKoyy%2BRyBKoJog11zz7qz%2BghpU2YIkmIpZs8pbVc0GrIsS6YpQZkgOBVxYXiH8vjmL8M4TdIU9eFni0ZpsvokQ%2F3%2Bl5qh8O%2FffvubIfi2vUKnySLe4K3EuY6jU%2FHx4afqPaT%2FEc%2B9oguFdt2WKYnvfjHYVyzPnAs4WCiBXbdbVl9F4PHhGI3issC8bmO%2BfAj25r7q5jBJIQvPKZtCkSWrqSK02xIeXpxd9pvAQ4L14X5Hp87w6PDcgE8o5qDsjGQRtAeFDZxWR2JfHY3Coy%2FGBn4BpQbBGyaUbFHICdHHQ7ErzY7PLsZHV2hyCL%2BGN3jNKIGOxBcgYR9zivacnm2jKGWZTja3pxysRfMyQiHjqyRaQuQHcMhIsIZM9Ry%2F5Up6pY8U7TVvCugCL6FBQa5Vq96DSCvS0wT%2FP8yHdx9HKzOhv%2BUzdDi7gRCsoUXnnZpwRfH9MsfqPj6XVfHv2ZTSNxgfL%2FqQpOhlPkkUtutq7OM3f1Z9OoW7F30lQ6MoZiyVhLZtYlu%2Fw3%2FhG7PJ9WG8VZlQu2qkQXpgrrxs251S7cpsmxCB5oSIzxQMZqjK3Vq9f8jKcUKTTI2DtmfKpWYG1NLC5X8K7Lu6Dp8oN8B8iU4IJRyncAvGiWJ03PL4SmEU%2BEvILYETCg0yE5xpRmU%2BVRj9ZLFbub7dLo%2Bv3P4KbzN0wllE%2BBa9QCPCb5KIZEXlvYSUNpXnOz19o0rlhTGjyyd9JUcaUxWhmv3yHR2VxhwYQxdg81IA5aoid2w9Sio%2BjQQh12iOM6H8yp8hitBV8Jpj5%2BB6PSQN1%2B81Nh6YEjB%2BUAf63HKloIFjm6qpjyFo6tDPTtkaJvEZpSW8KYxyzD55kwSuGXG16j2cwsgoVQ08pWkt1mB%2BNUVzzlbocs05%2BL3ndWzjtubUx8wuqZw2gedr%2FWvTZkJglueOFw8GhW3bOtA1z4tW%2Bi9P48APWmr2WXdf71vpnFgH8NjNyL41T%2BHzrWUdCL6GrXRabfQ4U9taYqlvhb9qDQFVK3huqZWqWr2TcdQ7eLaoZRExs5Y9z2xBerOGZ4NZw%2B3L9btyLR8DZgsZWqzvQIEZqGEVQXhNZP3DB5AzyWCg%2Bnf%2FAA0TQuBsDAAA)
+- Split 1 - [GPX](/data/Doom-1-20240328.gpx) - [Cuesheet](https://www.glyn.io/cycling/cuesheet?state=H4sIAAAAAAAA%2F43RzU6EMBAH8Fdp5kyIgIvIcbkYL2t2TTwYD81SPkJpN0NxsxLew3jx4gP4aD6CwxZYjZp4mza%2F%2FKed6WAP8X0HCmK40tiIptCCJVwdtGJrrrYFOJBCfOaAIQK9Y%2B1mV%2BbaMG5Y0uKEvAs3tO7j9eV9tlFVs2WbZVxqtmpNqjWyRCiDgm1KlUthkG8rG%2BF7U8Db8xwwNJu6Fad2ge8uJv2l3arhOX1B8sNeY9VYG0ZuZO16M8vrJbtFntIbWLKyLvqpbrAtjRlkKQvBUws979wNrL1L%2Fm%2B%2FvTTh%2BChoFrze5ahbNfEgdC9%2F4cMYximchuAtgj%2BwLA3zRxT6lkD%2F4IDMBMS0jUY4kEm67gBigy0d6dtjRZ8aq2PsXNNajnVPgSlFQ4a6Zk8C9dCKLmiBZUOLXPSfgyQs2FwCAAA%3D)  
+![Split 1 cue points](/data/doom-split-1.png)
+- Split 2 - [GPX](/data/Doom-2-20240328.gpx) - [Cuesheet](https://www.glyn.io/cycling/cuesheet?state=H4sIAAAAAAAA%2F52UzU7bQBDHX2W0l1IpsuwEB5IbMaEgQklxJA5VD4uziVdsvGi9IQKUR6iQWvUCB3rquYdKrXrhXXiB5hE68a43CUWV4GLNrH7%2F2Z0vX5EJab6%2FIhlpkiOepIJmfYjo6AzWhJwAE%2Bycai6z16RC%2BqQZrHv1CtEIz%2B6uv%2Fz5dU2mlReIjyOn26FC8GwIx1QzBXMvN3Q19DYNPbv7%2FPMfflLwqVQ5g6S4Ug4GoORYM3tddcOrlQFW31rGMHdG6VglKcRnfCi1lTYWd998d7quzHN%2BIhjkmlGh0%2BLix4qH299OsMuFgBZ%2BLiAWfPQqh1brnRHUaovXffzhFKHvj2CXD9MJvTBg6HuBAR9uvi5nYV6fqPmjsqGB6763buDZ3advDt2W54h2MKy21a3XvUYJLlW3t9WDOKXJqaE2NrxqSS3V4T%2FU7fXyE7tcSA37mTyBCPM%2FMfxmtUw96uwdtJ6iu4za4I2wHJpue2vfsW8yqrCqfZYnLLNdC3zfkNvtOGq%2F7Tm4w7XGrnV5xi4gUozZ2IFfL8u1s9fptY%2FgeAu%2FTnd4KTMGrbEaYvVaVGWwFjR8HxIh83LKglpQZrPSyIMEIqlGPDnFrh9imFjLJ4Y0CGteaORHsRPvzsc6ZbQPHXrKipUaoirrWxG22Yoej%2FZzlDf3L5MtBiE%2BE1xDrYTsBpDphwoRA0aaAypyViEDgcdXhDS1GqNrum6dslfWXemDPSsab20skrXwH2Ituxelh%2FtnzaIhzjaFci6uh7NxA5yN6S3s%2B4VtJrtwp5hnHzMmAyVHcMmUnFcAD3BReY4%2Fg3D6F8CsBEhYBQAA)  
+![Split 2 cue points](/data/doom-split-2.png)
+- Split 3 - [GPX](/data/Doom-3-20240328.gpx) - [Cuesheet](https://www.glyn.io/cycling/cuesheet?state=H4sIAAAAAAAA%2F5WSMUvDQBiG%2F8rxDU4xaJo0mkVasSooBSt0EIejudjQNJHLxaIlm6sUBEFcuoizg4NO%2FS%2F%2BAfsT%2FNq7XNMOSpfcd8fz3vd%2Bb24IA%2FAuhhCDB%2FVb7pOaf8NikXFG9nFlHAzwwbMcc9cAgdB0PHr6%2BRxBbqwlepmsrXjXimYmNuq00yObBEuJOlaBft9%2FlQ0dMeoPKF6ZklanmySR5N2KWZH86gT%2FChrHJ%2BcHZ6Rdw69WWU6vT8rSML6KmOAzmy1BubLpuqYjb5mOX5%2B1us0ECRgTe5LacU27oB7fNPVXj0YYh2lXyre3rEJd6oFRFanNFoVallmV8EpuTcp75JDFjNMIJ0g4UwpbxTAdP3ws06dJFgsaxqQepoInBW%2Bb2k5J0bqOQkFsBVVVKpBfGhAFDLyARikzIIjweAjgCZ7hdil7daaMq928ia7lr9VbDFPX%2BKAW9WRRY2TzOkdHPnqDgCd9csfkQHiwbUCYzh5n%2Fgv7DwJhLgMAAA%3D%3D)  
+![Split 3 cue points](/data/doom-split-3.png)
+- Split 4 - [GPX](/data/Doom-4-20240328.gpx) - [Cuesheet](https://www.glyn.io/cycling/cuesheet?state=H4sIAAAAAAAA%2F32TT2vbMBiHv8qLDiMDz8T5Y6%2B%2BpaZrQhsIcaGHsYOSvIpNHCnI8ooX8hHGYKfRS3cYO%2B%2Bwwz7PvkD7EapatpLQ0ot5JT8%2F9EivtCU3JPy4JZyE5DRdwiTlWEIkEVfEIQsSem237xClfz%2Fcff9Ndo5hp7TM4VyKOcoS3kCM8nM6xxxagrF3UhQK35p8p%2B96Jj%2BNbTpKBF%2BVsMB8jlxZ0C7064dFX5Tq%2B%2B6JYT%2BMLq%2FOpnA90F%2BbuRIbEAzGouCKprzxNNnAd7smeyAUK8QNMJqrWmqR8qXhT9rue8MfeV1ocThHjpJmECsh8fnevfbzrQ%2FTZXJDSwig5a3WDej5bs%2Bg%2F29%2F3v%2F7ZvEoSxmDoShyhBHnezww%2BMPd178WjjfpUiigCqJCzpMa7gSu38C3fyw8mM0Oj9Tr%2Bvt9HjRaC6xnwKRYw7iQUpu3ukHbiu9T0eVofPpKbIK0WarnNS2YnA0ubOYas6ySTw7se%2F2m1Uf2QyFzzBOBEFFeCg5Tym3G77gdkyG7Tw7JGJKQ0SxHh7BMT28JCZUs9NBI14Oju1TPVYJ1rbtYV3WT6lHVA1vrs7O1Fra1vjtVvdNmC21JqsP5glI8WesJfVfS%2FOkd7B4B6mwNk5UDAAA%3D)  
+![Split 3 cue points](/data/doom-split-3.png)
+- POIs - [GPX](/data/doom-pois.gpx)
