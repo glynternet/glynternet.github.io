@@ -148,6 +148,8 @@ https://www.strava.com/activities/11105419661
 
 **----**: I was already tight on time to get to a shop at the 6pm many kilometres ahead and know that this hold up will make it impossible for me, which really kills my mood and morale, but also cycling in sandals for the rest of the race is risky given my history of knee issues. I need to find that shoe.
 
+![Sandals](/data/doom24/0330/lost-sandals.jpg)
+
 **----**: I cycle back up and over some hills for approx 20 mins to find the shoe but have no luck so decide that I will need to carry on with the remaining 300km/240miles of the race in sandals.
 
 **----**: Very low on morale.
@@ -165,8 +167,6 @@ https://www.strava.com/activities/11105419661
 </video>
 
 **----**: I keep a careful eye on the time as Dustin and I ride to gether chatting and pushing on, Eli wasn't feeling great and had dropped back a little bit. There's some super rowdy chonky downhill singletrack that Dustin and I are absolutely loving, even though there are rocks flicking up at my toes and there are twigs hitting my face. A quick break at a creek follows to filter some water and then keep on moving towards the burgers.
-
-![Sandals](/data/doom24/0330/lost-sandals.jpg)
 
 **----**: We made it. I order two burgers, sadly no veggie options but they are really really juicy and declicious. I rest up. It'd been a very hot day, my Garmin reading 39C at one point up on Pilot Rock. I was not feeling great.
 
