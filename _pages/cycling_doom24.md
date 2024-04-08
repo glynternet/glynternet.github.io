@@ -295,6 +295,8 @@ https://www.strava.com/activities/11105420006
   <source src="/data/doom24/0401/final-push-hondo.mp4" type="video/mp4">
 </video>
 
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/1aYd9UIqJz2QYfg5KEGEWq?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
 **----**: 20km to go, but I know this isn't going to take me 2 hours like the 10 km/h average of the rest of the ride. The tunes are blasting and I know I'm coming home so I cannot feel fatigue in my legs anymore. It's dark and I'm enjoying riding the final ridgeline into the drizzle which doesn't seem to be getting stronger just yet.
 
 **2050**: I am coming down the hill into the ranch and I swear I can hear bells ringing, am I losing my mind again? I was expecting there to be no one around because it was getting late and there was a storm forecast, but there was a group of peopple waiting at the finish line, some had finished in the days preceding (Meaghan who won the women's crown was there having finished two nights ago in a super impressive ride) and some had finished earlier that day. I was touched that there were people there. They ask me how I am, I stop and take my helmet off and my glove falls off the top of my head onto the floor; "That's where my glove is!", everyone laughs as they've definitely been in a similar position before.
