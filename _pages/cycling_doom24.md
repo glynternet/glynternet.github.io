@@ -339,6 +339,10 @@ I should have had some non-bar/real-food with me from the start. Even just some 
 **Sleep system faff slows me down.**  
 Getting sleep system out and putting back in is super slow, in particular the bivvy bag, which I feel pretty restricted in anyway.
 
+## Professional Photo Galleries
+- https://www.kateaustinphotography.com/Browse/Gravel-DoomDespair-2024
+- https://kaicaddy.passgallery.com/-2024doom/gallery
+
 ## Info
 - [Official site](https://www.ozarkgravelcyclists.com/doom)
 - [Tracking Trackleaders](https://trackleaders.com/doom24)
