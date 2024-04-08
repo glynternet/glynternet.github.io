@@ -9,6 +9,8 @@ tags: cycling
 
 _"A beautifully evil bikepacking event in the south."_
 
+![Doom finisher](/data/doom24/glyn-finishing-doom.jpg)
+
 656.5km with 13,301m of climbing
 
 Over the Easter weekend 2024 I took part in Doom, a race by Ozark Gravel Cyclists in the Ozark Mountains, Arkansas, USA.
