@@ -19,6 +19,8 @@ Below is my account of the race, for a personal account, as well as some of the 
 
 _THIS IS NOT A BLOG POST, JUST SOME NOTES AND MY SCRAPPY ACCOUNT OF THE WHOLE EVENT/TRIP_
 
+![Sandal aftermath](/data/doom24/socks-and-sandals-after-race.jpg)
+
 ### 27th March
 
 After:
@@ -59,8 +61,14 @@ https://www.strava.com/activities/11105419406
 **0545**: Get up after bad night sleep. Should have spent more time getting the car setup for a good night sleep, silly mistake. Kept waking up every hour or so.
 
 **0645**: Handing out of the Gremlin Bells.
+<video width="540" height="960" controls>
+  <source src="/data/doom24/0329/gremlin-bells-distribution.mp4" type="video/mp4">
+</video>
 
 **0655**: Charging of the Gremlin Bells, to ward off any bad luck that they may have in them.
+<video width="540" height="960" controls>
+  <source src="/data/doom24/0329/gremlin-bells-charging.mp4" type="video/mp4">
+</video>
 
 **0700**: Start of race, climb out of ranch.
 
@@ -78,15 +86,20 @@ https://www.strava.com/activities/11105419406
 
 **----**: The come across the first water crossing and I'm unsure whether to take my shoes off or just try to ride through. A lady is on the other side who lets me know some people have been "ratcheting" across it. A technique where you keep your cranks level and just flick them gently to propel you forwards rather than doing full revolutions. I attempt it and don't manage to keep my feet dry. I didn't mind too much because the weather was hot and the sun was shining, damp feet would not stick around for long.
 
+![Wet feet](/data/doom24/0329/wet-feet.jpg)
+
 **----**: Somehow I end up riding with Eli for a bit and we pull into Osage Pottery Works where we grab some drinks and fill up water again.
 
-![Foaming tortoise](/data/doom24/0329/osage.jpg)
+![Osage](/data/doom24/0329/osage.jpg)
 
 **----**: Stephanie and Jamie pull in while we are there. Jamie leaves impressively quickly, no faffing.
 
 **----**: Stephanie, Eli and I all leave at the same time and as the road begins to turn up, Eli drops back and Stephanie ploughs on ahead.
 
 ![Lagoon](/data/doom24/0329/lagoon.jpg)
+<video width="540" height="960" controls>
+  <source src="/data/doom24/0329/creek.mp4" type="video/mp4">
+</video>
 
 **----**: JB Trading Company. I arrive into the last resupply for the day and there are plenty of people there, arriving or leaving there. I'm not really sure what I should be picking up from here, there's basically only biscuits and bars whereas I really would have wanted something like a sandwich.
 
@@ -116,7 +129,18 @@ https://www.strava.com/activities/11105419661
 
 **0700**: I set off riding and immediately, unsuprisingly, the climbing starts. It's long ups and downs for quite a while.
 
+<video width="540" height="960" controls>
+  <source src="/data/doom24/0330/another-day-on-the-jingle-jangle.mp4" type="video/mp4">
+</video>
+<video width="540" height="960" controls>
+  <source src="/data/doom24/0330/day-2-morning-climb.mp4" type="video/mp4">
+</video>
+
 **----**: I reach the second water crossing and this time I am not going to be able to ride across it so I remove my shoes and socks and don my sandals. I carry my bike across and take this opportunity to wash my jersey and shorts from the previous day. I decide to cycle in my sandals for a bit to dry my feet off instead of getting my towel out to tie my shoes onto my bike.
+
+<video width="540" height="960" controls>
+  <source src="/data/doom24/0330/day-2-sandals-crossing.mp4" type="video/mp4">
+</video>
 
 **----**: After climbing over some pretty big hills and descending down a very chunky loose gravel hill, I realise one of my shoes has come off the back of my bike, absolutely gutted. I see a car driving down the hill I just descended so ask them if they've seen a shoe. They had quite broken English, say they saw a shoe and apologise for not picking it up. I ask how far it is and they don't quite understand my question.
 
@@ -140,7 +164,7 @@ https://www.strava.com/activities/11105419661
 
 **----**: I keep a careful eye on the time as Dustin and I ride to gether chatting and pushing on, Eli wasn't feeling great and had dropped back a little bit. There's some super rowdy chonky downhill singletrack that Dustin and I are absolutely loving, even though there are rocks flicking up at my toes and there are twigs hitting my face. A quick break at a creek follows to filter some water and then keep on moving towards the burgers.
 
-![Sandals](/data/doom24/0330/sandals.jpg)
+![Sandals](/data/doom24/0330/lost-sandals.jpg)
 
 **----**: We made it. I order two burgers, sadly no veggie options but they are really really juicy and declicious. I rest up. It'd been a very hot day, my Garmin reading 39C at one point up on Pilot Rock. I was not feeling great.
 
@@ -240,6 +264,8 @@ https://www.strava.com/activities/11105420006
 
 **1400**: 85km from the finish, we reach a junction with a nearby grocey store and my body is feeling a stop. I try to get my wallet but cannot find it, I end up emptying almost all of my bags and being super upset with myself for leaving my wallet at the previous resupply. How did I manage that? Oh wait, there's one pocket I haven't looked in, and that's usually where I keep it, and it was there. Omg my mind is frazzled. The Top of the Mountain Grocery have hot pizza, I grab a couple of slices and the staff warn me about baseball-sized hail due for this evening. They assure me that the drive to the ranch is short and we should reach it before the storm comes in; I haven't got the energy to discuss how that's not how this event works 😅 There is another rider, Matt, at the store and he seems pretty focussed, I think he was a little anxious about the incoming storm, too, I wasn't really able to get a conversation going with him and didn't want to force it because that's not good for some people's mindset. Matt sets off before Dustin and I.
 
+![Baseball-sized hail](/data/doom24/0401/baseball-sized-hail.jpg)
+
 **1445**: Another 45 minutes stop, I'm now really worried about the time and the storm so I set off earlier than Dustin as he's riding super strong today and I've been fading the last couple of days. Dustin was at the end of a 3 month tour so his endurance is super strong.
 
 **1455**: After ten minutes or so Dustin hadn't caught up but I can see him behind in the distance. Could it be fun to race? My legs are kinda feeling ok atm, maybe we can race? OMG is this a race now? How fun! 85 TT being chased by Dustin. As soon as the road turned up towards the sky, my legs stopped feeling okay and I realised that this wasn't going to be a race 😂 Dustin caught up soon and I wished him best of luck as he zoomed past.
@@ -263,11 +289,22 @@ https://www.strava.com/activities/11105420006
 
 **1930**: Another almost hour of hiking my bike up, I had made it to the top of the last big climb. I AM BUZZING, but also very tired 🫠 I stop to put my lights on, chug a load of water and eat some stuff that I can't even remember what it is now. It starts to drizzle very lightly; is this about to fucking chuck it down and be the storm I'd been waiting for? I put on a thin jacket and get ready to leave. I can't find my glove, where's my glove? It's nowhere to be seen, I'm gutted. How could I be so close to the end and lose that? I look around for a few minutes but literally cannot see it anywhere. I decide to cycle on but I am angry at myself; I want my glove and I do not want to litter. I decide to cycle back to look for it, but now I can't remember which tree I'd lent my bike against 😭. I have to get over this and carry on and enjoy the rest of the ride and arrival back into the ranch.
 
+<video width="540" height="960" controls>
+  <source src="/data/doom24/0401/final-push-hondo.mp4" type="video/mp4">
+</video>
+
 **----**: 20km to go, but I know this isn't going to take me 2 hours like the 10 km/h average of the rest of the ride. The tunes are blasting and I know I'm coming home so I cannot feel fatigue in my legs anymore. It's dark and I'm enjoying riding the final ridgeline into the drizzle which doesn't seem to be getting stronger just yet.
 
 **2050**: I am coming down the hill into the ranch and I swear I can hear bells ringing, am I losing my mind again? I was expecting there to be no one around because it was getting late and there was a storm forecast, but there was a group of peopple waiting at the finish line, some had finished in the days preceding (Meaghan who won the women's crown was there having finished two nights ago in a super impressive ride) and some had finished earlier that day. I was touched that there were people there. They ask me how I am, I stop and take my helmet off and my glove falls off the top of my head onto the floor; "That's where my glove is!", everyone laughs as they've definitely been in a similar position before.
 
 **----**: I'D DONE IT! I FINISHED A BIKEPACKING ULTRA!
+
+<video width="540" height="960" controls>
+  <source src="/data/doom24/0401/finished-time.mp4" type="video/mp4">
+</video>
+<video width="540" height="960" controls>
+  <source src="/data/doom24/0401/finished-time-correction.mp4" type="video/mp4">
+</video>
 
 **----**: I get to write my name on the finishers board and get to have a beer and some food with the other riders.
 
