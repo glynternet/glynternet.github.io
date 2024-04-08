@@ -206,7 +206,7 @@ https://www.strava.com/activities/11105419567
 **----**: I see a big brown bird with a white head. Bald eagle! and there were 2!
 
 <video width="540" height="960" controls>
-  <source src="/data/doom24/0330/bald-eagles.mp4" type="video/mp4">
+  <source src="/data/doom24/0331/bald-eagles.mp4" type="video/mp4">
 </video>
 
 **----**: All of devices with charge are beginning to get low and my power bank has almost drained, not holding as well as I thought it previously had done. I know there's a charging station later on today's route at the Headwaters School just before the Buffalo Headwaters Singletrack section.
@@ -224,10 +224,10 @@ https://www.strava.com/activities/11105419567
 
 ![Bufallo Headwaters Creek](/data/doom24/0331/bufallo-headwaters-creek.jpg)
 <video width="540" height="960" controls>
-  <source src="/data/doom24/0330/bufallo-headwaters-creek.mp4" type="video/mp4">
+  <source src="/data/doom24/0331/bufallo-headwaters-creek.mp4" type="video/mp4">
 </video>
 <video width="540" height="960" controls>
-  <source src="/data/doom24/0330/dustin-crossing.mp4" type="video/mp4">
+  <source src="/data/doom24/0331/dustin-crossing.mp4" type="video/mp4">
 </video>
 
 **----**: After 3 hours we made it out of the loop, pick up my bags, regather ourselves for a few minutes then head on for the next 40km or so of riding towards Oark where I would hopefully find something to charge from!
