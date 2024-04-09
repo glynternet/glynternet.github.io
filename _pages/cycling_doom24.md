@@ -231,6 +231,7 @@ https://www.strava.com/activities/11105419567
 <video width="540" height="960" controls>
   <source src="/data/doom24/0331/dustin-crossing.mp4" type="video/mp4">
 </video>
+![Riding across](/data/doom24/0331/bufallo-headwaters-ride-crossing.jpg)
 
 **----**: After 3 hours we made it out of the loop, pick up my bags, regather ourselves for a few minutes then head on for the next 40km or so of riding towards Oark where I would hopefully find something to charge from!
 
@@ -253,6 +254,8 @@ https://www.strava.com/activities/11105420006
 
 **0410**: We head on and pull into the car park of a local restaurant where we find a spigot to fill from. Now fully charged and with full bottles we can get on with it.
 
+![Early morning creek crossing](/data/doom24/0401/early-morning-creek-crossing.jpg)
+
 **0930**: First proper resupply at Rays Grocery and Services. I am absolutely gagging for some real food that isn't some kind of cereal bar or crisps. Buy some bread and cheese and wolf down 3 sandwiches and an iced coffee. Also stock up on plenty of sugary things to get me through the rest of the day. 45 minutes stop overall. The staff at the store loved hearing about what we are doing and they're concerned about the storm coming in, telling us to look out for dead trees in the area we're camping in. I assure them that I'm going to do my best to not have to camp tonight 🤞
 
 ![Rays Grocery and Services](/data/doom24/0401/rays-store-resupply.jpg)
@@ -261,6 +264,12 @@ https://www.strava.com/activities/11105420006
 
 ![Classic Ozarks climbs](/data/doom24/0401/gravel-climbs-0.jpg)
 ![Classic Ozarks climbs](/data/doom24/0401/gravel-climbs-1.jpg)
+
+![Happy about something!](/data/doom24/0401/gravel-descent.jpg)
+_Happy about something!_
+
+![Rural traffic jame!](/data/doom24/0401/rural-trafficjam.gif)
+_The only traffic jam on the whole route._
 
 **1200**: Big Piney Creek crossing. A bridged creek crossing and opportunity to filter some water. One of the event photographers spotted us here and came to snap some photos and chat with us. It was fun to hear about the experience of a photographer on the event, it also sounds pretty tiring driving around the whole time. He told us about some of the experiences that others had, like another guy losing one of their shoes then putting three socks on that foot and cycling back to the ranch to go climbing for the weekend instead of carrying on with the race.
 
