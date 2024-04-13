@@ -5342,9 +5342,6 @@ var $author$project$Main$Model = F3(
 	function (file, page, showOptions) {
 		return {file: file, page: page, showOptions: showOptions};
 	});
-var $author$project$Main$ProfileModel = function (decodeError) {
-	return {decodeError: decodeError};
-};
 var $author$project$Main$ProfilePage = function (a) {
 	return {$: 'ProfilePage', a: a};
 };
@@ -5385,12 +5382,25 @@ var $author$project$Main$storedStateDecoder = A2(
 	$author$project$Main$StoredState,
 	$elm$json$Json$Decode$maybe(
 		A2($elm$json$Json$Decode$field, 'file', $elm$json$Json$Decode$string)));
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$Main$storedStateModel = function (state) {
+	var _v0 = A2(
+		$elm$core$Debug$log,
+		'gpx',
+		function () {
+			var _v1 = state.file;
+			if (_v1.$ === 'Nothing') {
+				return $elm$core$Result$Err('hmmmmm');
+			} else {
+				var file = _v1.a;
+				return $elm$core$Result$Ok(file);
+			}
+		}());
 	return A3(
 		$author$project$Main$Model,
 		state.file,
 		$author$project$Main$ProfilePage(
-			$author$project$Main$ProfileModel($elm$core$Maybe$Nothing)),
+			$elm$core$Result$Err('wat')),
 		true);
 };
 var $elm$core$Maybe$withDefault = F2(
@@ -5420,7 +5430,7 @@ var $author$project$Main$init = F3(
 					$author$project$Main$Model,
 					$elm$core$Maybe$Nothing,
 					$author$project$Main$ProfilePage(
-						$author$project$Main$ProfileModel($elm$core$Maybe$Nothing)),
+						$elm$core$Result$Err('todo')),
 					true),
 				A2(
 					$elm$core$Maybe$map,
@@ -5454,6 +5464,14 @@ var $elm$file$File$Select$file = F2(
 			$elm$core$Task$perform,
 			toMsg,
 			_File_uploadOne(mimes));
+	});
+var $elm$core$Tuple$mapSecond = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			x,
+			func(y));
 	});
 var $elm$file$File$toString = _File_toString;
 var $elm$json$Json$Encode$object = function (pairs) {
@@ -5531,11 +5549,27 @@ var $author$project$Main$update = F2(
 						$elm$file$File$toString(file)));
 			case 'FileStringed':
 				var file = msg.a;
+				return A2(
+					$elm$core$Tuple$mapSecond,
+					function (cmd) {
+						return $elm$core$Platform$Cmd$batch(
+							_List_fromArray(
+								[cmd, $elm$core$Platform$Cmd$none]));
+					},
+					$author$project$Main$updateModel(
+						_Utils_update(
+							model,
+							{
+								file: $elm$core$Maybe$Just(file)
+							})));
+			case 'ProfileCalculated':
+				var profileData = msg.a;
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
 						{
-							file: $elm$core$Maybe$Just(file)
+							page: $author$project$Main$ProfilePage(
+								$elm$core$Result$Ok(profileData))
 						}));
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -5865,7 +5899,17 @@ var $author$project$Main$view = function (model) {
 						]),
 					_List_fromArray(
 						[
-							A2($author$project$Main$viewOptions, model.showOptions, profileModel.decodeError),
+							A2(
+							$author$project$Main$viewOptions,
+							model.showOptions,
+							function () {
+								if (profileModel.$ === 'Ok') {
+									return $elm$core$Maybe$Nothing;
+								} else {
+									var msg = profileModel.a;
+									return $elm$core$Maybe$Just(msg);
+								}
+							}()),
 							A2(
 							$elm$html$Html$div,
 							_List_fromArray(

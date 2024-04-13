@@ -46,16 +46,28 @@ type alias Model =
 
 
 type Page
-    = ProfilePage ProfileModel
+    = ProfilePage (Result String ProfileData)
 
 
-type alias ProfileModel =
-    { decodeError : Maybe String }
 
 storedStateModel : StoredState -> Model
 storedStateModel state =
-    Model  (state.file) (ProfilePage (ProfileModel Nothing)) True
+    let
+        _ = Debug.log "gpx" <| case state.file of
+            Nothing -> Err "hmmmmm"
+            Just file ->
+                --Debug.log "gpx" (Xml.Decode.decode file)
+                Ok file
+    in
 
+    Model  (state.file)  (ProfilePage ((Err "wat"))) True
+
+type alias Point =
+    {
+        distance: Float
+        , elevation : Float}
+
+type alias ProfileData = { points : List Point }
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
@@ -65,7 +77,7 @@ init maybeState _ _ =
                  -- TODO: handle error
                  >> Result.withDefault (StoredState Nothing)
                  >> storedStateModel)
-        |> Maybe.withDefault (Model Nothing (ProfilePage (ProfileModel Nothing)) True), Cmd.none)
+        |> Maybe.withDefault (Model Nothing (ProfilePage (Err "todo")) True), Cmd.none)
 
 type Msg
     = Ignore
@@ -73,7 +85,9 @@ type Msg
     | ShowOptions Bool
     | OpenFileBrowser
     | FileUploaded File.File
+    -- can probably streamline some of these steps
     | FileStringed String
+    | ProfileCalculated ProfileData
 
 
 
@@ -93,11 +107,17 @@ update msg model =
             (model, File.toString file
                 |> Task.perform FileStringed)
 
-        FileStringed file -> updateModel {model | file = Just file}
+        FileStringed file ->
+         (updateModel {model | file = Just file})
+            |> Tuple.mapSecond (\cmd -> Cmd.batch [cmd, Cmd.none])
 
+        ProfileCalculated profileData ->
+            (updateModel {model | page = ProfilePage <| Ok profileData })
 
         Ignore ->
             ( model, Cmd.none )
+
+
 
 
 
@@ -125,7 +145,11 @@ view model =
                         , Html.Attributes.class "page"
                         , Html.Attributes.style "height" "100%"
                         ]
-                        [ viewOptions model.showOptions profileModel.decodeError
+                        [ viewOptions model.showOptions (
+                            case  profileModel of
+                                Ok _ -> Nothing
+                                Err msg -> Just msg
+                        )
                         , Html.div
                             [ Html.Attributes.class "flex-container"
                             , Html.Attributes.class "column"
