@@ -1,5 +1,5 @@
 # this is just to cache the deps defined in the Gemfile so that it doesn't have to be done everytime serve is called
-FROM jekyll/jekyll:3.8
+FROM jekyll/jekyll:4.2.2
 
 COPY Gemfile Gemfile.lock /srv/jekyll/
 
