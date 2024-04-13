@@ -1,5 +1,6 @@
-# this is just to cache the deps defined in the Gemfile so that it doesn't have to be done everytime serve is called
-FROM jekyll/jekyll:4.2.2
+# this is just to cache the deps defined in the Gemfile so that it doesn't have to be done everytime serve is called.
+# must be jekyll v3 to be compatible with github pages.
+FROM jekyll/jekyll:3.8
 
 COPY Gemfile Gemfile.lock /srv/jekyll/
 
