@@ -5339,8 +5339,8 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$application = _Browser_application;
 var $author$project$Main$Model = F3(
-	function (page, showOptions, url) {
-		return {page: page, showOptions: showOptions, url: url};
+	function (file, page, showOptions) {
+		return {file: file, page: page, showOptions: showOptions};
 	});
 var $author$project$Main$ProfileModel = function (decodeError) {
 	return {decodeError: decodeError};
@@ -5348,23 +5348,99 @@ var $author$project$Main$ProfileModel = function (decodeError) {
 var $author$project$Main$ProfilePage = function (a) {
 	return {$: 'ProfilePage', a: a};
 };
+var $author$project$Main$StoredState = function (file) {
+	return {file: file};
+};
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $elm$json$Json$Decode$maybe = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
+				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
+			]));
+};
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$Main$storedStateDecoder = A2(
+	$elm$json$Json$Decode$map,
+	$author$project$Main$StoredState,
+	$elm$json$Json$Decode$maybe(
+		A2($elm$json$Json$Decode$field, 'file', $elm$json$Json$Decode$string)));
+var $author$project$Main$storedStateModel = function (state) {
+	return A3(
+		$author$project$Main$Model,
+		state.file,
+		$author$project$Main$ProfilePage(
+			$author$project$Main$ProfileModel($elm$core$Maybe$Nothing)),
+		true);
+};
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $elm$core$Result$withDefault = F2(
+	function (def, result) {
+		if (result.$ === 'Ok') {
+			var a = result.a;
+			return a;
+		} else {
+			return def;
+		}
+	});
 var $author$project$Main$init = F3(
-	function (_v0, url, _v1) {
+	function (maybeState, _v0, _v1) {
 		return _Utils_Tuple2(
-			A3(
-				$author$project$Main$Model,
-				$author$project$Main$ProfilePage(
-					$author$project$Main$ProfileModel($elm$core$Maybe$Nothing)),
-				true,
-				url),
+			A2(
+				$elm$core$Maybe$withDefault,
+				A3(
+					$author$project$Main$Model,
+					$elm$core$Maybe$Nothing,
+					$author$project$Main$ProfilePage(
+						$author$project$Main$ProfileModel($elm$core$Maybe$Nothing)),
+					true),
+				A2(
+					$elm$core$Maybe$map,
+					A2(
+						$elm$core$Basics$composeR,
+						$elm$json$Json$Decode$decodeValue($author$project$Main$storedStateDecoder),
+						A2(
+							$elm$core$Basics$composeR,
+							$elm$core$Result$withDefault(
+								$author$project$Main$StoredState($elm$core$Maybe$Nothing)),
+							$author$project$Main$storedStateModel)),
+					maybeState)),
 			$elm$core$Platform$Cmd$none);
 	});
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $elm$json$Json$Decode$null = _Json_decodeNull;
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $author$project$Main$FileStringed = function (a) {
+	return {$: 'FileStringed', a: a};
+};
 var $author$project$Main$FileUploaded = function (a) {
 	return {$: 'FileUploaded', a: a};
 };
@@ -5379,6 +5455,7 @@ var $elm$file$File$Select$file = F2(
 			toMsg,
 			_File_uploadOne(mimes));
 	});
+var $elm$file$File$toString = _File_toString;
 var $elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
 		A3(
@@ -5392,18 +5469,30 @@ var $elm$json$Json$Encode$object = function (pairs) {
 			_Json_emptyObject(_Utils_Tuple0),
 			pairs));
 };
-var $author$project$Main$encodeSavedState = F2(
-	function (fieldNames, model) {
-		return A2(
-			$elm$json$Json$Encode$encode,
-			0,
-			$elm$json$Json$Encode$object(_List_Nil));
-	});
-var $author$project$Main$longFieldNames = {};
 var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$Main$encodeSavedState = function (model) {
+	return A2(
+		$elm$json$Json$Encode$encode,
+		0,
+		$elm$json$Json$Encode$object(
+			function () {
+				var _v0 = model.file;
+				if (_v0.$ === 'Just') {
+					var file = _v0.a;
+					return _List_fromArray(
+						[
+							_Utils_Tuple2(
+							'file',
+							$elm$json$Json$Encode$string(file))
+						]);
+				} else {
+					return _List_Nil;
+				}
+			}()));
+};
 var $author$project$Main$storeState = _Platform_outgoingPort('storeState', $elm$json$Json$Encode$string);
 var $author$project$Main$updateModel = function (model) {
-	var localStoredState = A2($author$project$Main$encodeSavedState, $author$project$Main$longFieldNames, model);
+	var localStoredState = $author$project$Main$encodeSavedState(model);
 	return _Utils_Tuple2(
 		model,
 		$author$project$Main$storeState(localStoredState));
@@ -5430,11 +5519,24 @@ var $author$project$Main$update = F2(
 					A2(
 						$elm$file$File$Select$file,
 						_List_fromArray(
-							['text/csv']),
+							['application/gpx+xml']),
 						$author$project$Main$FileUploaded));
 			case 'FileUploaded':
 				var file = msg.a;
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				return _Utils_Tuple2(
+					model,
+					A2(
+						$elm$core$Task$perform,
+						$author$project$Main$FileStringed,
+						$elm$file$File$toString(file)));
+			case 'FileStringed':
+				var file = msg.a;
+				return $author$project$Main$updateModel(
+					_Utils_update(
+						model,
+						{
+							file: $elm$core$Maybe$Just(file)
+						}));
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
@@ -5453,6 +5555,7 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
@@ -5483,6 +5586,8 @@ var $author$project$Main$profile = A2(
 		]));
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Main$OpenFileBrowser = {$: 'OpenFileBrowser'};
 var $author$project$Main$ShowOptions = function (a) {
 	return {$: 'ShowOptions', a: a};
@@ -5492,11 +5597,6 @@ var $elm$core$Basics$always = F2(
 		return a;
 	});
 var $elm$html$Html$br = _VirtualDom_node('br');
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
 var $elm$core$List$append = F2(
 	function (xs, ys) {
 		if (!ys.b) {
@@ -5511,16 +5611,6 @@ var $elm$core$List$concat = function (lists) {
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$html$Html$hr = _VirtualDom_node('hr');
 var $elm$html$Html$input = _VirtualDom_node('input');
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
 var $elm$html$Html$Attributes$max = $elm$html$Html$Attributes$stringProperty('max');
 var $elm$html$Html$Attributes$min = $elm$html$Html$Attributes$stringProperty('min');
 var $elm$core$Basics$not = _Basics_not;
@@ -5554,12 +5644,10 @@ var $elm$html$Html$Events$stopPropagationOn = F2(
 			event,
 			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
 	});
-var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
 	});
-var $elm$json$Json$Decode$string = _Json_decodeString;
 var $elm$html$Html$Events$targetValue = A2(
 	$elm$json$Json$Decode$at,
 	_List_fromArray(
@@ -5575,8 +5663,6 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
 var $elm$html$Html$legend = _VirtualDom_node('legend');
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Main$optionGroup = F2(
 	function (title, elements) {
 		return A2(
@@ -5597,7 +5683,6 @@ var $author$project$Main$optionGroup = F2(
 						])),
 				elements));
 	});
-var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $elm$html$Html$button = _VirtualDom_node('button');
@@ -5634,15 +5719,6 @@ var $author$project$Main$viewCSVDecodeErrorPanel = function (error) {
 	return $author$project$Main$viewErrorPanel(
 		'There was an error decoding your CSV. Please fix any error and try again 😇\n\nThe first few errors can be seen below.\n\n' + (A2($elm$core$String$left, 1000, error) + '...'));
 };
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var $author$project$Main$viewOptions = F2(
 	function (show, decodeError) {
 		return A2(
@@ -5801,7 +5877,23 @@ var $author$project$Main$view = function (model) {
 									A2($elm$html$Html$Attributes$style, 'justify-content', 'center')
 								]),
 							_List_fromArray(
-								[$author$project$Main$profile]))
+								[
+									A2(
+									$elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2(
+												$elm$core$Maybe$withDefault,
+												'a',
+												A2(
+													$elm$core$Maybe$map,
+													A2($elm$core$Basics$composeR, $elm$core$String$length, $elm$core$String$fromInt),
+													model.file)))
+										])),
+									$author$project$Main$profile
+								]))
 						]));
 			}()
 			]));

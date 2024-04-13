@@ -2,7 +2,7 @@ port module Main exposing (storeState)
 
 import Browser
 import Browser.Navigation
-import File
+import File exposing (File)
 import File.Select
 import Html exposing (Attribute, Html)
 import Html.Attributes
@@ -12,6 +12,7 @@ import Json.Encode
 import String
 import Svg
 import Svg.Attributes
+import Task
 import Url exposing (Protocol(..))
 
 
@@ -34,13 +35,13 @@ main =
 -- MODEL
 
 
-type alias StoredState =    {    }
+type alias StoredState =    { file : Maybe String  }
 
 
 type alias Model =
-    { page : Page
+    { file : Maybe String
+    , page : Page
     , showOptions : Bool
-    , url : Url.Url
     }
 
 
@@ -51,11 +52,20 @@ type Page
 type alias ProfileModel =
     { decodeError : Maybe String }
 
+storedStateModel : StoredState -> Model
+storedStateModel state =
+    Model  (state.file) (ProfilePage (ProfileModel Nothing)) True
+
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
-init _ url _ =
-    (Model (ProfilePage (ProfileModel Nothing)) True  url,Cmd.none)
+init maybeState _ _ =
+    (maybeState
+        |> Maybe.map (Json.Decode.decodeValue (storedStateDecoder)
+                 -- TODO: handle error
+                 >> Result.withDefault (StoredState Nothing)
+                 >> storedStateModel)
+        |> Maybe.withDefault (Model Nothing (ProfilePage (ProfileModel Nothing)) True), Cmd.none)
 
 type Msg
     = Ignore
@@ -63,6 +73,7 @@ type Msg
     | ShowOptions Bool
     | OpenFileBrowser
     | FileUploaded File.File
+    | FileStringed String
 
 
 
@@ -76,15 +87,14 @@ update msg model =
             ( { model | showOptions = show }, Cmd.none )
 
         OpenFileBrowser ->
-            ( model, File.Select.file [ "text/csv" ] FileUploaded )
+            ( model, File.Select.file [ "application/gpx+xml" ] FileUploaded )
 
         FileUploaded file ->
-            ( model
-            --, File.toString file
-            --    |> Task.map decodeCSV
-            --    |> Task.perform GPXUploaded
-            , Cmd.none
-            )
+            (model, File.toString file
+                |> Task.perform FileStringed)
+
+        FileStringed file -> updateModel {model | file = Just file}
+
 
         Ignore ->
             ( model, Cmd.none )
@@ -95,7 +105,7 @@ updateModel : Model -> ( Model, Cmd Msg )
 updateModel model =
     let
         localStoredState =
-            encodeSavedState longFieldNames model
+            encodeSavedState model
     in
     ( model, storeState localStoredState )
 
@@ -123,7 +133,8 @@ view model =
                             , Html.Attributes.style "height" "100%"
                             , Html.Attributes.style "justify-content" "center"
                             ]
-                            [ profile
+                            [ Html.p [] [Html.text (model.file |> Maybe.map (String.length >> String.fromInt) |> Maybe.withDefault "a")]
+                            ,profile
                             ]
                         ]
 
@@ -233,32 +244,19 @@ profile  =
 -- in the records of the Model to ensure that deserialising works as expected.
 
 
-type alias StoredStateCodeFields =
-    {
-    }
-
-
-longFieldNames : StoredStateCodeFields
-longFieldNames =
-    { }
-
-
-{-| shortFieldNames are used within the QR code to reduce the payload size,
-as when the state is transferred as a query param it's easy to overload
-the server used under the hood for jekyll and get the following error
-which results in a 404:
-ERROR WEBrick::HTTPStatus::RequestURITooLarge
--}
-shortFieldNames : StoredStateCodeFields
-shortFieldNames =
-    {   }
-
-
-encodeSavedState : StoredStateCodeFields -> Model -> String
-encodeSavedState fieldNames model =
+encodeSavedState : Model -> String
+encodeSavedState model =
     Json.Encode.object
-        ([ ])
+        ( case model.file of
+            Just file -> [ ("file", Json.Encode.string file)]
+            Nothing -> []
+        )
         |> Json.Encode.encode 0
+
+storedStateDecoder : Json.Decode.Decoder StoredState
+storedStateDecoder =
+    Json.Decode.map StoredState
+        (Json.Decode.maybe (Json.Decode.field "file" Json.Decode.string))
 
 
 port storeState : String -> Cmd msg
