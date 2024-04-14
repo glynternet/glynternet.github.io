@@ -335,19 +335,38 @@ profile data =
             , Svg.Attributes.height <| String.fromInt svgHeight
 
             --                          min-x min-y width height
-            , Svg.Attributes.viewBox <| "-10 -10 " ++ String.fromInt svgWidth ++ " " ++ String.fromInt svgHeight
+            , Svg.Attributes.viewBox <| "0 0 " ++ String.fromInt svgWidth ++ " " ++ String.fromInt svgHeight
             ]
-            (data.points
+            ((data.points
                 |> List.foldl
                     (accumulatePoints
-                        { svgHeight = svgHeight
-                        , svgWidth = svgWidth
+                        { svgHeight = toFloat svgHeight
+                        , svgWidth = toFloat svgWidth
                         , maxElevation = maxElevation
                         , maxDistance = maxDistance
                         }
                     )
                     ( Nothing, [] )
                 |> Tuple.second
+             )
+                ++ ([ ( ( 0, 0 ), ( svgHeight, 0 ) )
+                    , ( ( 0, 0 ), ( 0, svgWidth ) )
+                    , ( ( svgHeight, svgWidth ), ( svgHeight, 0 ) )
+                    , ( ( svgHeight, svgWidth ), ( 0, svgWidth ) )
+                    ]
+                        |> List.map
+                            (\( ( y1, x1 ), ( y2, x2 ) ) ->
+                                Svg.line
+                                    [ Svg.Attributes.x1 <| String.fromInt x1
+                                    , Svg.Attributes.y1 <| String.fromInt y1
+                                    , Svg.Attributes.x2 <| String.fromInt x2
+                                    , Svg.Attributes.y2 <| String.fromInt y2
+                                    , Svg.Attributes.stroke "grey"
+                                    , Svg.Attributes.strokeWidth "1"
+                                    ]
+                                    []
+                            )
+                   )
             )
         ]
 

@@ -6767,14 +6767,56 @@ var $author$project$Main$profile = function (data) {
 						$elm$svg$Svg$Attributes$height(
 						$elm$core$String$fromInt(svgHeight)),
 						$elm$svg$Svg$Attributes$viewBox(
-						'-10 -10 ' + ($elm$core$String$fromInt(svgWidth) + (' ' + $elm$core$String$fromInt(svgHeight))))
+						'0 0 ' + ($elm$core$String$fromInt(svgWidth) + (' ' + $elm$core$String$fromInt(svgHeight))))
 					]),
-				A3(
-					$elm$core$List$foldl,
-					$author$project$Main$accumulatePoints(
-						{maxDistance: maxDistance, maxElevation: maxElevation, svgHeight: svgHeight, svgWidth: svgWidth}),
-					_Utils_Tuple2($elm$core$Maybe$Nothing, _List_Nil),
-					data.points).b)
+				_Utils_ap(
+					A3(
+						$elm$core$List$foldl,
+						$author$project$Main$accumulatePoints(
+							{maxDistance: maxDistance, maxElevation: maxElevation, svgHeight: svgHeight, svgWidth: svgWidth}),
+						_Utils_Tuple2($elm$core$Maybe$Nothing, _List_Nil),
+						data.points).b,
+					A2(
+						$elm$core$List$map,
+						function (_v0) {
+							var _v1 = _v0.a;
+							var y1 = _v1.a;
+							var x1 = _v1.b;
+							var _v2 = _v0.b;
+							var y2 = _v2.a;
+							var x2 = _v2.b;
+							return A2(
+								$elm$svg$Svg$line,
+								_List_fromArray(
+									[
+										$elm$svg$Svg$Attributes$x1(
+										$elm$core$String$fromInt(x1)),
+										$elm$svg$Svg$Attributes$y1(
+										$elm$core$String$fromInt(y1)),
+										$elm$svg$Svg$Attributes$x2(
+										$elm$core$String$fromInt(x2)),
+										$elm$svg$Svg$Attributes$y2(
+										$elm$core$String$fromInt(y2)),
+										$elm$svg$Svg$Attributes$stroke('grey'),
+										$elm$svg$Svg$Attributes$strokeWidth('1')
+									]),
+								_List_Nil);
+						},
+						_List_fromArray(
+							[
+								_Utils_Tuple2(
+								_Utils_Tuple2(0, 0),
+								_Utils_Tuple2(svgHeight, 0)),
+								_Utils_Tuple2(
+								_Utils_Tuple2(0, 0),
+								_Utils_Tuple2(0, svgWidth)),
+								_Utils_Tuple2(
+								_Utils_Tuple2(svgHeight, svgWidth),
+								_Utils_Tuple2(svgHeight, 0)),
+								_Utils_Tuple2(
+								_Utils_Tuple2(svgHeight, svgWidth),
+								_Utils_Tuple2(0, svgWidth))
+							]))))
 			]));
 };
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
