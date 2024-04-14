@@ -5520,9 +5520,10 @@ var $author$project$Main$Model = F3(
 var $author$project$Main$ProfilePage = function (a) {
 	return {$: 'ProfilePage', a: a};
 };
-var $author$project$Main$StoredState = function (file) {
-	return {file: file};
-};
+var $author$project$Main$StoredState = F2(
+	function (file, profileData) {
+		return {file: file, profileData: profileData};
+	});
 var $elm$core$Basics$composeR = F3(
 	function (f, g, x) {
 		return g(
@@ -5541,7 +5542,22 @@ var $elm$core$Maybe$map = F2(
 	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $author$project$Main$ProfileData = function (points) {
+	return {points: points};
+};
+var $author$project$Main$Point = F2(
+	function (distance, elevation) {
+		return {distance: distance, elevation: elevation};
+	});
 var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$json$Json$Decode$float = _Json_decodeFloat;
+var $elm$json$Json$Decode$list = _Json_decodeList;
+var $author$project$Main$decodeElevationProfile = $elm$json$Json$Decode$list(
+	A3(
+		$elm$json$Json$Decode$map2,
+		$author$project$Main$Point,
+		A2($elm$json$Json$Decode$field, 'dist', $elm$json$Json$Decode$float),
+		A2($elm$json$Json$Decode$field, 'ele', $elm$json$Json$Decode$float)));
 var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $elm$json$Json$Decode$maybe = function (decoder) {
 	return $elm$json$Json$Decode$oneOf(
@@ -5552,30 +5568,22 @@ var $elm$json$Json$Decode$maybe = function (decoder) {
 			]));
 };
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Main$storedStateDecoder = A2(
-	$elm$json$Json$Decode$map,
+var $author$project$Main$storedStateDecoder = A3(
+	$elm$json$Json$Decode$map2,
 	$author$project$Main$StoredState,
 	$elm$json$Json$Decode$maybe(
-		A2($elm$json$Json$Decode$field, 'file', $elm$json$Json$Decode$string)));
-var $elm$core$Debug$log = _Debug_log;
+		A2($elm$json$Json$Decode$field, 'file', $elm$json$Json$Decode$string)),
+	$elm$json$Json$Decode$maybe(
+		A2(
+			$elm$json$Json$Decode$field,
+			'profileData',
+			A2($elm$json$Json$Decode$map, $author$project$Main$ProfileData, $author$project$Main$decodeElevationProfile))));
 var $author$project$Main$storedStateModel = function (state) {
-	var _v0 = A2(
-		$elm$core$Debug$log,
-		'gpx',
-		function () {
-			var _v1 = state.file;
-			if (_v1.$ === 'Nothing') {
-				return $elm$core$Result$Err('hmmmmm');
-			} else {
-				var file = _v1.a;
-				return $elm$core$Result$Ok(file);
-			}
-		}());
 	return A3(
 		$author$project$Main$Model,
 		state.file,
 		$author$project$Main$ProfilePage(
-			$elm$core$Result$Err('wat')),
+			$elm$core$Result$Ok(state.profileData)),
 		true);
 };
 var $elm$core$Maybe$withDefault = F2(
@@ -5615,7 +5623,7 @@ var $author$project$Main$init = F3(
 						A2(
 							$elm$core$Basics$composeR,
 							$elm$core$Result$withDefault(
-								$author$project$Main$StoredState($elm$core$Maybe$Nothing)),
+								A2($author$project$Main$StoredState, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing)),
 							$author$project$Main$storedStateModel)),
 					maybeState)),
 			$elm$core$Platform$Cmd$none);
@@ -5629,9 +5637,6 @@ var $author$project$Main$FileStringed = function (a) {
 var $author$project$Main$FileUploaded = function (a) {
 	return {$: 'FileUploaded', a: a};
 };
-var $author$project$Main$ProfileData = function (points) {
-	return {points: points};
-};
 var $author$project$Main$ProfileDataResponse = function (a) {
 	return {$: 'ProfileDataResponse', a: a};
 };
@@ -5639,18 +5644,6 @@ var $elm$core$Basics$always = F2(
 	function (a, _v0) {
 		return a;
 	});
-var $author$project$Main$Point = F2(
-	function (distance, elevation) {
-		return {distance: distance, elevation: elevation};
-	});
-var $elm$json$Json$Decode$float = _Json_decodeFloat;
-var $elm$json$Json$Decode$list = _Json_decodeList;
-var $author$project$Main$decodeElevationProfile = $elm$json$Json$Decode$list(
-	A3(
-		$elm$json$Json$Decode$map2,
-		$author$project$Main$Point,
-		A2($elm$json$Json$Decode$field, 'dist', $elm$json$Json$Decode$float),
-		A2($elm$json$Json$Decode$field, 'ele', $elm$json$Json$Decode$float)));
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
@@ -6464,6 +6457,16 @@ var $elm$core$Tuple$mapSecond = F2(
 			func(y));
 	});
 var $elm$file$File$toString = _File_toString;
+var $elm$json$Json$Encode$float = _Json_wrap;
+var $elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				$elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
 var $elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
 		A3(
@@ -6477,26 +6480,62 @@ var $elm$json$Json$Encode$object = function (pairs) {
 			_Json_emptyObject(_Utils_Tuple0),
 			pairs));
 };
+var $author$project$Main$encodeElevationProfile = function (points) {
+	return A2(
+		$elm$json$Json$Encode$list,
+		function (point) {
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'dist',
+						$elm$json$Json$Encode$float(point.distance)),
+						_Utils_Tuple2(
+						'ele',
+						$elm$json$Json$Encode$float(point.elevation))
+					]));
+		},
+		points);
+};
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $author$project$Main$encodeSavedState = function (model) {
 	return A2(
 		$elm$json$Json$Encode$encode,
 		0,
 		$elm$json$Json$Encode$object(
-			function () {
-				var _v0 = model.file;
-				if (_v0.$ === 'Just') {
-					var file = _v0.a;
-					return _List_fromArray(
-						[
-							_Utils_Tuple2(
-							'file',
-							$elm$json$Json$Encode$string(file))
-						]);
-				} else {
-					return _List_Nil;
-				}
-			}()));
+			_Utils_ap(
+				function () {
+					var _v0 = model.file;
+					if (_v0.$ === 'Just') {
+						var file = _v0.a;
+						return _List_fromArray(
+							[
+								_Utils_Tuple2(
+								'file',
+								$elm$json$Json$Encode$string(file))
+							]);
+					} else {
+						return _List_Nil;
+					}
+				}(),
+				function () {
+					var _v1 = model.page;
+					var profilePage = _v1.a;
+					return A2(
+						$elm$core$Maybe$withDefault,
+						_List_Nil,
+						A2(
+							$elm$core$Maybe$map,
+							function (profileData) {
+								return _List_fromArray(
+									[
+										_Utils_Tuple2(
+										'profileData',
+										$author$project$Main$encodeElevationProfile(profileData.points))
+									]);
+							},
+							A2($elm$core$Result$withDefault, $elm$core$Maybe$Nothing, profilePage)));
+				}())));
 };
 var $author$project$Main$storeState = _Platform_outgoingPort('storeState', $elm$json$Json$Encode$string);
 var $author$project$Main$updateModel = function (model) {
@@ -6575,7 +6614,8 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							page: $author$project$Main$ProfilePage(resp)
+							page: $author$project$Main$ProfilePage(
+								A2($elm$core$Result$map, $elm$core$Maybe$Just, resp))
 						}));
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -6961,10 +7001,14 @@ var $author$project$Main$view = function (model) {
 														$elm$core$Result$map,
 														A2(
 															$elm$core$Basics$composeR,
-															function ($) {
-																return $.points;
-															},
-															A2($elm$core$Basics$composeR, $elm$core$List$length, $elm$core$String$fromInt)),
+															$elm$core$Maybe$map(
+																A2(
+																	$elm$core$Basics$composeR,
+																	function ($) {
+																		return $.points;
+																	},
+																	A2($elm$core$Basics$composeR, $elm$core$List$length, $elm$core$String$fromInt))),
+															$elm$core$Maybe$withDefault('No profile points just yet')),
 														res));
 											}())
 										])),

@@ -37,7 +37,9 @@ main =
 
 
 type alias StoredState =
-    { file : Maybe String }
+    { file : Maybe String
+    , profileData : Maybe ProfileData
+    }
 
 
 type alias Model =
@@ -48,23 +50,12 @@ type alias Model =
 
 
 type Page
-    = ProfilePage (Result String ProfileData)
+    = ProfilePage (Result String (Maybe ProfileData))
 
 
 storedStateModel : StoredState -> Model
 storedStateModel state =
-    let
-        _ =
-            Debug.log "gpx" <|
-                case state.file of
-                    Nothing ->
-                        Err "hmmmmm"
-
-                    Just file ->
-                        --Debug.log "gpx" (Xml.Decode.decode file)
-                        Ok file
-    in
-    Model state.file (ProfilePage (Err "wat")) True
+    Model state.file (ProfilePage (Ok <| state.profileData)) True
 
 
 type alias Point =
@@ -83,7 +74,7 @@ init maybeState _ _ =
         |> Maybe.map
             (Json.Decode.decodeValue storedStateDecoder
                 -- TODO: handle error
-                >> Result.withDefault (StoredState Nothing)
+                >> Result.withDefault (StoredState Nothing Nothing)
                 >> storedStateModel
             )
         |> Maybe.withDefault (Model Nothing (ProfilePage (Err "todo")) True)
@@ -134,7 +125,7 @@ update msg model =
                     )
 
         ProfileDataResponse resp ->
-            updateModel { model | page = ProfilePage resp }
+            updateModel { model | page = ProfilePage <| Result.map Just resp }
 
         Ignore ->
             ( model, Cmd.none )
@@ -184,7 +175,7 @@ view model =
                             [ Html.text
                                 (case model.page of
                                     ProfilePage res ->
-                                        res |> Result.map (.points >> List.length >> String.fromInt) |> resultCollect
+                                        res |> Result.map (Maybe.map (.points >> List.length >> String.fromInt) >> Maybe.withDefault "No profile points just yet") |> resultCollect
                                 )
                             ]
                         , profile
@@ -296,9 +287,25 @@ profile =
         ]
 
 
+encodeElevationProfile : List Point -> Json.Encode.Value
+encodeElevationProfile points =
+    Json.Encode.list
+        (\point ->
+            Json.Encode.object
+                [ ( "dist", Json.Encode.float point.distance )
+                , ( "ele", Json.Encode.float point.elevation )
+                ]
+        )
+        points
+
+
 decodeElevationProfile : Json.Decode.Decoder (List Point)
 decodeElevationProfile =
-    Json.Decode.list (Json.Decode.map2 Point (Json.Decode.field "dist" Json.Decode.float) (Json.Decode.field "ele" Json.Decode.float))
+    Json.Decode.list
+        (Json.Decode.map2 Point
+            (Json.Decode.field "dist" Json.Decode.float)
+            (Json.Decode.field "ele" Json.Decode.float)
+        )
 
 
 
@@ -310,20 +317,29 @@ decodeElevationProfile =
 encodeSavedState : Model -> String
 encodeSavedState model =
     Json.Encode.object
-        (case model.file of
+        ((case model.file of
             Just file ->
                 [ ( "file", Json.Encode.string file ) ]
 
             Nothing ->
                 []
+         )
+            ++ (case model.page of
+                    ProfilePage profilePage ->
+                        profilePage
+                            |> Result.withDefault Nothing
+                            |> Maybe.map (\profileData -> [ ( "profileData", encodeElevationProfile profileData.points ) ])
+                            |> Maybe.withDefault []
+               )
         )
         |> Json.Encode.encode 0
 
 
 storedStateDecoder : Json.Decode.Decoder StoredState
 storedStateDecoder =
-    Json.Decode.map StoredState
+    Json.Decode.map2 StoredState
         (Json.Decode.maybe (Json.Decode.field "file" Json.Decode.string))
+        (Json.Decode.maybe (Json.Decode.field "profileData" (Json.Decode.map ProfileData decodeElevationProfile)))
 
 
 port storeState : String -> Cmd msg
