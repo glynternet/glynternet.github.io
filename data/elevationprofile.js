@@ -6551,7 +6551,6 @@ var $author$project$Main$encodeSavedState = function (model) {
 						case 'NotLoaded':
 							return _List_Nil;
 						case 'Error':
-							var string = profilePage.a;
 							return _List_Nil;
 						default:
 							var data = profilePage.a;
@@ -6663,34 +6662,117 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$p = _VirtualDom_node('p');
-var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$core$String$fromFloat = _String_fromNumber;
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
+var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
+var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
+var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
+var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
+var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
+var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
+var $author$project$Main$accumulatePoints = function (cfg) {
+	return F2(
+		function (point, _v0) {
+			var maybePrevPoint = _v0.a;
+			var currLines = _v0.b;
+			var pointY = $elm$core$String$fromFloat(cfg.svgHeight - ((cfg.svgHeight * point.elevation) / cfg.maxElevation));
+			var pointX = $elm$core$String$fromFloat((cfg.svgWidth * point.distance) / cfg.maxDistance);
+			if (maybePrevPoint.$ === 'Nothing') {
+				return _Utils_Tuple2(
+					$elm$core$Maybe$Just(
+						_Utils_Tuple2(pointX, pointY)),
+					_List_Nil);
+			} else {
+				var prev = maybePrevPoint.a;
+				return _Utils_Tuple2(
+					$elm$core$Maybe$Just(
+						_Utils_Tuple2(pointX, pointY)),
+					A2(
+						$elm$core$List$cons,
+						A2(
+							$elm$svg$Svg$line,
+							_List_fromArray(
+								[
+									$elm$svg$Svg$Attributes$x1(prev.a),
+									$elm$svg$Svg$Attributes$y1(prev.b),
+									$elm$svg$Svg$Attributes$x2(pointX),
+									$elm$svg$Svg$Attributes$y2(pointY),
+									$elm$svg$Svg$Attributes$stroke('grey'),
+									$elm$svg$Svg$Attributes$strokeWidth('1')
+								]),
+							_List_Nil),
+						currLines));
+			}
+		});
+};
+var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$core$List$maximum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
 var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
 var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-var $author$project$Main$profile = A2(
-	$elm$html$Html$div,
-	_List_fromArray(
-		[
-			$elm$html$Html$Attributes$class('TODO')
-		]),
-	_List_fromArray(
-		[
+var $author$project$Main$profile = function (data) {
+	var svgWidth = 500;
+	var svgHeight = 200;
+	var maxElevation = A2(
+		$elm$core$Maybe$withDefault,
+		1,
+		$elm$core$List$maximum(
 			A2(
-			$elm$svg$Svg$svg,
-			function () {
-				var svgHeight = 50;
-				return _List_fromArray(
+				$elm$core$List$map,
+				function ($) {
+					return $.elevation;
+				},
+				data.points)));
+	var maxDistance = A2(
+		$elm$core$Maybe$withDefault,
+		1,
+		$elm$core$List$maximum(
+			A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.distance;
+				},
+				data.points)));
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('TODO')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$svg$Svg$svg,
+				_List_fromArray(
 					[
 						$elm$svg$Svg$Attributes$width('100%'),
 						$elm$svg$Svg$Attributes$height(
 						$elm$core$String$fromInt(svgHeight)),
 						$elm$svg$Svg$Attributes$viewBox(
-						'-120 -10 240 ' + $elm$core$String$fromInt(svgHeight))
-					]);
-			}(),
-			_List_Nil)
-		]));
+						'-10 -10 ' + ($elm$core$String$fromInt(svgWidth) + (' ' + $elm$core$String$fromInt(svgHeight))))
+					]),
+				A3(
+					$elm$core$List$foldl,
+					$author$project$Main$accumulatePoints(
+						{maxDistance: maxDistance, maxElevation: maxElevation, svgHeight: svgHeight, svgWidth: svgWidth}),
+					_Utils_Tuple2($elm$core$Maybe$Nothing, _List_Nil),
+					data.points).b)
+			]));
+};
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -6994,43 +7076,32 @@ var $author$project$Main$view = function (model) {
 								]),
 							_List_fromArray(
 								[
-									A2(
-									$elm$html$Html$p,
-									_List_Nil,
-									_List_fromArray(
-										[
-											$elm$html$Html$text(
-											A2(
-												$elm$core$Maybe$withDefault,
-												'a',
-												A2(
-													$elm$core$Maybe$map,
-													A2($elm$core$Basics$composeR, $elm$core$String$length, $elm$core$String$fromInt),
-													model.file)))
-										])),
-									A2(
-									$elm$html$Html$p,
-									_List_Nil,
-									_List_fromArray(
-										[
-											$elm$html$Html$text(
-											function () {
-												var _v2 = model.page;
-												var res = _v2.a;
-												switch (res.$) {
-													case 'NotLoaded':
-														return 'Load your profile!';
-													case 'Error':
-														var err = res.a;
-														return 'Error loading your profile: ' + err;
-													default:
-														var a = res.a;
-														return $elm$core$String$fromInt(
-															$elm$core$List$length(a.points));
-												}
-											}())
-										])),
-									$author$project$Main$profile
+									function () {
+									var _v2 = model.page;
+									var res = _v2.a;
+									switch (res.$) {
+										case 'NotLoaded':
+											return A2(
+												$elm$html$Html$p,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Load your profile!')
+													]));
+										case 'Error':
+											var err = res.a;
+											return A2(
+												$elm$html$Html$p,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Error loading your profile: ' + err)
+													]));
+										default:
+											var profileData = res.a;
+											return $author$project$Main$profile(profileData);
+									}
+								}()
 								]))
 						]));
 			}()

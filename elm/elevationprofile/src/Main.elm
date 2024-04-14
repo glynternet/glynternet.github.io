@@ -189,23 +189,17 @@ view model =
                         , Html.Attributes.style "height" "100%"
                         , Html.Attributes.style "justify-content" "center"
                         ]
-                        [ Html.p [] [ Html.text (model.file |> Maybe.map (String.length >> String.fromInt) |> Maybe.withDefault "a") ]
-                        , Html.p []
-                            [ Html.text
-                                (case model.page of
-                                    ProfilePage res ->
-                                        case res of
-                                            NotLoaded ->
-                                                "Load your profile!"
+                        [ case model.page of
+                            ProfilePage res ->
+                                case res of
+                                    NotLoaded ->
+                                        Html.p [] [ Html.text "Load your profile!" ]
 
-                                            Error err ->
-                                                "Error loading your profile: " ++ err
+                                    Error err ->
+                                        Html.p [] [ Html.text <| "Error loading your profile: " ++ err ]
 
-                                            Loaded a ->
-                                                a |> .points |> List.length |> String.fromInt
-                                )
-                            ]
-                        , profile
+                                    Loaded profileData ->
+                                        profile profileData
                         ]
                     ]
         ]
@@ -299,23 +293,81 @@ viewButtonWithAttributes attrs text msg =
         [ Html.text text ]
 
 
-profile : Html Msg
-profile =
+profile : ProfileData -> Html Msg
+profile data =
+    let
+        -- TODO(ghanmer): combine these max folds to not iterate through twice
+        maxElevation =
+            -- TODO(ghanmer): handle empty list etc better, although this is probably fine
+            Maybe.withDefault 1 <| List.maximum <| List.map .elevation data.points
+
+        maxDistance =
+            Maybe.withDefault 1 <| List.maximum <| List.map .distance data.points
+
+        svgHeight =
+            200
+
+        svgWidth =
+            500
+    in
     Html.div
         [ Html.Attributes.class "TODO"
         ]
         [ Svg.svg
-            (let
-                svgHeight =
-                    50
-             in
-             [ Svg.Attributes.width "100%"
-             , Svg.Attributes.height <| String.fromInt svgHeight
-             , Svg.Attributes.viewBox <| "-120 -10 240 " ++ String.fromInt svgHeight
-             ]
+            [ Svg.Attributes.width "100%"
+            , Svg.Attributes.height <| String.fromInt svgHeight
+
+            --                          min-x min-y width height
+            , Svg.Attributes.viewBox <| "-10 -10 " ++ String.fromInt svgWidth ++ " " ++ String.fromInt svgHeight
+            ]
+            (data.points
+                |> List.foldl
+                    (accumulatePoints
+                        { svgHeight = svgHeight
+                        , svgWidth = svgWidth
+                        , maxElevation = maxElevation
+                        , maxDistance = maxDistance
+                        }
+                    )
+                    ( Nothing, [] )
+                |> Tuple.second
             )
-            []
         ]
+
+
+accumulatePoints :
+    { svgWidth : Float
+    , svgHeight : Float
+    , maxDistance : Float
+    , maxElevation : Float
+    }
+    -> (Point -> ( Maybe ( String, String ), List (Svg.Svg msg) ) -> ( Maybe ( String, String ), List (Svg.Svg msg) ))
+accumulatePoints cfg =
+    \point ( maybePrevPoint, currLines ) ->
+        let
+            pointX =
+                String.fromFloat (cfg.svgWidth * point.distance / cfg.maxDistance)
+
+            pointY =
+                String.fromFloat (cfg.svgHeight - cfg.svgHeight * point.elevation / cfg.maxElevation)
+        in
+        case maybePrevPoint of
+            Nothing ->
+                ( Just ( pointX, pointY ), [] )
+
+            Just prev ->
+                ( Just ( pointX, pointY )
+                , Svg.line
+                    [ Svg.Attributes.x1 <| Tuple.first prev
+                    , Svg.Attributes.y1 <| Tuple.second prev
+                    , Svg.Attributes.x2 <| pointX
+                    , Svg.Attributes.y2 <| pointY
+                    , Svg.Attributes.stroke "grey"
+                    , Svg.Attributes.strokeWidth "1"
+                    ]
+                    []
+                    :: currLines
+                )
 
 
 encodeElevationProfile : List Point -> Json.Encode.Value
@@ -361,7 +413,7 @@ encodeSavedState model =
                             NotLoaded ->
                                 []
 
-                            Error string ->
+                            Error _ ->
                                 []
 
                             Loaded data ->
