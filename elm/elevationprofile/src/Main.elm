@@ -35,26 +35,15 @@ main =
 -- MODEL
 
 
-type alias StoredState =
-    { file : Maybe String
-    , profileData : Maybe ProfileData
-    }
-
-
 type alias Model =
     { file : Maybe String
-    , page : Page
+    , profileData : LoadableResource ProfileData
     , showOptions : Bool
     }
 
 
-type Page
-    = ProfilePage (LoadableResource ProfileData)
-
-
-storedStateModel : StoredState -> Model
-storedStateModel state =
-    Model state.file (ProfilePage (loadableResourceFromMaybe state.profileData)) True
+type alias ProfileData =
+    { points : List Point }
 
 
 type alias Point =
@@ -63,8 +52,15 @@ type alias Point =
     }
 
 
-type alias ProfileData =
-    { points : List Point }
+type alias StoredState =
+    { file : Maybe String
+    , profileData : Maybe ProfileData
+    }
+
+
+storedStateModel : StoredState -> Model
+storedStateModel state =
+    Model state.file (loadableResourceFromMaybe state.profileData) True
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
@@ -76,7 +72,7 @@ init maybeState _ _ =
                 >> Result.withDefault (StoredState Nothing Nothing)
                 >> storedStateModel
             )
-        |> Maybe.withDefault (Model Nothing (ProfilePage NotLoaded) True)
+        |> Maybe.withDefault (Model Nothing NotLoaded True)
     , Cmd.none
     )
 
@@ -86,7 +82,6 @@ type Msg
     | ShowOptions Bool
     | OpenFileBrowser
     | FileUploaded File.File
-      -- can probably streamline some of these steps
     | ProfileDataResponse (Result String ProfileData)
 
 
@@ -100,7 +95,7 @@ update msg model =
             ( model, File.Select.file [ "application/gpx+xml" ] FileUploaded )
 
         FileUploaded file ->
-            updateModel { model | page = ProfilePage Loading }
+            updateModel { model | profileData = Loading }
                 |> Tuple.mapSecond
                     (\cmd ->
                         Cmd.batch
@@ -118,29 +113,10 @@ update msg model =
                     )
 
         ProfileDataResponse resp ->
-            updateModel { model | page = ProfilePage <| loadableResourceFromResult resp }
+            updateModel { model | profileData = (loadableResourceFromResult << Result.mapError ((++) "getting profile data from GPX: ")) resp }
 
         Ignore ->
             ( model, Cmd.none )
-
-
-httpErrorString : Http.Error -> String
-httpErrorString err =
-    case err of
-        Http.BadUrl msg ->
-            "bad url: " ++ msg
-
-        Http.Timeout ->
-            "timeout"
-
-        Http.NetworkError ->
-            "network error"
-
-        Http.BadStatus code ->
-            "bad status: " ++ String.fromInt code
-
-        Http.BadBody msg ->
-            "bad body: " ++ msg
 
 
 updateModel : Model -> ( Model, Cmd Msg )
@@ -159,70 +135,39 @@ updateModel model =
 view : Model -> Browser.Document Msg
 view model =
     Browser.Document "Elevation profile"
-        [ case model.page of
-            ProfilePage profileModel ->
-                Html.div
-                    [ Html.Attributes.class "flex-container"
-                    , Html.Attributes.class "row"
-                    , Html.Attributes.class "page"
-                    , Html.Attributes.style "height" "100%"
-                    ]
-                    [ viewOptions model.showOptions
-                        (case profileModel of
-                            Error err ->
-                                Just err
+        [ Html.div
+            [ Html.Attributes.class "flex-container"
+            , Html.Attributes.class "row"
+            , Html.Attributes.class "page"
+            , Html.Attributes.style "height" "100%"
+            ]
+            [ viewOptions model.showOptions
+            , Html.div
+                [ Html.Attributes.class "flex-container"
+                , Html.Attributes.class "column"
+                , Html.Attributes.class "wide"
+                , Html.Attributes.style "height" "100%"
+                , Html.Attributes.style "justify-content" "center"
+                ]
+                [ case model.profileData of
+                    NotLoaded ->
+                        Html.p [] [ Html.text "Load your profile!" ]
 
-                            _ ->
-                                Nothing
-                        )
-                    , Html.div
-                        [ Html.Attributes.class "flex-container"
-                        , Html.Attributes.class "column"
-                        , Html.Attributes.class "wide"
-                        , Html.Attributes.style "height" "100%"
-                        , Html.Attributes.style "justify-content" "center"
-                        ]
-                        [ case model.page of
-                            ProfilePage res ->
-                                case res of
-                                    NotLoaded ->
-                                        Html.p [] [ Html.text "Load your profile!" ]
+                    Loading ->
+                        Html.p [] [ Html.text "Loading profile..." ]
 
-                                    Loading ->
-                                        Html.p [] [ Html.text "Loading profile..." ]
+                    Error err ->
+                        viewErrorPanel <| ("There was an error creating your profile. Please fix any error and try again 😇\n\nError: " ++ String.left 1000 err ++ "...")
 
-                                    Error err ->
-                                        Html.p [] [ Html.text <| "Error loading your profile: " ++ err ]
-
-                                    Loaded profileData ->
-                                        profile profileData
-                        ]
-                    ]
+                    Loaded profileData ->
+                        profile profileData
+                ]
+            ]
         ]
 
 
-resultCollect : Result a a -> a
-resultCollect res =
-    case res of
-        Ok a ->
-            a
-
-        Err a ->
-            a
-
-
-optionGroup : String -> List (Html Msg) -> Html Msg
-optionGroup title elements =
-    Html.div [ Html.Attributes.class "flex-container", Html.Attributes.class "column" ]
-        (Html.legend [] [ Html.text title ] :: elements)
-
-
-
--- TODO(glynternet): move the decode error out of the view options?
-
-
-viewOptions : Bool -> Maybe String -> Html Msg
-viewOptions show decodeError =
+viewOptions : Bool -> Html Msg
+viewOptions show =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "column"
@@ -256,14 +201,8 @@ viewOptions show decodeError =
                             ]
                         ]
                   ]
-                , decodeError |> Maybe.map (\err -> [ Html.br [] [], viewCSVDecodeErrorPanel err ]) |> Maybe.withDefault [ Html.div [] [] ]
                 ]
         )
-
-
-viewCSVDecodeErrorPanel : String -> Html Msg
-viewCSVDecodeErrorPanel error =
-    viewErrorPanel <| ("There was an error decoding your CSV. Please fix any error and try again 😇\n\nThe first few errors can be seen below.\n\n" ++ String.left 1000 error ++ "...")
 
 
 viewErrorPanel : String -> Html Msg
@@ -411,20 +350,12 @@ encodeSavedState model =
             Nothing ->
                 []
          )
-            ++ (case model.page of
-                    ProfilePage profilePage ->
-                        case profilePage of
-                            NotLoaded ->
-                                []
+            ++ (case model.profileData of
+                    Loaded data ->
+                        [ ( "profileData", encodeElevationProfile data.points ) ]
 
-                            Loading ->
-                                []
-
-                            Error _ ->
-                                []
-
-                            Loaded data ->
-                                [ ( "profileData", encodeElevationProfile data.points ) ]
+                    _ ->
+                        []
                )
         )
         |> Json.Encode.encode 0
@@ -459,3 +390,32 @@ loadableResourceFromMaybe =
 loadableResourceFromResult : Result String a -> LoadableResource a
 loadableResourceFromResult =
     Result.map Loaded >> Result.mapError Error >> resultCollect
+
+
+httpErrorString : Http.Error -> String
+httpErrorString err =
+    case err of
+        Http.BadUrl msg ->
+            "bad url: " ++ msg
+
+        Http.Timeout ->
+            "timeout"
+
+        Http.NetworkError ->
+            "network error"
+
+        Http.BadStatus code ->
+            "bad status: " ++ String.fromInt code
+
+        Http.BadBody msg ->
+            "bad body: " ++ msg
+
+
+resultCollect : Result a a -> a
+resultCollect res =
+    case res of
+        Ok a ->
+            a
+
+        Err a ->
+            a

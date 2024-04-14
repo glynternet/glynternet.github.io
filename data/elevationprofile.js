@@ -5514,13 +5514,10 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$application = _Browser_application;
 var $author$project$Main$Model = F3(
-	function (file, page, showOptions) {
-		return {file: file, page: page, showOptions: showOptions};
+	function (file, profileData, showOptions) {
+		return {file: file, profileData: profileData, showOptions: showOptions};
 	});
 var $author$project$Main$NotLoaded = {$: 'NotLoaded'};
-var $author$project$Main$ProfilePage = function (a) {
-	return {$: 'ProfilePage', a: a};
-};
 var $author$project$Main$StoredState = F2(
 	function (file, profileData) {
 		return {file: file, profileData: profileData};
@@ -5599,8 +5596,7 @@ var $author$project$Main$storedStateModel = function (state) {
 	return A3(
 		$author$project$Main$Model,
 		state.file,
-		$author$project$Main$ProfilePage(
-			$author$project$Main$loadableResourceFromMaybe(state.profileData)),
+		$author$project$Main$loadableResourceFromMaybe(state.profileData),
 		true);
 };
 var $elm$core$Result$withDefault = F2(
@@ -5617,11 +5613,7 @@ var $author$project$Main$init = F3(
 		return _Utils_Tuple2(
 			A2(
 				$elm$core$Maybe$withDefault,
-				A3(
-					$author$project$Main$Model,
-					$elm$core$Maybe$Nothing,
-					$author$project$Main$ProfilePage($author$project$Main$NotLoaded),
-					true),
+				A3($author$project$Main$Model, $elm$core$Maybe$Nothing, $author$project$Main$NotLoaded, true),
 				A2(
 					$elm$core$Maybe$map,
 					A2(
@@ -5645,6 +5637,11 @@ var $author$project$Main$Loading = {$: 'Loading'};
 var $author$project$Main$ProfileDataResponse = function (a) {
 	return {$: 'ProfileDataResponse', a: a};
 };
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
@@ -6555,23 +6552,17 @@ var $author$project$Main$encodeSavedState = function (model) {
 					}
 				}(),
 				function () {
-					var _v1 = model.page;
-					var profilePage = _v1.a;
-					switch (profilePage.$) {
-						case 'NotLoaded':
-							return _List_Nil;
-						case 'Loading':
-							return _List_Nil;
-						case 'Error':
-							return _List_Nil;
-						default:
-							var data = profilePage.a;
-							return _List_fromArray(
-								[
-									_Utils_Tuple2(
-									'profileData',
-									$author$project$Main$encodeElevationProfile(data.points))
-								]);
+					var _v1 = model.profileData;
+					if (_v1.$ === 'Loaded') {
+						var data = _v1.a;
+						return _List_fromArray(
+							[
+								_Utils_Tuple2(
+								'profileData',
+								$author$project$Main$encodeElevationProfile(data.points))
+							]);
+					} else {
+						return _List_Nil;
 					}
 				}())));
 };
@@ -6629,17 +6620,18 @@ var $author$project$Main$update = F2(
 					$author$project$Main$updateModel(
 						_Utils_update(
 							model,
-							{
-								page: $author$project$Main$ProfilePage($author$project$Main$Loading)
-							})));
+							{profileData: $author$project$Main$Loading})));
 			case 'ProfileDataResponse':
 				var resp = msg.a;
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
 						{
-							page: $author$project$Main$ProfilePage(
-								$author$project$Main$loadableResourceFromResult(resp))
+							profileData: A2(
+								$elm$core$Basics$composeL,
+								$author$project$Main$loadableResourceFromResult,
+								$elm$core$Result$mapError(
+									$elm$core$Basics$append('getting profile data from GPX: ')))(resp)
 						}));
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -6817,11 +6809,22 @@ var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$Main$viewErrorPanel = function (error) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('error_panel')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(error)
+			]));
+};
 var $author$project$Main$OpenFileBrowser = {$: 'OpenFileBrowser'};
 var $author$project$Main$ShowOptions = function (a) {
 	return {$: 'ShowOptions', a: a};
 };
-var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$core$List$append = F2(
 	function (xs, ys) {
 		if (!ys.b) {
@@ -6871,202 +6874,149 @@ var $author$project$Main$viewButtonWithAttributes = F3(
 					$elm$html$Html$text(text)
 				]));
 	});
-var $author$project$Main$viewErrorPanel = function (error) {
+var $author$project$Main$viewOptions = function (show) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$class('error_panel')
+				$elm$html$Html$Attributes$class('flex-container'),
+				$elm$html$Html$Attributes$class('column'),
+				A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
+				A2($elm$html$Html$Attributes$style, 'overflow', 'auto'),
+				$elm$html$Html$Attributes$class('narrow')
 			]),
-		_List_fromArray(
+		(!show) ? _List_fromArray(
 			[
-				$elm$html$Html$text(error)
-			]));
-};
-var $author$project$Main$viewCSVDecodeErrorPanel = function (error) {
-	return $author$project$Main$viewErrorPanel(
-		'There was an error decoding your CSV. Please fix any error and try again 😇\n\nThe first few errors can be seen below.\n\n' + (A2($elm$core$String$left, 1000, error) + '...'));
-};
-var $author$project$Main$viewOptions = F2(
-	function (show, decodeError) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('flex-container'),
-					$elm$html$Html$Attributes$class('column'),
-					A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-					A2($elm$html$Html$Attributes$style, 'overflow', 'auto'),
-					$elm$html$Html$Attributes$class('narrow')
-				]),
-			(!show) ? _List_fromArray(
-				[
-					A2(
-					$elm$html$Html$p,
-					_List_fromArray(
-						[
-							$elm$html$Html$Events$onClick(
-							$author$project$Main$ShowOptions(true)),
-							A2($elm$html$Html$Attributes$style, 'transform', 'rotate(90deg)'),
-							A2($elm$html$Html$Attributes$style, 'white-space', 'nowrap'),
-							A2($elm$html$Html$Attributes$style, 'width', '1em')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('(show options)')
-						]))
-				]) : $elm$core$List$concat(
+				A2(
+				$elm$html$Html$p,
 				_List_fromArray(
 					[
-						_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('options')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$h2,
-									_List_Nil,
-									_List_fromArray(
-										[
-											$elm$html$Html$text('Options')
-										])),
-									A2(
-									$elm$html$Html$p,
-									_List_fromArray(
-										[
-											$elm$html$Html$Events$onClick(
-											$author$project$Main$ShowOptions(false))
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text('(hide)')
-										])),
-									A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-									A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('flex-container'),
-											$elm$html$Html$Attributes$class('column'),
-											A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-											A2($elm$html$Html$Attributes$style, 'align-items', 'center')
-										]),
-									_List_fromArray(
-										[
-											A3(
-											$author$project$Main$viewButtonWithAttributes,
-											_List_fromArray(
-												[
-													A2($elm$html$Html$Attributes$style, 'width', '100%')
-												]),
-											'upload GPX',
-											$author$project$Main$OpenFileBrowser)
-										]))
-								]))
-						]),
+						$elm$html$Html$Events$onClick(
+						$author$project$Main$ShowOptions(true)),
+						A2($elm$html$Html$Attributes$style, 'transform', 'rotate(90deg)'),
+						A2($elm$html$Html$Attributes$style, 'white-space', 'nowrap'),
+						A2($elm$html$Html$Attributes$style, 'width', '1em')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('(show options)')
+					]))
+			]) : $elm$core$List$concat(
+			_List_fromArray(
+				[
+					_List_fromArray(
+					[
 						A2(
-						$elm$core$Maybe$withDefault,
+						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								A2($elm$html$Html$div, _List_Nil, _List_Nil)
+								$elm$html$Html$Attributes$class('options')
 							]),
-						A2(
-							$elm$core$Maybe$map,
-							function (err) {
-								return _List_fromArray(
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$h2,
+								_List_Nil,
+								_List_fromArray(
 									[
-										A2($elm$html$Html$br, _List_Nil, _List_Nil),
-										$author$project$Main$viewCSVDecodeErrorPanel(err)
-									]);
-							},
-							decodeError))
-					])));
-	});
+										$elm$html$Html$text('Options')
+									])),
+								A2(
+								$elm$html$Html$p,
+								_List_fromArray(
+									[
+										$elm$html$Html$Events$onClick(
+										$author$project$Main$ShowOptions(false))
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('(hide)')
+									])),
+								A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('flex-container'),
+										$elm$html$Html$Attributes$class('column'),
+										A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
+										A2($elm$html$Html$Attributes$style, 'align-items', 'center')
+									]),
+								_List_fromArray(
+									[
+										A3(
+										$author$project$Main$viewButtonWithAttributes,
+										_List_fromArray(
+											[
+												A2($elm$html$Html$Attributes$style, 'width', '100%')
+											]),
+										'upload GPX',
+										$author$project$Main$OpenFileBrowser)
+									]))
+							]))
+					])
+				])));
+};
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$browser$Browser$Document,
 		'Elevation profile',
 		_List_fromArray(
 			[
-				function () {
-				var _v0 = model.page;
-				var profileModel = _v0.a;
-				return A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('flex-container'),
-							$elm$html$Html$Attributes$class('row'),
-							$elm$html$Html$Attributes$class('page'),
-							A2($elm$html$Html$Attributes$style, 'height', '100%')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$author$project$Main$viewOptions,
-							model.showOptions,
-							function () {
-								if (profileModel.$ === 'Error') {
-									var err = profileModel.a;
-									return $elm$core$Maybe$Just(err);
-								} else {
-									return $elm$core$Maybe$Nothing;
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('flex-container'),
+						$elm$html$Html$Attributes$class('row'),
+						$elm$html$Html$Attributes$class('page'),
+						A2($elm$html$Html$Attributes$style, 'height', '100%')
+					]),
+				_List_fromArray(
+					[
+						$author$project$Main$viewOptions(model.showOptions),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('flex-container'),
+								$elm$html$Html$Attributes$class('column'),
+								$elm$html$Html$Attributes$class('wide'),
+								A2($elm$html$Html$Attributes$style, 'height', '100%'),
+								A2($elm$html$Html$Attributes$style, 'justify-content', 'center')
+							]),
+						_List_fromArray(
+							[
+								function () {
+								var _v0 = model.profileData;
+								switch (_v0.$) {
+									case 'NotLoaded':
+										return A2(
+											$elm$html$Html$p,
+											_List_Nil,
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Load your profile!')
+												]));
+									case 'Loading':
+										return A2(
+											$elm$html$Html$p,
+											_List_Nil,
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Loading profile...')
+												]));
+									case 'Error':
+										var err = _v0.a;
+										return $author$project$Main$viewErrorPanel(
+											'There was an error creating your profile. Please fix any error and try again 😇\n\nError: ' + (A2($elm$core$String$left, 1000, err) + '...'));
+									default:
+										var profileData = _v0.a;
+										return $author$project$Main$profile(profileData);
 								}
-							}()),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('flex-container'),
-									$elm$html$Html$Attributes$class('column'),
-									$elm$html$Html$Attributes$class('wide'),
-									A2($elm$html$Html$Attributes$style, 'height', '100%'),
-									A2($elm$html$Html$Attributes$style, 'justify-content', 'center')
-								]),
-							_List_fromArray(
-								[
-									function () {
-									var _v2 = model.page;
-									var res = _v2.a;
-									switch (res.$) {
-										case 'NotLoaded':
-											return A2(
-												$elm$html$Html$p,
-												_List_Nil,
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Load your profile!')
-													]));
-										case 'Loading':
-											return A2(
-												$elm$html$Html$p,
-												_List_Nil,
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Loading profile...')
-													]));
-										case 'Error':
-											var err = res.a;
-											return A2(
-												$elm$html$Html$p,
-												_List_Nil,
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Error loading your profile: ' + err)
-													]));
-										default:
-											var profileData = res.a;
-											return $author$project$Main$profile(profileData);
-									}
-								}()
-								]))
-						]));
-			}()
+							}()
+							]))
+					]))
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$application(
