@@ -267,7 +267,7 @@ viewOptions show decodeError =
                             , Html.Attributes.style "justify-content" "center"
                             , Html.Attributes.style "align-items" "center"
                             ]
-                            [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "upload waypoints" OpenFileBrowser
+                            [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "upload GPX" OpenFileBrowser
                             ]
                         ]
                   ]

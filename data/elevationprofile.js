@@ -7007,7 +7007,7 @@ var $author$project$Main$viewOptions = F2(
 												[
 													A2($elm$html$Html$Attributes$style, 'width', '100%')
 												]),
-											'upload waypoints',
+											'upload GPX',
 											$author$project$Main$OpenFileBrowser)
 										]))
 								]))
