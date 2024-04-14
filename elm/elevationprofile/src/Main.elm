@@ -100,7 +100,7 @@ update msg model =
                         Cmd.batch
                             [ cmd
                             , Http.post
-                                { url = "http://127.0.0.1:4001"
+                                { url = "https://gpx.fly.dev"
                                 , body = Http.fileBody file
                                 , expect =
                                     Http.expectJson

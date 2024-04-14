@@ -6589,7 +6589,7 @@ var $author$project$Main$update = F2(
 													$elm$core$Result$map($author$project$Main$ProfileData),
 													$author$project$Main$ProfileDataResponse)),
 											$author$project$Main$decodeElevationProfile),
-										aZ: 'http://127.0.0.1:4001'
+										aZ: 'https://gpx.fly.dev'
 									})
 								]));
 					},
