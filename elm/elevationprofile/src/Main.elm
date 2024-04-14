@@ -7,6 +7,7 @@ import File.Select
 import Html exposing (Attribute, Html)
 import Html.Attributes
 import Html.Events
+import Http
 import Json.Decode
 import Json.Encode
 import String
@@ -63,8 +64,7 @@ storedStateModel state =
     Model  (state.file)  (ProfilePage ((Err "wat"))) True
 
 type alias Point =
-    {
-        distance: Float
+    {        distance: Float
         , elevation : Float}
 
 type alias ProfileData = { points : List Point }
@@ -87,7 +87,7 @@ type Msg
     | FileUploaded File.File
     -- can probably streamline some of these steps
     | FileStringed String
-    | ProfileCalculated ProfileData
+    | ProfileDataResponse (Result String ProfileData)
 
 
 
@@ -109,10 +109,17 @@ update msg model =
 
         FileStringed file ->
          (updateModel {model | file = Just file})
-            |> Tuple.mapSecond (\cmd -> Cmd.batch [cmd, Cmd.none])
+            |> Tuple.mapSecond (\cmd ->
+            Cmd.batch
+                [cmd
+                , Http.get
+                { url = "/data/testelevation.ep"
+                , expect = Http.expectJson
+                (Result.mapError (always "some error") >> Result.map ProfileData >> ProfileDataResponse)
+                ((decodeElevationProfile))} ])
 
-        ProfileCalculated profileData ->
-            (updateModel {model | page = ProfilePage <| Ok profileData })
+        ProfileDataResponse resp ->
+            updateModel {model | page = ProfilePage resp}
 
         Ignore ->
             ( model, Cmd.none )
@@ -123,6 +130,7 @@ update msg model =
 
 updateModel : Model -> ( Model, Cmd Msg )
 updateModel model =
+
     let
         localStoredState =
             encodeSavedState model
@@ -158,6 +166,11 @@ view model =
                             , Html.Attributes.style "justify-content" "center"
                             ]
                             [ Html.p [] [Html.text (model.file |> Maybe.map (String.length >> String.fromInt) |> Maybe.withDefault "a")]
+                            , Html.p [] [Html.text
+                                (case model.page of
+                                    ProfilePage res -> res |> Result.map (.points >> List.length >> String.fromInt) |> resultCollect
+                                )
+                                ]
                             ,profile
                             ]
                         ]
@@ -167,7 +180,11 @@ view model =
 
 
 
-
+resultCollect : Result a a -> a
+resultCollect res =
+    case res of
+        Ok a -> a
+        Err a -> a
 
 optionGroup : String -> List (Html Msg) -> Html Msg
 optionGroup title elements =
@@ -261,6 +278,12 @@ profile  =
                 ])
             []
         ]
+
+
+decodeElevationProfile : Json.Decode.Decoder (List Point)
+decodeElevationProfile =
+    Json.Decode.list (Json.Decode.map2 Point (Json.Decode.field "dist" Json.Decode.float) (Json.Decode.field "ele" Json.Decode.float))
+
 
 
 -- STATE
