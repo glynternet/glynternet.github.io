@@ -6827,10 +6827,6 @@ var $author$project$Main$OpenFileBrowser = {$: 'OpenFileBrowser'};
 var $author$project$Main$ShowOptions = function (a) {
 	return {$: 'ShowOptions', a: a};
 };
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
-	});
 var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$core$List$append = F2(
 	function (xs, ys) {
@@ -6845,9 +6841,6 @@ var $elm$core$List$concat = function (lists) {
 };
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$html$Html$hr = _VirtualDom_node('hr');
-var $elm$html$Html$input = _VirtualDom_node('input');
-var $elm$html$Html$Attributes$max = $elm$html$Html$Attributes$stringProperty('max');
-var $elm$html$Html$Attributes$min = $elm$html$Html$Attributes$stringProperty('min');
 var $elm$core$Basics$not = _Basics_not;
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
@@ -6866,60 +6859,6 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $elm$html$Html$Events$alwaysStop = function (x) {
-	return _Utils_Tuple2(x, true);
-};
-var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 'MayStopPropagation', a: a};
-};
-var $elm$html$Html$Events$stopPropagationOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
-var $elm$html$Html$Events$targetValue = A2(
-	$elm$json$Json$Decode$at,
-	_List_fromArray(
-		['target', 'value']),
-	$elm$json$Json$Decode$string);
-var $elm$html$Html$Events$onInput = function (tagger) {
-	return A2(
-		$elm$html$Html$Events$stopPropagationOn,
-		'input',
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$html$Html$Events$alwaysStop,
-			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
-};
-var $elm$html$Html$legend = _VirtualDom_node('legend');
-var $author$project$Main$optionGroup = F2(
-	function (title, elements) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('flex-container'),
-					$elm$html$Html$Attributes$class('column')
-				]),
-			A2(
-				$elm$core$List$cons,
-				A2(
-					$elm$html$Html$legend,
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text(title)
-						])),
-				elements));
-	});
-var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
-var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $author$project$Main$viewButtonWithAttributes = F3(
 	function (attrs, text, msg) {
@@ -7012,32 +6951,6 @@ var $author$project$Main$viewOptions = F2(
 									_List_fromArray(
 										[
 											$elm$html$Html$text('(hide)')
-										])),
-									A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-									A2(
-									$author$project$Main$optionGroup,
-									'Spacing',
-									_List_fromArray(
-										[
-											A2(
-											$elm$html$Html$input,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$type_('range'),
-													$elm$html$Html$Attributes$min('1'),
-													$elm$html$Html$Attributes$max('50'),
-													$elm$html$Html$Attributes$value(
-													$elm$core$String$fromInt(43)),
-													$elm$html$Html$Events$onInput(
-													A2(
-														$elm$core$Basics$composeR,
-														$elm$core$String$toInt,
-														A2(
-															$elm$core$Basics$composeR,
-															$elm$core$Maybe$withDefault(666),
-															$elm$core$Basics$always($author$project$Main$Ignore))))
-												]),
-											_List_Nil)
 										])),
 									A2($elm$html$Html$hr, _List_Nil, _List_Nil),
 									A2(

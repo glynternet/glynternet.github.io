@@ -267,17 +267,6 @@ viewOptions show decodeError =
                         [ Html.h2 [] [ Html.text "Options" ]
                         , Html.p [ Html.Events.onClick <| ShowOptions False ] [ Html.text "(hide)" ]
                         , Html.hr [] []
-                        , optionGroup "Spacing"
-                            [ Html.input
-                                [ Html.Attributes.type_ "range"
-                                , Html.Attributes.min "1"
-                                , Html.Attributes.max "50"
-                                , Html.Attributes.value <| String.fromInt 43
-                                , Html.Events.onInput (String.toInt >> Maybe.withDefault 666 >> always Ignore)
-                                ]
-                                []
-                            ]
-                        , Html.hr [] []
                         , Html.div
                             [ Html.Attributes.class "flex-container"
                             , Html.Attributes.class "column"
