@@ -36,7 +36,8 @@ main =
 -- MODEL
 
 
-type alias StoredState =    { file : Maybe String  }
+type alias StoredState =
+    { file : Maybe String }
 
 
 type alias Model =
@@ -50,34 +51,45 @@ type Page
     = ProfilePage (Result String ProfileData)
 
 
-
 storedStateModel : StoredState -> Model
 storedStateModel state =
     let
-        _ = Debug.log "gpx" <| case state.file of
-            Nothing -> Err "hmmmmm"
-            Just file ->
-                --Debug.log "gpx" (Xml.Decode.decode file)
-                Ok file
-    in
+        _ =
+            Debug.log "gpx" <|
+                case state.file of
+                    Nothing ->
+                        Err "hmmmmm"
 
-    Model  (state.file)  (ProfilePage ((Err "wat"))) True
+                    Just file ->
+                        --Debug.log "gpx" (Xml.Decode.decode file)
+                        Ok file
+    in
+    Model state.file (ProfilePage (Err "wat")) True
+
 
 type alias Point =
-    {        distance: Float
-        , elevation : Float}
+    { distance : Float
+    , elevation : Float
+    }
 
-type alias ProfileData = { points : List Point }
+
+type alias ProfileData =
+    { points : List Point }
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
 init maybeState _ _ =
-    (maybeState
-        |> Maybe.map (Json.Decode.decodeValue (storedStateDecoder)
-                 -- TODO: handle error
-                 >> Result.withDefault (StoredState Nothing)
-                 >> storedStateModel)
-        |> Maybe.withDefault (Model Nothing (ProfilePage (Err "todo")) True), Cmd.none)
+    ( maybeState
+        |> Maybe.map
+            (Json.Decode.decodeValue storedStateDecoder
+                -- TODO: handle error
+                >> Result.withDefault (StoredState Nothing)
+                >> storedStateModel
+            )
+        |> Maybe.withDefault (Model Nothing (ProfilePage (Err "todo")) True)
+    , Cmd.none
+    )
+
 
 type Msg
     = Ignore
@@ -85,10 +97,9 @@ type Msg
     | ShowOptions Bool
     | OpenFileBrowser
     | FileUploaded File.File
-    -- can probably streamline some of these steps
+      -- can probably streamline some of these steps
     | FileStringed String
     | ProfileDataResponse (Result String ProfileData)
-
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -104,33 +115,33 @@ update msg model =
             ( model, File.Select.file [ "application/gpx+xml" ] FileUploaded )
 
         FileUploaded file ->
-            (model, File.toString file
-                |> Task.perform FileStringed)
+            ( model, Task.perform FileStringed <| File.toString file )
 
         FileStringed file ->
-         (updateModel {model | file = Just file})
-            |> Tuple.mapSecond (\cmd ->
-            Cmd.batch
-                [cmd
-                , Http.get
-                { url = "/data/testelevation.ep"
-                , expect = Http.expectJson
-                (Result.mapError (always "some error") >> Result.map ProfileData >> ProfileDataResponse)
-                ((decodeElevationProfile))} ])
+            updateModel { model | file = Just file }
+                |> Tuple.mapSecond
+                    (\cmd ->
+                        Cmd.batch
+                            [ cmd
+                            , Http.get
+                                { url = "/data/testelevation.ep"
+                                , expect =
+                                    Http.expectJson
+                                        (Result.mapError (always "some error") >> Result.map ProfileData >> ProfileDataResponse)
+                                        decodeElevationProfile
+                                }
+                            ]
+                    )
 
         ProfileDataResponse resp ->
-            updateModel {model | page = ProfilePage resp}
+            updateModel { model | page = ProfilePage resp }
 
         Ignore ->
             ( model, Cmd.none )
 
 
-
-
-
 updateModel : Model -> ( Model, Cmd Msg )
 updateModel model =
-
     let
         localStoredState =
             encodeSavedState model
@@ -148,43 +159,49 @@ view model =
         [ case model.page of
             ProfilePage profileModel ->
                 Html.div
-                        [ Html.Attributes.class "flex-container"
-                        , Html.Attributes.class "row"
-                        , Html.Attributes.class "page"
-                        , Html.Attributes.style "height" "100%"
-                        ]
-                        [ viewOptions model.showOptions (
-                            case  profileModel of
-                                Ok _ -> Nothing
-                                Err msg -> Just msg
+                    [ Html.Attributes.class "flex-container"
+                    , Html.Attributes.class "row"
+                    , Html.Attributes.class "page"
+                    , Html.Attributes.style "height" "100%"
+                    ]
+                    [ viewOptions model.showOptions
+                        (case profileModel of
+                            Ok _ ->
+                                Nothing
+
+                            Err msg ->
+                                Just msg
                         )
-                        , Html.div
-                            [ Html.Attributes.class "flex-container"
-                            , Html.Attributes.class "column"
-                            , Html.Attributes.class "wide"
-                            , Html.Attributes.style "height" "100%"
-                            , Html.Attributes.style "justify-content" "center"
-                            ]
-                            [ Html.p [] [Html.text (model.file |> Maybe.map (String.length >> String.fromInt) |> Maybe.withDefault "a")]
-                            , Html.p [] [Html.text
-                                (case model.page of
-                                    ProfilePage res -> res |> Result.map (.points >> List.length >> String.fromInt) |> resultCollect
-                                )
-                                ]
-                            ,profile
-                            ]
+                    , Html.div
+                        [ Html.Attributes.class "flex-container"
+                        , Html.Attributes.class "column"
+                        , Html.Attributes.class "wide"
+                        , Html.Attributes.style "height" "100%"
+                        , Html.Attributes.style "justify-content" "center"
                         ]
-
+                        [ Html.p [] [ Html.text (model.file |> Maybe.map (String.length >> String.fromInt) |> Maybe.withDefault "a") ]
+                        , Html.p []
+                            [ Html.text
+                                (case model.page of
+                                    ProfilePage res ->
+                                        res |> Result.map (.points >> List.length >> String.fromInt) |> resultCollect
+                                )
+                            ]
+                        , profile
+                        ]
+                    ]
         ]
-
-
 
 
 resultCollect : Result a a -> a
 resultCollect res =
     case res of
-        Ok a -> a
-        Err a -> a
+        Ok a ->
+            a
+
+        Err a ->
+            a
+
 
 optionGroup : String -> List (Html Msg) -> Html Msg
 optionGroup title elements =
@@ -253,8 +270,6 @@ viewErrorPanel error =
     Html.div [ Html.Attributes.class "error_panel" ] [ Html.text error ]
 
 
-
-
 viewButtonWithAttributes : List (Html.Attribute Msg) -> String -> Msg -> Html Msg
 viewButtonWithAttributes attrs text msg =
     Html.button
@@ -262,20 +277,21 @@ viewButtonWithAttributes attrs text msg =
         [ Html.text text ]
 
 
-
 profile : Html Msg
-profile  =
+profile =
     Html.div
         [ Html.Attributes.class "TODO"
         ]
         [ Svg.svg
             (let
-                svgHeight = 50
-            in
-                [ Svg.Attributes.width "100%"
-                , Svg.Attributes.height <| String.fromInt svgHeight
-                , Svg.Attributes.viewBox <| "-120 -10 240 " ++ String.fromInt (svgHeight)
-                ])
+                svgHeight =
+                    50
+             in
+             [ Svg.Attributes.width "100%"
+             , Svg.Attributes.height <| String.fromInt svgHeight
+             , Svg.Attributes.viewBox <| "-120 -10 240 " ++ String.fromInt svgHeight
+             ]
+            )
             []
         ]
 
@@ -294,11 +310,15 @@ decodeElevationProfile =
 encodeSavedState : Model -> String
 encodeSavedState model =
     Json.Encode.object
-        ( case model.file of
-            Just file -> [ ("file", Json.Encode.string file)]
-            Nothing -> []
+        (case model.file of
+            Just file ->
+                [ ( "file", Json.Encode.string file ) ]
+
+            Nothing ->
+                []
         )
         |> Json.Encode.encode 0
+
 
 storedStateDecoder : Json.Decode.Decoder StoredState
 storedStateDecoder =
@@ -307,4 +327,3 @@ storedStateDecoder =
 
 
 port storeState : String -> Cmd msg
-
