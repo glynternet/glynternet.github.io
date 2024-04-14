@@ -105,7 +105,6 @@ update msg model =
                                 , body = Http.fileBody file
                                 , expect =
                                     Http.expectJson
-                                        -- TODO(glynternet): actually handle and bubble up this error
                                         (Result.mapError httpErrorString >> Result.map ProfileData >> ProfileDataResponse)
                                         decodeElevationProfile
                                 }
@@ -404,6 +403,7 @@ httpErrorString err =
         Http.NetworkError ->
             "network error"
 
+        -- TODO(glynternet): can we capture the error message from the body?
         Http.BadStatus code ->
             "bad status: " ++ String.fromInt code
 
