@@ -6585,12 +6585,6 @@ var $author$project$Main$updateModel = function (model) {
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
-			case 'ShowPage':
-				var page = msg.a;
-				return $author$project$Main$updateModel(
-					_Utils_update(
-						model,
-						{page: page}));
 			case 'ShowOptions':
 				var show = msg.a;
 				return _Utils_Tuple2(

@@ -35,23 +35,6 @@ main =
 -- MODEL
 
 
-type LoadableResource a
-    = NotLoaded
-    | Loading
-    | Error String
-    | Loaded a
-
-
-loadableResourceFromMaybe : Maybe a -> LoadableResource a
-loadableResourceFromMaybe =
-    Maybe.map Loaded >> Maybe.withDefault NotLoaded
-
-
-loadableResourceFromResult : Result String a -> LoadableResource a
-loadableResourceFromResult =
-    Result.map Loaded >> Result.mapError Error >> resultCollect
-
-
 type alias StoredState =
     { file : Maybe String
     , profileData : Maybe ProfileData
@@ -100,7 +83,6 @@ init maybeState _ _ =
 
 type Msg
     = Ignore
-    | ShowPage Page
     | ShowOptions Bool
     | OpenFileBrowser
     | FileUploaded File.File
@@ -111,9 +93,6 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ShowPage page ->
-            updateModel { model | page = page }
-
         ShowOptions show ->
             ( { model | showOptions = show }, Cmd.none )
 
@@ -459,3 +438,24 @@ storedStateDecoder =
 
 
 port storeState : String -> Cmd msg
+
+
+
+-- PKG
+
+
+type LoadableResource a
+    = NotLoaded
+    | Loading
+    | Error String
+    | Loaded a
+
+
+loadableResourceFromMaybe : Maybe a -> LoadableResource a
+loadableResourceFromMaybe =
+    Maybe.map Loaded >> Maybe.withDefault NotLoaded
+
+
+loadableResourceFromResult : Result String a -> LoadableResource a
+loadableResourceFromResult =
+    Result.map Loaded >> Result.mapError Error >> resultCollect
