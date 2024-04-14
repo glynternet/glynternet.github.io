@@ -77,7 +77,7 @@ function A9(fun, a, b, c, d, e, f, g, h, i) {
   return fun.a === 9 ? fun.f(a, b, c, d, e, f, g, h, i) : fun(a)(b)(c)(d)(e)(f)(g)(h)(i);
 }
 
-console.warn('Compiled in DEV mode. Follow the advice at https://elm-lang.org/0.19.1/optimize for better performance and smaller assets.');
+
 
 
 // EQUALITY
@@ -113,7 +113,7 @@ function _Utils_eqHelp(x, y, depth, stack)
 		return true;
 	}
 
-	/**/
+	/**_UNUSED/
 	if (x.$ === 'Set_elm_builtin')
 	{
 		x = $elm$core$Set$toList(x);
@@ -126,7 +126,7 @@ function _Utils_eqHelp(x, y, depth, stack)
 	}
 	//*/
 
-	/**_UNUSED/
+	/**/
 	if (x.$ < 0)
 	{
 		x = $elm$core$Dict$toList(x);
@@ -161,7 +161,7 @@ function _Utils_cmp(x, y, ord)
 		return x === y ? /*EQ*/ 0 : x < y ? /*LT*/ -1 : /*GT*/ 1;
 	}
 
-	/**/
+	/**_UNUSED/
 	if (x instanceof String)
 	{
 		var a = x.valueOf();
@@ -170,10 +170,10 @@ function _Utils_cmp(x, y, ord)
 	}
 	//*/
 
-	/**_UNUSED/
+	/**/
 	if (typeof x.$ === 'undefined')
 	//*/
-	/**/
+	/**_UNUSED/
 	if (x.$[0] === '#')
 	//*/
 	{
@@ -203,17 +203,17 @@ var _Utils_compare = F2(function(x, y)
 
 // COMMON VALUES
 
-var _Utils_Tuple0_UNUSED = 0;
-var _Utils_Tuple0 = { $: '#0' };
+var _Utils_Tuple0 = 0;
+var _Utils_Tuple0_UNUSED = { $: '#0' };
 
-function _Utils_Tuple2_UNUSED(a, b) { return { a: a, b: b }; }
-function _Utils_Tuple2(a, b) { return { $: '#2', a: a, b: b }; }
+function _Utils_Tuple2(a, b) { return { a: a, b: b }; }
+function _Utils_Tuple2_UNUSED(a, b) { return { $: '#2', a: a, b: b }; }
 
-function _Utils_Tuple3_UNUSED(a, b, c) { return { a: a, b: b, c: c }; }
-function _Utils_Tuple3(a, b, c) { return { $: '#3', a: a, b: b, c: c }; }
+function _Utils_Tuple3(a, b, c) { return { a: a, b: b, c: c }; }
+function _Utils_Tuple3_UNUSED(a, b, c) { return { $: '#3', a: a, b: b, c: c }; }
 
-function _Utils_chr_UNUSED(c) { return c; }
-function _Utils_chr(c) { return new String(c); }
+function _Utils_chr(c) { return c; }
+function _Utils_chr_UNUSED(c) { return new String(c); }
 
 
 // RECORDS
@@ -264,11 +264,11 @@ function _Utils_ap(xs, ys)
 
 
 
-var _List_Nil_UNUSED = { $: 0 };
-var _List_Nil = { $: '[]' };
+var _List_Nil = { $: 0 };
+var _List_Nil_UNUSED = { $: '[]' };
 
-function _List_Cons_UNUSED(hd, tl) { return { $: 1, a: hd, b: tl }; }
-function _List_Cons(hd, tl) { return { $: '::', a: hd, b: tl }; }
+function _List_Cons(hd, tl) { return { $: 1, a: hd, b: tl }; }
+function _List_Cons_UNUSED(hd, tl) { return { $: '::', a: hd, b: tl }; }
 
 
 var _List_cons = F2(_List_Cons);
@@ -499,12 +499,12 @@ var _JsArray_appendN = F3(function(n, dest, source)
 
 // LOG
 
-var _Debug_log_UNUSED = F2(function(tag, value)
+var _Debug_log = F2(function(tag, value)
 {
 	return value;
 });
 
-var _Debug_log = F2(function(tag, value)
+var _Debug_log_UNUSED = F2(function(tag, value)
 {
 	console.log(tag + ': ' + _Debug_toString(value));
 	return value;
@@ -530,12 +530,12 @@ function _Debug_todoCase(moduleName, region, value)
 
 // TO STRING
 
-function _Debug_toString_UNUSED(value)
+function _Debug_toString(value)
 {
 	return '<internals>';
 }
 
-function _Debug_toString(value)
+function _Debug_toString_UNUSED(value)
 {
 	return _Debug_toAnsiString(false, value);
 }
@@ -720,13 +720,13 @@ function _Debug_toHexDigit(n)
 // CRASH
 
 
-function _Debug_crash_UNUSED(identifier)
+function _Debug_crash(identifier)
 {
 	throw new Error('https://github.com/elm/core/blob/1.0.0/hints/' + identifier + '.md');
 }
 
 
-function _Debug_crash(identifier, fact1, fact2, fact3, fact4)
+function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 {
 	switch(identifier)
 	{
@@ -784,11 +784,11 @@ function _Debug_crash(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.start.line === region.end.line)
+	if (region.bd.aj === region.bu.aj)
 	{
-		return 'on line ' + region.start.line;
+		return 'on line ' + region.bd.aj;
 	}
-	return 'on lines ' + region.start.line + ' through ' + region.end.line;
+	return 'on lines ' + region.bd.aj + ' through ' + region.bu.aj;
 }
 
 
@@ -1212,7 +1212,7 @@ function _Char_toLocaleLower(char)
 
 
 
-/**/
+/**_UNUSED/
 function _Json_errorToString(error)
 {
 	return $elm$json$Json$Decode$errorToString(error);
@@ -1616,11 +1616,11 @@ var _Json_encode = F2(function(indentLevel, value)
 	return JSON.stringify(_Json_unwrap(value), null, indentLevel) + '';
 });
 
-function _Json_wrap(value) { return { $: 0, a: value }; }
-function _Json_unwrap(value) { return value.a; }
+function _Json_wrap_UNUSED(value) { return { $: 0, a: value }; }
+function _Json_unwrap_UNUSED(value) { return value.a; }
 
-function _Json_wrap_UNUSED(value) { return value; }
-function _Json_unwrap_UNUSED(value) { return value; }
+function _Json_wrap(value) { return value; }
+function _Json_unwrap(value) { return value; }
 
 function _Json_emptyArray() { return []; }
 function _Json_emptyObject() { return {}; }
@@ -1857,9 +1857,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.init,
-		impl.update,
-		impl.subscriptions,
+		impl.cO,
+		impl.dc,
+		impl.c8,
 		function() { return function() {} }
 	);
 });
@@ -1872,7 +1872,7 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 function _Platform_initialize(flagDecoder, args, init, update, subscriptions, stepperBuilder)
 {
 	var result = A2(_Json_run, flagDecoder, _Json_wrap(args ? args['flags'] : undefined));
-	$elm$core$Result$isOk(result) || _Debug_crash(2 /**/, _Json_errorToString(result.a) /**/);
+	$elm$core$Result$isOk(result) || _Debug_crash(2 /**_UNUSED/, _Json_errorToString(result.a) /**/);
 	var managers = {};
 	var initPair = init(result.a);
 	var model = initPair.a;
@@ -2316,7 +2316,7 @@ function _Platform_setupIncomingPort(name, sendToApp)
 //
 
 
-function _Platform_export_UNUSED(exports)
+function _Platform_export(exports)
 {
 	scope['Elm']
 		? _Platform_mergeExportsProd(scope['Elm'], exports)
@@ -2337,7 +2337,7 @@ function _Platform_mergeExportsProd(obj, exports)
 }
 
 
-function _Platform_export(exports)
+function _Platform_export_UNUSED(exports)
 {
 	scope['Elm']
 		? _Platform_mergeExportsDebug('Elm', scope['Elm'], exports)
@@ -2377,10 +2377,10 @@ var _VirtualDom_init = F4(function(virtualNode, flagDecoder, debugMetadata, args
 {
 	// NOTE: this function needs _Platform_export available to work
 
-	/**_UNUSED/
+	/**/
 	var node = args['node'];
 	//*/
-	/**/
+	/**_UNUSED/
 	var node = args && args['node'] ? args['node'] : _Debug_crash(0);
 	//*/
 
@@ -2655,14 +2655,14 @@ function _VirtualDom_noInnerHtmlOrFormAction(key)
 function _VirtualDom_noJavaScriptUri(value)
 {
 	return _VirtualDom_RE_js.test(value)
-		? /**_UNUSED/''//*//**/'javascript:alert("This is an XSS vector. Please use ports or web components instead.")'//*/
+		? /**/''//*//**_UNUSED/'javascript:alert("This is an XSS vector. Please use ports or web components instead.")'//*/
 		: value;
 }
 
 function _VirtualDom_noJavaScriptOrHtmlUri(value)
 {
 	return _VirtualDom_RE_js_html.test(value)
-		? /**_UNUSED/''//*//**/'javascript:alert("This is an XSS vector. Please use ports or web components instead.")'//*/
+		? /**/''//*//**_UNUSED/'javascript:alert("This is an XSS vector. Please use ports or web components instead.")'//*/
 		: value;
 }
 
@@ -2670,7 +2670,7 @@ function _VirtualDom_noJavaScriptOrHtmlJson(value)
 {
 	return (typeof _Json_unwrap(value) === 'string' && _VirtualDom_RE_js_html.test(_Json_unwrap(value)))
 		? _Json_wrap(
-			/**_UNUSED/''//*//**/'javascript:alert("This is an XSS vector. Please use ports or web components instead.")'//*/
+			/**/''//*//**_UNUSED/'javascript:alert("This is an XSS vector. Please use ports or web components instead.")'//*/
 		) : value;
 }
 
@@ -2719,9 +2719,9 @@ var _VirtualDom_mapEventTuple = F2(function(func, tuple)
 var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
-		message: func(record.message),
-		stopPropagation: record.stopPropagation,
-		preventDefault: record.preventDefault
+		bN: func(record.bN),
+		b8: record.b8,
+		bW: record.bW
 	}
 });
 
@@ -2989,11 +2989,11 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 		// 3 = Custom
 
 		var value = result.a;
-		var message = !tag ? value : tag < 3 ? value.a : value.message;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.stopPropagation;
+		var message = !tag ? value : tag < 3 ? value.a : value.bN;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.b8;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.preventDefault) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.bW) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -3943,15 +3943,15 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.init,
-		impl.update,
-		impl.subscriptions,
+		impl.cO,
+		impl.dc,
+		impl.c8,
 		function(sendToApp, initialModel) {
-			var view = impl.view;
-			/**_UNUSED/
+			var view = impl.dd;
+			/**/
 			var domNode = args['node'];
 			//*/
-			/**/
+			/**_UNUSED/
 			var domNode = args && args['node'] ? args['node'] : _Debug_crash(0);
 			//*/
 			var currNode = _VirtualDom_virtualize(domNode);
@@ -3979,12 +3979,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.init,
-		impl.update,
-		impl.subscriptions,
+		impl.cO,
+		impl.dc,
+		impl.c8,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.setup && impl.setup(sendToApp)
-			var view = impl.view;
+			var divertHrefToApp = impl.bb && impl.bb(sendToApp)
+			var view = impl.dd;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -3992,12 +3992,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.body);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.cn);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.title) && (_VirtualDom_doc.title = title = doc.title);
+				(title !== doc.da) && (_VirtualDom_doc.title = title = doc.da);
 			});
 		}
 	);
@@ -4053,12 +4053,12 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.onUrlChange;
-	var onUrlRequest = impl.onUrlRequest;
+	var onUrlChange = impl.cW;
+	var onUrlRequest = impl.cX;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		setup: function(sendToApp)
+		bb: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4074,9 +4074,9 @@ function _Browser_application(impl)
 					var next = $elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.protocol === next.protocol
-							&& curr.host === next.host
-							&& curr.port_.a === next.port_.a
+							&& curr.bY === next.bY
+							&& curr.bF === next.bF
+							&& curr.bV.a === next.bV.a
 						)
 							? $elm$browser$Browser$Internal(next)
 							: $elm$browser$Browser$External(href)
@@ -4084,13 +4084,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		init: function(flags)
+		cO: function(flags)
 		{
-			return A3(impl.init, flags, _Browser_getUrl(), key);
+			return A3(impl.cO, flags, _Browser_getUrl(), key);
 		},
-		view: impl.view,
-		update: impl.update,
-		subscriptions: impl.subscriptions
+		dd: impl.dd,
+		dc: impl.dc,
+		c8: impl.c8
 	});
 }
 
@@ -4156,17 +4156,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { hidden: 'hidden', change: 'visibilitychange' }
+		? { cK: 'hidden', cp: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { hidden: 'mozHidden', change: 'mozvisibilitychange' }
+		? { cK: 'mozHidden', cp: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { hidden: 'msHidden', change: 'msvisibilitychange' }
+		? { cK: 'msHidden', cp: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { hidden: 'webkitHidden', change: 'webkitvisibilitychange' }
-		: { hidden: 'hidden', change: 'visibilitychange' };
+		? { cK: 'webkitHidden', cp: 'webkitvisibilitychange' }
+		: { cK: 'hidden', cp: 'visibilitychange' };
 }
 
 
@@ -4247,12 +4247,12 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		scene: _Browser_getScene(),
-		viewport: {
-			x: _Browser_window.pageXOffset,
-			y: _Browser_window.pageYOffset,
-			width: _Browser_doc.documentElement.clientWidth,
-			height: _Browser_doc.documentElement.clientHeight
+		b4: _Browser_getScene(),
+		ce: {
+			cg: _Browser_window.pageXOffset,
+			ch: _Browser_window.pageYOffset,
+			cf: _Browser_doc.documentElement.clientWidth,
+			bE: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4262,8 +4262,8 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		width: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		height: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		cf: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		bE: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4286,15 +4286,15 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			scene: {
-				width: node.scrollWidth,
-				height: node.scrollHeight
+			b4: {
+				cf: node.scrollWidth,
+				bE: node.scrollHeight
 			},
-			viewport: {
-				x: node.scrollLeft,
-				y: node.scrollTop,
-				width: node.clientWidth,
-				height: node.clientHeight
+			ce: {
+				cg: node.scrollLeft,
+				ch: node.scrollTop,
+				cf: node.clientWidth,
+				bE: node.clientHeight
 			}
 		};
 	});
@@ -4324,18 +4324,18 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			scene: _Browser_getScene(),
-			viewport: {
-				x: x,
-				y: y,
-				width: _Browser_doc.documentElement.clientWidth,
-				height: _Browser_doc.documentElement.clientHeight
+			b4: _Browser_getScene(),
+			ce: {
+				cg: x,
+				ch: y,
+				cf: _Browser_doc.documentElement.clientWidth,
+				bE: _Browser_doc.documentElement.clientHeight
 			},
-			element: {
-				x: x + rect.left,
-				y: y + rect.top,
-				width: rect.width,
-				height: rect.height
+			cA: {
+				cg: x + rect.left,
+				ch: y + rect.top,
+				cf: rect.width,
+				bE: rect.height
 			}
 		};
 	});
@@ -4835,8 +4835,8 @@ var _Regex_never = /.^/;
 var _Regex_fromStringWith = F2(function(options, string)
 {
 	var flags = 'g';
-	if (options.multiline) { flags += 'm'; }
-	if (options.caseInsensitive) { flags += 'i'; }
+	if (options.cU) { flags += 'm'; }
+	if (options.co) { flags += 'i'; }
 
 	try
 	{
@@ -4928,11 +4928,11 @@ var _Regex_splitAtMost = F3(function(n, re, str)
 
 var _Regex_infinity = Infinity;
 var $elm$core$Maybe$Just = function (a) {
-	return {$: 'Just', a: a};
+	return {$: 0, a: a};
 };
-var $author$project$Main$Never = {$: 'Never'};
-var $elm$core$Maybe$Nothing = {$: 'Nothing'};
-var $author$project$Main$Tick = {$: 'Tick'};
+var $author$project$Main$Never = {$: 0};
+var $elm$core$Maybe$Nothing = {$: 1};
+var $author$project$Main$Tick = {$: 15};
 var $elm$core$Basics$always = F2(
 	function (a, _v0) {
 		return a;
@@ -4941,15 +4941,15 @@ var $elm$core$Basics$apL = F2(
 	function (f, x) {
 		return f(x);
 	});
-var $elm$core$Basics$EQ = {$: 'EQ'};
-var $elm$core$Basics$GT = {$: 'GT'};
-var $elm$core$Basics$LT = {$: 'LT'};
+var $elm$core$Basics$EQ = 1;
+var $elm$core$Basics$GT = 2;
+var $elm$core$Basics$LT = 0;
 var $elm$core$List$cons = _List_cons;
 var $elm$core$Dict$foldr = F3(
 	function (func, acc, t) {
 		foldr:
 		while (true) {
-			if (t.$ === 'RBEmpty_elm_builtin') {
+			if (t.$ === -2) {
 				return acc;
 			} else {
 				var key = t.b;
@@ -4994,7 +4994,7 @@ var $elm$core$Dict$keys = function (dict) {
 		dict);
 };
 var $elm$core$Set$toList = function (_v0) {
-	var dict = _v0.a;
+	var dict = _v0;
 	return $elm$core$Dict$keys(dict);
 };
 var $elm$core$Elm$JsArray$foldr = _JsArray_foldr;
@@ -5004,7 +5004,7 @@ var $elm$core$Array$foldr = F3(
 		var tail = _v0.d;
 		var helper = F2(
 			function (node, acc) {
-				if (node.$ === 'SubTree') {
+				if (!node.$) {
 					var subTree = node.a;
 					return A3($elm$core$Elm$JsArray$foldr, helper, acc, subTree);
 				} else {
@@ -5022,27 +5022,27 @@ var $elm$core$Array$toList = function (array) {
 	return A3($elm$core$Array$foldr, $elm$core$List$cons, _List_Nil, array);
 };
 var $elm$core$Result$Err = function (a) {
-	return {$: 'Err', a: a};
+	return {$: 1, a: a};
 };
 var $elm$json$Json$Decode$Failure = F2(
 	function (a, b) {
-		return {$: 'Failure', a: a, b: b};
+		return {$: 3, a: a, b: b};
 	});
 var $elm$json$Json$Decode$Field = F2(
 	function (a, b) {
-		return {$: 'Field', a: a, b: b};
+		return {$: 0, a: a, b: b};
 	});
 var $elm$json$Json$Decode$Index = F2(
 	function (a, b) {
-		return {$: 'Index', a: a, b: b};
+		return {$: 1, a: a, b: b};
 	});
 var $elm$core$Result$Ok = function (a) {
-	return {$: 'Ok', a: a};
+	return {$: 0, a: a};
 };
 var $elm$json$Json$Decode$OneOf = function (a) {
-	return {$: 'OneOf', a: a};
+	return {$: 2, a: a};
 };
-var $elm$core$Basics$False = {$: 'False'};
+var $elm$core$Basics$False = 1;
 var $elm$core$Basics$add = _Basics_add;
 var $elm$core$String$all = _String_all;
 var $elm$core$Basics$and = _Basics_and;
@@ -5168,12 +5168,12 @@ var $elm$json$Json$Decode$errorToStringHelp = F2(
 		errorToStringHelp:
 		while (true) {
 			switch (error.$) {
-				case 'Field':
+				case 0:
 					var f = error.a;
 					var err = error.b;
 					var isSimple = function () {
 						var _v1 = $elm$core$String$uncons(f);
-						if (_v1.$ === 'Nothing') {
+						if (_v1.$ === 1) {
 							return false;
 						} else {
 							var _v2 = _v1.a;
@@ -5188,7 +5188,7 @@ var $elm$json$Json$Decode$errorToStringHelp = F2(
 					error = $temp$error;
 					context = $temp$context;
 					continue errorToStringHelp;
-				case 'Index':
+				case 1:
 					var i = error.a;
 					var err = error.b;
 					var indexName = '[' + ($elm$core$String$fromInt(i) + ']');
@@ -5197,7 +5197,7 @@ var $elm$json$Json$Decode$errorToStringHelp = F2(
 					error = $temp$error;
 					context = $temp$context;
 					continue errorToStringHelp;
-				case 'OneOf':
+				case 2:
 					var errors = error.a;
 					if (!errors.b) {
 						return 'Ran into a Json.Decode.oneOf with no possibilities' + function () {
@@ -5261,7 +5261,7 @@ var $elm$json$Json$Decode$errorToStringHelp = F2(
 var $elm$core$Array$branchFactor = 32;
 var $elm$core$Array$Array_elm_builtin = F4(
 	function (a, b, c, d) {
-		return {$: 'Array_elm_builtin', a: a, b: b, c: c, d: d};
+		return {$: 0, a: a, b: b, c: c, d: d};
 	});
 var $elm$core$Elm$JsArray$empty = _JsArray_empty;
 var $elm$core$Basics$ceiling = _Basics_ceiling;
@@ -5276,7 +5276,7 @@ var $elm$core$Array$shiftStep = $elm$core$Basics$ceiling(
 var $elm$core$Array$empty = A4($elm$core$Array$Array_elm_builtin, 0, $elm$core$Array$shiftStep, $elm$core$Elm$JsArray$empty, $elm$core$Elm$JsArray$empty);
 var $elm$core$Elm$JsArray$initialize = _JsArray_initialize;
 var $elm$core$Array$Leaf = function (a) {
-	return {$: 'Leaf', a: a};
+	return {$: 1, a: a};
 };
 var $elm$core$Basics$apR = F2(
 	function (x, f) {
@@ -5292,7 +5292,7 @@ var $elm$core$Basics$max = F2(
 	});
 var $elm$core$Basics$mul = _Basics_mul;
 var $elm$core$Array$SubTree = function (a) {
-	return {$: 'SubTree', a: a};
+	return {$: 0, a: a};
 };
 var $elm$core$Elm$JsArray$initializeFromList = _JsArray_initializeFromList;
 var $elm$core$Array$compressNodes = F2(
@@ -5339,25 +5339,25 @@ var $elm$core$Array$treeFromBuilder = F2(
 	});
 var $elm$core$Array$builderToArray = F2(
 	function (reverseNodeList, builder) {
-		if (!builder.nodeListSize) {
+		if (!builder.d) {
 			return A4(
 				$elm$core$Array$Array_elm_builtin,
-				$elm$core$Elm$JsArray$length(builder.tail),
+				$elm$core$Elm$JsArray$length(builder.g),
 				$elm$core$Array$shiftStep,
 				$elm$core$Elm$JsArray$empty,
-				builder.tail);
+				builder.g);
 		} else {
-			var treeLen = builder.nodeListSize * $elm$core$Array$branchFactor;
+			var treeLen = builder.d * $elm$core$Array$branchFactor;
 			var depth = $elm$core$Basics$floor(
 				A2($elm$core$Basics$logBase, $elm$core$Array$branchFactor, treeLen - 1));
-			var correctNodeList = reverseNodeList ? $elm$core$List$reverse(builder.nodeList) : builder.nodeList;
-			var tree = A2($elm$core$Array$treeFromBuilder, correctNodeList, builder.nodeListSize);
+			var correctNodeList = reverseNodeList ? $elm$core$List$reverse(builder.h) : builder.h;
+			var tree = A2($elm$core$Array$treeFromBuilder, correctNodeList, builder.d);
 			return A4(
 				$elm$core$Array$Array_elm_builtin,
-				$elm$core$Elm$JsArray$length(builder.tail) + treeLen,
+				$elm$core$Elm$JsArray$length(builder.g) + treeLen,
 				A2($elm$core$Basics$max, 5, depth * $elm$core$Array$shiftStep),
 				tree,
-				builder.tail);
+				builder.g);
 		}
 	});
 var $elm$core$Basics$idiv = _Basics_idiv;
@@ -5370,7 +5370,7 @@ var $elm$core$Array$initializeHelp = F5(
 				return A2(
 					$elm$core$Array$builderToArray,
 					false,
-					{nodeList: nodeList, nodeListSize: (len / $elm$core$Array$branchFactor) | 0, tail: tail});
+					{h: nodeList, d: (len / $elm$core$Array$branchFactor) | 0, g: tail});
 			} else {
 				var leaf = $elm$core$Array$Leaf(
 					A3($elm$core$Elm$JsArray$initialize, $elm$core$Array$branchFactor, fromIndex, fn));
@@ -5400,9 +5400,9 @@ var $elm$core$Array$initialize = F2(
 			return A5($elm$core$Array$initializeHelp, fn, initialFromIndex, len, _List_Nil, tail);
 		}
 	});
-var $elm$core$Basics$True = {$: 'True'};
+var $elm$core$Basics$True = 0;
 var $elm$core$Result$isOk = function (result) {
-	if (result.$ === 'Ok') {
+	if (!result.$) {
 		return true;
 	} else {
 		return false;
@@ -5413,33 +5413,31 @@ var $elm$json$Json$Decode$map2 = _Json_map2;
 var $elm$json$Json$Decode$succeed = _Json_succeed;
 var $elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 	switch (handler.$) {
-		case 'Normal':
+		case 0:
 			return 0;
-		case 'MayStopPropagation':
+		case 1:
 			return 1;
-		case 'MayPreventDefault':
+		case 2:
 			return 2;
 		default:
 			return 3;
 	}
 };
 var $elm$browser$Browser$External = function (a) {
-	return {$: 'External', a: a};
+	return {$: 1, a: a};
 };
 var $elm$browser$Browser$Internal = function (a) {
-	return {$: 'Internal', a: a};
+	return {$: 0, a: a};
 };
 var $elm$core$Basics$identity = function (x) {
 	return x;
 };
-var $elm$browser$Browser$Dom$NotFound = function (a) {
-	return {$: 'NotFound', a: a};
-};
-var $elm$url$Url$Http = {$: 'Http'};
-var $elm$url$Url$Https = {$: 'Https'};
+var $elm$browser$Browser$Dom$NotFound = $elm$core$Basics$identity;
+var $elm$url$Url$Http = 0;
+var $elm$url$Url$Https = 1;
 var $elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {fragment: fragment, host: host, path: path, port_: port_, protocol: protocol, query: query};
+		return {bz: fragment, bF: host, cZ: path, bV: port_, bY: protocol, bZ: query};
 	});
 var $elm$core$String$contains = _String_contains;
 var $elm$core$String$length = _String_length;
@@ -5475,7 +5473,7 @@ var $elm$url$Url$chompBeforePath = F5(
 					var i = _v0.a;
 					var _v1 = $elm$core$String$toInt(
 						A2($elm$core$String$dropLeft, i + 1, str));
-					if (_v1.$ === 'Nothing') {
+					if (_v1.$ === 1) {
 						return $elm$core$Maybe$Nothing;
 					} else {
 						var port_ = _v1;
@@ -5558,26 +5556,24 @@ var $elm$core$String$startsWith = _String_startsWith;
 var $elm$url$Url$fromString = function (str) {
 	return A2($elm$core$String$startsWith, 'http://', str) ? A2(
 		$elm$url$Url$chompAfterProtocol,
-		$elm$url$Url$Http,
+		0,
 		A2($elm$core$String$dropLeft, 7, str)) : (A2($elm$core$String$startsWith, 'https://', str) ? A2(
 		$elm$url$Url$chompAfterProtocol,
-		$elm$url$Url$Https,
+		1,
 		A2($elm$core$String$dropLeft, 8, str)) : $elm$core$Maybe$Nothing);
 };
 var $elm$core$Basics$never = function (_v0) {
 	never:
 	while (true) {
-		var nvr = _v0.a;
+		var nvr = _v0;
 		var $temp$_v0 = nvr;
 		_v0 = $temp$_v0;
 		continue never;
 	}
 };
-var $elm$core$Task$Perform = function (a) {
-	return {$: 'Perform', a: a};
-};
+var $elm$core$Task$Perform = $elm$core$Basics$identity;
 var $elm$core$Task$succeed = _Scheduler_succeed;
-var $elm$core$Task$init = $elm$core$Task$succeed(_Utils_Tuple0);
+var $elm$core$Task$init = $elm$core$Task$succeed(0);
 var $elm$core$List$foldrHelper = F4(
 	function (fn, acc, ctr, ls) {
 		if (!ls.b) {
@@ -5683,7 +5679,7 @@ var $elm$core$Task$sequence = function (tasks) {
 var $elm$core$Platform$sendToApp = _Platform_sendToApp;
 var $elm$core$Task$spawnCmd = F2(
 	function (router, _v0) {
-		var task = _v0.a;
+		var task = _v0;
 		return _Scheduler_spawn(
 			A2(
 				$elm$core$Task$andThen,
@@ -5695,7 +5691,7 @@ var $elm$core$Task$onEffects = F3(
 		return A2(
 			$elm$core$Task$map,
 			function (_v0) {
-				return _Utils_Tuple0;
+				return 0;
 			},
 			$elm$core$Task$sequence(
 				A2(
@@ -5705,32 +5701,30 @@ var $elm$core$Task$onEffects = F3(
 	});
 var $elm$core$Task$onSelfMsg = F3(
 	function (_v0, _v1, _v2) {
-		return $elm$core$Task$succeed(_Utils_Tuple0);
+		return $elm$core$Task$succeed(0);
 	});
 var $elm$core$Task$cmdMap = F2(
 	function (tagger, _v0) {
-		var task = _v0.a;
-		return $elm$core$Task$Perform(
-			A2($elm$core$Task$map, tagger, task));
+		var task = _v0;
+		return A2($elm$core$Task$map, tagger, task);
 	});
 _Platform_effectManagers['Task'] = _Platform_createManager($elm$core$Task$init, $elm$core$Task$onEffects, $elm$core$Task$onSelfMsg, $elm$core$Task$cmdMap);
 var $elm$core$Task$command = _Platform_leaf('Task');
 var $elm$core$Task$perform = F2(
 	function (toMessage, task) {
 		return $elm$core$Task$command(
-			$elm$core$Task$Perform(
-				A2($elm$core$Task$map, toMessage, task)));
+			A2($elm$core$Task$map, toMessage, task));
 	});
 var $elm$browser$Browser$application = _Browser_application;
 var $elm$time$Time$Every = F2(
 	function (a, b) {
-		return {$: 'Every', a: a, b: b};
+		return {$: 0, a: a, b: b};
 	});
 var $elm$time$Time$State = F2(
 	function (taggers, processes) {
-		return {processes: processes, taggers: taggers};
+		return {bX: processes, ca: taggers};
 	});
-var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var $elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $elm$time$Time$init = $elm$core$Task$succeed(
 	A2($elm$time$Time$State, $elm$core$Dict$empty, $elm$core$Dict$empty));
@@ -5739,7 +5733,7 @@ var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
 		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
+			if (dict.$ === -2) {
 				return $elm$core$Maybe$Nothing;
 			} else {
 				var key = dict.b;
@@ -5747,14 +5741,14 @@ var $elm$core$Dict$get = F2(
 				var left = dict.d;
 				var right = dict.e;
 				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
+				switch (_v1) {
+					case 0:
 						var $temp$targetKey = targetKey,
 							$temp$dict = left;
 						targetKey = $temp$targetKey;
 						dict = $temp$dict;
 						continue get;
-					case 'EQ':
+					case 1:
 						return $elm$core$Maybe$Just(value);
 					default:
 						var $temp$targetKey = targetKey,
@@ -5766,21 +5760,21 @@ var $elm$core$Dict$get = F2(
 			}
 		}
 	});
-var $elm$core$Dict$Black = {$: 'Black'};
+var $elm$core$Dict$Black = 1;
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
-		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+		return {$: -1, a: a, b: b, c: c, d: d, e: e};
 	});
-var $elm$core$Dict$Red = {$: 'Red'};
+var $elm$core$Dict$Red = 0;
 var $elm$core$Dict$balance = F5(
 	function (color, key, value, left, right) {
-		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+		if ((right.$ === -1) && (!right.a)) {
 			var _v1 = right.a;
 			var rK = right.b;
 			var rV = right.c;
 			var rLeft = right.d;
 			var rRight = right.e;
-			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+			if ((left.$ === -1) && (!left.a)) {
 				var _v3 = left.a;
 				var lK = left.b;
 				var lV = left.c;
@@ -5788,22 +5782,22 @@ var $elm$core$Dict$balance = F5(
 				var lRight = left.e;
 				return A5(
 					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Red,
+					0,
 					key,
 					value,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
+					A5($elm$core$Dict$RBNode_elm_builtin, 1, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, 1, rK, rV, rLeft, rRight));
 			} else {
 				return A5(
 					$elm$core$Dict$RBNode_elm_builtin,
 					color,
 					rK,
 					rV,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, key, value, left, rLeft),
 					rRight);
 			}
 		} else {
-			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+			if ((((left.$ === -1) && (!left.a)) && (left.d.$ === -1)) && (!left.d.a)) {
 				var _v5 = left.a;
 				var lK = left.b;
 				var lV = left.c;
@@ -5816,11 +5810,11 @@ var $elm$core$Dict$balance = F5(
 				var lRight = left.e;
 				return A5(
 					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Red,
+					0,
 					lK,
 					lV,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
+					A5($elm$core$Dict$RBNode_elm_builtin, 1, llK, llV, llLeft, llRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, 1, key, value, lRight, right));
 			} else {
 				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
 			}
@@ -5828,8 +5822,8 @@ var $elm$core$Dict$balance = F5(
 	});
 var $elm$core$Dict$insertHelp = F3(
 	function (key, value, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+		if (dict.$ === -2) {
+			return A5($elm$core$Dict$RBNode_elm_builtin, 0, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
 		} else {
 			var nColor = dict.a;
 			var nKey = dict.b;
@@ -5837,8 +5831,8 @@ var $elm$core$Dict$insertHelp = F3(
 			var nLeft = dict.d;
 			var nRight = dict.e;
 			var _v1 = A2($elm$core$Basics$compare, key, nKey);
-			switch (_v1.$) {
-				case 'LT':
+			switch (_v1) {
+				case 0:
 					return A5(
 						$elm$core$Dict$balance,
 						nColor,
@@ -5846,7 +5840,7 @@ var $elm$core$Dict$insertHelp = F3(
 						nValue,
 						A3($elm$core$Dict$insertHelp, key, value, nLeft),
 						nRight);
-				case 'EQ':
+				case 1:
 					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
 				default:
 					return A5(
@@ -5862,13 +5856,13 @@ var $elm$core$Dict$insertHelp = F3(
 var $elm$core$Dict$insert = F3(
 	function (key, value, dict) {
 		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
-		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+		if ((_v0.$ === -1) && (!_v0.a)) {
 			var _v1 = _v0.a;
 			var k = _v0.b;
 			var v = _v0.c;
 			var l = _v0.d;
 			var r = _v0.e;
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+			return A5($elm$core$Dict$RBNode_elm_builtin, 1, k, v, l, r);
 		} else {
 			var x = _v0;
 			return x;
@@ -5879,7 +5873,7 @@ var $elm$time$Time$addMySub = F2(
 		var interval = _v0.a;
 		var tagger = _v0.b;
 		var _v1 = A2($elm$core$Dict$get, interval, state);
-		if (_v1.$ === 'Nothing') {
+		if (_v1.$ === 1) {
 			return A3(
 				$elm$core$Dict$insert,
 				interval,
@@ -5900,7 +5894,7 @@ var $elm$core$Dict$foldl = F3(
 	function (func, acc, dict) {
 		foldl:
 		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
+			if (dict.$ === -2) {
 				return acc;
 			} else {
 				var key = dict.b;
@@ -5984,14 +5978,14 @@ var $elm$core$Dict$merge = F6(
 	});
 var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
 var $elm$time$Time$Name = function (a) {
-	return {$: 'Name', a: a};
+	return {$: 0, a: a};
 };
 var $elm$time$Time$Offset = function (a) {
-	return {$: 'Offset', a: a};
+	return {$: 1, a: a};
 };
 var $elm$time$Time$Zone = F2(
 	function (a, b) {
-		return {$: 'Zone', a: a, b: b};
+		return {$: 0, a: a, b: b};
 	});
 var $elm$time$Time$customZone = $elm$time$Time$Zone;
 var $elm$time$Time$setInterval = _Time_setInterval;
@@ -6020,7 +6014,7 @@ var $elm$time$Time$spawnHelp = F3(
 	});
 var $elm$time$Time$onEffects = F3(
 	function (router, subs, _v0) {
-		var processes = _v0.processes;
+		var processes = _v0.bX;
 		var rightStep = F3(
 			function (_v6, id, _v7) {
 				var spawns = _v7.a;
@@ -6067,7 +6061,7 @@ var $elm$time$Time$onEffects = F3(
 			_Utils_Tuple3(
 				_List_Nil,
 				$elm$core$Dict$empty,
-				$elm$core$Task$succeed(_Utils_Tuple0)));
+				$elm$core$Task$succeed(0)));
 		var spawnList = _v1.a;
 		var existingDict = _v1.b;
 		var killTask = _v1.c;
@@ -6084,15 +6078,13 @@ var $elm$time$Time$onEffects = F3(
 				},
 				killTask));
 	});
-var $elm$time$Time$Posix = function (a) {
-	return {$: 'Posix', a: a};
-};
-var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
+var $elm$time$Time$Posix = $elm$core$Basics$identity;
+var $elm$time$Time$millisToPosix = $elm$core$Basics$identity;
 var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
 var $elm$time$Time$onSelfMsg = F3(
 	function (router, interval, state) {
-		var _v0 = A2($elm$core$Dict$get, interval, state.taggers);
-		if (_v0.$ === 'Nothing') {
+		var _v0 = A2($elm$core$Dict$get, interval, state.ca);
+		if (_v0.$ === 1) {
 			return $elm$core$Task$succeed(state);
 		} else {
 			var taggers = _v0.a;
@@ -6139,23 +6131,23 @@ var $elm$time$Time$every = F2(
 	});
 var $author$project$Main$CuesViewOptions = F3(
 	function (totalDistanceDisplay, itemSpacing, distanceDetail) {
-		return {distanceDetail: distanceDetail, itemSpacing: itemSpacing, totalDistanceDisplay: totalDistanceDisplay};
+		return {k: distanceDetail, c: itemSpacing, v: totalDistanceDisplay};
 	});
-var $author$project$Main$FromZero = {$: 'FromZero'};
+var $author$project$Main$FromZero = 0;
 var $author$project$Main$Model = F6(
 	function (page, csvDecodeError, showOptions, cuesViewOptions, showQR, url) {
-		return {csvDecodeError: csvDecodeError, cuesViewOptions: cuesViewOptions, page: page, showOptions: showOptions, showQR: showQR, url: url};
+		return {aB: csvDecodeError, q: cuesViewOptions, F: page, bc: showOptions, aL: showQR, cd: url};
 	});
 var $author$project$Main$StoredState = F6(
 	function (waypoints, totalDistanceDisplay, locationFilterEnabled, filteredLocationTypes, itemSpacing, distanceDetail) {
-		return {distanceDetail: distanceDetail, filteredLocationTypes: filteredLocationTypes, itemSpacing: itemSpacing, locationFilterEnabled: locationFilterEnabled, totalDistanceDisplay: totalDistanceDisplay, waypoints: waypoints};
+		return {k: distanceDetail, m: filteredLocationTypes, c: itemSpacing, n: locationFilterEnabled, v: totalDistanceDisplay, I: waypoints};
 	});
 var $author$project$Main$WelcomePage = function (a) {
-	return {$: 'WelcomePage', a: a};
+	return {$: 0, a: a};
 };
 var $elm$core$Maybe$andThen = F2(
 	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
+		if (!maybeValue.$) {
 			var value = maybeValue.a;
 			return callback(value);
 		} else {
@@ -6170,26 +6162,26 @@ var $elm$core$Basics$composeR = F3(
 	});
 var $elm$bytes$Bytes$Encode$getWidth = function (builder) {
 	switch (builder.$) {
-		case 'I8':
+		case 0:
 			return 1;
-		case 'I16':
+		case 1:
 			return 2;
-		case 'I32':
+		case 2:
 			return 4;
-		case 'U8':
+		case 3:
 			return 1;
-		case 'U16':
+		case 4:
 			return 2;
-		case 'U32':
+		case 5:
 			return 4;
-		case 'F32':
+		case 6:
 			return 4;
-		case 'F64':
+		case 7:
 			return 8;
-		case 'Seq':
+		case 8:
 			var w = builder.a;
 			return w;
-		case 'Utf8':
+		case 9:
 			var w = builder.a;
 			return w;
 		default:
@@ -6197,74 +6189,44 @@ var $elm$bytes$Bytes$Encode$getWidth = function (builder) {
 			return _Bytes_width(bs);
 	}
 };
-var $elm$bytes$Bytes$LE = {$: 'LE'};
+var $elm$bytes$Bytes$LE = 0;
 var $elm$bytes$Bytes$Encode$write = F3(
 	function (builder, mb, offset) {
 		switch (builder.$) {
-			case 'I8':
+			case 0:
 				var n = builder.a;
 				return A3(_Bytes_write_i8, mb, offset, n);
-			case 'I16':
+			case 1:
 				var e = builder.a;
 				var n = builder.b;
-				return A4(
-					_Bytes_write_i16,
-					mb,
-					offset,
-					n,
-					_Utils_eq(e, $elm$bytes$Bytes$LE));
-			case 'I32':
+				return A4(_Bytes_write_i16, mb, offset, n, !e);
+			case 2:
 				var e = builder.a;
 				var n = builder.b;
-				return A4(
-					_Bytes_write_i32,
-					mb,
-					offset,
-					n,
-					_Utils_eq(e, $elm$bytes$Bytes$LE));
-			case 'U8':
+				return A4(_Bytes_write_i32, mb, offset, n, !e);
+			case 3:
 				var n = builder.a;
 				return A3(_Bytes_write_u8, mb, offset, n);
-			case 'U16':
+			case 4:
 				var e = builder.a;
 				var n = builder.b;
-				return A4(
-					_Bytes_write_u16,
-					mb,
-					offset,
-					n,
-					_Utils_eq(e, $elm$bytes$Bytes$LE));
-			case 'U32':
+				return A4(_Bytes_write_u16, mb, offset, n, !e);
+			case 5:
 				var e = builder.a;
 				var n = builder.b;
-				return A4(
-					_Bytes_write_u32,
-					mb,
-					offset,
-					n,
-					_Utils_eq(e, $elm$bytes$Bytes$LE));
-			case 'F32':
+				return A4(_Bytes_write_u32, mb, offset, n, !e);
+			case 6:
 				var e = builder.a;
 				var n = builder.b;
-				return A4(
-					_Bytes_write_f32,
-					mb,
-					offset,
-					n,
-					_Utils_eq(e, $elm$bytes$Bytes$LE));
-			case 'F64':
+				return A4(_Bytes_write_f32, mb, offset, n, !e);
+			case 7:
 				var e = builder.a;
 				var n = builder.b;
-				return A4(
-					_Bytes_write_f64,
-					mb,
-					offset,
-					n,
-					_Utils_eq(e, $elm$bytes$Bytes$LE));
-			case 'Seq':
+				return A4(_Bytes_write_f64, mb, offset, n, !e);
+			case 8:
 				var bs = builder.b;
 				return A3($elm$bytes$Bytes$Encode$writeSequence, bs, mb, offset);
-			case 'Utf8':
+			case 9:
 				var s = builder.b;
 				return A3(_Bytes_write_string, mb, offset, s);
 			default:
@@ -6293,7 +6255,7 @@ var $elm$bytes$Bytes$Encode$writeSequence = F3(
 	});
 var $elm$bytes$Bytes$Decode$decode = F2(
 	function (_v0, bs) {
-		var decoder = _v0.a;
+		var decoder = _v0;
 		return A2(_Bytes_decode, decoder, bs);
 	});
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
@@ -6301,26 +6263,23 @@ var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $author$project$Main$defaultDistanceDetail = 1;
 var $author$project$Main$defaultSpacing = 25;
 var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$bytes$Bytes$Decode$Decoder = function (a) {
-	return {$: 'Decoder', a: a};
-};
+var $elm$bytes$Bytes$Decode$Decoder = $elm$core$Basics$identity;
 var $elm$bytes$Bytes$Decode$map2 = F3(
 	function (func, _v0, _v1) {
-		var decodeA = _v0.a;
-		var decodeB = _v1.a;
-		return $elm$bytes$Bytes$Decode$Decoder(
-			F2(
-				function (bites, offset) {
-					var _v2 = A2(decodeA, bites, offset);
-					var aOffset = _v2.a;
-					var a = _v2.b;
-					var _v3 = A2(decodeB, bites, aOffset);
-					var bOffset = _v3.a;
-					var b = _v3.b;
-					return _Utils_Tuple2(
-						bOffset,
-						A2(func, a, b));
-				}));
+		var decodeA = _v0;
+		var decodeB = _v1;
+		return F2(
+			function (bites, offset) {
+				var _v2 = A2(decodeA, bites, offset);
+				var aOffset = _v2.a;
+				var a = _v2.b;
+				var _v3 = A2(decodeB, bites, aOffset);
+				var bOffset = _v3.a;
+				var b = _v3.b;
+				return _Utils_Tuple2(
+					bOffset,
+					A2(func, a, b));
+			});
 	});
 var $folkertdev$elm_flate$Inflate$GZip$andMap = F2(
 	function (argument, _function) {
@@ -6328,43 +6287,40 @@ var $folkertdev$elm_flate$Inflate$GZip$andMap = F2(
 	});
 var $elm$bytes$Bytes$Decode$andThen = F2(
 	function (callback, _v0) {
-		var decodeA = _v0.a;
-		return $elm$bytes$Bytes$Decode$Decoder(
-			F2(
-				function (bites, offset) {
-					var _v1 = A2(decodeA, bites, offset);
-					var newOffset = _v1.a;
-					var a = _v1.b;
-					var _v2 = callback(a);
-					var decodeB = _v2.a;
-					return A2(decodeB, bites, newOffset);
-				}));
+		var decodeA = _v0;
+		return F2(
+			function (bites, offset) {
+				var _v1 = A2(decodeA, bites, offset);
+				var newOffset = _v1.a;
+				var a = _v1.b;
+				var _v2 = callback(a);
+				var decodeB = _v2;
+				return A2(decodeB, bites, newOffset);
+			});
 	});
 var $elm$bytes$Bytes$Decode$bytes = function (n) {
-	return $elm$bytes$Bytes$Decode$Decoder(
-		_Bytes_read_bytes(n));
+	return _Bytes_read_bytes(n);
 };
-var $elm$bytes$Bytes$BE = {$: 'BE'};
+var $elm$bytes$Bytes$BE = 1;
 var $elm$bytes$Bytes$Decode$Done = function (a) {
-	return {$: 'Done', a: a};
+	return {$: 1, a: a};
 };
 var $elm$bytes$Bytes$Decode$Loop = function (a) {
-	return {$: 'Loop', a: a};
+	return {$: 0, a: a};
 };
 var $elm$core$Basics$ge = _Utils_ge;
 var $elm$bytes$Bytes$Decode$map = F2(
 	function (func, _v0) {
-		var decodeA = _v0.a;
-		return $elm$bytes$Bytes$Decode$Decoder(
-			F2(
-				function (bites, offset) {
-					var _v1 = A2(decodeA, bites, offset);
-					var aOffset = _v1.a;
-					var a = _v1.b;
-					return _Utils_Tuple2(
-						aOffset,
-						func(a));
-				}));
+		var decodeA = _v0;
+		return F2(
+			function (bites, offset) {
+				var _v1 = A2(decodeA, bites, offset);
+				var aOffset = _v1.a;
+				var a = _v1.b;
+				return _Utils_Tuple2(
+					aOffset,
+					func(a));
+			});
 	});
 var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
 var $folkertdev$elm_flate$Checksum$Crc32$tinf_crc32case = function (i) {
@@ -6412,21 +6368,18 @@ var $folkertdev$elm_flate$Checksum$Crc32$step = F2(
 		return c;
 	});
 var $elm$bytes$Bytes$Decode$succeed = function (a) {
-	return $elm$bytes$Bytes$Decode$Decoder(
-		F2(
-			function (_v0, offset) {
-				return _Utils_Tuple2(offset, a);
-			}));
+	return F2(
+		function (_v0, offset) {
+			return _Utils_Tuple2(offset, a);
+		});
 };
 var $elm$bytes$Bytes$Decode$unsignedInt32 = function (endianness) {
-	return $elm$bytes$Bytes$Decode$Decoder(
-		_Bytes_read_u32(
-			_Utils_eq(endianness, $elm$bytes$Bytes$LE)));
+	return _Bytes_read_u32(!endianness);
 };
-var $elm$bytes$Bytes$Decode$unsignedInt8 = $elm$bytes$Bytes$Decode$Decoder(_Bytes_read_u8);
+var $elm$bytes$Bytes$Decode$unsignedInt8 = _Bytes_read_u8;
 var $folkertdev$elm_flate$Checksum$Crc32$crc32Help = function (_v0) {
-	var remaining = _v0.remaining;
-	var crc = _v0.crc;
+	var remaining = _v0.aK;
+	var crc = _v0.aA;
 	return (remaining >= 8) ? A3(
 		$elm$bytes$Bytes$Decode$map2,
 		F2(
@@ -6441,7 +6394,7 @@ var $folkertdev$elm_flate$Checksum$Crc32$crc32Help = function (_v0) {
 				var byte1 = 255 & (word1 >>> 24);
 				return $elm$bytes$Bytes$Decode$Loop(
 					{
-						crc: A2(
+						aA: A2(
 							$folkertdev$elm_flate$Checksum$Crc32$step,
 							byte8,
 							A2(
@@ -6463,17 +6416,17 @@ var $folkertdev$elm_flate$Checksum$Crc32$crc32Help = function (_v0) {
 													$folkertdev$elm_flate$Checksum$Crc32$step,
 													byte2,
 													A2($folkertdev$elm_flate$Checksum$Crc32$step, byte1, crc)))))))),
-						remaining: remaining - 8
+						aK: remaining - 8
 					});
 			}),
-		$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE),
-		$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE)) : ((remaining > 0) ? A2(
+		$elm$bytes$Bytes$Decode$unsignedInt32(1),
+		$elm$bytes$Bytes$Decode$unsignedInt32(1)) : ((remaining > 0) ? A2(
 		$elm$bytes$Bytes$Decode$map,
 		function (_byte) {
 			return $elm$bytes$Bytes$Decode$Loop(
 				{
-					crc: A2($folkertdev$elm_flate$Checksum$Crc32$step, _byte, crc),
-					remaining: remaining - 1
+					aA: A2($folkertdev$elm_flate$Checksum$Crc32$step, _byte, crc),
+					aK: remaining - 1
 				});
 		},
 		$elm$bytes$Bytes$Decode$unsignedInt8) : $elm$bytes$Bytes$Decode$succeed(
@@ -6484,11 +6437,11 @@ var $elm$bytes$Bytes$Decode$loopHelp = F4(
 		loopHelp:
 		while (true) {
 			var _v0 = callback(state);
-			var decoder = _v0.a;
+			var decoder = _v0;
 			var _v1 = A2(decoder, bites, offset);
 			var newOffset = _v1.a;
 			var step = _v1.b;
-			if (step.$ === 'Loop') {
+			if (!step.$) {
 				var newState = step.a;
 				var $temp$state = newState,
 					$temp$callback = callback,
@@ -6507,13 +6460,12 @@ var $elm$bytes$Bytes$Decode$loopHelp = F4(
 	});
 var $elm$bytes$Bytes$Decode$loop = F2(
 	function (state, callback) {
-		return $elm$bytes$Bytes$Decode$Decoder(
-			A2($elm$bytes$Bytes$Decode$loopHelp, state, callback));
+		return A2($elm$bytes$Bytes$Decode$loopHelp, state, callback);
 	});
 var $elm$bytes$Bytes$width = _Bytes_width;
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
+		if (!maybe.$) {
 			var value = maybe.a;
 			return value;
 		} else {
@@ -6530,13 +6482,13 @@ var $folkertdev$elm_flate$Checksum$Crc32$tinf_crc32 = function (buffer) {
 			$elm$bytes$Bytes$Decode$decode,
 			A2(
 				$elm$bytes$Bytes$Decode$loop,
-				{crc: initialCrc, remaining: length},
+				{aA: initialCrc, aK: length},
 				$folkertdev$elm_flate$Checksum$Crc32$crc32Help),
 			buffer));
 };
 var $folkertdev$elm_flate$Checksum$Crc32$crc32 = $folkertdev$elm_flate$Checksum$Crc32$tinf_crc32;
-var $elm$bytes$Bytes$Decode$fail = $elm$bytes$Bytes$Decode$Decoder(_Bytes_decodeFailure);
-var $folkertdev$elm_flate$Inflate$GZip$flags = {comment: 16, crc: 2, extra: 4, name: 8, text: 1};
+var $elm$bytes$Bytes$Decode$fail = _Bytes_decodeFailure;
+var $folkertdev$elm_flate$Inflate$GZip$flags = {bp: 16, aA: 2, bx: 4, a3: 8, cb: 1};
 var $elm$core$Basics$neq = _Utils_notEqual;
 var $folkertdev$elm_flate$Inflate$GZip$skipUntilZero = function () {
 	var go = function (n) {
@@ -6550,25 +6502,23 @@ var $folkertdev$elm_flate$Inflate$GZip$skipUntilZero = function () {
 	return A2($elm$bytes$Bytes$Decode$loop, 0, go);
 }();
 var $elm$bytes$Bytes$Decode$unsignedInt16 = function (endianness) {
-	return $elm$bytes$Bytes$Decode$Decoder(
-		_Bytes_read_u16(
-			_Utils_eq(endianness, $elm$bytes$Bytes$LE)));
+	return _Bytes_read_u16(!endianness);
 };
 var $folkertdev$elm_flate$Inflate$GZip$gzipFindBuffer = function (sliced) {
-	if ((sliced.id1 !== 31) || (sliced.id2 !== 139)) {
+	if ((sliced.bH !== 31) || (sliced.bI !== 139)) {
 		return $elm$core$Maybe$Nothing;
 	} else {
-		if (sliced.method !== 8) {
+		if (sliced.cT !== 8) {
 			return $elm$core$Maybe$Nothing;
 		} else {
-			if (!(!(sliced.flg & 224))) {
+			if (!(!(sliced.aX & 224))) {
 				return $elm$core$Maybe$Nothing;
 			} else {
 				var headerSize = 10;
 				var flagSet = function (flag) {
-					return !(!(sliced.flg & flag));
+					return !(!(sliced.aX & flag));
 				};
-				var skipExtra = flagSet($folkertdev$elm_flate$Inflate$GZip$flags.extra) ? A2(
+				var skipExtra = flagSet($folkertdev$elm_flate$Inflate$GZip$flags.bx) ? A2(
 					$elm$bytes$Bytes$Decode$andThen,
 					function (extraSize) {
 						return A2(
@@ -6578,9 +6528,9 @@ var $folkertdev$elm_flate$Inflate$GZip$gzipFindBuffer = function (sliced) {
 							},
 							$elm$bytes$Bytes$Decode$bytes(extraSize));
 					},
-					$elm$bytes$Bytes$Decode$unsignedInt16($elm$bytes$Bytes$LE)) : $elm$bytes$Bytes$Decode$succeed(0);
-				var skipFileComment = flagSet($folkertdev$elm_flate$Inflate$GZip$flags.comment) ? $folkertdev$elm_flate$Inflate$GZip$skipUntilZero : $elm$bytes$Bytes$Decode$succeed(0);
-				var skipFileName = flagSet($folkertdev$elm_flate$Inflate$GZip$flags.name) ? $folkertdev$elm_flate$Inflate$GZip$skipUntilZero : $elm$bytes$Bytes$Decode$succeed(0);
+					$elm$bytes$Bytes$Decode$unsignedInt16(0)) : $elm$bytes$Bytes$Decode$succeed(0);
+				var skipFileComment = flagSet($folkertdev$elm_flate$Inflate$GZip$flags.bp) ? $folkertdev$elm_flate$Inflate$GZip$skipUntilZero : $elm$bytes$Bytes$Decode$succeed(0);
+				var skipFileName = flagSet($folkertdev$elm_flate$Inflate$GZip$flags.a3) ? $folkertdev$elm_flate$Inflate$GZip$skipUntilZero : $elm$bytes$Bytes$Decode$succeed(0);
 				var skipAll = A2(
 					$folkertdev$elm_flate$Inflate$GZip$andMap,
 					skipFileComment,
@@ -6596,14 +6546,14 @@ var $folkertdev$elm_flate$Inflate$GZip$gzipFindBuffer = function (sliced) {
 										return (a + b) + c;
 									})))));
 				var checkHeaderCrc = function (bytesRead) {
-					return flagSet($folkertdev$elm_flate$Inflate$GZip$flags.crc) ? A2(
+					return flagSet($folkertdev$elm_flate$Inflate$GZip$flags.aA) ? A2(
 						$elm$bytes$Bytes$Decode$andThen,
 						function (checksum) {
 							var _v0 = A2(
 								$elm$bytes$Bytes$Decode$decode,
 								$elm$bytes$Bytes$Decode$bytes(bytesRead),
-								sliced.orig);
-							if (_v0.$ === 'Just') {
+								sliced.bT);
+							if (!_v0.$) {
 								var header = _v0.a;
 								return (!_Utils_eq(
 									checksum,
@@ -6612,7 +6562,7 @@ var $folkertdev$elm_flate$Inflate$GZip$gzipFindBuffer = function (sliced) {
 								return $elm$bytes$Bytes$Decode$fail;
 							}
 						},
-						$elm$bytes$Bytes$Decode$unsignedInt16($elm$bytes$Bytes$LE)) : $elm$bytes$Bytes$Decode$succeed(0);
+						$elm$bytes$Bytes$Decode$unsignedInt16(0)) : $elm$bytes$Bytes$Decode$succeed(0);
 				};
 				var decoder = A2(
 					$elm$bytes$Bytes$Decode$andThen,
@@ -6622,27 +6572,27 @@ var $folkertdev$elm_flate$Inflate$GZip$gzipFindBuffer = function (sliced) {
 							function (skipped1) {
 								var skipped = skipped0 + skipped1;
 								return $elm$bytes$Bytes$Decode$bytes(
-									$elm$bytes$Bytes$width(sliced.buffer) - skipped);
+									$elm$bytes$Bytes$width(sliced.l) - skipped);
 							},
 							checkHeaderCrc(skipped0 + headerSize));
 					},
 					skipAll);
-				return A2($elm$bytes$Bytes$Decode$decode, decoder, sliced.buffer);
+				return A2($elm$bytes$Bytes$Decode$decode, decoder, sliced.l);
 			}
 		}
 	}
 };
 var $folkertdev$elm_flate$Inflate$GZip$GzipSlice = F9(
 	function (orig, id1, id2, method, flg, restOfHeader, buffer, crc32, decompressedLength) {
-		return {buffer: buffer, crc32: crc32, decompressedLength: decompressedLength, flg: flg, id1: id1, id2: id2, method: method, orig: orig, restOfHeader: restOfHeader};
+		return {l: buffer, ct: crc32, cw: decompressedLength, aX: flg, bH: id1, bI: id2, cT: method, bT: orig, c0: restOfHeader};
 	});
 var $folkertdev$elm_flate$Inflate$GZip$gzipSlice = function (buffer) {
 	var decoder = A2(
 		$folkertdev$elm_flate$Inflate$GZip$andMap,
-		$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$LE),
+		$elm$bytes$Bytes$Decode$unsignedInt32(0),
 		A2(
 			$folkertdev$elm_flate$Inflate$GZip$andMap,
-			$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$LE),
+			$elm$bytes$Bytes$Decode$unsignedInt32(0),
 			A2(
 				$folkertdev$elm_flate$Inflate$GZip$andMap,
 				$elm$bytes$Bytes$Decode$bytes(
@@ -6667,15 +6617,15 @@ var $folkertdev$elm_flate$Inflate$GZip$gzipSlice = function (buffer) {
 	return A2($elm$bytes$Bytes$Decode$decode, decoder, buffer);
 };
 var $elm$bytes$Bytes$Encode$Bytes = function (a) {
-	return {$: 'Bytes', a: a};
+	return {$: 10, a: a};
 };
 var $elm$bytes$Bytes$Encode$bytes = $elm$bytes$Bytes$Encode$Bytes;
 var $folkertdev$elm_flate$Inflate$BitReader$decode = F2(
 	function (bytes, _v0) {
-		var reader = _v0.a;
-		var initialState = {bitsAvailable: 0, buffer: bytes, reserve: 0, reserveAvailable: 0, tag: 0};
+		var reader = _v0;
+		var initialState = {b: 0, l: bytes, j: 0, f: 0, N: 0};
 		var _v1 = reader(initialState);
-		if (_v1.$ === 'Ok') {
+		if (!_v1.$) {
 			var _v2 = _v1.a;
 			var value = _v2.a;
 			return $elm$core$Result$Ok(value);
@@ -6687,7 +6637,7 @@ var $folkertdev$elm_flate$Inflate$BitReader$decode = F2(
 var $elm$bytes$Bytes$Encode$encode = _Bytes_encode;
 var $elm$bytes$Bytes$Encode$Seq = F2(
 	function (a, b) {
-		return {$: 'Seq', a: a, b: b};
+		return {$: 8, a: a, b: b};
 	});
 var $elm$bytes$Bytes$Encode$getWidths = F2(
 	function (width, builders) {
@@ -6714,24 +6664,22 @@ var $elm$bytes$Bytes$Encode$sequence = function (builders) {
 };
 var $folkertdev$elm_flate$Experimental$ByteArray$ByteArray = F3(
 	function (a, b, c) {
-		return {$: 'ByteArray', a: a, b: b, c: c};
+		return {$: 0, a: a, b: b, c: c};
 	});
 var $folkertdev$elm_flate$Experimental$ByteArray$empty = A3($folkertdev$elm_flate$Experimental$ByteArray$ByteArray, $elm$core$Array$empty, 0, 0);
-var $folkertdev$elm_flate$Inflate$BitReader$BitReader = function (a) {
-	return {$: 'BitReader', a: a};
-};
+var $folkertdev$elm_flate$Inflate$BitReader$BitReader = $elm$core$Basics$identity;
 var $folkertdev$elm_flate$Inflate$BitReader$loopHelp = F3(
 	function (accum, callback, state) {
 		loopHelp:
 		while (true) {
 			var _v0 = callback(accum);
-			var decoder = _v0.a;
+			var decoder = _v0;
 			var _v1 = decoder(state);
-			if (_v1.$ === 'Err') {
+			if (_v1.$ === 1) {
 				var e = _v1.a;
 				return $elm$core$Result$Err(e);
 			} else {
-				if (_v1.a.a.$ === 'Loop') {
+				if (!_v1.a.a.$) {
 					var _v2 = _v1.a;
 					var newAccum = _v2.a.a;
 					var newState = _v2.b;
@@ -6754,28 +6702,26 @@ var $folkertdev$elm_flate$Inflate$BitReader$loopHelp = F3(
 	});
 var $folkertdev$elm_flate$Inflate$BitReader$loop = F2(
 	function (state, callback) {
-		return $folkertdev$elm_flate$Inflate$BitReader$BitReader(
-			A2($folkertdev$elm_flate$Inflate$BitReader$loopHelp, state, callback));
+		return A2($folkertdev$elm_flate$Inflate$BitReader$loopHelp, state, callback);
 	});
 var $folkertdev$elm_flate$Inflate$BitReader$map = F2(
 	function (f, _v0) {
-		var g = _v0.a;
-		return $folkertdev$elm_flate$Inflate$BitReader$BitReader(
-			function (s) {
-				var _v1 = g(s);
-				if (_v1.$ === 'Ok') {
-					var _v2 = _v1.a;
-					var value = _v2.a;
-					var newState = _v2.b;
-					return $elm$core$Result$Ok(
-						_Utils_Tuple2(
-							f(value),
-							newState));
-				} else {
-					var e = _v1.a;
-					return $elm$core$Result$Err(e);
-				}
-			});
+		var g = _v0;
+		return function (s) {
+			var _v1 = g(s);
+			if (!_v1.$) {
+				var _v2 = _v1.a;
+				var value = _v2.a;
+				var newState = _v2.b;
+				return $elm$core$Result$Ok(
+					_Utils_Tuple2(
+						f(value),
+						newState));
+			} else {
+				var e = _v1.a;
+				return $elm$core$Result$Err(e);
+			}
+		};
 	});
 var $elm$core$List$singleton = function (value) {
 	return _List_fromArray(
@@ -6784,16 +6730,16 @@ var $elm$core$List$singleton = function (value) {
 var $elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
 var $elm$bytes$Bytes$Encode$U16 = F2(
 	function (a, b) {
-		return {$: 'U16', a: a, b: b};
+		return {$: 4, a: a, b: b};
 	});
 var $elm$bytes$Bytes$Encode$unsignedInt16 = $elm$bytes$Bytes$Encode$U16;
 var $elm$bytes$Bytes$Encode$U32 = F2(
 	function (a, b) {
-		return {$: 'U32', a: a, b: b};
+		return {$: 5, a: a, b: b};
 	});
 var $elm$bytes$Bytes$Encode$unsignedInt32 = $elm$bytes$Bytes$Encode$U32;
 var $elm$bytes$Bytes$Encode$U8 = function (a) {
-	return {$: 'U8', a: a};
+	return {$: 3, a: a};
 };
 var $elm$bytes$Bytes$Encode$unsignedInt8 = $elm$bytes$Bytes$Encode$U8;
 var $folkertdev$elm_flate$Experimental$ByteArray$toBytes = function (_v0) {
@@ -6806,7 +6752,7 @@ var $folkertdev$elm_flate$Experimental$ByteArray$toBytes = function (_v0) {
 			case 4:
 				return _List_fromArray(
 					[
-						A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$BE, finalBytes)
+						A2($elm$bytes$Bytes$Encode$unsignedInt32, 1, finalBytes)
 					]);
 			case 1:
 				return _List_fromArray(
@@ -6816,12 +6762,12 @@ var $folkertdev$elm_flate$Experimental$ByteArray$toBytes = function (_v0) {
 			case 2:
 				return _List_fromArray(
 					[
-						A2($elm$bytes$Bytes$Encode$unsignedInt16, $elm$bytes$Bytes$BE, finalInt32)
+						A2($elm$bytes$Bytes$Encode$unsignedInt16, 1, finalInt32)
 					]);
 			case 3:
 				return _List_fromArray(
 					[
-						A2($elm$bytes$Bytes$Encode$unsignedInt16, $elm$bytes$Bytes$BE, finalInt32 >> 8),
+						A2($elm$bytes$Bytes$Encode$unsignedInt16, 1, finalInt32 >> 8),
 						$elm$bytes$Bytes$Encode$unsignedInt8(255 & finalInt32)
 					]);
 			default:
@@ -6832,7 +6778,7 @@ var $folkertdev$elm_flate$Experimental$ByteArray$toBytes = function (_v0) {
 		function (element, accum) {
 			return A2(
 				$elm$core$List$cons,
-				A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$BE, element),
+				A2($elm$bytes$Bytes$Encode$unsignedInt32, 1, element),
 				accum);
 		});
 	return $elm$bytes$Bytes$Encode$encode(
@@ -6841,22 +6787,21 @@ var $folkertdev$elm_flate$Experimental$ByteArray$toBytes = function (_v0) {
 };
 var $folkertdev$elm_flate$Inflate$BitReader$andThen = F2(
 	function (f, _v0) {
-		var g = _v0.a;
-		return $folkertdev$elm_flate$Inflate$BitReader$BitReader(
-			function (s) {
-				var _v1 = g(s);
-				if (_v1.$ === 'Ok') {
-					var _v2 = _v1.a;
-					var value = _v2.a;
-					var newState = _v2.b;
-					var _v3 = f(value);
-					var h = _v3.a;
-					return h(newState);
-				} else {
-					var e = _v1.a;
-					return $elm$core$Result$Err(e);
-				}
-			});
+		var g = _v0;
+		return function (s) {
+			var _v1 = g(s);
+			if (!_v1.$) {
+				var _v2 = _v1.a;
+				var value = _v2.a;
+				var newState = _v2.b;
+				var _v3 = f(value);
+				var h = _v3;
+				return h(newState);
+			} else {
+				var e = _v1.a;
+				return $elm$core$Result$Err(e);
+			}
+		};
 	});
 var $elm$core$Array$length = function (_v0) {
 	var len = _v0.a;
@@ -6886,7 +6831,7 @@ var $elm$core$Array$insertTailInTree = F4(
 			}
 		} else {
 			var value = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-			if (value.$ === 'SubTree') {
+			if (!value.$) {
 				var subTree = value.a;
 				var newSub = $elm$core$Array$SubTree(
 					A4($elm$core$Array$insertTailInTree, shift - $elm$core$Array$shiftStep, index, tail, subTree));
@@ -7023,7 +6968,7 @@ var $folkertdev$elm_flate$Experimental$ByteArray$appendBytesHelp = function (_v0
 					remaining - 4,
 					A3($folkertdev$elm_flate$Experimental$ByteArray$pushMany, 4, _new, bytearray)));
 		},
-		$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE)) : ((remaining >= 1) ? A2(
+		$elm$bytes$Bytes$Decode$unsignedInt32(1)) : ((remaining >= 1) ? A2(
 		$elm$bytes$Bytes$Decode$map,
 		function (_new) {
 			return $elm$bytes$Bytes$Decode$Loop(
@@ -7046,7 +6991,7 @@ var $folkertdev$elm_flate$Experimental$ByteArray$appendBytes = F2(
 				barray),
 			$folkertdev$elm_flate$Experimental$ByteArray$appendBytesHelp);
 		var _v0 = A2($elm$bytes$Bytes$Decode$decode, decoder, bytes);
-		if (_v0.$ === 'Just') {
+		if (!_v0.$) {
 			var v = _v0.a;
 			return v;
 		} else {
@@ -7070,7 +7015,7 @@ var $elm$core$Array$setHelp = F4(
 	function (shift, index, value, tree) {
 		var pos = $elm$core$Array$bitMask & (index >>> shift);
 		var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-		if (_v0.$ === 'SubTree') {
+		if (!_v0.$) {
 			var subTree = _v0.a;
 			var newSub = A4($elm$core$Array$setHelp, shift - $elm$core$Array$shiftStep, index, value, subTree);
 			return A3(
@@ -7114,7 +7059,7 @@ var $elm$core$Array$set = F3(
 var $elm$core$Dict$getMin = function (dict) {
 	getMin:
 	while (true) {
-		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+		if ((dict.$ === -1) && (dict.d.$ === -1)) {
 			var left = dict.d;
 			var $temp$dict = left;
 			dict = $temp$dict;
@@ -7125,8 +7070,8 @@ var $elm$core$Dict$getMin = function (dict) {
 	}
 };
 var $elm$core$Dict$moveRedLeft = function (dict) {
-	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
-		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
+	if (((dict.$ === -1) && (dict.d.$ === -1)) && (dict.e.$ === -1)) {
+		if ((dict.e.d.$ === -1) && (!dict.e.d.a)) {
 			var clr = dict.a;
 			var k = dict.b;
 			var v = dict.c;
@@ -7149,17 +7094,17 @@ var $elm$core$Dict$moveRedLeft = function (dict) {
 			var rRight = _v2.e;
 			return A5(
 				$elm$core$Dict$RBNode_elm_builtin,
-				$elm$core$Dict$Red,
+				0,
 				rlK,
 				rlV,
 				A5(
 					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
+					1,
 					k,
 					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, lK, lV, lLeft, lRight),
 					rlL),
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
+				A5($elm$core$Dict$RBNode_elm_builtin, 1, rK, rV, rlR, rRight));
 		} else {
 			var clr = dict.a;
 			var k = dict.b;
@@ -7176,22 +7121,22 @@ var $elm$core$Dict$moveRedLeft = function (dict) {
 			var rV = _v5.c;
 			var rLeft = _v5.d;
 			var rRight = _v5.e;
-			if (clr.$ === 'Black') {
+			if (clr === 1) {
 				return A5(
 					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
+					1,
 					k,
 					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, rK, rV, rLeft, rRight));
 			} else {
 				return A5(
 					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
+					1,
 					k,
 					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, rK, rV, rLeft, rRight));
 			}
 		}
 	} else {
@@ -7199,8 +7144,8 @@ var $elm$core$Dict$moveRedLeft = function (dict) {
 	}
 };
 var $elm$core$Dict$moveRedRight = function (dict) {
-	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
-		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
+	if (((dict.$ === -1) && (dict.d.$ === -1)) && (dict.e.$ === -1)) {
+		if ((dict.d.d.$ === -1) && (!dict.d.d.a)) {
 			var clr = dict.a;
 			var k = dict.b;
 			var v = dict.c;
@@ -7223,17 +7168,17 @@ var $elm$core$Dict$moveRedRight = function (dict) {
 			var rRight = _v4.e;
 			return A5(
 				$elm$core$Dict$RBNode_elm_builtin,
-				$elm$core$Dict$Red,
+				0,
 				lK,
 				lV,
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+				A5($elm$core$Dict$RBNode_elm_builtin, 1, llK, llV, llLeft, llRight),
 				A5(
 					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
+					1,
 					k,
 					v,
 					lRight,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, rK, rV, rLeft, rRight)));
 		} else {
 			var clr = dict.a;
 			var k = dict.b;
@@ -7250,22 +7195,22 @@ var $elm$core$Dict$moveRedRight = function (dict) {
 			var rV = _v6.c;
 			var rLeft = _v6.d;
 			var rRight = _v6.e;
-			if (clr.$ === 'Black') {
+			if (clr === 1) {
 				return A5(
 					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
+					1,
 					k,
 					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, rK, rV, rLeft, rRight));
 			} else {
 				return A5(
 					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
+					1,
 					k,
 					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, rK, rV, rLeft, rRight));
 			}
 		}
 	} else {
@@ -7274,7 +7219,7 @@ var $elm$core$Dict$moveRedRight = function (dict) {
 };
 var $elm$core$Dict$removeHelpPrepEQGT = F7(
 	function (targetKey, dict, color, key, value, left, right) {
-		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+		if ((left.$ === -1) && (!left.a)) {
 			var _v1 = left.a;
 			var lK = left.b;
 			var lV = left.c;
@@ -7286,13 +7231,13 @@ var $elm$core$Dict$removeHelpPrepEQGT = F7(
 				lK,
 				lV,
 				lLeft,
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
+				A5($elm$core$Dict$RBNode_elm_builtin, 0, key, value, lRight, right));
 		} else {
 			_v2$2:
 			while (true) {
-				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
-					if (right.d.$ === 'RBNode_elm_builtin') {
-						if (right.d.a.$ === 'Black') {
+				if ((right.$ === -1) && (right.a === 1)) {
+					if (right.d.$ === -1) {
+						if (right.d.a === 1) {
 							var _v3 = right.a;
 							var _v4 = right.d;
 							var _v5 = _v4.a;
@@ -7313,7 +7258,7 @@ var $elm$core$Dict$removeHelpPrepEQGT = F7(
 		}
 	});
 var $elm$core$Dict$removeMin = function (dict) {
-	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+	if ((dict.$ === -1) && (dict.d.$ === -1)) {
 		var color = dict.a;
 		var key = dict.b;
 		var value = dict.c;
@@ -7321,8 +7266,8 @@ var $elm$core$Dict$removeMin = function (dict) {
 		var lColor = left.a;
 		var lLeft = left.d;
 		var right = dict.e;
-		if (lColor.$ === 'Black') {
-			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+		if (lColor === 1) {
+			if ((lLeft.$ === -1) && (!lLeft.a)) {
 				var _v3 = lLeft.a;
 				return A5(
 					$elm$core$Dict$RBNode_elm_builtin,
@@ -7333,7 +7278,7 @@ var $elm$core$Dict$removeMin = function (dict) {
 					right);
 			} else {
 				var _v4 = $elm$core$Dict$moveRedLeft(dict);
-				if (_v4.$ === 'RBNode_elm_builtin') {
+				if (_v4.$ === -1) {
 					var nColor = _v4.a;
 					var nKey = _v4.b;
 					var nValue = _v4.c;
@@ -7365,7 +7310,7 @@ var $elm$core$Dict$removeMin = function (dict) {
 };
 var $elm$core$Dict$removeHelp = F2(
 	function (targetKey, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
+		if (dict.$ === -2) {
 			return $elm$core$Dict$RBEmpty_elm_builtin;
 		} else {
 			var color = dict.a;
@@ -7374,10 +7319,10 @@ var $elm$core$Dict$removeHelp = F2(
 			var left = dict.d;
 			var right = dict.e;
 			if (_Utils_cmp(targetKey, key) < 0) {
-				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
+				if ((left.$ === -1) && (left.a === 1)) {
 					var _v4 = left.a;
 					var lLeft = left.d;
-					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+					if ((lLeft.$ === -1) && (!lLeft.a)) {
 						var _v6 = lLeft.a;
 						return A5(
 							$elm$core$Dict$RBNode_elm_builtin,
@@ -7388,7 +7333,7 @@ var $elm$core$Dict$removeHelp = F2(
 							right);
 					} else {
 						var _v7 = $elm$core$Dict$moveRedLeft(dict);
-						if (_v7.$ === 'RBNode_elm_builtin') {
+						if (_v7.$ === -1) {
 							var nColor = _v7.a;
 							var nKey = _v7.b;
 							var nValue = _v7.c;
@@ -7424,7 +7369,7 @@ var $elm$core$Dict$removeHelp = F2(
 	});
 var $elm$core$Dict$removeHelpEQGT = F2(
 	function (targetKey, dict) {
-		if (dict.$ === 'RBNode_elm_builtin') {
+		if (dict.$ === -1) {
 			var color = dict.a;
 			var key = dict.b;
 			var value = dict.c;
@@ -7432,7 +7377,7 @@ var $elm$core$Dict$removeHelpEQGT = F2(
 			var right = dict.e;
 			if (_Utils_eq(targetKey, key)) {
 				var _v1 = $elm$core$Dict$getMin(right);
-				if (_v1.$ === 'RBNode_elm_builtin') {
+				if (_v1.$ === -1) {
 					var minKey = _v1.b;
 					var minValue = _v1.c;
 					return A5(
@@ -7461,13 +7406,13 @@ var $elm$core$Dict$removeHelpEQGT = F2(
 var $elm$core$Dict$remove = F2(
 	function (key, dict) {
 		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
-		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+		if ((_v0.$ === -1) && (!_v0.a)) {
 			var _v1 = _v0.a;
 			var k = _v0.b;
 			var v = _v0.c;
 			var l = _v0.d;
 			var r = _v0.e;
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+			return A5($elm$core$Dict$RBNode_elm_builtin, 1, k, v, l, r);
 		} else {
 			var x = _v0;
 			return x;
@@ -7477,7 +7422,7 @@ var $elm$core$Dict$update = F3(
 	function (targetKey, alter, dictionary) {
 		var _v0 = alter(
 			A2($elm$core$Dict$get, targetKey, dictionary));
-		if (_v0.$ === 'Just') {
+		if (!_v0.$) {
 			var value = _v0.a;
 			return A3($elm$core$Dict$insert, targetKey, value, dictionary);
 		} else {
@@ -7488,7 +7433,7 @@ var $folkertdev$elm_flate$Inflate$Internal$buildTree = F3(
 	function (lengths, offset, num) {
 		var tableDict = function () {
 			var updater = function (maybeValue) {
-				if (maybeValue.$ === 'Nothing') {
+				if (maybeValue.$ === 1) {
 					return $elm$core$Maybe$Just(1);
 				} else {
 					var v = maybeValue.a;
@@ -7573,7 +7518,7 @@ var $folkertdev$elm_flate$Inflate$Internal$buildTree = F3(
 				while (true) {
 					if ((i - num) < 0) {
 						var _v0 = A2($elm$core$Dict$get, offset + i, lengths);
-						if (_v0.$ === 'Nothing') {
+						if (_v0.$ === 1) {
 							var $temp$i = i + 1,
 								$temp$currentTranslation = currentTranslation,
 								$temp$currentOffsets = currentOffsets;
@@ -7585,7 +7530,7 @@ var $folkertdev$elm_flate$Inflate$Internal$buildTree = F3(
 							var v = _v0.a;
 							if (!(!v)) {
 								var _v1 = A2($elm$core$Dict$get, v, currentOffsets);
-								if (_v1.$ === 'Nothing') {
+								if (_v1.$ === 1) {
 									return currentTranslation;
 								} else {
 									var w = _v1.a;
@@ -7617,7 +7562,7 @@ var $folkertdev$elm_flate$Inflate$Internal$buildTree = F3(
 			0,
 			A2($elm$core$Array$repeat, num, 0),
 			offsetsDict.b);
-		return {table: newTable, trans: translation2};
+		return {_: newTable, ap: translation2};
 	});
 var $folkertdev$elm_flate$Inflate$Internal$clcIndices = _List_fromArray(
 	[16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]);
@@ -7631,7 +7576,7 @@ var $folkertdev$elm_flate$Inflate$BitSet$BitSet320 = function (a) {
 							return function (h) {
 								return function (i) {
 									return function (j) {
-										return {$: 'BitSet320', a: a, b: b, c: c, d: d, e: e, f: f, g: g, h: h, i: i, j: j};
+										return {$: 0, a: a, b: b, c: c, d: d, e: e, f: f, g: g, h: h, i: i, j: j};
 									};
 								};
 							};
@@ -7823,7 +7768,7 @@ var $folkertdev$elm_flate$Inflate$Internal$decodeSymbolInnerLoop = F5(
 		while (true) {
 			var newTag = tag >>> 1;
 			if (!table.b) {
-				return {bitsAvailable: bitsAvailable, cur: cur, sum: sum, tag: tag};
+				return {b: bitsAvailable, aS: cur, be: sum, N: tag};
 			} else {
 				var value = table.a;
 				var rest = table.b;
@@ -7842,7 +7787,7 @@ var $folkertdev$elm_flate$Inflate$Internal$decodeSymbolInnerLoop = F5(
 					sum = $temp$sum;
 					continue decodeSymbolInnerLoop;
 				} else {
-					return {bitsAvailable: bitsAvailable - 1, cur: newerCur, sum: newSum, tag: newTag};
+					return {b: bitsAvailable - 1, aS: newerCur, be: newSum, N: newTag};
 				}
 			}
 		}
@@ -7853,7 +7798,7 @@ var $elm$core$Array$getHelp = F3(
 		while (true) {
 			var pos = $elm$core$Array$bitMask & (index >>> shift);
 			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-			if (_v0.$ === 'SubTree') {
+			if (!_v0.$) {
 				var subTree = _v0.a;
 				var $temp$shift = shift - $elm$core$Array$shiftStep,
 					$temp$index = index,
@@ -7882,8 +7827,8 @@ var $elm$core$Array$get = F2(
 	});
 var $folkertdev$elm_flate$Inflate$BitReader$moveFromReserve = F2(
 	function (nbits, state) {
-		var masked = (nbits === 32) ? (state.reserve << state.bitsAvailable) : ((((1 << nbits) - 1) & state.reserve) << state.bitsAvailable);
-		return {bitsAvailable: state.bitsAvailable + nbits, buffer: state.buffer, reserve: state.reserve >>> nbits, reserveAvailable: state.reserveAvailable - nbits, tag: masked | state.tag};
+		var masked = (nbits === 32) ? (state.j << state.b) : ((((1 << nbits) - 1) & state.j) << state.b);
+		return {b: state.b + nbits, l: state.l, j: state.j >>> nbits, f: state.f - nbits, N: masked | state.N};
 	});
 var $elm$core$Tuple$pair = F2(
 	function (a, b) {
@@ -7896,9 +7841,9 @@ var $folkertdev$elm_flate$Inflate$BitReader$runDecoder = F3(
 			$elm$core$Tuple$pair,
 			valueDecoder,
 			$elm$bytes$Bytes$Decode$bytes(
-				$elm$bytes$Bytes$width(state.buffer) - width));
-		var _v0 = A2($elm$bytes$Bytes$Decode$decode, decoder, state.buffer);
-		if (_v0.$ === 'Just') {
+				$elm$bytes$Bytes$width(state.l) - width));
+		var _v0 = A2($elm$bytes$Bytes$Decode$decode, decoder, state.l);
+		if (!_v0.$) {
 			var value = _v0.a;
 			return $elm$core$Result$Ok(value);
 		} else {
@@ -7906,7 +7851,7 @@ var $folkertdev$elm_flate$Inflate$BitReader$runDecoder = F3(
 		}
 	});
 var $folkertdev$elm_flate$Inflate$BitReader$unsignedInt24 = function (endianness) {
-	if (endianness.$ === 'LE') {
+	if (!endianness) {
 		return A3(
 			$elm$bytes$Bytes$Decode$map2,
 			F2(
@@ -7929,18 +7874,18 @@ var $folkertdev$elm_flate$Inflate$BitReader$unsignedInt24 = function (endianness
 var $folkertdev$elm_flate$Inflate$BitReader$readMoreBits = function (state) {
 	readMoreBits:
 	while (true) {
-		var freeSpaceOnTag = 32 - state.bitsAvailable;
-		if ((_Utils_cmp(freeSpaceOnTag, state.reserveAvailable) < 1) && (state.reserveAvailable > 0)) {
+		var freeSpaceOnTag = 32 - state.b;
+		if ((_Utils_cmp(freeSpaceOnTag, state.f) < 1) && (state.f > 0)) {
 			return $elm$core$Result$Ok(
 				A2($folkertdev$elm_flate$Inflate$BitReader$moveFromReserve, freeSpaceOnTag, state));
 		} else {
-			if (!$elm$bytes$Bytes$width(state.buffer)) {
+			if (!$elm$bytes$Bytes$width(state.l)) {
 				return $elm$core$Result$Ok(
-					A2($folkertdev$elm_flate$Inflate$BitReader$moveFromReserve, state.reserveAvailable, state));
+					A2($folkertdev$elm_flate$Inflate$BitReader$moveFromReserve, state.f, state));
 			} else {
-				var state1 = A2($folkertdev$elm_flate$Inflate$BitReader$moveFromReserve, state.reserveAvailable, state);
+				var state1 = A2($folkertdev$elm_flate$Inflate$BitReader$moveFromReserve, state.f, state);
 				var _v0 = function () {
-					var _v1 = $elm$bytes$Bytes$width(state.buffer);
+					var _v1 = $elm$bytes$Bytes$width(state.l);
 					switch (_v1) {
 						case 0:
 							return _Utils_Tuple3(
@@ -7953,31 +7898,31 @@ var $folkertdev$elm_flate$Inflate$BitReader$readMoreBits = function (state) {
 							return _Utils_Tuple3(
 								2,
 								16,
-								$elm$bytes$Bytes$Decode$unsignedInt16($elm$bytes$Bytes$LE));
+								$elm$bytes$Bytes$Decode$unsignedInt16(0));
 						case 3:
 							return _Utils_Tuple3(
 								3,
 								24,
-								$folkertdev$elm_flate$Inflate$BitReader$unsignedInt24($elm$bytes$Bytes$LE));
+								$folkertdev$elm_flate$Inflate$BitReader$unsignedInt24(0));
 						default:
 							return _Utils_Tuple3(
 								4,
 								32,
-								$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$LE));
+								$elm$bytes$Bytes$Decode$unsignedInt32(0));
 					}
 				}();
 				var width = _v0.a;
 				var additionallyAvailable = _v0.b;
 				var decoder = _v0.c;
 				var _v2 = A3($folkertdev$elm_flate$Inflate$BitReader$runDecoder, width, decoder, state1);
-				if (_v2.$ === 'Err') {
+				if (_v2.$ === 1) {
 					var e = _v2.a;
 					return $elm$core$Result$Err(e);
 				} else {
 					var _v3 = _v2.a;
 					var newReserve = _v3.a;
 					var newBuffer = _v3.b;
-					var $temp$state = {bitsAvailable: state1.bitsAvailable, buffer: newBuffer, reserve: newReserve, reserveAvailable: additionallyAvailable, tag: state1.tag};
+					var $temp$state = {b: state1.b, l: newBuffer, j: newReserve, f: additionallyAvailable, N: state1.N};
 					state = $temp$state;
 					continue readMoreBits;
 				}
@@ -7987,62 +7932,59 @@ var $folkertdev$elm_flate$Inflate$BitReader$readMoreBits = function (state) {
 };
 var $folkertdev$elm_flate$Inflate$Internal$decodeSymbol = F2(
 	function (table, tree) {
-		return $folkertdev$elm_flate$Inflate$BitReader$BitReader(
-			function (state) {
-				var _v0 = (state.bitsAvailable < 16) ? $folkertdev$elm_flate$Inflate$BitReader$readMoreBits(state) : $elm$core$Result$Ok(state);
-				if (_v0.$ === 'Err') {
+		return function (state) {
+			var _v0 = (state.b < 16) ? $folkertdev$elm_flate$Inflate$BitReader$readMoreBits(state) : $elm$core$Result$Ok(state);
+			if (_v0.$ === 1) {
+				var e = _v0.a;
+				return $elm$core$Result$Err(e);
+			} else {
+				var d = _v0.a;
+				var _v1 = A5($folkertdev$elm_flate$Inflate$Internal$decodeSymbolInnerLoop, table, 0, d.N, d.b, 0);
+				var cur = _v1.aS;
+				var tag = _v1.N;
+				var bitsAvailable = _v1.b;
+				var sum = _v1.be;
+				var _v2 = A2($elm$core$Array$get, sum + cur, tree.ap);
+				if (_v2.$ === 1) {
+					return $elm$core$Result$Err('Index into trans tree out of bounds');
+				} else {
+					var result = _v2.a;
+					return $elm$core$Result$Ok(
+						_Utils_Tuple2(
+							result,
+							{b: bitsAvailable, l: d.l, j: d.j, f: d.f, N: tag}));
+				}
+			}
+		};
+	});
+var $folkertdev$elm_flate$Inflate$BitReader$readBits = F2(
+	function (numberOfBits, base) {
+		return function (state) {
+			if (!numberOfBits) {
+				return $elm$core$Result$Ok(
+					_Utils_Tuple2(base, state));
+			} else {
+				var _v0 = (_Utils_cmp(state.b, numberOfBits) < 0) ? $folkertdev$elm_flate$Inflate$BitReader$readMoreBits(state) : $elm$core$Result$Ok(state);
+				if (_v0.$ === 1) {
 					var e = _v0.a;
 					return $elm$core$Result$Err(e);
 				} else {
 					var d = _v0.a;
-					var _v1 = A5($folkertdev$elm_flate$Inflate$Internal$decodeSymbolInnerLoop, table, 0, d.tag, d.bitsAvailable, 0);
-					var cur = _v1.cur;
-					var tag = _v1.tag;
-					var bitsAvailable = _v1.bitsAvailable;
-					var sum = _v1.sum;
-					var _v2 = A2($elm$core$Array$get, sum + cur, tree.trans);
-					if (_v2.$ === 'Nothing') {
-						return $elm$core$Result$Err('Index into trans tree out of bounds');
-					} else {
-						var result = _v2.a;
-						return $elm$core$Result$Ok(
-							_Utils_Tuple2(
-								result,
-								{bitsAvailable: bitsAvailable, buffer: d.buffer, reserve: d.reserve, reserveAvailable: d.reserveAvailable, tag: tag}));
-					}
-				}
-			});
-	});
-var $folkertdev$elm_flate$Inflate$BitReader$readBits = F2(
-	function (numberOfBits, base) {
-		return $folkertdev$elm_flate$Inflate$BitReader$BitReader(
-			function (state) {
-				if (!numberOfBits) {
+					var val = d.N & (65535 >>> (16 - numberOfBits));
+					var newTag = d.N >>> numberOfBits;
 					return $elm$core$Result$Ok(
-						_Utils_Tuple2(base, state));
-				} else {
-					var _v0 = (_Utils_cmp(state.bitsAvailable, numberOfBits) < 0) ? $folkertdev$elm_flate$Inflate$BitReader$readMoreBits(state) : $elm$core$Result$Ok(state);
-					if (_v0.$ === 'Err') {
-						var e = _v0.a;
-						return $elm$core$Result$Err(e);
-					} else {
-						var d = _v0.a;
-						var val = d.tag & (65535 >>> (16 - numberOfBits));
-						var newTag = d.tag >>> numberOfBits;
-						return $elm$core$Result$Ok(
-							_Utils_Tuple2(
-								val + base,
-								{bitsAvailable: d.bitsAvailable - numberOfBits, buffer: d.buffer, reserve: d.reserve, reserveAvailable: d.reserveAvailable, tag: newTag}));
-					}
+						_Utils_Tuple2(
+							val + base,
+							{b: d.b - numberOfBits, l: d.l, j: d.j, f: d.f, N: newTag}));
 				}
-			});
+			}
+		};
 	});
 var $folkertdev$elm_flate$Inflate$BitReader$succeed = function (x) {
-	return $folkertdev$elm_flate$Inflate$BitReader$BitReader(
-		function (s) {
-			return $elm$core$Result$Ok(
-				_Utils_Tuple2(x, s));
-		});
+	return function (s) {
+		return $elm$core$Result$Ok(
+			_Utils_Tuple2(x, s));
+	};
 };
 var $elm$core$List$tail = function (list) {
 	if (list.b) {
@@ -8062,7 +8004,7 @@ var $folkertdev$elm_flate$Inflate$Internal$decodeDynamicTreeLength = F4(
 			var table = A2(
 				$elm$core$Maybe$withDefault,
 				_List_Nil,
-				$elm$core$List$tail(codeTree.table));
+				$elm$core$List$tail(codeTree._));
 			return A2(
 				$folkertdev$elm_flate$Inflate$BitReader$andThen,
 				function (sym) {
@@ -8343,33 +8285,32 @@ var $folkertdev$elm_flate$Inflate$Internal$cont = F3(
 	});
 var $folkertdev$elm_flate$Inflate$BitReader$map2 = F3(
 	function (f, _v0, _v1) {
-		var fa = _v0.a;
-		var fb = _v1.a;
-		return $folkertdev$elm_flate$Inflate$BitReader$BitReader(
-			function (state) {
-				var _v2 = fa(state);
-				if (_v2.$ === 'Err') {
-					var e = _v2.a;
+		var fa = _v0;
+		var fb = _v1;
+		return function (state) {
+			var _v2 = fa(state);
+			if (_v2.$ === 1) {
+				var e = _v2.a;
+				return $elm$core$Result$Err(e);
+			} else {
+				var _v3 = _v2.a;
+				var a = _v3.a;
+				var newState = _v3.b;
+				var _v4 = fb(newState);
+				if (_v4.$ === 1) {
+					var e = _v4.a;
 					return $elm$core$Result$Err(e);
 				} else {
-					var _v3 = _v2.a;
-					var a = _v3.a;
-					var newState = _v3.b;
-					var _v4 = fb(newState);
-					if (_v4.$ === 'Err') {
-						var e = _v4.a;
-						return $elm$core$Result$Err(e);
-					} else {
-						var _v5 = _v4.a;
-						var b = _v5.a;
-						var newerState = _v5.b;
-						return $elm$core$Result$Ok(
-							_Utils_Tuple2(
-								A2(f, a, b),
-								newerState));
-					}
+					var _v5 = _v4.a;
+					var b = _v5.a;
+					var newerState = _v5.b;
+					return $elm$core$Result$Ok(
+						_Utils_Tuple2(
+							A2(f, a, b),
+							newerState));
 				}
-			});
+			}
+		};
 	});
 var $folkertdev$elm_flate$Inflate$BitReader$andMap = F2(
 	function (a, f) {
@@ -8398,10 +8339,9 @@ var $folkertdev$elm_flate$Inflate$Internal$decodeTrees = A2(
 		A2($folkertdev$elm_flate$Inflate$BitReader$readBits, 5, 1),
 		A2($folkertdev$elm_flate$Inflate$BitReader$readBits, 4, 4)));
 var $folkertdev$elm_flate$Inflate$BitReader$error = function (e) {
-	return $folkertdev$elm_flate$Inflate$BitReader$BitReader(
-		function (s) {
-			return $elm$core$Result$Err(e);
-		});
+	return function (s) {
+		return $elm$core$Result$Err(e);
+	};
 };
 var $folkertdev$elm_flate$Inflate$BitReader$getBit = A2($folkertdev$elm_flate$Inflate$BitReader$readBits, 1, 0);
 var $folkertdev$elm_flate$Experimental$ByteArray$get = F2(
@@ -8422,7 +8362,7 @@ var $folkertdev$elm_flate$Experimental$ByteArray$get = F2(
 			} else {
 				var internalIndex = (index / 4) | 0;
 				var _v1 = A2($elm$core$Array$get, internalIndex, array);
-				if (_v1.$ === 'Nothing') {
+				if (_v1.$ === 1) {
 					return $elm$core$Maybe$Nothing;
 				} else {
 					var int32 = _v1.a;
@@ -8451,7 +8391,7 @@ var $folkertdev$elm_flate$Experimental$ByteArray$copyToBackInternal = F5(
 						$folkertdev$elm_flate$Experimental$ByteArray$get,
 						startIndex,
 						A3($folkertdev$elm_flate$Experimental$ByteArray$ByteArray, array, finalSize, finalBytes));
-					if (_v0.$ === 'Nothing') {
+					if (_v0.$ === 1) {
 						return A3($folkertdev$elm_flate$Experimental$ByteArray$ByteArray, array, finalSize, finalBytes);
 					} else {
 						var value = _v0.a;
@@ -8476,7 +8416,7 @@ var $folkertdev$elm_flate$Experimental$ByteArray$copyToBackInternal = F5(
 					}
 				} else {
 					var _v2 = A2($elm$core$Array$get, internalIndex, array);
-					if (_v2.$ === 'Nothing') {
+					if (_v2.$ === 1) {
 						return A3($folkertdev$elm_flate$Experimental$ByteArray$ByteArray, array, finalSize, finalBytes);
 					} else {
 						var value = _v2.a;
@@ -8522,9 +8462,7 @@ var $folkertdev$elm_flate$Experimental$ByteArray$copyToBack = F3(
 		var finalBytes = _v0.c;
 		return A5($folkertdev$elm_flate$Experimental$ByteArray$copyToBackInternal, startIndex, size, array, finalSize, finalBytes);
 	});
-var $folkertdev$elm_flate$Inflate$Internal$HuffmanTable = function (a) {
-	return {$: 'HuffmanTable', a: a};
-};
+var $folkertdev$elm_flate$Inflate$Internal$HuffmanTable = $elm$core$Basics$identity;
 var $elm$core$Elm$JsArray$foldl = _JsArray_foldl;
 var $elm$core$Array$foldl = F3(
 	function (func, baseCase, _v0) {
@@ -8532,7 +8470,7 @@ var $elm$core$Array$foldl = F3(
 		var tail = _v0.d;
 		var helper = F2(
 			function (node, acc) {
-				if (node.$ === 'SubTree') {
+				if (!node.$) {
 					var subTree = node.a;
 					return A3($elm$core$Elm$JsArray$foldl, helper, acc, subTree);
 				} else {
@@ -8559,7 +8497,7 @@ var $folkertdev$elm_flate$Inflate$Internal$buildBitsBase = F2(
 					sum + (1 << bit),
 					A2(
 						$elm$core$Array$push,
-						{base: sum, bits: bit},
+						{aP: sum, a: bit},
 						accum));
 			});
 		var bits = A2($elm$core$Array$initialize, 30, initializer);
@@ -8568,37 +8506,36 @@ var $folkertdev$elm_flate$Inflate$Internal$buildBitsBase = F2(
 			folder,
 			_Utils_Tuple2(first, $elm$core$Array$empty),
 			bits).b;
-		return $folkertdev$elm_flate$Inflate$Internal$HuffmanTable(base);
+		return base;
 	});
 var $folkertdev$elm_flate$Inflate$Internal$hardcodedDistanceTable = A2($folkertdev$elm_flate$Inflate$Internal$buildBitsBase, 2, 1);
 var $folkertdev$elm_flate$Inflate$Internal$hardcodedLengthTable = function (_v0) {
-	var array = _v0.a;
-	return $folkertdev$elm_flate$Inflate$Internal$HuffmanTable(
-		A3(
-			$elm$core$Array$set,
-			28,
-			{base: 258, bits: 0},
-			array));
+	var array = _v0;
+	return A3(
+		$elm$core$Array$set,
+		28,
+		{aP: 258, a: 0},
+		array);
 }(
 	A2($folkertdev$elm_flate$Inflate$Internal$buildBitsBase, 4, 3));
 var $folkertdev$elm_flate$Inflate$Internal$readHuffmanTable = F2(
 	function (index, _v0) {
-		var table = _v0.a;
+		var table = _v0;
 		return A2($elm$core$Array$get, index, table);
 	});
 var $folkertdev$elm_flate$Inflate$Internal$decodeLength = function (symbol) {
 	var _v0 = A2($folkertdev$elm_flate$Inflate$Internal$readHuffmanTable, symbol - 257, $folkertdev$elm_flate$Inflate$Internal$hardcodedLengthTable);
-	if (_v0.$ === 'Nothing') {
+	if (_v0.$ === 1) {
 		return $folkertdev$elm_flate$Inflate$BitReader$error(
 			function () {
 				var _v1 = $folkertdev$elm_flate$Inflate$Internal$hardcodedDistanceTable;
-				var internal = _v1.a;
+				var internal = _v1;
 				return 'index out of bounds in hardcodedLengthTable: requested index ' + ($elm$core$String$fromInt(symbol - 257) + ('but hardcodedLengthTable has length ' + $elm$core$String$fromInt(
 					$elm$core$Array$length(internal))));
 			}());
 	} else {
 		var entry = _v0.a;
-		return A2($folkertdev$elm_flate$Inflate$BitReader$readBits, entry.bits, entry.base);
+		return A2($folkertdev$elm_flate$Inflate$BitReader$readBits, entry.a, entry.aP);
 	}
 };
 var $folkertdev$elm_flate$Inflate$Internal$decodeOffset = F2(
@@ -8606,16 +8543,16 @@ var $folkertdev$elm_flate$Inflate$Internal$decodeOffset = F2(
 		var table_ = A2(
 			$elm$core$Maybe$withDefault,
 			_List_Nil,
-			$elm$core$List$tail(dt.table));
+			$elm$core$List$tail(dt._));
 		return A2(
 			$folkertdev$elm_flate$Inflate$BitReader$andThen,
 			function (distance) {
 				var _v0 = A2($folkertdev$elm_flate$Inflate$Internal$readHuffmanTable, distance, $folkertdev$elm_flate$Inflate$Internal$hardcodedDistanceTable);
-				if (_v0.$ === 'Nothing') {
+				if (_v0.$ === 1) {
 					return $folkertdev$elm_flate$Inflate$BitReader$error(
 						function () {
 							var _v1 = $folkertdev$elm_flate$Inflate$Internal$hardcodedDistanceTable;
-							var internal = _v1.a;
+							var internal = _v1;
 							return 'index out of bounds in hardcodedDistanceTable: requested index ' + ($elm$core$String$fromInt(distance) + ('but hardcodedLengthTable has length ' + $elm$core$String$fromInt(
 								$elm$core$Array$length(internal))));
 						}());
@@ -8626,7 +8563,7 @@ var $folkertdev$elm_flate$Inflate$Internal$decodeOffset = F2(
 						function (v) {
 							return outputLength - v;
 						},
-						A2($folkertdev$elm_flate$Inflate$BitReader$readBits, entry.bits, entry.base));
+						A2($folkertdev$elm_flate$Inflate$BitReader$readBits, entry.a, entry.aP));
 				}
 			},
 			A2($folkertdev$elm_flate$Inflate$Internal$decodeSymbol, table_, dt));
@@ -8638,7 +8575,7 @@ var $folkertdev$elm_flate$Inflate$Internal$inflateBlockDataHelp = F2(
 		var table = A2(
 			$elm$core$Maybe$withDefault,
 			_List_Nil,
-			$elm$core$List$tail(trees.literal.table));
+			$elm$core$List$tail(trees.V._));
 		return A2(
 			$folkertdev$elm_flate$Inflate$BitReader$andThen,
 			function (symbol) {
@@ -8657,9 +8594,9 @@ var $folkertdev$elm_flate$Inflate$Internal$inflateBlockDataHelp = F2(
 									A3($folkertdev$elm_flate$Experimental$ByteArray$copyToBack, offset, length, output)));
 						}),
 					$folkertdev$elm_flate$Inflate$Internal$decodeLength(symbol),
-					A2($folkertdev$elm_flate$Inflate$Internal$decodeOffset, outputLength, trees.distance)));
+					A2($folkertdev$elm_flate$Inflate$Internal$decodeOffset, outputLength, trees.P)));
 			},
-			A2($folkertdev$elm_flate$Inflate$Internal$decodeSymbol, table, trees.literal));
+			A2($folkertdev$elm_flate$Inflate$Internal$decodeSymbol, table, trees.V));
 	});
 var $folkertdev$elm_flate$Inflate$Internal$inflateBlockData = F3(
 	function (trees, outputLength, output) {
@@ -8672,8 +8609,8 @@ var $folkertdev$elm_flate$Inflate$Internal$uncompressedBlockDecoder = function (
 	var decodeLengths = A3(
 		$elm$bytes$Bytes$Decode$map2,
 		$elm$core$Tuple$pair,
-		$elm$bytes$Bytes$Decode$unsignedInt16($elm$bytes$Bytes$LE),
-		$elm$bytes$Bytes$Decode$unsignedInt16($elm$bytes$Bytes$LE));
+		$elm$bytes$Bytes$Decode$unsignedInt16(0),
+		$elm$bytes$Bytes$Decode$unsignedInt16(0));
 	return A2(
 		$elm$bytes$Bytes$Decode$andThen,
 		function (_v0) {
@@ -8692,27 +8629,26 @@ var $folkertdev$elm_flate$Inflate$Internal$uncompressedBlockDecoder = function (
 		},
 		decodeLengths);
 };
-var $folkertdev$elm_flate$Inflate$Internal$inflateUncompressedBlock = $folkertdev$elm_flate$Inflate$BitReader$BitReader(
-	function (state) {
-		var _v0 = A2(
-			$elm$bytes$Bytes$Decode$decode,
-			$folkertdev$elm_flate$Inflate$Internal$uncompressedBlockDecoder(
-				$elm$bytes$Bytes$width(state.buffer)),
-			state.buffer);
-		if (_v0.$ === 'Nothing') {
-			return $elm$core$Result$Err('inflateUncompressedBlock: ran out of bounds');
-		} else {
-			var _v1 = _v0.a;
-			var block = _v1.a;
-			var newBuffer = _v1.b;
-			return $elm$core$Result$Ok(
-				_Utils_Tuple2(
-					block,
-					_Utils_update(
-						state,
-						{buffer: newBuffer})));
-		}
-	});
+var $folkertdev$elm_flate$Inflate$Internal$inflateUncompressedBlock = function (state) {
+	var _v0 = A2(
+		$elm$bytes$Bytes$Decode$decode,
+		$folkertdev$elm_flate$Inflate$Internal$uncompressedBlockDecoder(
+			$elm$bytes$Bytes$width(state.l)),
+		state.l);
+	if (_v0.$ === 1) {
+		return $elm$core$Result$Err('inflateUncompressedBlock: ran out of bounds');
+	} else {
+		var _v1 = _v0.a;
+		var block = _v1.a;
+		var newBuffer = _v1.b;
+		return $elm$core$Result$Ok(
+			_Utils_Tuple2(
+				block,
+				_Utils_update(
+					state,
+					{l: newBuffer})));
+	}
+};
 var $folkertdev$elm_flate$Experimental$ByteArray$length = function (_v0) {
 	var array = _v0.a;
 	var finalSize = _v0.b;
@@ -8730,23 +8666,23 @@ var $elm$core$Elm$JsArray$slice = _JsArray_slice;
 var $elm$core$Array$appendHelpBuilder = F2(
 	function (tail, builder) {
 		var tailLen = $elm$core$Elm$JsArray$length(tail);
-		var notAppended = ($elm$core$Array$branchFactor - $elm$core$Elm$JsArray$length(builder.tail)) - tailLen;
-		var appended = A3($elm$core$Elm$JsArray$appendN, $elm$core$Array$branchFactor, builder.tail, tail);
+		var notAppended = ($elm$core$Array$branchFactor - $elm$core$Elm$JsArray$length(builder.g)) - tailLen;
+		var appended = A3($elm$core$Elm$JsArray$appendN, $elm$core$Array$branchFactor, builder.g, tail);
 		return (notAppended < 0) ? {
-			nodeList: A2(
+			h: A2(
 				$elm$core$List$cons,
 				$elm$core$Array$Leaf(appended),
-				builder.nodeList),
-			nodeListSize: builder.nodeListSize + 1,
-			tail: A3($elm$core$Elm$JsArray$slice, notAppended, tailLen, tail)
+				builder.h),
+			d: builder.d + 1,
+			g: A3($elm$core$Elm$JsArray$slice, notAppended, tailLen, tail)
 		} : ((!notAppended) ? {
-			nodeList: A2(
+			h: A2(
 				$elm$core$List$cons,
 				$elm$core$Array$Leaf(appended),
-				builder.nodeList),
-			nodeListSize: builder.nodeListSize + 1,
-			tail: $elm$core$Elm$JsArray$empty
-		} : {nodeList: builder.nodeList, nodeListSize: builder.nodeListSize, tail: appended});
+				builder.h),
+			d: builder.d + 1,
+			g: $elm$core$Elm$JsArray$empty
+		} : {h: builder.h, d: builder.d, g: appended});
 	});
 var $elm$core$Array$appendHelpTree = F2(
 	function (toAppend, array) {
@@ -8770,7 +8706,7 @@ var $elm$core$Array$builderFromArray = function (_v0) {
 	var tail = _v0.d;
 	var helper = F2(
 		function (node, acc) {
-			if (node.$ === 'SubTree') {
+			if (!node.$) {
 				var subTree = node.a;
 				return A3($elm$core$Elm$JsArray$foldl, helper, acc, subTree);
 			} else {
@@ -8778,9 +8714,9 @@ var $elm$core$Array$builderFromArray = function (_v0) {
 			}
 		});
 	return {
-		nodeList: A3($elm$core$Elm$JsArray$foldl, helper, _List_Nil, tree),
-		nodeListSize: (len / $elm$core$Array$branchFactor) | 0,
-		tail: tail
+		h: A3($elm$core$Elm$JsArray$foldl, helper, _List_Nil, tree),
+		d: (len / $elm$core$Array$branchFactor) | 0,
+		g: tail
 	};
 };
 var $elm$core$Array$append = F2(
@@ -8792,7 +8728,7 @@ var $elm$core$Array$append = F2(
 		if (_Utils_cmp(bLen, $elm$core$Array$branchFactor * 4) < 1) {
 			var foldHelper = F2(
 				function (node, array) {
-					if (node.$ === 'SubTree') {
+					if (!node.$) {
 						var tree = node.a;
 						return A3($elm$core$Elm$JsArray$foldl, foldHelper, array, tree);
 					} else {
@@ -8807,7 +8743,7 @@ var $elm$core$Array$append = F2(
 		} else {
 			var foldHelper = F2(
 				function (node, builder) {
-					if (node.$ === 'SubTree') {
+					if (!node.$) {
 						var tree = node.a;
 						return A3($elm$core$Elm$JsArray$foldl, foldHelper, builder, tree);
 					} else {
@@ -8841,7 +8777,7 @@ var $elm$core$Array$fromListHelp = F3(
 				return A2(
 					$elm$core$Array$builderToArray,
 					true,
-					{nodeList: nodeList, nodeListSize: nodeListSize, tail: jsArray});
+					{h: nodeList, d: nodeListSize, g: jsArray});
 			} else {
 				var $temp$list = remainingItems,
 					$temp$nodeList = A2(
@@ -8864,9 +8800,9 @@ var $elm$core$Array$fromList = function (list) {
 	}
 };
 var $folkertdev$elm_flate$Inflate$Internal$sdtree = {
-	table: _List_fromArray(
+	_: _List_fromArray(
 		[0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
-	trans: A2(
+	ap: A2(
 		$elm$core$Array$append,
 		$elm$core$Array$fromList(
 			_List_fromArray(
@@ -8874,38 +8810,38 @@ var $folkertdev$elm_flate$Inflate$Internal$sdtree = {
 		A2($elm$core$Array$repeat, 288 - 32, 0))
 };
 var $folkertdev$elm_flate$Inflate$BitReader$flushHelp = function (state0) {
-	var availableSpace = 32 - state0.bitsAvailable;
+	var availableSpace = 32 - state0.b;
 	var state = A2(
 		$folkertdev$elm_flate$Inflate$BitReader$moveFromReserve,
-		A2($elm$core$Basics$min, availableSpace, state0.reserveAvailable),
+		A2($elm$core$Basics$min, availableSpace, state0.f),
 		state0);
-	var reserveEncoder = (state.reserveAvailable > 24) ? _List_fromArray(
+	var reserveEncoder = (state.f > 24) ? _List_fromArray(
 		[
-			A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$LE, state.reserve)
-		]) : ((state.reserveAvailable > 16) ? _List_fromArray(
+			A2($elm$bytes$Bytes$Encode$unsignedInt32, 0, state.j)
+		]) : ((state.f > 16) ? _List_fromArray(
 		[
-			A2($elm$bytes$Bytes$Encode$unsignedInt16, $elm$bytes$Bytes$LE, state.reserve),
-			$elm$bytes$Bytes$Encode$unsignedInt8(state.reserve >> 16)
-		]) : ((state.reserveAvailable > 8) ? _List_fromArray(
+			A2($elm$bytes$Bytes$Encode$unsignedInt16, 0, state.j),
+			$elm$bytes$Bytes$Encode$unsignedInt8(state.j >> 16)
+		]) : ((state.f > 8) ? _List_fromArray(
 		[
-			A2($elm$bytes$Bytes$Encode$unsignedInt16, $elm$bytes$Bytes$LE, state.reserve)
-		]) : ((state.reserveAvailable > 1) ? _List_fromArray(
+			A2($elm$bytes$Bytes$Encode$unsignedInt16, 0, state.j)
+		]) : ((state.f > 1) ? _List_fromArray(
 		[
-			$elm$bytes$Bytes$Encode$unsignedInt8(state.reserve)
+			$elm$bytes$Bytes$Encode$unsignedInt8(state.j)
 		]) : _List_Nil)));
-	var tagEncoder = (state.bitsAvailable > 24) ? _List_fromArray(
+	var tagEncoder = (state.b > 24) ? _List_fromArray(
 		[
-			A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$LE, state.tag)
-		]) : ((state.bitsAvailable > 16) ? _List_fromArray(
+			A2($elm$bytes$Bytes$Encode$unsignedInt32, 0, state.N)
+		]) : ((state.b > 16) ? _List_fromArray(
 		[
-			A2($elm$bytes$Bytes$Encode$unsignedInt16, $elm$bytes$Bytes$LE, state.tag),
-			$elm$bytes$Bytes$Encode$unsignedInt8(state.tag >> 16)
-		]) : ((state.bitsAvailable > 8) ? _List_fromArray(
+			A2($elm$bytes$Bytes$Encode$unsignedInt16, 0, state.N),
+			$elm$bytes$Bytes$Encode$unsignedInt8(state.N >> 16)
+		]) : ((state.b > 8) ? _List_fromArray(
 		[
-			A2($elm$bytes$Bytes$Encode$unsignedInt16, $elm$bytes$Bytes$LE, state.tag)
-		]) : ((state.bitsAvailable > 1) ? _List_fromArray(
+			A2($elm$bytes$Bytes$Encode$unsignedInt16, 0, state.N)
+		]) : ((state.b > 1) ? _List_fromArray(
 		[
-			$elm$bytes$Bytes$Encode$unsignedInt8(state.tag)
+			$elm$bytes$Bytes$Encode$unsignedInt8(state.N)
 		]) : _List_Nil)));
 	return $elm$bytes$Bytes$Encode$encode(
 		$elm$bytes$Bytes$Encode$sequence(
@@ -8915,49 +8851,48 @@ var $folkertdev$elm_flate$Inflate$BitReader$flushHelp = function (state0) {
 					reserveEncoder,
 					_List_fromArray(
 						[
-							$elm$bytes$Bytes$Encode$bytes(state.buffer)
+							$elm$bytes$Bytes$Encode$bytes(state.l)
 						])))));
 };
 var $folkertdev$elm_flate$Inflate$BitReader$flush = function (state) {
 	return {
-		bitsAvailable: 0,
-		buffer: $folkertdev$elm_flate$Inflate$BitReader$flushHelp(state),
-		reserve: 0,
-		reserveAvailable: 0,
-		tag: 0
+		b: 0,
+		l: $folkertdev$elm_flate$Inflate$BitReader$flushHelp(state),
+		j: 0,
+		f: 0,
+		N: 0
 	};
 };
 var $elm$core$Basics$modBy = _Basics_modBy;
-var $folkertdev$elm_flate$Inflate$BitReader$skipToByteBoundary = $folkertdev$elm_flate$Inflate$BitReader$BitReader(
-	function (s) {
-		var available = s.bitsAvailable + s.reserveAvailable;
-		var untilBoundary = A2($elm$core$Basics$modBy, 8, available);
-		var _v0 = A2($folkertdev$elm_flate$Inflate$BitReader$readBits, untilBoundary, 0);
-		var step = _v0.a;
-		var _v1 = step(s);
-		if (_v1.$ === 'Err') {
-			var e = _v1.a;
+var $folkertdev$elm_flate$Inflate$BitReader$skipToByteBoundary = function (s) {
+	var available = s.b + s.f;
+	var untilBoundary = A2($elm$core$Basics$modBy, 8, available);
+	var _v0 = A2($folkertdev$elm_flate$Inflate$BitReader$readBits, untilBoundary, 0);
+	var step = _v0;
+	var _v1 = step(s);
+	if (_v1.$ === 1) {
+		var e = _v1.a;
+		return $elm$core$Result$Err(e);
+	} else {
+		var _v2 = _v1.a;
+		var newState = _v2.b;
+		var _v3 = $folkertdev$elm_flate$Inflate$BitReader$readMoreBits(newState);
+		if (_v3.$ === 1) {
+			var e = _v3.a;
 			return $elm$core$Result$Err(e);
 		} else {
-			var _v2 = _v1.a;
-			var newState = _v2.b;
-			var _v3 = $folkertdev$elm_flate$Inflate$BitReader$readMoreBits(newState);
-			if (_v3.$ === 'Err') {
-				var e = _v3.a;
-				return $elm$core$Result$Err(e);
-			} else {
-				var newerState = _v3.a;
-				return $elm$core$Result$Ok(
-					_Utils_Tuple2(
-						_Utils_Tuple0,
-						$folkertdev$elm_flate$Inflate$BitReader$flush(newerState)));
-			}
+			var newerState = _v3.a;
+			return $elm$core$Result$Ok(
+				_Utils_Tuple2(
+					0,
+					$folkertdev$elm_flate$Inflate$BitReader$flush(newerState)));
 		}
-	});
+	}
+};
 var $folkertdev$elm_flate$Inflate$Internal$sltree = {
-	table: _List_fromArray(
+	_: _List_fromArray(
 		[0, 0, 0, 0, 0, 0, 0, 24, 152, 112, 0, 0, 0, 0, 0, 0]),
-	trans: $elm$core$Array$fromList(
+	ap: $elm$core$Array$fromList(
 		_List_fromArray(
 			[256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 280, 281, 282, 283, 284, 285, 286, 287, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255]))
 };
@@ -8979,7 +8914,7 @@ var $folkertdev$elm_flate$Inflate$Internal$uncompressHelp = function (output) {
 			case 1:
 				return A3(
 					$folkertdev$elm_flate$Inflate$Internal$inflateBlockData,
-					{distance: $folkertdev$elm_flate$Inflate$Internal$sdtree, literal: $folkertdev$elm_flate$Inflate$Internal$sltree},
+					{P: $folkertdev$elm_flate$Inflate$Internal$sdtree, V: $folkertdev$elm_flate$Inflate$Internal$sltree},
 					$folkertdev$elm_flate$Experimental$ByteArray$length(output),
 					output);
 			case 2:
@@ -8990,7 +8925,7 @@ var $folkertdev$elm_flate$Inflate$Internal$uncompressHelp = function (output) {
 						var dtree = _v2.b;
 						return A3(
 							$folkertdev$elm_flate$Inflate$Internal$inflateBlockData,
-							{distance: dtree, literal: ltree},
+							{P: dtree, V: ltree},
 							$folkertdev$elm_flate$Experimental$ByteArray$length(output),
 							output);
 					},
@@ -9029,7 +8964,7 @@ var $folkertdev$elm_flate$Inflate$Internal$uncompress = A2(
 	A2($folkertdev$elm_flate$Inflate$BitReader$loop, $folkertdev$elm_flate$Experimental$ByteArray$empty, $folkertdev$elm_flate$Inflate$Internal$uncompressHelp));
 var $folkertdev$elm_flate$Inflate$Internal$inflate = function (buffer) {
 	var _v0 = A2($folkertdev$elm_flate$Inflate$BitReader$decode, buffer, $folkertdev$elm_flate$Inflate$Internal$uncompress);
-	if (_v0.$ === 'Err') {
+	if (_v0.$ === 1) {
 		var e = _v0.a;
 		return $elm$core$Result$Err(e);
 	} else {
@@ -9041,7 +8976,7 @@ var $folkertdev$elm_flate$Inflate$Internal$inflate = function (buffer) {
 	}
 };
 var $elm$core$Result$toMaybe = function (result) {
-	if (result.$ === 'Ok') {
+	if (!result.$) {
 		var v = result.a;
 		return $elm$core$Maybe$Just(v);
 	} else {
@@ -9059,10 +8994,10 @@ var $folkertdev$elm_flate$Inflate$GZip$inflate = function (buffer) {
 };
 var $folkertdev$elm_flate$Inflate$Inflate$inflateGZip = $folkertdev$elm_flate$Inflate$GZip$inflate;
 var $folkertdev$elm_flate$Flate$inflateGZip = $folkertdev$elm_flate$Inflate$Inflate$inflateGZip;
-var $author$project$Main$longFieldNames = {distanceDetail: 'distanceDetail', filteredLocationTypes: 'filteredLocationTypes', itemSpacing: 'itemSpacing', locationFilterEnabled: 'locationFilterEnabled', totalDistanceDisplay: 'totalDistanceDisplay', waypointDistance: 'distance', waypointName: 'name', waypointType: 'typ', waypoints: 'waypoints'};
+var $author$project$Main$longFieldNames = {k: 'distanceDetail', m: 'filteredLocationTypes', c: 'itemSpacing', n: 'locationFilterEnabled', v: 'totalDistanceDisplay', as: 'distance', at: 'name', au: 'typ', I: 'waypoints'};
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
-		if (maybe.$ === 'Just') {
+		if (!maybe.$) {
 			var value = maybe.a;
 			return $elm$core$Maybe$Just(
 				f(value));
@@ -9080,7 +9015,7 @@ var $elm$core$Tuple$mapSecond = F2(
 	});
 var $elm$url$Url$Parser$State = F5(
 	function (visited, unvisited, params, frag, value) {
-		return {frag: frag, params: params, unvisited: unvisited, value: value, visited: visited};
+		return {U: frag, W: params, S: unvisited, bg: value, aa: visited};
 	});
 var $elm$url$Url$Parser$getFirstMatch = function (states) {
 	getFirstMatch:
@@ -9090,12 +9025,12 @@ var $elm$url$Url$Parser$getFirstMatch = function (states) {
 		} else {
 			var state = states.a;
 			var rest = states.b;
-			var _v1 = state.unvisited;
+			var _v1 = state.S;
 			if (!_v1.b) {
-				return $elm$core$Maybe$Just(state.value);
+				return $elm$core$Maybe$Just(state.bg);
 			} else {
 				if ((_v1.a === '') && (!_v1.b.b)) {
-					return $elm$core$Maybe$Just(state.value);
+					return $elm$core$Maybe$Just(state.bg);
 				} else {
 					var $temp$states = rest;
 					states = $temp$states;
@@ -9133,7 +9068,7 @@ var $elm$url$Url$Parser$preparePath = function (path) {
 };
 var $elm$url$Url$Parser$addToParametersHelp = F2(
 	function (value, maybeList) {
-		if (maybeList.$ === 'Nothing') {
+		if (maybeList.$ === 1) {
 			return $elm$core$Maybe$Just(
 				_List_fromArray(
 					[value]));
@@ -9152,12 +9087,12 @@ var $elm$url$Url$Parser$addParam = F2(
 			var _v1 = _v0.b;
 			var rawValue = _v1.a;
 			var _v2 = $elm$url$Url$percentDecode(rawKey);
-			if (_v2.$ === 'Nothing') {
+			if (_v2.$ === 1) {
 				return dict;
 			} else {
 				var key = _v2.a;
 				var _v3 = $elm$url$Url$percentDecode(rawValue);
-				if (_v3.$ === 'Nothing') {
+				if (_v3.$ === 1) {
 					return dict;
 				} else {
 					var value = _v3.a;
@@ -9173,7 +9108,7 @@ var $elm$url$Url$Parser$addParam = F2(
 		}
 	});
 var $elm$url$Url$Parser$prepareQuery = function (maybeQuery) {
-	if (maybeQuery.$ === 'Nothing') {
+	if (maybeQuery.$ === 1) {
 		return $elm$core$Dict$empty;
 	} else {
 		var qry = maybeQuery.a;
@@ -9186,48 +9121,45 @@ var $elm$url$Url$Parser$prepareQuery = function (maybeQuery) {
 };
 var $elm$url$Url$Parser$parse = F2(
 	function (_v0, url) {
-		var parser = _v0.a;
+		var parser = _v0;
 		return $elm$url$Url$Parser$getFirstMatch(
 			parser(
 				A5(
 					$elm$url$Url$Parser$State,
 					_List_Nil,
-					$elm$url$Url$Parser$preparePath(url.path),
-					$elm$url$Url$Parser$prepareQuery(url.query),
-					url.fragment,
+					$elm$url$Url$Parser$preparePath(url.cZ),
+					$elm$url$Url$Parser$prepareQuery(url.bZ),
+					url.bz,
 					$elm$core$Basics$identity)));
 	});
-var $elm$url$Url$Parser$Parser = function (a) {
-	return {$: 'Parser', a: a};
-};
+var $elm$url$Url$Parser$Parser = $elm$core$Basics$identity;
 var $elm$url$Url$Parser$query = function (_v0) {
-	var queryParser = _v0.a;
-	return $elm$url$Url$Parser$Parser(
-		function (_v1) {
-			var visited = _v1.visited;
-			var unvisited = _v1.unvisited;
-			var params = _v1.params;
-			var frag = _v1.frag;
-			var value = _v1.value;
-			return _List_fromArray(
-				[
-					A5(
-					$elm$url$Url$Parser$State,
-					visited,
-					unvisited,
-					params,
-					frag,
-					value(
-						queryParser(params)))
-				]);
-		});
+	var queryParser = _v0;
+	return function (_v1) {
+		var visited = _v1.aa;
+		var unvisited = _v1.S;
+		var params = _v1.W;
+		var frag = _v1.U;
+		var value = _v1.bg;
+		return _List_fromArray(
+			[
+				A5(
+				$elm$url$Url$Parser$State,
+				visited,
+				unvisited,
+				params,
+				frag,
+				value(
+					queryParser(params)))
+			]);
+	};
 };
 var $elm$browser$Browser$Navigation$replaceUrl = _Browser_replaceUrl;
-var $author$project$Main$shortFieldNames = {distanceDetail: 'dd', filteredLocationTypes: 'flt', itemSpacing: 'is', locationFilterEnabled: 'lfe', totalDistanceDisplay: 'tdd', waypointDistance: 'd', waypointName: 'n', waypointType: 't', waypoints: 'w'};
+var $author$project$Main$shortFieldNames = {k: 'dd', m: 'flt', c: 'is', n: 'lfe', v: 'tdd', as: 'd', at: 'n', au: 't', I: 'w'};
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $author$project$Main$Waypoint = F3(
 	function (name, distance, typ) {
-		return {distance: distance, name: name, typ: typ};
+		return {P: distance, a3: name, R: typ};
 	});
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
@@ -9239,9 +9171,9 @@ var $author$project$Main$decodeWaypoints = function (fieldNames) {
 		A4(
 			$elm$json$Json$Decode$map3,
 			$author$project$Main$Waypoint,
-			A2($elm$json$Json$Decode$field, fieldNames.waypointName, $elm$json$Json$Decode$string),
-			A2($elm$json$Json$Decode$field, fieldNames.waypointDistance, $elm$json$Json$Decode$float),
-			A2($elm$json$Json$Decode$field, fieldNames.waypointType, $elm$json$Json$Decode$string)));
+			A2($elm$json$Json$Decode$field, fieldNames.at, $elm$json$Json$Decode$string),
+			A2($elm$json$Json$Decode$field, fieldNames.as, $elm$json$Json$Decode$float),
+			A2($elm$json$Json$Decode$field, fieldNames.au, $elm$json$Json$Decode$string)));
 };
 var $elm$core$Dict$fromList = function (assocs) {
 	return A3(
@@ -9280,52 +9212,52 @@ var $author$project$Main$storedStateDecoder = function (fieldNames) {
 		$elm$json$Json$Decode$maybe(
 			A2(
 				$elm$json$Json$Decode$field,
-				fieldNames.waypoints,
+				fieldNames.I,
 				$author$project$Main$decodeWaypoints(fieldNames))),
 		$elm$json$Json$Decode$maybe(
-			A2($elm$json$Json$Decode$field, fieldNames.totalDistanceDisplay, $elm$json$Json$Decode$string)),
+			A2($elm$json$Json$Decode$field, fieldNames.v, $elm$json$Json$Decode$string)),
 		$elm$json$Json$Decode$maybe(
-			A2($elm$json$Json$Decode$field, fieldNames.locationFilterEnabled, $elm$json$Json$Decode$bool)),
+			A2($elm$json$Json$Decode$field, fieldNames.n, $elm$json$Json$Decode$bool)),
 		$elm$json$Json$Decode$maybe(
 			A2(
 				$elm$json$Json$Decode$field,
-				fieldNames.filteredLocationTypes,
+				fieldNames.m,
 				$elm$json$Json$Decode$dict($elm$json$Json$Decode$bool))),
 		$elm$json$Json$Decode$maybe(
-			A2($elm$json$Json$Decode$field, fieldNames.itemSpacing, $elm$json$Json$Decode$int)),
+			A2($elm$json$Json$Decode$field, fieldNames.c, $elm$json$Json$Decode$int)),
 		$elm$json$Json$Decode$maybe(
-			A2($elm$json$Json$Decode$field, fieldNames.distanceDetail, $elm$json$Json$Decode$int)));
+			A2($elm$json$Json$Decode$field, fieldNames.k, $elm$json$Json$Decode$int)));
 };
 var $author$project$Main$CuesModel = F2(
 	function (waypoints, waypointOptions) {
-		return {waypointOptions: waypointOptions, waypoints: waypoints};
+		return {H: waypointOptions, I: waypoints};
 	});
 var $author$project$Main$CuesheetPage = function (a) {
-	return {$: 'CuesheetPage', a: a};
+	return {$: 2, a: a};
 };
 var $author$project$Main$WaypointsOptions = F2(
 	function (locationFilterEnabled, filteredLocationTypes) {
-		return {filteredLocationTypes: filteredLocationTypes, locationFilterEnabled: locationFilterEnabled};
+		return {m: filteredLocationTypes, n: locationFilterEnabled};
 	});
 var $author$project$Main$initialFilteredLocations = function (waypoints) {
 	return $elm$core$Dict$fromList(
 		A2(
 			$elm$core$List$map,
 			function (el) {
-				return _Utils_Tuple2(el.typ, true);
+				return _Utils_Tuple2(el.R, true);
 			},
 			waypoints));
 };
-var $author$project$Main$FromLast = {$: 'FromLast'};
-var $author$project$Main$None = {$: 'None'};
+var $author$project$Main$FromLast = 1;
+var $author$project$Main$None = 2;
 var $author$project$Main$parseTotalDistanceDisplay = function (v) {
 	switch (v) {
 		case 'from zero':
-			return $elm$core$Maybe$Just($author$project$Main$FromZero);
+			return $elm$core$Maybe$Just(0);
 		case 'from last':
-			return $elm$core$Maybe$Just($author$project$Main$FromLast);
+			return $elm$core$Maybe$Just(1);
 		case 'hide':
-			return $elm$core$Maybe$Just($author$project$Main$None);
+			return $elm$core$Maybe$Just(2);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -9346,43 +9278,39 @@ var $author$project$Main$storedStateModel = F2(
 								ws,
 								A2(
 									$author$project$Main$WaypointsOptions,
-									A2($elm$core$Maybe$withDefault, false, state.locationFilterEnabled),
+									A2($elm$core$Maybe$withDefault, false, state.n),
 									A2(
 										$elm$core$Maybe$withDefault,
 										$author$project$Main$initialFilteredLocations(ws),
-										state.filteredLocationTypes))));
+										state.m))));
 					},
-					state.waypoints)),
+					state.I)),
 			$elm$core$Maybe$Nothing,
 			true,
 			A3(
 				$author$project$Main$CuesViewOptions,
 				A2(
 					$elm$core$Maybe$withDefault,
-					$author$project$Main$FromZero,
-					A2($elm$core$Maybe$andThen, $author$project$Main$parseTotalDistanceDisplay, state.totalDistanceDisplay)),
-				A2($elm$core$Maybe$withDefault, $author$project$Main$defaultSpacing, state.itemSpacing),
-				A2($elm$core$Maybe$withDefault, $author$project$Main$defaultDistanceDetail, state.distanceDetail)),
+					0,
+					A2($elm$core$Maybe$andThen, $author$project$Main$parseTotalDistanceDisplay, state.v)),
+				A2($elm$core$Maybe$withDefault, $author$project$Main$defaultSpacing, state.c),
+				A2($elm$core$Maybe$withDefault, $author$project$Main$defaultDistanceDetail, state.k)),
 			false,
 			url);
 	});
 var $elm$bytes$Bytes$Decode$string = function (n) {
-	return $elm$bytes$Bytes$Decode$Decoder(
-		_Bytes_read_string(n));
+	return _Bytes_read_string(n);
 };
-var $elm$url$Url$Parser$Internal$Parser = function (a) {
-	return {$: 'Parser', a: a};
-};
+var $elm$url$Url$Parser$Internal$Parser = $elm$core$Basics$identity;
 var $elm$url$Url$Parser$Query$custom = F2(
 	function (key, func) {
-		return $elm$url$Url$Parser$Internal$Parser(
-			function (dict) {
-				return func(
-					A2(
-						$elm$core$Maybe$withDefault,
-						_List_Nil,
-						A2($elm$core$Dict$get, key, dict)));
-			});
+		return function (dict) {
+			return func(
+				A2(
+					$elm$core$Maybe$withDefault,
+					_List_Nil,
+					A2($elm$core$Dict$get, key, dict)));
+		};
 	});
 var $elm$url$Url$Parser$Query$string = function (key) {
 	return A2(
@@ -9401,7 +9329,7 @@ var $danfishgold$base64_bytes$Encode$isValidChar = function (c) {
 	if ($elm$core$Char$isAlphaNum(c)) {
 		return true;
 	} else {
-		switch (c.valueOf()) {
+		switch (c) {
 			case '+':
 				return true;
 			case '/':
@@ -9425,7 +9353,7 @@ var $danfishgold$base64_bytes$Encode$unsafeConvertChar = function (_char) {
 			if ((key >= 48) && (key <= 57)) {
 				return ((key - 48) + 26) + 26;
 			} else {
-				switch (_char.valueOf()) {
+				switch (_char) {
 					case '+':
 						return 62;
 					case '/':
@@ -9442,8 +9370,8 @@ var $danfishgold$base64_bytes$Encode$encodeCharacters = F4(
 		if ($danfishgold$base64_bytes$Encode$isValidChar(a) && $danfishgold$base64_bytes$Encode$isValidChar(b)) {
 			var n2 = $danfishgold$base64_bytes$Encode$unsafeConvertChar(b);
 			var n1 = $danfishgold$base64_bytes$Encode$unsafeConvertChar(a);
-			if ('=' === d.valueOf()) {
-				if ('=' === c.valueOf()) {
+			if ('=' === d) {
+				if ('=' === c) {
 					var n = (n1 << 18) | (n2 << 12);
 					var b1 = n >> 16;
 					return $elm$core$Maybe$Just(
@@ -9454,7 +9382,7 @@ var $danfishgold$base64_bytes$Encode$encodeCharacters = F4(
 						var n = ((n1 << 18) | (n2 << 12)) | (n3 << 6);
 						var combined = n >> 8;
 						return $elm$core$Maybe$Just(
-							A2($elm$bytes$Bytes$Encode$unsignedInt16, $elm$bytes$Bytes$BE, combined));
+							A2($elm$bytes$Bytes$Encode$unsignedInt16, 1, combined));
 					} else {
 						return $elm$core$Maybe$Nothing;
 					}
@@ -9470,7 +9398,7 @@ var $danfishgold$base64_bytes$Encode$encodeCharacters = F4(
 						$elm$bytes$Bytes$Encode$sequence(
 							_List_fromArray(
 								[
-									A2($elm$bytes$Bytes$Encode$unsignedInt16, $elm$bytes$Bytes$BE, combined),
+									A2($elm$bytes$Bytes$Encode$unsignedInt16, 1, combined),
 									$elm$bytes$Bytes$Encode$unsignedInt8(b3)
 								])));
 				} else {
@@ -9508,7 +9436,7 @@ var $danfishgold$base64_bytes$Encode$encodeChunks = F2(
 									var _v3 = _v2.b;
 									var d = _v3.a;
 									var _v4 = A4($danfishgold$base64_bytes$Encode$encodeCharacters, a, b, c, d);
-									if (_v4.$ === 'Just') {
+									if (!_v4.$) {
 										var enc = _v4.a;
 										var $temp$input = A2($elm$core$String$dropLeft, 4, input),
 											$temp$accum = A2($elm$core$List$cons, enc, accum);
@@ -9527,13 +9455,8 @@ var $danfishgold$base64_bytes$Encode$encodeChunks = F2(
 								var b = _v5.a;
 								var _v6 = _v5.b;
 								var c = _v6.a;
-								var _v7 = A4(
-									$danfishgold$base64_bytes$Encode$encodeCharacters,
-									a,
-									b,
-									c,
-									_Utils_chr('='));
-								if (_v7.$ === 'Nothing') {
+								var _v7 = A4($danfishgold$base64_bytes$Encode$encodeCharacters, a, b, c, '=');
+								if (_v7.$ === 1) {
 									return $elm$core$Maybe$Nothing;
 								} else {
 									var enc = _v7.a;
@@ -9545,13 +9468,8 @@ var $danfishgold$base64_bytes$Encode$encodeChunks = F2(
 							var a = _v0.a;
 							var _v8 = _v0.b;
 							var b = _v8.a;
-							var _v9 = A4(
-								$danfishgold$base64_bytes$Encode$encodeCharacters,
-								a,
-								b,
-								_Utils_chr('='),
-								_Utils_chr('='));
-							if (_v9.$ === 'Nothing') {
+							var _v9 = A4($danfishgold$base64_bytes$Encode$encodeCharacters, a, b, '=', '=');
+							if (_v9.$ === 1) {
 								return $elm$core$Maybe$Nothing;
 							} else {
 								var enc = _v9.a;
@@ -9582,7 +9500,7 @@ var $danfishgold$base64_bytes$Encode$toBytes = function (string) {
 var $danfishgold$base64_bytes$Base64$toBytes = $danfishgold$base64_bytes$Encode$toBytes;
 var $elm$url$Url$addPort = F2(
 	function (maybePort, starter) {
-		if (maybePort.$ === 'Nothing') {
+		if (maybePort.$ === 1) {
 			return starter;
 		} else {
 			var port_ = maybePort.a;
@@ -9591,7 +9509,7 @@ var $elm$url$Url$addPort = F2(
 	});
 var $elm$url$Url$addPrefixed = F3(
 	function (prefix, maybeSegment, starter) {
-		if (maybeSegment.$ === 'Nothing') {
+		if (maybeSegment.$ === 1) {
 			return starter;
 		} else {
 			var segment = maybeSegment.a;
@@ -9602,8 +9520,8 @@ var $elm$url$Url$addPrefixed = F3(
 	});
 var $elm$url$Url$toString = function (url) {
 	var http = function () {
-		var _v0 = url.protocol;
-		if (_v0.$ === 'Http') {
+		var _v0 = url.bY;
+		if (!_v0) {
 			return 'http://';
 		} else {
 			return 'https://';
@@ -9612,17 +9530,17 @@ var $elm$url$Url$toString = function (url) {
 	return A3(
 		$elm$url$Url$addPrefixed,
 		'#',
-		url.fragment,
+		url.bz,
 		A3(
 			$elm$url$Url$addPrefixed,
 			'?',
-			url.query,
+			url.bZ,
 			_Utils_ap(
 				A2(
 					$elm$url$Url$addPort,
-					url.port_,
-					_Utils_ap(http, url.host)),
-				url.path)));
+					url.bV,
+					_Utils_ap(http, url.bF)),
+				url.cZ)));
 };
 var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$json$Json$Encode$dict = F3(
@@ -9638,7 +9556,7 @@ var $elm$json$Json$Encode$dict = F3(
 							toValue(value),
 							obj);
 					}),
-				_Json_emptyObject(_Utils_Tuple0),
+				_Json_emptyObject(0),
 				dictionary));
 	});
 var $elm$json$Json$Encode$float = _Json_wrap;
@@ -9648,7 +9566,7 @@ var $elm$json$Json$Encode$list = F2(
 			A3(
 				$elm$core$List$foldl,
 				_Json_addEntry(func),
-				_Json_emptyArray(_Utils_Tuple0),
+				_Json_emptyArray(0),
 				entries));
 	});
 var $elm$json$Json$Encode$object = function (pairs) {
@@ -9661,7 +9579,7 @@ var $elm$json$Json$Encode$object = function (pairs) {
 					var v = _v0.b;
 					return A3(_Json_addField, k, v, obj);
 				}),
-			_Json_emptyObject(_Utils_Tuple0),
+			_Json_emptyObject(0),
 			pairs));
 };
 var $elm$json$Json$Encode$string = _Json_wrap;
@@ -9674,23 +9592,23 @@ var $author$project$Main$encodeWaypoints = F2(
 					_List_fromArray(
 						[
 							_Utils_Tuple2(
-							fieldNames.waypointName,
-							$elm$json$Json$Encode$string(waypoint.name)),
+							fieldNames.at,
+							$elm$json$Json$Encode$string(waypoint.a3)),
 							_Utils_Tuple2(
-							fieldNames.waypointDistance,
-							$elm$json$Json$Encode$float(waypoint.distance)),
+							fieldNames.as,
+							$elm$json$Json$Encode$float(waypoint.P)),
 							_Utils_Tuple2(
-							fieldNames.waypointType,
-							$elm$json$Json$Encode$string(waypoint.typ))
+							fieldNames.au,
+							$elm$json$Json$Encode$string(waypoint.R))
 						]));
 			},
 			waypoints);
 	});
 var $author$project$Main$formatTotalDistanceDisplay = function (v) {
-	switch (v.$) {
-		case 'FromZero':
+	switch (v) {
+		case 0:
 			return 'from zero';
-		case 'FromLast':
+		case 1:
 			return 'from last';
 		default:
 			return 'hide';
@@ -9705,20 +9623,20 @@ var $author$project$Main$encodeSavedState = F2(
 			$elm$json$Json$Encode$object(
 				_Utils_ap(
 					function () {
-						var _v0 = model.page;
-						if (_v0.$ === 'CuesheetPage') {
+						var _v0 = model.F;
+						if (_v0.$ === 2) {
 							var cuesModel = _v0.a;
 							return _List_fromArray(
 								[
 									_Utils_Tuple2(
-									fieldNames.waypoints,
-									A2($author$project$Main$encodeWaypoints, fieldNames, cuesModel.waypoints)),
+									fieldNames.I,
+									A2($author$project$Main$encodeWaypoints, fieldNames, cuesModel.I)),
 									_Utils_Tuple2(
-									fieldNames.locationFilterEnabled,
-									$elm$json$Json$Encode$bool(cuesModel.waypointOptions.locationFilterEnabled)),
+									fieldNames.n,
+									$elm$json$Json$Encode$bool(cuesModel.H.n)),
 									_Utils_Tuple2(
-									fieldNames.filteredLocationTypes,
-									A3($elm$json$Json$Encode$dict, $elm$core$Basics$identity, $elm$json$Json$Encode$bool, cuesModel.waypointOptions.filteredLocationTypes))
+									fieldNames.m,
+									A3($elm$json$Json$Encode$dict, $elm$core$Basics$identity, $elm$json$Json$Encode$bool, cuesModel.H.m))
 								]);
 						} else {
 							return _List_Nil;
@@ -9727,15 +9645,15 @@ var $author$project$Main$encodeSavedState = F2(
 					_List_fromArray(
 						[
 							_Utils_Tuple2(
-							fieldNames.totalDistanceDisplay,
+							fieldNames.v,
 							$elm$json$Json$Encode$string(
-								$author$project$Main$formatTotalDistanceDisplay(model.cuesViewOptions.totalDistanceDisplay))),
+								$author$project$Main$formatTotalDistanceDisplay(model.q.v))),
 							_Utils_Tuple2(
-							fieldNames.distanceDetail,
-							$elm$json$Json$Encode$int(model.cuesViewOptions.distanceDetail)),
+							fieldNames.k,
+							$elm$json$Json$Encode$int(model.q.k)),
 							_Utils_Tuple2(
-							fieldNames.itemSpacing,
-							$elm$json$Json$Encode$int(model.cuesViewOptions.itemSpacing))
+							fieldNames.c,
+							$elm$json$Json$Encode$int(model.q.c))
 						]))));
 	});
 var $author$project$Main$storeState = _Platform_outgoingPort('storeState', $elm$json$Json$Encode$string);
@@ -9747,7 +9665,7 @@ var $author$project$Main$updateModel = function (model) {
 };
 var $elm$core$Result$withDefault = F2(
 	function (def, result) {
-		if (result.$ === 'Ok') {
+		if (!result.$) {
 			var a = result.a;
 			return a;
 		} else {
@@ -9787,7 +9705,7 @@ var $author$project$Main$init = F3(
 									$elm$url$Url$Parser$Query$string('state')),
 								_Utils_update(
 									url,
-									{path: ''})))))));
+									{cZ: ''})))))));
 		return A2(
 			$elm$core$Tuple$mapSecond,
 			function (cmd) {
@@ -9810,12 +9728,12 @@ var $author$project$Main$init = F3(
 											$elm$url$Url$toString(
 												_Utils_update(
 													url,
-													{query: $elm$core$Maybe$Nothing})))),
+													{bZ: $elm$core$Maybe$Nothing})))),
 									queryState)))));
 			},
 			$author$project$Main$updateModel(
 				function () {
-					if (queryState.$ === 'Just') {
+					if (!queryState.$) {
 						var storedState = queryState.a;
 						return A2($author$project$Main$storedStateModel, url, storedState);
 					} else {
@@ -9826,7 +9744,7 @@ var $author$project$Main$init = F3(
 								$author$project$Main$WelcomePage(false),
 								$elm$core$Maybe$Nothing,
 								true,
-								A3($author$project$Main$CuesViewOptions, $author$project$Main$FromZero, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail),
+								A3($author$project$Main$CuesViewOptions, 0, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail),
 								false,
 								url),
 							A2(
@@ -9846,18 +9764,18 @@ var $author$project$Main$init = F3(
 	});
 var $elm$json$Json$Decode$null = _Json_decodeNull;
 var $author$project$Main$CsvDecoded = function (a) {
-	return {$: 'CsvDecoded', a: a};
+	return {$: 10, a: a};
 };
 var $author$project$Main$FileUploaded = function (a) {
-	return {$: 'FileUploaded', a: a};
+	return {$: 9, a: a};
 };
-var $BrianHicks$elm_csv$Csv$Decode$FieldNamesFromFirstRow = {$: 'FieldNamesFromFirstRow'};
+var $BrianHicks$elm_csv$Csv$Decode$FieldNamesFromFirstRow = {$: 2};
 var $BrianHicks$elm_csv$Csv$Decode$ParsingError = function (a) {
-	return {$: 'ParsingError', a: a};
+	return {$: 0, a: a};
 };
 var $elm$core$Result$andThen = F2(
 	function (callback, result) {
-		if (result.$ === 'Ok') {
+		if (!result.$) {
 			var value = result.a;
 			return callback(value);
 		} else {
@@ -9866,10 +9784,10 @@ var $elm$core$Result$andThen = F2(
 		}
 	});
 var $BrianHicks$elm_csv$Csv$Decode$DecodingErrors = function (a) {
-	return {$: 'DecodingErrors', a: a};
+	return {$: 2, a: a};
 };
-var $BrianHicks$elm_csv$Csv$Decode$OnlyColumn_ = {$: 'OnlyColumn_'};
-var $BrianHicks$elm_csv$Csv$Decode$NoFieldNamesOnFirstRow = {$: 'NoFieldNamesOnFirstRow'};
+var $BrianHicks$elm_csv$Csv$Decode$OnlyColumn_ = {$: 2};
+var $BrianHicks$elm_csv$Csv$Decode$NoFieldNamesOnFirstRow = {$: 1};
 var $elm$core$String$trim = _String_trim;
 var $BrianHicks$elm_csv$Csv$Decode$getFieldNames = F2(
 	function (headers, rows) {
@@ -9888,10 +9806,10 @@ var $BrianHicks$elm_csv$Csv$Decode$getFieldNames = F2(
 				names).a;
 		};
 		switch (headers.$) {
-			case 'NoFieldNames':
+			case 0:
 				return $elm$core$Result$Ok(
 					_Utils_Tuple3($elm$core$Dict$empty, 0, rows));
-			case 'CustomFieldNames':
+			case 1:
 				var names = headers.a;
 				return $elm$core$Result$Ok(
 					_Utils_Tuple3(
@@ -9915,7 +9833,7 @@ var $BrianHicks$elm_csv$Csv$Decode$getFieldNames = F2(
 	});
 var $elm$core$Result$map = F2(
 	function (func, ra) {
-		if (ra.$ === 'Ok') {
+		if (!ra.$) {
 			var a = ra.a;
 			return $elm$core$Result$Ok(
 				func(a));
@@ -9926,7 +9844,7 @@ var $elm$core$Result$map = F2(
 	});
 var $elm$core$Result$mapError = F2(
 	function (f, result) {
-		if (result.$ === 'Ok') {
+		if (!result.$) {
 			var v = result.a;
 			return $elm$core$Result$Ok(v);
 		} else {
@@ -9937,7 +9855,7 @@ var $elm$core$Result$mapError = F2(
 	});
 var $BrianHicks$elm_csv$Csv$Decode$applyDecoder = F3(
 	function (fieldNames, _v0, allRows) {
-		var decode = _v0.a;
+		var decode = _v0;
 		var defaultLocation = $BrianHicks$elm_csv$Csv$Decode$OnlyColumn_;
 		return A2(
 			$elm$core$Result$andThen,
@@ -9960,9 +9878,9 @@ var $BrianHicks$elm_csv$Csv$Decode$applyDecoder = F3(
 									return _Utils_Tuple2(
 										function () {
 											var _v3 = A4(decode, defaultLocation, resolvedNames, rowNum, row);
-											if (_v3.$ === 'Ok') {
+											if (!_v3.$) {
 												var val = _v3.a;
-												if (soFar.$ === 'Ok') {
+												if (!soFar.$) {
 													var values = soFar.a;
 													return $elm$core$Result$Ok(
 														A2($elm$core$List$cons, val, values));
@@ -9972,7 +9890,7 @@ var $BrianHicks$elm_csv$Csv$Decode$applyDecoder = F3(
 												}
 											} else {
 												var err = _v3.a;
-												if (soFar.$ === 'Ok') {
+												if (!soFar.$) {
 													return $elm$core$Result$Err(
 														_List_fromArray(
 															[err]));
@@ -9993,10 +9911,10 @@ var $BrianHicks$elm_csv$Csv$Decode$applyDecoder = F3(
 			A2($BrianHicks$elm_csv$Csv$Decode$getFieldNames, fieldNames, allRows));
 	});
 var $BrianHicks$elm_csv$Csv$Parser$AdditionalCharactersAfterClosingQuote = function (a) {
-	return {$: 'AdditionalCharactersAfterClosingQuote', a: a};
+	return {$: 1, a: a};
 };
 var $BrianHicks$elm_csv$Csv$Parser$SourceEndedWithoutClosingQuote = function (a) {
-	return {$: 'SourceEndedWithoutClosingQuote', a: a};
+	return {$: 0, a: a};
 };
 var $elm$core$String$cons = _String_cons;
 var $elm$core$String$fromChar = function (_char) {
@@ -10154,7 +10072,7 @@ var $BrianHicks$elm_csv$Csv$Parser$parse = F2(
 											'',
 											newPos,
 											newPos);
-										if (_v0.$ === 'Ok') {
+										if (!_v0.$) {
 											var _v1 = _v0.a;
 											var value = _v1.a;
 											var afterQuotedField = _v1.b;
@@ -10295,7 +10213,7 @@ var $BrianHicks$elm_csv$Csv$Parser$parse = F2(
 									if (first === '\"') {
 										var newPos = endOffset + 1;
 										var _v2 = A4(parseQuotedField, isFieldSeparator, '', newPos, newPos);
-										if (_v2.$ === 'Ok') {
+										if (!_v2.$) {
 											var _v3 = _v2.a;
 											var value = _v3.a;
 											var afterQuotedField = _v3.b;
@@ -10443,7 +10361,7 @@ var $BrianHicks$elm_csv$Csv$Parser$parse = F2(
 											'',
 											newPos,
 											newPos);
-										if (_v4.$ === 'Ok') {
+										if (!_v4.$) {
 											var _v5 = _v4.a;
 											var value = _v5.a;
 											var afterQuotedField = _v5.b;
@@ -10506,12 +10424,8 @@ var $BrianHicks$elm_csv$Csv$Parser$parse = F2(
 					}
 				}
 			});
-		var fieldSeparator = $elm$core$String$fromChar(config.fieldSeparator);
-		return $elm$core$String$isEmpty(source) ? $elm$core$Result$Ok(_List_Nil) : (_Utils_eq(
-			config.fieldSeparator,
-			_Utils_chr(',')) ? A4(parseComma, _List_Nil, _List_Nil, 0, 0) : (_Utils_eq(
-			config.fieldSeparator,
-			_Utils_chr(';')) ? A4(parseSemicolon, _List_Nil, _List_Nil, 0, 0) : A5(
+		var fieldSeparator = $elm$core$String$fromChar(config.cD);
+		return $elm$core$String$isEmpty(source) ? $elm$core$Result$Ok(_List_Nil) : ((config.cD === ',') ? A4(parseComma, _List_Nil, _List_Nil, 0, 0) : ((config.cD === ';') ? A4(parseSemicolon, _List_Nil, _List_Nil, 0, 0) : A5(
 			parseHelp,
 			function (s) {
 				return _Utils_eq(s, fieldSeparator);
@@ -10532,42 +10446,37 @@ var $BrianHicks$elm_csv$Csv$Decode$decodeCustom = F4(
 				A2($BrianHicks$elm_csv$Csv$Parser$parse, config, source)));
 	});
 var $BrianHicks$elm_csv$Csv$Decode$decodeCsv = $BrianHicks$elm_csv$Csv$Decode$decodeCustom(
-	{
-		fieldSeparator: _Utils_chr(',')
-	});
-var $BrianHicks$elm_csv$Csv$Decode$Decoder = function (a) {
-	return {$: 'Decoder', a: a};
-};
+	{cD: ','});
+var $BrianHicks$elm_csv$Csv$Decode$Decoder = $elm$core$Basics$identity;
 var $BrianHicks$elm_csv$Csv$Decode$Field_ = function (a) {
-	return {$: 'Field_', a: a};
+	return {$: 1, a: a};
 };
 var $BrianHicks$elm_csv$Csv$Decode$field = F2(
 	function (name, _v0) {
-		var decoder = _v0.a;
-		return $BrianHicks$elm_csv$Csv$Decode$Decoder(
-			F3(
-				function (_v1, fieldNames, row) {
-					return A3(
-						decoder,
-						$BrianHicks$elm_csv$Csv$Decode$Field_(name),
-						fieldNames,
-						row);
-				}));
+		var decoder = _v0;
+		return F3(
+			function (_v1, fieldNames, row) {
+				return A3(
+					decoder,
+					$BrianHicks$elm_csv$Csv$Decode$Field_(name),
+					fieldNames,
+					row);
+			});
 	});
 var $BrianHicks$elm_csv$Csv$Decode$ExpectedFloat = function (a) {
-	return {$: 'ExpectedFloat', a: a};
+	return {$: 5, a: a};
 };
 var $BrianHicks$elm_csv$Csv$Decode$ColumnNotFound = function (a) {
-	return {$: 'ColumnNotFound', a: a};
+	return {$: 0, a: a};
 };
 var $BrianHicks$elm_csv$Csv$Decode$ExpectedOneColumn = function (a) {
-	return {$: 'ExpectedOneColumn', a: a};
+	return {$: 3, a: a};
 };
 var $BrianHicks$elm_csv$Csv$Decode$FieldNotFound = function (a) {
-	return {$: 'FieldNotFound', a: a};
+	return {$: 1, a: a};
 };
 var $BrianHicks$elm_csv$Csv$Decode$FieldNotProvided = function (a) {
-	return {$: 'FieldNotProvided', a: a};
+	return {$: 2, a: a};
 };
 var $elm$core$List$drop = F2(
 	function (n, list) {
@@ -10600,20 +10509,20 @@ var $elm$core$List$head = function (list) {
 	}
 };
 var $BrianHicks$elm_csv$Csv$Decode$Column = function (a) {
-	return {$: 'Column', a: a};
+	return {$: 0, a: a};
 };
 var $BrianHicks$elm_csv$Csv$Decode$Field = F2(
 	function (a, b) {
-		return {$: 'Field', a: a, b: b};
+		return {$: 1, a: a, b: b};
 	});
-var $BrianHicks$elm_csv$Csv$Decode$OnlyColumn = {$: 'OnlyColumn'};
+var $BrianHicks$elm_csv$Csv$Decode$OnlyColumn = {$: 2};
 var $BrianHicks$elm_csv$Csv$Decode$locationToColumn = F2(
 	function (fieldNames, location) {
 		switch (location.$) {
-			case 'Column_':
+			case 0:
 				var i = location.a;
 				return $BrianHicks$elm_csv$Csv$Decode$Column(i);
-			case 'Field_':
+			case 1:
 				var name = location.a;
 				return A2(
 					$BrianHicks$elm_csv$Csv$Decode$Field,
@@ -10624,136 +10533,135 @@ var $BrianHicks$elm_csv$Csv$Decode$locationToColumn = F2(
 		}
 	});
 var $BrianHicks$elm_csv$Csv$Decode$fromString = function (convert) {
-	return $BrianHicks$elm_csv$Csv$Decode$Decoder(
-		F4(
-			function (location, fieldNames, rowNum, row) {
-				switch (location.$) {
-					case 'Column_':
-						var colNum = location.a;
-						var _v1 = $elm$core$List$head(
+	return F4(
+		function (location, fieldNames, rowNum, row) {
+			switch (location.$) {
+				case 0:
+					var colNum = location.a;
+					var _v1 = $elm$core$List$head(
+						A2($elm$core$List$drop, colNum, row));
+					if (!_v1.$) {
+						var value = _v1.a;
+						var _v2 = convert(value);
+						if (!_v2.$) {
+							var converted = _v2.a;
+							return $elm$core$Result$Ok(converted);
+						} else {
+							var problem = _v2.a;
+							return $elm$core$Result$Err(
+								{
+									A: A2($BrianHicks$elm_csv$Csv$Decode$locationToColumn, fieldNames, location),
+									p: _List_fromArray(
+										[problem]),
+									G: rowNum
+								});
+						}
+					} else {
+						return $elm$core$Result$Err(
+							{
+								A: A2($BrianHicks$elm_csv$Csv$Decode$locationToColumn, fieldNames, location),
+								p: _List_fromArray(
+									[
+										$BrianHicks$elm_csv$Csv$Decode$ColumnNotFound(colNum)
+									]),
+								G: rowNum
+							});
+					}
+				case 1:
+					var name = location.a;
+					var _v3 = A2($elm$core$Dict$get, name, fieldNames);
+					if (!_v3.$) {
+						var colNum = _v3.a;
+						var _v4 = $elm$core$List$head(
 							A2($elm$core$List$drop, colNum, row));
-						if (_v1.$ === 'Just') {
-							var value = _v1.a;
-							var _v2 = convert(value);
-							if (_v2.$ === 'Ok') {
-								var converted = _v2.a;
+						if (!_v4.$) {
+							var value = _v4.a;
+							var _v5 = convert(value);
+							if (!_v5.$) {
+								var converted = _v5.a;
 								return $elm$core$Result$Ok(converted);
 							} else {
-								var problem = _v2.a;
+								var problem = _v5.a;
 								return $elm$core$Result$Err(
 									{
-										column: A2($BrianHicks$elm_csv$Csv$Decode$locationToColumn, fieldNames, location),
-										problems: _List_fromArray(
+										A: A2($BrianHicks$elm_csv$Csv$Decode$locationToColumn, fieldNames, location),
+										p: _List_fromArray(
 											[problem]),
-										row: rowNum
+										G: rowNum
 									});
 							}
 						} else {
 							return $elm$core$Result$Err(
 								{
-									column: A2($BrianHicks$elm_csv$Csv$Decode$locationToColumn, fieldNames, location),
-									problems: _List_fromArray(
+									A: A2($BrianHicks$elm_csv$Csv$Decode$locationToColumn, fieldNames, location),
+									p: _List_fromArray(
 										[
-											$BrianHicks$elm_csv$Csv$Decode$ColumnNotFound(colNum)
+											$BrianHicks$elm_csv$Csv$Decode$FieldNotFound(name)
 										]),
-									row: rowNum
+									G: rowNum
 								});
 						}
-					case 'Field_':
-						var name = location.a;
-						var _v3 = A2($elm$core$Dict$get, name, fieldNames);
-						if (_v3.$ === 'Just') {
-							var colNum = _v3.a;
-							var _v4 = $elm$core$List$head(
-								A2($elm$core$List$drop, colNum, row));
-							if (_v4.$ === 'Just') {
-								var value = _v4.a;
-								var _v5 = convert(value);
-								if (_v5.$ === 'Ok') {
-									var converted = _v5.a;
-									return $elm$core$Result$Ok(converted);
-								} else {
-									var problem = _v5.a;
-									return $elm$core$Result$Err(
-										{
-											column: A2($BrianHicks$elm_csv$Csv$Decode$locationToColumn, fieldNames, location),
-											problems: _List_fromArray(
-												[problem]),
-											row: rowNum
-										});
-								}
+					} else {
+						return $elm$core$Result$Err(
+							{
+								A: A2($BrianHicks$elm_csv$Csv$Decode$locationToColumn, fieldNames, location),
+								p: _List_fromArray(
+									[
+										$BrianHicks$elm_csv$Csv$Decode$FieldNotProvided(name)
+									]),
+								G: rowNum
+							});
+					}
+				default:
+					if (!row.b) {
+						return $elm$core$Result$Err(
+							{
+								A: A2($BrianHicks$elm_csv$Csv$Decode$locationToColumn, fieldNames, location),
+								p: _List_fromArray(
+									[
+										$BrianHicks$elm_csv$Csv$Decode$ColumnNotFound(0)
+									]),
+								G: rowNum
+							});
+					} else {
+						if (!row.b.b) {
+							var only = row.a;
+							var _v7 = convert(only);
+							if (!_v7.$) {
+								var converted = _v7.a;
+								return $elm$core$Result$Ok(converted);
 							} else {
+								var problem = _v7.a;
 								return $elm$core$Result$Err(
 									{
-										column: A2($BrianHicks$elm_csv$Csv$Decode$locationToColumn, fieldNames, location),
-										problems: _List_fromArray(
-											[
-												$BrianHicks$elm_csv$Csv$Decode$FieldNotFound(name)
-											]),
-										row: rowNum
+										A: A2($BrianHicks$elm_csv$Csv$Decode$locationToColumn, fieldNames, location),
+										p: _List_fromArray(
+											[problem]),
+										G: rowNum
 									});
 							}
 						} else {
 							return $elm$core$Result$Err(
 								{
-									column: A2($BrianHicks$elm_csv$Csv$Decode$locationToColumn, fieldNames, location),
-									problems: _List_fromArray(
+									A: A2($BrianHicks$elm_csv$Csv$Decode$locationToColumn, fieldNames, location),
+									p: _List_fromArray(
 										[
-											$BrianHicks$elm_csv$Csv$Decode$FieldNotProvided(name)
+											$BrianHicks$elm_csv$Csv$Decode$ExpectedOneColumn(
+											$elm$core$List$length(row))
 										]),
-									row: rowNum
+									G: rowNum
 								});
 						}
-					default:
-						if (!row.b) {
-							return $elm$core$Result$Err(
-								{
-									column: A2($BrianHicks$elm_csv$Csv$Decode$locationToColumn, fieldNames, location),
-									problems: _List_fromArray(
-										[
-											$BrianHicks$elm_csv$Csv$Decode$ColumnNotFound(0)
-										]),
-									row: rowNum
-								});
-						} else {
-							if (!row.b.b) {
-								var only = row.a;
-								var _v7 = convert(only);
-								if (_v7.$ === 'Ok') {
-									var converted = _v7.a;
-									return $elm$core$Result$Ok(converted);
-								} else {
-									var problem = _v7.a;
-									return $elm$core$Result$Err(
-										{
-											column: A2($BrianHicks$elm_csv$Csv$Decode$locationToColumn, fieldNames, location),
-											problems: _List_fromArray(
-												[problem]),
-											row: rowNum
-										});
-								}
-							} else {
-								return $elm$core$Result$Err(
-									{
-										column: A2($BrianHicks$elm_csv$Csv$Decode$locationToColumn, fieldNames, location),
-										problems: _List_fromArray(
-											[
-												$BrianHicks$elm_csv$Csv$Decode$ExpectedOneColumn(
-												$elm$core$List$length(row))
-											]),
-										row: rowNum
-									});
-							}
-						}
-				}
-			}));
+					}
+			}
+		});
 };
 var $elm$core$String$toFloat = _String_toFloat;
 var $BrianHicks$elm_csv$Csv$Decode$float = $BrianHicks$elm_csv$Csv$Decode$fromString(
 	function (value) {
 		var _v0 = $elm$core$String$toFloat(
 			$elm$core$String$trim(value));
-		if (_v0.$ === 'Just') {
+		if (!_v0.$) {
 			var parsed = _v0.a;
 			return $elm$core$Result$Ok(parsed);
 		} else {
@@ -10762,21 +10670,20 @@ var $BrianHicks$elm_csv$Csv$Decode$float = $BrianHicks$elm_csv$Csv$Decode$fromSt
 		}
 	});
 var $BrianHicks$elm_csv$Csv$Decode$succeed = function (value) {
-	return $BrianHicks$elm_csv$Csv$Decode$Decoder(
-		F4(
-			function (_v0, _v1, _v2, _v3) {
-				return $elm$core$Result$Ok(value);
-			}));
+	return F4(
+		function (_v0, _v1, _v2, _v3) {
+			return $elm$core$Result$Ok(value);
+		});
 };
 var $BrianHicks$elm_csv$Csv$Decode$into = $BrianHicks$elm_csv$Csv$Decode$succeed;
 var $elm$core$Result$map2 = F3(
 	function (func, ra, rb) {
-		if (ra.$ === 'Err') {
+		if (ra.$ === 1) {
 			var x = ra.a;
 			return $elm$core$Result$Err(x);
 		} else {
 			var a = ra.a;
-			if (rb.$ === 'Err') {
+			if (rb.$ === 1) {
 				var x = rb.a;
 				return $elm$core$Result$Err(x);
 			} else {
@@ -10788,17 +10695,16 @@ var $elm$core$Result$map2 = F3(
 	});
 var $BrianHicks$elm_csv$Csv$Decode$map2 = F3(
 	function (transform, _v0, _v1) {
-		var decodeA = _v0.a;
-		var decodeB = _v1.a;
-		return $BrianHicks$elm_csv$Csv$Decode$Decoder(
-			F4(
-				function (location, fieldNames, rowNum, row) {
-					return A3(
-						$elm$core$Result$map2,
-						transform,
-						A4(decodeA, location, fieldNames, rowNum, row),
-						A4(decodeB, location, fieldNames, rowNum, row));
-				}));
+		var decodeA = _v0;
+		var decodeB = _v1;
+		return F4(
+			function (location, fieldNames, rowNum, row) {
+				return A3(
+					$elm$core$Result$map2,
+					transform,
+					A4(decodeA, location, fieldNames, rowNum, row),
+					A4(decodeB, location, fieldNames, rowNum, row));
+			});
 	});
 var $BrianHicks$elm_csv$Csv$Decode$pipeline = $BrianHicks$elm_csv$Csv$Decode$map2(
 	F2(
@@ -10839,27 +10745,27 @@ var $elm$file$File$Download$string = F3(
 var $elm$file$File$toString = _File_toString;
 var $BrianHicks$elm_csv$Csv$Decode$errorToString = function (error) {
 	switch (error.$) {
-		case 'ParsingError':
-			if (error.a.$ === 'SourceEndedWithoutClosingQuote') {
+		case 0:
+			if (!error.a.$) {
 				var row = error.a.a;
 				return 'The source ended on row ' + ($elm$core$String$fromInt(row) + ' in a quoted field without a closing quote.');
 			} else {
 				var row = error.a.a;
 				return 'On row ' + ($elm$core$String$fromInt(row) + ' in the source, there were additional characters in a field after a closing quote.');
 			}
-		case 'NoFieldNamesOnFirstRow':
+		case 1:
 			return 'I expected to see field names on the first row, but there were none.';
 		default:
 			var errs = error.a;
 			var rowAndColumnString = function (err) {
-				return 'row ' + ($elm$core$String$fromInt(err.row) + (', ' + function () {
-					var _v4 = err.column;
+				return 'row ' + ($elm$core$String$fromInt(err.G) + (', ' + function () {
+					var _v4 = err.A;
 					switch (_v4.$) {
-						case 'Column':
+						case 0:
 							var col = _v4.a;
 							return 'column ' + $elm$core$String$fromInt(col);
-						case 'Field':
-							if (_v4.b.$ === 'Nothing') {
+						case 1:
+							if (_v4.b.$ === 1) {
 								var name = _v4.a;
 								var _v5 = _v4.b;
 								return 'in the `' + (name + '` field');
@@ -10875,22 +10781,22 @@ var $BrianHicks$elm_csv$Csv$Decode$errorToString = function (error) {
 			};
 			var problemString = function (problem) {
 				switch (problem.$) {
-					case 'ColumnNotFound':
+					case 0:
 						var i = problem.a;
 						return 'I couldn\'t find column #' + ($elm$core$String$fromInt(i) + '.');
-					case 'FieldNotFound':
+					case 1:
 						var name = problem.a;
 						return 'I couldn\'t find the `' + (name + '` column.');
-					case 'FieldNotProvided':
+					case 2:
 						var name = problem.a;
 						return 'The `' + (name + '` field wasn\'t provided in the field names.');
-					case 'ExpectedOneColumn':
+					case 3:
 						var howMany = problem.a;
 						return 'I expected exactly one column, but there were ' + ($elm$core$String$fromInt(howMany) + '.');
-					case 'ExpectedInt':
+					case 4:
 						var notInt = problem.a;
 						return 'I could not parse an int from `' + (notInt + '`.');
-					case 'ExpectedFloat':
+					case 5:
 						var notFloat = problem.a;
 						return 'I could not parse a float from `' + (notFloat + '`.');
 					default:
@@ -10899,7 +10805,7 @@ var $BrianHicks$elm_csv$Csv$Decode$errorToString = function (error) {
 				}
 			};
 			var errString = function (err) {
-				var _v2 = A2($elm$core$List$map, problemString, err.problems);
+				var _v2 = A2($elm$core$List$map, problemString, err.p);
 				if (!_v2.b) {
 					return 'There was an internal error while generating an error on ' + (rowAndColumnString(err) + ' and I don\'t have any info about what went wrong. Please open an issue!');
 				} else {
@@ -10948,7 +10854,7 @@ var $author$project$Main$initialCuesModel = function (waypoints) {
 	var sortedWaypoint = A2(
 		$elm$core$List$sortBy,
 		function ($) {
-			return $.distance;
+			return $.P;
 		},
 		waypoints);
 	return A2(
@@ -10958,13 +10864,13 @@ var $author$project$Main$initialCuesModel = function (waypoints) {
 };
 var $author$project$Main$updateCSVDecodeModel = F2(
 	function (model, result) {
-		if (result.$ === 'Ok') {
+		if (!result.$) {
 			var waypoints = result.a;
 			return $author$project$Main$updateModel(
 				_Utils_update(
 					model,
 					{
-						page: $author$project$Main$CuesheetPage(
+						F: $author$project$Main$CuesheetPage(
 							$author$project$Main$initialCuesModel(waypoints))
 					}));
 		} else {
@@ -10973,7 +10879,7 @@ var $author$project$Main$updateCSVDecodeModel = F2(
 				_Utils_update(
 					model,
 					{
-						csvDecodeError: $elm$core$Maybe$Just(
+						aB: $elm$core$Maybe$Just(
 							$BrianHicks$elm_csv$Csv$Decode$errorToString(err))
 					}),
 				$elm$core$Platform$Cmd$none);
@@ -10985,46 +10891,46 @@ var $author$project$Main$updateCuesModel = F2(
 			_Utils_update(
 				model,
 				{
-					page: $author$project$Main$CuesheetPage(cuesModel)
+					F: $author$project$Main$CuesheetPage(cuesModel)
 				}));
 	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
-			case 'ShowPage':
+			case 1:
 				var page = msg.a;
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
-						{page: page}));
-			case 'TypeEnabled':
+						{F: page}));
+			case 2:
 				var typ = msg.a;
 				var enabled = msg.b;
-				var _v1 = model.page;
-				if (_v1.$ === 'CuesheetPage') {
+				var _v1 = model.F;
+				if (_v1.$ === 2) {
 					var cuesModel = _v1.a;
-					var options = cuesModel.waypointOptions;
+					var options = cuesModel.H;
 					var newCuesModel = _Utils_update(
 						cuesModel,
 						{
-							waypointOptions: _Utils_update(
+							H: _Utils_update(
 								options,
 								{
-									filteredLocationTypes: A3($elm$core$Dict$insert, typ, enabled, cuesModel.waypointOptions.filteredLocationTypes)
+									m: A3($elm$core$Dict$insert, typ, enabled, cuesModel.H.m)
 								})
 						});
 					return A2($author$project$Main$updateCuesModel, model, newCuesModel);
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
-			case 'ShowOptions':
+			case 3:
 				var show = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{showOptions: show}),
+						{bc: show}),
 					$elm$core$Platform$Cmd$none);
-			case 'UpdateTotalDistanceDisplay':
+			case 4:
 				var maybeSelection = msg.a;
 				return A2(
 					$elm$core$Maybe$withDefault,
@@ -11032,21 +10938,21 @@ var $author$project$Main$update = F2(
 					A2(
 						$elm$core$Maybe$map,
 						function (selection) {
-							var options = model.cuesViewOptions;
+							var options = model.q;
 							return $author$project$Main$updateModel(
 								_Utils_update(
 									model,
 									{
-										cuesViewOptions: _Utils_update(
+										q: _Utils_update(
 											options,
-											{totalDistanceDisplay: selection})
+											{v: selection})
 									}));
 						},
 						maybeSelection));
-			case 'UpdateWaypointSelection':
+			case 5:
 				var maybeSelection = msg.a;
-				var _v2 = model.page;
-				if (_v2.$ === 'CuesheetPage') {
+				var _v2 = model.F;
+				if (_v2.$ === 2) {
 					var cuesModel = _v2.a;
 					return A2(
 						$elm$core$Maybe$withDefault,
@@ -11054,13 +10960,13 @@ var $author$project$Main$update = F2(
 						A2(
 							$elm$core$Maybe$map,
 							function (locationFilterEnabled) {
-								var options = cuesModel.waypointOptions;
+								var options = cuesModel.H;
 								var newCuesModel = _Utils_update(
 									cuesModel,
 									{
-										waypointOptions: _Utils_update(
+										H: _Utils_update(
 											options,
-											{locationFilterEnabled: locationFilterEnabled})
+											{n: locationFilterEnabled})
 									});
 								return A2($author$project$Main$updateCuesModel, model, newCuesModel);
 							},
@@ -11068,29 +10974,29 @@ var $author$project$Main$update = F2(
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
-			case 'UpdateItemSpacing':
+			case 6:
 				var spacing = msg.a;
-				var options = model.cuesViewOptions;
+				var options = model.q;
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
 						{
-							cuesViewOptions: _Utils_update(
+							q: _Utils_update(
 								options,
-								{itemSpacing: spacing})
+								{c: spacing})
 						}));
-			case 'UpdateDistanceDetail':
+			case 7:
 				var detail = msg.a;
-				var options = model.cuesViewOptions;
+				var options = model.q;
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
 						{
-							cuesViewOptions: _Utils_update(
+							q: _Utils_update(
 								options,
-								{distanceDetail: detail})
+								{k: detail})
 						}));
-			case 'OpenFileBrowser':
+			case 8:
 				return _Utils_Tuple2(
 					model,
 					A2(
@@ -11098,7 +11004,7 @@ var $author$project$Main$update = F2(
 						_List_fromArray(
 							['text/csv']),
 						$author$project$Main$FileUploaded));
-			case 'FileUploaded':
+			case 9:
 				var file = msg.a;
 				return _Utils_Tuple2(
 					model,
@@ -11109,39 +11015,39 @@ var $author$project$Main$update = F2(
 							$elm$core$Task$map,
 							$author$project$Main$decodeCSV,
 							$elm$file$File$toString(file))));
-			case 'CsvDecoded':
+			case 10:
 				var result = msg.a;
 				return A2($author$project$Main$updateCSVDecodeModel, model, result);
-			case 'LoadDemoData':
+			case 11:
 				return A2(
 					$author$project$Main$updateCSVDecodeModel,
 					model,
 					$author$project$Main$decodeCSV($author$project$Main$demoData));
-			case 'DownloadDemoData':
+			case 12:
 				return _Utils_Tuple2(
 					model,
 					A3($elm$file$File$Download$string, 'demo-data.csv', 'text/csv', $author$project$Main$demoData));
-			case 'ShowQR':
+			case 13:
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
-						{showQR: true}));
-			case 'CloseQR':
+						{aL: true}));
+			case 14:
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
-						{showQR: false}));
-			case 'Never':
+						{aL: false}));
+			case 0:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			default:
-				var _v3 = model.page;
-				if (_v3.$ === 'WelcomePage') {
+				var _v3 = model.F;
+				if (!_v3.$) {
 					var val = _v3.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
 							{
-								page: $author$project$Main$WelcomePage(!val)
+								F: $author$project$Main$WelcomePage(!val)
 							}),
 						$elm$core$Platform$Cmd$none);
 				} else {
@@ -11150,12 +11056,12 @@ var $author$project$Main$update = F2(
 		}
 	});
 var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $author$project$Main$CloseQR = {$: 'CloseQR'};
+var $author$project$Main$CloseQR = {$: 14};
 var $elm$browser$Browser$Document = F2(
 	function (title, body) {
-		return {body: body, title: title};
+		return {cn: body, da: title};
 	});
-var $pablohirafuji$elm_qrcode$QRCode$Medium = {$: 'Medium'};
+var $pablohirafuji$elm_qrcode$QRCode$Medium = 1;
 var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$Attributes$stringProperty = F2(
@@ -11179,13 +11085,13 @@ var $elm$core$List$filter = F2(
 	});
 var $author$project$Main$cues = F2(
 	function (waypointOptions, waypoints) {
-		return waypointOptions.locationFilterEnabled ? A2(
+		return waypointOptions.n ? A2(
 			$elm$core$List$filter,
 			function (w) {
 				return A2(
 					$elm$core$Maybe$withDefault,
 					true,
-					A2($elm$core$Dict$get, w.typ, waypointOptions.filteredLocationTypes));
+					A2($elm$core$Dict$get, w.R, waypointOptions.m));
 			},
 			waypoints) : waypoints;
 	});
@@ -11195,7 +11101,7 @@ var $elm$svg$Svg$Attributes$dy = _VirtualDom_attribute('dy');
 var $elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
 		var _v0 = f(mx);
-		if (_v0.$ === 'Just') {
+		if (!_v0.$) {
 			var x = _v0.a;
 			return A2($elm$core$List$cons, x, xs);
 		} else {
@@ -11240,11 +11146,7 @@ var $myrho$elm_round$Round$addSign = F2(
 		var isNotZero = A2(
 			$elm$core$List$any,
 			function (c) {
-				return (!_Utils_eq(
-					c,
-					_Utils_chr('0'))) && (!_Utils_eq(
-					c,
-					_Utils_chr('.')));
+				return (c !== '0') && (c !== '.');
 			},
 			$elm$core$String$toList(str));
 		return _Utils_ap(
@@ -11256,17 +11158,15 @@ var $elm$core$Char$fromCode = _Char_fromCode;
 var $myrho$elm_round$Round$increaseNum = function (_v0) {
 	var head = _v0.a;
 	var tail = _v0.b;
-	if (_Utils_eq(
-		head,
-		_Utils_chr('9'))) {
+	if (head === '9') {
 		var _v1 = $elm$core$String$uncons(tail);
-		if (_v1.$ === 'Nothing') {
+		if (_v1.$ === 1) {
 			return '01';
 		} else {
 			var headtail = _v1.a;
 			return A2(
 				$elm$core$String$cons,
-				_Utils_chr('0'),
+				'0',
 				$myrho$elm_round$Round$increaseNum(headtail));
 		}
 	} else {
@@ -11364,11 +11264,7 @@ var $myrho$elm_round$Round$toDecimal = function (fl) {
 									$elm$core$String$repeat,
 									$elm$core$Basics$abs(e),
 									'0'),
-								total))))) : A3(
-				$elm$core$String$padRight,
-				e + 1,
-				_Utils_chr('0'),
-				total);
+								total))))) : A3($elm$core$String$padRight, e + 1, '0', total);
 			return _Utils_ap(
 				(fl < 0) ? '-' : '',
 				zeroed);
@@ -11399,7 +11295,7 @@ var $myrho$elm_round$Round$roundFun = F3(
 				A3(
 					$elm$core$String$padRight,
 					r,
-					_Utils_chr('0'),
+					'0',
 					_Utils_ap(before, after)));
 			var totalLen = $elm$core$String$length(normalized);
 			var roundDigitIndex = A2($elm$core$Basics$max, 1, r);
@@ -11427,11 +11323,7 @@ var $myrho$elm_round$Round$roundFun = F3(
 				s,
 				$elm$core$String$length(after)) < 0) ? (A3($elm$core$String$slice, 0, numLen - s, num) + ('.' + A3($elm$core$String$slice, numLen - s, numLen, num))) : _Utils_ap(
 				before + '.',
-				A3(
-					$elm$core$String$padRight,
-					s,
-					_Utils_chr('0'),
-					after))));
+				A3($elm$core$String$padRight, s, '0', after))));
 			return A2($myrho$elm_round$Round$addSign, signed, numZeroed);
 		}
 	});
@@ -11439,10 +11331,10 @@ var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
 	F2(
 		function (signed, str) {
 			var _v0 = $elm$core$String$uncons(str);
-			if (_v0.$ === 'Nothing') {
+			if (_v0.$ === 1) {
 				return false;
 			} else {
-				if ('5' === _v0.a.a.valueOf()) {
+				if ('5' === _v0.a.a) {
 					if (_v0.a.b === '') {
 						var _v1 = _v0.a;
 						return !signed;
@@ -11485,10 +11377,10 @@ var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
 var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
 var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
 var $author$project$Main$InfoWaypoint = function (a) {
-	return {$: 'InfoWaypoint', a: a};
+	return {$: 0, a: a};
 };
 var $author$project$Main$Ride = function (a) {
-	return {$: 'Ride', a: a};
+	return {$: 1, a: a};
 };
 var $author$project$Main$waypointInfos = function (waypoints) {
 	return $elm$core$List$reverse(
@@ -11510,7 +11402,7 @@ var $author$project$Main$waypointInfos = function (waypoints) {
 										function (previous) {
 											return _List_fromArray(
 												[
-													$author$project$Main$Ride(el.distance - previous.distance)
+													$author$project$Main$Ride(el.P - previous.P)
 												]);
 										},
 										accum.a))),
@@ -11533,12 +11425,12 @@ var $author$project$Main$cuesheet = F2(
 		var lastWaypointDistance = A2(
 			$elm$core$Maybe$map,
 			function ($) {
-				return $.distance;
+				return $.P;
 			},
 			$elm$core$List$head(
 				$elm$core$List$reverse(waypoints)));
 		var info = $author$project$Main$waypointInfos(waypoints);
-		var svgHeight = cuesViewOptions.itemSpacing * $elm$core$List$length(info);
+		var svgHeight = cuesViewOptions.c * $elm$core$List$length(info);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -11555,29 +11447,29 @@ var $author$project$Main$cuesheet = F2(
 							$elm$svg$Svg$Attributes$height(
 							$elm$core$String$fromInt(svgHeight)),
 							$elm$svg$Svg$Attributes$viewBox(
-							'-120 -10 240 ' + $elm$core$String$fromInt(svgHeight + cuesViewOptions.itemSpacing))
+							'-120 -10 240 ' + $elm$core$String$fromInt(svgHeight + cuesViewOptions.c))
 						]),
 					A2(
 						$elm$core$List$indexedMap,
 						F2(
 							function (i, item) {
 								var translate = $elm$svg$Svg$Attributes$transform(
-									'translate(0,' + ($elm$core$String$fromInt(i * cuesViewOptions.itemSpacing) + ')'));
-								if (item.$ === 'InfoWaypoint') {
+									'translate(0,' + ($elm$core$String$fromInt(i * cuesViewOptions.c) + ')'));
+								if (!item.$) {
 									var waypoint = item.a;
 									var waypointDistance = function () {
-										var _v1 = cuesViewOptions.totalDistanceDisplay;
-										switch (_v1.$) {
-											case 'None':
+										var _v1 = cuesViewOptions.v;
+										switch (_v1) {
+											case 2:
 												return $elm$core$Maybe$Nothing;
-											case 'FromZero':
+											case 0:
 												return $elm$core$Maybe$Just(
-													A2($author$project$Main$formatFloat, cuesViewOptions.distanceDetail, waypoint.distance) + 'km');
+													A2($author$project$Main$formatFloat, cuesViewOptions.k, waypoint.P) + 'km');
 											default:
 												return A2(
 													$elm$core$Maybe$map,
 													function (last) {
-														return A2($author$project$Main$formatFloat, cuesViewOptions.distanceDetail, last - waypoint.distance) + 'km';
+														return A2($author$project$Main$formatFloat, cuesViewOptions.k, last - waypoint.P) + 'km';
 													},
 													lastWaypointDistance);
 										}
@@ -11588,7 +11480,7 @@ var $author$project$Main$cuesheet = F2(
 										_List_fromArray(
 											[
 												waypointDistance,
-												(waypoint.typ !== '') ? $elm$core$Maybe$Just(waypoint.typ) : $elm$core$Maybe$Nothing
+												(waypoint.R !== '') ? $elm$core$Maybe$Just(waypoint.R) : $elm$core$Maybe$Nothing
 											]));
 									var waypointInfoLines = $elm$core$List$isEmpty(waypointInfo) ? _List_fromArray(
 										['◉']) : waypointInfo;
@@ -11606,11 +11498,11 @@ var $author$project$Main$cuesheet = F2(
 														$elm$core$String$fromInt(svgContentLeftStart + 10)),
 														$elm$svg$Svg$Attributes$dominantBaseline('middle'),
 														$elm$svg$Svg$Attributes$y(
-														$elm$core$String$fromInt((cuesViewOptions.itemSpacing / 2) | 0))
+														$elm$core$String$fromInt((cuesViewOptions.c / 2) | 0))
 													]),
 												_List_fromArray(
 													[
-														$elm$svg$Svg$text(waypoint.name)
+														$elm$svg$Svg$text(waypoint.a3)
 													])),
 											A2(
 												$elm$core$List$indexedMap,
@@ -11622,7 +11514,7 @@ var $author$project$Main$cuesheet = F2(
 																[
 																	$elm$svg$Svg$Attributes$x(svgContentLeftStartString),
 																	$elm$svg$Svg$Attributes$y(
-																	$elm$core$String$fromInt((cuesViewOptions.itemSpacing / 2) | 0)),
+																	$elm$core$String$fromInt((cuesViewOptions.c / 2) | 0)),
 																	$elm$svg$Svg$Attributes$dominantBaseline('middle'),
 																	$elm$svg$Svg$Attributes$dy(
 																	$elm$core$String$fromFloat(
@@ -11640,8 +11532,8 @@ var $author$project$Main$cuesheet = F2(
 									var dist = item.a;
 									var strokeWidth = '1';
 									var arrowTop = '2';
-									var arrowHeadTop = $elm$core$String$fromInt(cuesViewOptions.itemSpacing - 6);
-									var arrowBottom = $elm$core$String$fromInt(cuesViewOptions.itemSpacing - 2);
+									var arrowHeadTop = $elm$core$String$fromInt(cuesViewOptions.c - 6);
+									var arrowBottom = $elm$core$String$fromInt(cuesViewOptions.c - 2);
 									return A2(
 										$elm$svg$Svg$g,
 										_List_fromArray(
@@ -11695,14 +11587,14 @@ var $author$project$Main$cuesheet = F2(
 														$elm$svg$Svg$Attributes$x(
 														$elm$core$String$fromInt(svgContentLeftStart + 10)),
 														$elm$svg$Svg$Attributes$y(
-														$elm$core$String$fromInt((cuesViewOptions.itemSpacing / 2) | 0)),
+														$elm$core$String$fromInt((cuesViewOptions.c / 2) | 0)),
 														$elm$svg$Svg$Attributes$dominantBaseline('middle'),
 														$elm$svg$Svg$Attributes$fontSize('smaller')
 													]),
 												_List_fromArray(
 													[
 														$elm$svg$Svg$text(
-														A2($author$project$Main$formatFloat, cuesViewOptions.distanceDetail, dist) + 'km')
+														A2($author$project$Main$formatFloat, cuesViewOptions.k, dist) + 'km')
 													]))
 											]));
 								}
@@ -11711,10 +11603,10 @@ var $author$project$Main$cuesheet = F2(
 				]));
 	});
 var $folkertdev$elm_flate$Flate$Dynamic = function (a) {
-	return {$: 'Dynamic', a: a};
+	return {$: 1, a: a};
 };
 var $folkertdev$elm_flate$Flate$WithWindowSize = function (a) {
-	return {$: 'WithWindowSize', a: a};
+	return {$: 1, a: a};
 };
 var $folkertdev$elm_flate$Deflate$Internal$chunksHelp = F2(
 	function (chunkSize, _v0) {
@@ -11755,7 +11647,7 @@ var $folkertdev$elm_flate$Deflate$Internal$chunks = F2(
 					_List_Nil),
 				$folkertdev$elm_flate$Deflate$Internal$chunksHelp(chunkSize)),
 			buffer);
-		if (_v0.$ === 'Nothing') {
+		if (_v0.$ === 1) {
 			return _List_fromArray(
 				[
 					_Utils_Tuple2(
@@ -11779,13 +11671,13 @@ var $folkertdev$elm_flate$Deflate$Internal$chunks = F2(
 		}
 	});
 var $folkertdev$elm_flate$Deflate$Internal$default_block_size = 1024 * 1024;
-var $folkertdev$elm_flate$Deflate$BitWriter$empty = {bitsWritten: 0, encoders: _List_Nil, tag: 0};
+var $folkertdev$elm_flate$Deflate$BitWriter$empty = {z: 0, B: _List_Nil, N: 0};
 var $folkertdev$elm_flate$Deflate$Symbol$code = function (symbol) {
 	switch (symbol.$) {
-		case 'Literal':
+		case 1:
 			var _byte = symbol.a;
 			return _byte;
-		case 'EndOfBlock':
+		case 0:
 			return 256;
 		default:
 			var length = symbol.a;
@@ -11793,7 +11685,7 @@ var $folkertdev$elm_flate$Deflate$Symbol$code = function (symbol) {
 	}
 };
 var $folkertdev$elm_flate$Deflate$Symbol$distance = function (symbol) {
-	if (symbol.$ === 'Share') {
+	if (symbol.$ === 2) {
 		var distance_ = symbol.b;
 		if (distance_ <= 4) {
 			return $elm$core$Maybe$Just(
@@ -11839,7 +11731,7 @@ var $folkertdev$elm_flate$Deflate$Symbol$distance = function (symbol) {
 var $folkertdev$elm_flate$Deflate$Symbol$update = F3(
 	function (index, tagger, array) {
 		var _v0 = A2($elm$core$Array$get, index, array);
-		if (_v0.$ === 'Nothing') {
+		if (_v0.$ === 1) {
 			return array;
 		} else {
 			var value = _v0.a;
@@ -11856,7 +11748,7 @@ var $folkertdev$elm_flate$Deflate$Symbol$dynamicFindFrequencies = F2(
 		var distanceCounts = _v0.b;
 		var emptyDistanceCount = _v0.c;
 		var _v1 = $folkertdev$elm_flate$Deflate$Symbol$distance(symbol);
-		if (_v1.$ === 'Nothing') {
+		if (_v1.$ === 1) {
 			return _Utils_Tuple3(
 				A3(
 					$folkertdev$elm_flate$Deflate$Symbol$update,
@@ -11972,9 +11864,9 @@ var $elm$core$Array$indexedMap = F2(
 		var tree = _v0.c;
 		var tail = _v0.d;
 		var initialBuilder = {
-			nodeList: _List_Nil,
-			nodeListSize: 0,
-			tail: A3(
+			h: _List_Nil,
+			d: 0,
+			g: A3(
 				$elm$core$Elm$JsArray$indexedMap,
 				func,
 				$elm$core$Array$tailIndex(len),
@@ -11982,18 +11874,18 @@ var $elm$core$Array$indexedMap = F2(
 		};
 		var helper = F2(
 			function (node, builder) {
-				if (node.$ === 'SubTree') {
+				if (!node.$) {
 					var subTree = node.a;
 					return A3($elm$core$Elm$JsArray$foldl, helper, builder, subTree);
 				} else {
 					var leaf = node.a;
-					var offset = builder.nodeListSize * $elm$core$Array$branchFactor;
+					var offset = builder.d * $elm$core$Array$branchFactor;
 					var mappedLeaf = $elm$core$Array$Leaf(
 						A3($elm$core$Elm$JsArray$indexedMap, func, offset, leaf));
 					return {
-						nodeList: A2($elm$core$List$cons, mappedLeaf, builder.nodeList),
-						nodeListSize: builder.nodeListSize + 1,
-						tail: builder.tail
+						h: A2($elm$core$List$cons, mappedLeaf, builder.h),
+						d: builder.d + 1,
+						g: builder.g
 					};
 				}
 			});
@@ -12010,7 +11902,7 @@ var $elm$core$Array$map = F2(
 		var tree = _v0.c;
 		var tail = _v0.d;
 		var helper = function (node) {
-			if (node.$ === 'SubTree') {
+			if (!node.$) {
 				var subTree = node.a;
 				return $elm$core$Array$SubTree(
 					A2($elm$core$Elm$JsArray$map, helper, subTree));
@@ -12050,7 +11942,7 @@ var $folkertdev$elm_flate$LengthLimitedHuffmanCodes$mergeLoop = F3(
 					var _v2 = _v0.b;
 					var y = _v2.a;
 					var yrest = _v2.b;
-					if (_Utils_cmp(x.weight, y.weight) < 0) {
+					if (_Utils_cmp(x.J, y.J) < 0) {
 						var $temp$xarr = xrest,
 							$temp$yarr = yarr,
 							$temp$accum = A2($elm$core$Array$push, x, accum);
@@ -12082,8 +11974,8 @@ var $folkertdev$elm_flate$LengthLimitedHuffmanCodes$merge = F2(
 var $folkertdev$elm_flate$LengthLimitedHuffmanCodes$mergeNodes = F2(
 	function (node1, node2) {
 		return {
-			symbols: A2($elm$core$Array$append, node1.symbols, node2.symbols),
-			weight: node1.weight + node2.weight
+			Z: A2($elm$core$Array$append, node1.Z, node2.Z),
+			J: node1.J + node2.J
 		};
 	});
 var $folkertdev$elm_flate$LengthLimitedHuffmanCodes$package = function (nodes) {
@@ -12123,8 +12015,8 @@ var $folkertdev$elm_flate$LengthLimitedHuffmanCodes$package = function (nodes) {
 var $folkertdev$elm_flate$LengthLimitedHuffmanCodes$singletonNode = F2(
 	function (symbol, weight) {
 		return {
-			symbols: A2($elm$core$Array$repeat, 1, symbol),
-			weight: weight
+			Z: A2($elm$core$Array$repeat, 1, symbol),
+			J: weight
 		};
 	});
 var $elm_community$list_extra$List$Extra$stableSortWith = F2(
@@ -12136,7 +12028,7 @@ var $elm_community$list_extra$List$Extra$stableSortWith = F2(
 				var a2 = _v2.a;
 				var i2 = _v2.b;
 				var result = A2(pred, a1, a2);
-				if (result.$ === 'EQ') {
+				if (result === 1) {
 					return A2($elm$core$Basics$compare, i1, i2);
 				} else {
 					return result;
@@ -12157,7 +12049,7 @@ var $elm_community$list_extra$List$Extra$stableSortWith = F2(
 var $folkertdev$elm_flate$LengthLimitedHuffmanCodes$update = F3(
 	function (index, tagger, array) {
 		var _v0 = A2($elm$core$Array$get, index, array);
-		if (_v0.$ === 'Nothing') {
+		if (_v0.$ === 1) {
 			return array;
 		} else {
 			var value = _v0.a;
@@ -12175,7 +12067,7 @@ var $folkertdev$elm_flate$LengthLimitedHuffmanCodes$calculate = F2(
 				$elm_community$list_extra$List$Extra$stableSortWith,
 				F2(
 					function (a, b) {
-						return A2($elm$core$Basics$compare, a.weight, b.weight);
+						return A2($elm$core$Basics$compare, a.J, b.J);
 					}),
 				$elm$core$Array$toList(
 					A2(
@@ -12231,7 +12123,7 @@ var $folkertdev$elm_flate$LengthLimitedHuffmanCodes$calculate = F2(
 			A2(
 				$elm$core$Basics$composeR,
 				function ($) {
-					return $.symbols;
+					return $.Z;
 				},
 				$elm$core$Array$toList),
 			$elm$core$Array$toList(
@@ -12244,20 +12136,15 @@ var $folkertdev$elm_flate$LengthLimitedHuffmanCodes$calculate = F2(
 				$elm$core$Array$length(frequencies),
 				0));
 	});
-var $folkertdev$elm_flate$Huffman$Tree = function (a) {
-	return {$: 'Tree', a: a};
-};
-var $folkertdev$elm_flate$Huffman$Code = function (a) {
-	return {$: 'Code', a: a};
-};
-var $folkertdev$elm_flate$Huffman$codeFromRecord = $folkertdev$elm_flate$Huffman$Code;
+var $folkertdev$elm_flate$Huffman$Tree = $elm$core$Basics$identity;
+var $folkertdev$elm_flate$Huffman$Code = $elm$core$Basics$identity;
+var $folkertdev$elm_flate$Huffman$codeFromRecord = $elm$core$Basics$identity;
 var $folkertdev$elm_flate$Huffman$new = function (n) {
-	return $folkertdev$elm_flate$Huffman$Tree(
-		A2(
-			$elm$core$Array$repeat,
-			n,
-			$folkertdev$elm_flate$Huffman$codeFromRecord(
-				{bits: 0, width: 0})));
+	return A2(
+		$elm$core$Array$repeat,
+		n,
+		$folkertdev$elm_flate$Huffman$codeFromRecord(
+			{a: 0, cf: 0}));
 };
 var $folkertdev$elm_flate$Huffman$inverseEndianLoop = F4(
 	function (i, limit, f, t) {
@@ -12279,21 +12166,19 @@ var $folkertdev$elm_flate$Huffman$inverseEndianLoop = F4(
 		}
 	});
 var $folkertdev$elm_flate$Huffman$inverseEndian = function (_v0) {
-	var width = _v0.a.width;
-	var bits = _v0.a.bits;
+	var width = _v0.cf;
+	var bits = _v0.a;
 	var inverseBits = A4($folkertdev$elm_flate$Huffman$inverseEndianLoop, 0, width, bits, 0);
-	return $folkertdev$elm_flate$Huffman$Code(
-		{bits: inverseBits, width: width});
+	return {a: inverseBits, cf: width};
 };
 var $folkertdev$elm_flate$Huffman$setMapping = F3(
 	function (symbol, code, _v0) {
-		var array = _v0.a;
-		return $folkertdev$elm_flate$Huffman$Tree(
-			A3(
-				$elm$core$Array$set,
-				symbol,
-				$folkertdev$elm_flate$Huffman$inverseEndian(code),
-				array));
+		var array = _v0;
+		return A3(
+			$elm$core$Array$set,
+			symbol,
+			$folkertdev$elm_flate$Huffman$inverseEndian(code),
+			array);
 	});
 var $folkertdev$elm_flate$Huffman$restoreCanonicalHuffmanCodes = F2(
 	function (bitWidths, tree) {
@@ -12321,8 +12206,7 @@ var $folkertdev$elm_flate$Huffman$restoreCanonicalHuffmanCodes = F2(
 				var prevWidth = _v2.b;
 				var currentTree = _v2.c;
 				var newBits = code << (bitWidth - prevWidth);
-				var nextCode = $folkertdev$elm_flate$Huffman$Code(
-					{bits: newBits, width: bitWidth});
+				var nextCode = {a: newBits, cf: bitWidth};
 				return _Utils_Tuple3(
 					newBits + 1,
 					bitWidth,
@@ -12387,23 +12271,23 @@ var $folkertdev$elm_flate$Deflate$Symbol$buildDynamicHuffmanCodec = function (sy
 	var distanceCounts = _v0.b;
 	var emptyDistanceCount = _v0.c;
 	return {
-		distance: emptyDistanceCount ? A2(
+		P: emptyDistanceCount ? A2(
 			$folkertdev$elm_flate$Huffman$fromFrequencies,
 			A3($elm$core$Array$set, 0, 1, distanceCounts),
 			15) : A2($folkertdev$elm_flate$Huffman$fromFrequencies, distanceCounts, 15),
-		literal: A2($folkertdev$elm_flate$Huffman$fromFrequencies, literalCounts, 15)
+		V: A2($folkertdev$elm_flate$Huffman$fromFrequencies, literalCounts, 15)
 	};
 };
-var $folkertdev$elm_flate$Deflate$Symbol$EndOfBlock = {$: 'EndOfBlock'};
+var $folkertdev$elm_flate$Deflate$Symbol$EndOfBlock = {$: 0};
 var $folkertdev$elm_flate$Deflate$Symbol$Literal = function (a) {
-	return {$: 'Literal', a: a};
+	return {$: 1, a: a};
 };
 var $folkertdev$elm_flate$Deflate$Symbol$Share = F2(
 	function (a, b) {
-		return {$: 'Share', a: a, b: b};
+		return {$: 2, a: a, b: b};
 	});
 var $folkertdev$elm_flate$Deflate$Internal$codeToSymbol = function (code) {
-	if (code.$ === 'Literal') {
+	if (!code.$) {
 		var v = code.a;
 		return $folkertdev$elm_flate$Deflate$Symbol$Literal(v);
 	} else {
@@ -12413,21 +12297,19 @@ var $folkertdev$elm_flate$Deflate$Internal$codeToSymbol = function (code) {
 	}
 };
 var $folkertdev$elm_flate$LZ77$Literal = function (a) {
-	return {$: 'Literal', a: a};
+	return {$: 0, a: a};
 };
 var $folkertdev$elm_flate$LZ77$Pointer = F2(
 	function (a, b) {
-		return {$: 'Pointer', a: a, b: b};
+		return {$: 1, a: a, b: b};
 	});
 var $folkertdev$elm_flate$PrefixTable$Small = function (a) {
-	return {$: 'Small', a: a};
+	return {$: 0, a: a};
 };
 var $folkertdev$elm_flate$PrefixTable$Large = function (a) {
-	return {$: 'Large', a: a};
+	return {$: 1, a: a};
 };
-var $folkertdev$elm_flate$PrefixTable$LargePrefixTable = function (a) {
-	return {$: 'LargePrefixTable', a: a};
-};
+var $folkertdev$elm_flate$PrefixTable$LargePrefixTable = $elm$core$Basics$identity;
 var $folkertdev$elm_flate$PrefixTable$insertInList = F6(
 	function (i, array, p2, position, remaining, accum) {
 		insertInList:
@@ -12439,8 +12321,7 @@ var $folkertdev$elm_flate$PrefixTable$insertInList = F6(
 					accum);
 				return _Utils_Tuple2(
 					$folkertdev$elm_flate$PrefixTable$Large(
-						$folkertdev$elm_flate$PrefixTable$LargePrefixTable(
-							A3($elm$core$Array$set, i, newPositions, array))),
+						A3($elm$core$Array$set, i, newPositions, array)),
 					$elm$core$Maybe$Nothing);
 			} else {
 				var current = remaining.a;
@@ -12456,8 +12337,7 @@ var $folkertdev$elm_flate$PrefixTable$insertInList = F6(
 							rest));
 					return _Utils_Tuple2(
 						$folkertdev$elm_flate$PrefixTable$Large(
-							$folkertdev$elm_flate$PrefixTable$LargePrefixTable(
-								A3($elm$core$Array$set, i, newPositions, array))),
+							A3($elm$core$Array$set, i, newPositions, array)),
 						$elm$core$Maybe$Just(oldValue));
 				} else {
 					var $temp$i = i,
@@ -12479,12 +12359,12 @@ var $folkertdev$elm_flate$PrefixTable$insertInList = F6(
 	});
 var $folkertdev$elm_flate$PrefixTable$insert = F3(
 	function (_v0, position, ptable) {
-		var prefix_ = _v0.a;
+		var prefix_ = _v0;
 		var prefix = 16777215 & (prefix_ >>> 0);
-		if (ptable.$ === 'Small') {
+		if (!ptable.$) {
 			var dict = ptable.a;
 			var _v2 = A2($elm$core$Dict$get, prefix, dict);
-			if (_v2.$ === 'Nothing') {
+			if (_v2.$ === 1) {
 				return _Utils_Tuple2(
 					$folkertdev$elm_flate$PrefixTable$Small(
 						A3($elm$core$Dict$insert, prefix, position, dict)),
@@ -12497,10 +12377,10 @@ var $folkertdev$elm_flate$PrefixTable$insert = F3(
 					$elm$core$Maybe$Just(oldValue));
 			}
 		} else {
-			var array = ptable.a.a;
+			var array = ptable.a;
 			var index = prefix >> 8;
 			var _v3 = A2($elm$core$Array$get, index, array);
-			if (_v3.$ === 'Nothing') {
+			if (_v3.$ === 1) {
 				return _Utils_Tuple2(ptable, $elm$core$Maybe$Nothing);
 			} else {
 				var positions = _v3.a;
@@ -12514,12 +12394,12 @@ var $folkertdev$elm_flate$LZ77$longestCommonPrefixLoop = F5(
 		while (true) {
 			if (_Utils_cmp(i, limit) < 0) {
 				var _v0 = A2($folkertdev$elm_flate$Experimental$ByteArray$get, i, array);
-				if (_v0.$ === 'Nothing') {
+				if (_v0.$ === 1) {
 					return accum;
 				} else {
 					var value1 = _v0.a;
 					var _v1 = A2($folkertdev$elm_flate$Experimental$ByteArray$get, j, array);
-					if (_v1.$ === 'Nothing') {
+					if (_v1.$ === 1) {
 						return accum;
 					} else {
 						var value2 = _v1.a;
@@ -12554,20 +12434,18 @@ var $folkertdev$elm_flate$LZ77$longestCommonPrefix = F3(
 			$folkertdev$elm_flate$Experimental$ByteArray$length(array) - j);
 		return A5($folkertdev$elm_flate$LZ77$longestCommonPrefixLoop, i, j, i + remaining, 0, array);
 	});
-var $folkertdev$elm_flate$PrefixTable$OutOfBounds = {$: 'OutOfBounds'};
+var $folkertdev$elm_flate$PrefixTable$OutOfBounds = {$: 3};
 var $folkertdev$elm_flate$PrefixTable$Prefix = F2(
 	function (a, b) {
-		return {$: 'Prefix', a: a, b: b};
+		return {$: 0, a: a, b: b};
 	});
-var $folkertdev$elm_flate$PrefixTable$PrefixCode = function (a) {
-	return {$: 'PrefixCode', a: a};
-};
+var $folkertdev$elm_flate$PrefixTable$PrefixCode = $elm$core$Basics$identity;
 var $folkertdev$elm_flate$PrefixTable$Trailing1 = function (a) {
-	return {$: 'Trailing1', a: a};
+	return {$: 1, a: a};
 };
 var $folkertdev$elm_flate$PrefixTable$Trailing2 = F2(
 	function (a, b) {
-		return {$: 'Trailing2', a: a, b: b};
+		return {$: 2, a: a, b: b};
 	});
 var $folkertdev$elm_flate$Experimental$ByteArray$getInt32 = F2(
 	function (index, _v0) {
@@ -12585,7 +12463,7 @@ var $folkertdev$elm_flate$PrefixTable$prefixAt = F2(
 			} else {
 				if (_Utils_cmp(k + 1, size) > -1) {
 					var _v0 = A2($folkertdev$elm_flate$Experimental$ByteArray$get, k, input);
-					if (_v0.$ === 'Nothing') {
+					if (_v0.$ === 1) {
 						return $folkertdev$elm_flate$PrefixTable$OutOfBounds;
 					} else {
 						var value = _v0.a;
@@ -12593,12 +12471,12 @@ var $folkertdev$elm_flate$PrefixTable$prefixAt = F2(
 					}
 				} else {
 					var _v1 = A2($folkertdev$elm_flate$Experimental$ByteArray$get, k, input);
-					if (_v1.$ === 'Nothing') {
+					if (_v1.$ === 1) {
 						return $folkertdev$elm_flate$PrefixTable$OutOfBounds;
 					} else {
 						var v1 = _v1.a;
 						var _v2 = A2($folkertdev$elm_flate$Experimental$ByteArray$get, k + 1, input);
-						if (_v2.$ === 'Nothing') {
+						if (_v2.$ === 1) {
 							return $folkertdev$elm_flate$PrefixTable$OutOfBounds;
 						} else {
 							var v2 = _v2.a;
@@ -12613,66 +12491,54 @@ var $folkertdev$elm_flate$PrefixTable$prefixAt = F2(
 			switch (offset) {
 				case 0:
 					var _v4 = A2($folkertdev$elm_flate$Experimental$ByteArray$getInt32, internalIndex, input);
-					if (_v4.$ === 'Nothing') {
+					if (_v4.$ === 1) {
 						return $folkertdev$elm_flate$PrefixTable$OutOfBounds;
 					} else {
 						var int32 = _v4.a;
 						var first = 255 & ((int32 >> 24) >>> 0);
 						var code = int32 >> 8;
-						return A2(
-							$folkertdev$elm_flate$PrefixTable$Prefix,
-							first,
-							$folkertdev$elm_flate$PrefixTable$PrefixCode(code));
+						return A2($folkertdev$elm_flate$PrefixTable$Prefix, first, code);
 					}
 				case 1:
 					var _v5 = A2($folkertdev$elm_flate$Experimental$ByteArray$getInt32, internalIndex, input);
-					if (_v5.$ === 'Nothing') {
+					if (_v5.$ === 1) {
 						return $folkertdev$elm_flate$PrefixTable$OutOfBounds;
 					} else {
 						var int32 = _v5.a;
 						var first = 255 & ((255 & (int32 >> 16)) >>> 0);
 						var code = 16777215 & int32;
-						return A2(
-							$folkertdev$elm_flate$PrefixTable$Prefix,
-							first,
-							$folkertdev$elm_flate$PrefixTable$PrefixCode(code));
+						return A2($folkertdev$elm_flate$PrefixTable$Prefix, first, code);
 					}
 				case 2:
 					var _v6 = A2($folkertdev$elm_flate$Experimental$ByteArray$getInt32, internalIndex, input);
-					if (_v6.$ === 'Nothing') {
+					if (_v6.$ === 1) {
 						return $folkertdev$elm_flate$PrefixTable$OutOfBounds;
 					} else {
 						var int32 = _v6.a;
 						var _v7 = A2($folkertdev$elm_flate$Experimental$ByteArray$getInt32, internalIndex + 1, input);
-						if (_v7.$ === 'Nothing') {
+						if (_v7.$ === 1) {
 							return $folkertdev$elm_flate$PrefixTable$OutOfBounds;
 						} else {
 							var nextInt32 = _v7.a;
 							var first = 255 & ((255 & (int32 >> 8)) >>> 0);
 							var code = 16777215 & (((255 & (nextInt32 >> 24)) | ((65535 & int32) << 8)) >>> 0);
-							return A2(
-								$folkertdev$elm_flate$PrefixTable$Prefix,
-								first,
-								$folkertdev$elm_flate$PrefixTable$PrefixCode(code));
+							return A2($folkertdev$elm_flate$PrefixTable$Prefix, first, code);
 						}
 					}
 				default:
 					var _v8 = A2($folkertdev$elm_flate$Experimental$ByteArray$getInt32, internalIndex, input);
-					if (_v8.$ === 'Nothing') {
+					if (_v8.$ === 1) {
 						return $folkertdev$elm_flate$PrefixTable$OutOfBounds;
 					} else {
 						var int32 = _v8.a;
 						var _v9 = A2($folkertdev$elm_flate$Experimental$ByteArray$getInt32, internalIndex + 1, input);
-						if (_v9.$ === 'Nothing') {
+						if (_v9.$ === 1) {
 							return $folkertdev$elm_flate$PrefixTable$OutOfBounds;
 						} else {
 							var nextInt32 = _v9.a;
 							var first = 255 & ((255 & int32) >>> 0);
 							var code = (65535 & (nextInt32 >> 16)) | ((255 & int32) << 16);
-							return A2(
-								$folkertdev$elm_flate$PrefixTable$Prefix,
-								first,
-								$folkertdev$elm_flate$PrefixTable$PrefixCode(code));
+							return A2($folkertdev$elm_flate$PrefixTable$Prefix, first, code);
 						}
 					}
 			}
@@ -12684,7 +12550,7 @@ var $folkertdev$elm_flate$LZ77$updatePrefixTableLoop = F4(
 		while (true) {
 			if (_Utils_cmp(k, limit) < 0) {
 				var _v0 = A2($folkertdev$elm_flate$PrefixTable$prefixAt, k, buffer);
-				if (_v0.$ === 'Prefix') {
+				if (!_v0.$) {
 					var code = _v0.b;
 					var _v1 = A3($folkertdev$elm_flate$PrefixTable$insert, code, k, prefixTable);
 					var newPrefixTable = _v1.a;
@@ -12711,15 +12577,15 @@ var $folkertdev$elm_flate$LZ77$flushLoop = F5(
 		while (true) {
 			var _v0 = A2($folkertdev$elm_flate$PrefixTable$prefixAt, i, buffer);
 			switch (_v0.$) {
-				case 'OutOfBounds':
+				case 3:
 					return encoders;
-				case 'Trailing1':
+				case 1:
 					var p1 = _v0.a;
 					return A2(
 						$elm$core$Array$push,
 						$folkertdev$elm_flate$LZ77$Literal(p1),
 						encoders);
-				case 'Trailing2':
+				case 2:
 					var p1 = _v0.a;
 					var p2 = _v0.b;
 					return A2(
@@ -12735,7 +12601,7 @@ var $folkertdev$elm_flate$LZ77$flushLoop = F5(
 					var _v1 = A3($folkertdev$elm_flate$PrefixTable$insert, key, i, prefixTable);
 					var newPrefixTable = _v1.a;
 					var matched = _v1.b;
-					if (matched.$ === 'Just') {
+					if (!matched.$) {
 						var j = matched.a;
 						var distance = i - j;
 						if ((distance - windowSize) <= 0) {
@@ -12793,8 +12659,7 @@ var $folkertdev$elm_flate$LZ77$flushLoop = F5(
 	});
 var $folkertdev$elm_flate$PrefixTable$max_distance = 32768;
 var $folkertdev$elm_flate$PrefixTable$max_window_size = $folkertdev$elm_flate$PrefixTable$max_distance;
-var $folkertdev$elm_flate$PrefixTable$newLargePrefixTable = $folkertdev$elm_flate$PrefixTable$LargePrefixTable(
-	A2($elm$core$Array$repeat, 65535, _List_Nil));
+var $folkertdev$elm_flate$PrefixTable$newLargePrefixTable = A2($elm$core$Array$repeat, 65535, _List_Nil);
 var $folkertdev$elm_flate$PrefixTable$new = function (nbytes) {
 	return (_Utils_cmp(nbytes, $folkertdev$elm_flate$PrefixTable$max_window_size) < 0) ? $folkertdev$elm_flate$PrefixTable$Small($elm$core$Dict$empty) : $folkertdev$elm_flate$PrefixTable$Large($folkertdev$elm_flate$PrefixTable$newLargePrefixTable);
 };
@@ -12812,33 +12677,32 @@ var $folkertdev$elm_flate$LZ77$flush = F2(
 	});
 var $elm$bytes$Bytes$Decode$map5 = F6(
 	function (func, _v0, _v1, _v2, _v3, _v4) {
-		var decodeA = _v0.a;
-		var decodeB = _v1.a;
-		var decodeC = _v2.a;
-		var decodeD = _v3.a;
-		var decodeE = _v4.a;
-		return $elm$bytes$Bytes$Decode$Decoder(
-			F2(
-				function (bites, offset) {
-					var _v5 = A2(decodeA, bites, offset);
-					var aOffset = _v5.a;
-					var a = _v5.b;
-					var _v6 = A2(decodeB, bites, aOffset);
-					var bOffset = _v6.a;
-					var b = _v6.b;
-					var _v7 = A2(decodeC, bites, bOffset);
-					var cOffset = _v7.a;
-					var c = _v7.b;
-					var _v8 = A2(decodeD, bites, cOffset);
-					var dOffset = _v8.a;
-					var d = _v8.b;
-					var _v9 = A2(decodeE, bites, dOffset);
-					var eOffset = _v9.a;
-					var e = _v9.b;
-					return _Utils_Tuple2(
-						eOffset,
-						A5(func, a, b, c, d, e));
-				}));
+		var decodeA = _v0;
+		var decodeB = _v1;
+		var decodeC = _v2;
+		var decodeD = _v3;
+		var decodeE = _v4;
+		return F2(
+			function (bites, offset) {
+				var _v5 = A2(decodeA, bites, offset);
+				var aOffset = _v5.a;
+				var a = _v5.b;
+				var _v6 = A2(decodeB, bites, aOffset);
+				var bOffset = _v6.a;
+				var b = _v6.b;
+				var _v7 = A2(decodeC, bites, bOffset);
+				var cOffset = _v7.a;
+				var c = _v7.b;
+				var _v8 = A2(decodeD, bites, cOffset);
+				var dOffset = _v8.a;
+				var d = _v8.b;
+				var _v9 = A2(decodeE, bites, dOffset);
+				var eOffset = _v9.a;
+				var e = _v9.b;
+				return _Utils_Tuple2(
+					eOffset,
+					A5(func, a, b, c, d, e));
+			});
 	});
 var $folkertdev$elm_flate$Experimental$ByteArray$fromBytesHelp = function (_v0) {
 	var remaining = _v0.a;
@@ -12865,17 +12729,17 @@ var $folkertdev$elm_flate$Experimental$ByteArray$fromBytesHelp = function (_v0) 
 													_List_fromArray(
 														[a, b, c, d, e, f, g, h, i, j])))));
 								}),
-							$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE),
-							$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE),
-							$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE),
-							$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE),
-							$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE));
+							$elm$bytes$Bytes$Decode$unsignedInt32(1),
+							$elm$bytes$Bytes$Decode$unsignedInt32(1),
+							$elm$bytes$Bytes$Decode$unsignedInt32(1),
+							$elm$bytes$Bytes$Decode$unsignedInt32(1),
+							$elm$bytes$Bytes$Decode$unsignedInt32(1));
 					}),
-				$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE),
-				$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE),
-				$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE),
-				$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE),
-				$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE)));
+				$elm$bytes$Bytes$Decode$unsignedInt32(1),
+				$elm$bytes$Bytes$Decode$unsignedInt32(1),
+				$elm$bytes$Bytes$Decode$unsignedInt32(1),
+				$elm$bytes$Bytes$Decode$unsignedInt32(1),
+				$elm$bytes$Bytes$Decode$unsignedInt32(1)));
 	} else {
 		if (remaining >= 20) {
 			return A6(
@@ -12899,11 +12763,11 @@ var $folkertdev$elm_flate$Experimental$ByteArray$fromBytesHelp = function (_v0) 
 												b,
 												A2($elm$core$Array$push, a, array)))))));
 					}),
-				$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE),
-				$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE),
-				$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE),
-				$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE),
-				$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE));
+				$elm$bytes$Bytes$Decode$unsignedInt32(1),
+				$elm$bytes$Bytes$Decode$unsignedInt32(1),
+				$elm$bytes$Bytes$Decode$unsignedInt32(1),
+				$elm$bytes$Bytes$Decode$unsignedInt32(1),
+				$elm$bytes$Bytes$Decode$unsignedInt32(1));
 		} else {
 			if (remaining >= 4) {
 				return A2(
@@ -12914,7 +12778,7 @@ var $folkertdev$elm_flate$Experimental$ByteArray$fromBytesHelp = function (_v0) 
 								remaining - 4,
 								A2($elm$core$Array$push, a, array)));
 					},
-					$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE));
+					$elm$bytes$Bytes$Decode$unsignedInt32(1));
 			} else {
 				switch (remaining) {
 					case 0:
@@ -12936,7 +12800,7 @@ var $folkertdev$elm_flate$Experimental$ByteArray$fromBytesHelp = function (_v0) 
 								return $elm$bytes$Bytes$Decode$Done(
 									_Utils_Tuple3(2, _byte << 16, array));
 							},
-							$elm$bytes$Bytes$Decode$unsignedInt16($elm$bytes$Bytes$BE));
+							$elm$bytes$Bytes$Decode$unsignedInt16(1));
 					default:
 						return A3(
 							$elm$bytes$Bytes$Decode$map2,
@@ -12945,7 +12809,7 @@ var $folkertdev$elm_flate$Experimental$ByteArray$fromBytesHelp = function (_v0) 
 									return $elm$bytes$Bytes$Decode$Done(
 										_Utils_Tuple3(3, (bytes << 16) | (_byte << 8), array));
 								}),
-							$elm$bytes$Bytes$Decode$unsignedInt16($elm$bytes$Bytes$BE),
+							$elm$bytes$Bytes$Decode$unsignedInt16(1),
 							$elm$bytes$Bytes$Decode$unsignedInt8);
 				}
 			}
@@ -12962,7 +12826,7 @@ var $folkertdev$elm_flate$Experimental$ByteArray$fromBytes = function (buffer) {
 				$elm$core$Array$empty),
 			$folkertdev$elm_flate$Experimental$ByteArray$fromBytesHelp),
 		buffer);
-	if (_v0.$ === 'Nothing') {
+	if (_v0.$ === 1) {
 		return $folkertdev$elm_flate$Experimental$ByteArray$empty;
 	} else {
 		var _v1 = _v0.a;
@@ -12974,7 +12838,7 @@ var $folkertdev$elm_flate$Experimental$ByteArray$fromBytes = function (buffer) {
 };
 var $folkertdev$elm_flate$LZ77$encodeWithOptions = F2(
 	function (_v0, buffer) {
-		var windowSize = _v0.windowSize;
+		var windowSize = _v0.df;
 		return A2(
 			$folkertdev$elm_flate$LZ77$flush,
 			windowSize,
@@ -13003,7 +12867,7 @@ var $folkertdev$elm_flate$ByteArray$decodeByteArrayHelp = function (_v0) {
 			return $elm$bytes$Bytes$Decode$Loop(
 				_Utils_Tuple2(remaining - 4, newAccum));
 		},
-		$elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE)) : ((remaining > 0) ? A2(
+		$elm$bytes$Bytes$Decode$unsignedInt32(1)) : ((remaining > 0) ? A2(
 		$elm$bytes$Bytes$Decode$map,
 		function (_new) {
 			return $elm$bytes$Bytes$Decode$Loop(
@@ -13026,7 +12890,7 @@ var $folkertdev$elm_flate$ByteArray$fromBytes = function (buffer) {
 		$folkertdev$elm_flate$ByteArray$decoder(
 			$elm$bytes$Bytes$width(buffer)),
 		buffer);
-	if (_v0.$ === 'Nothing') {
+	if (_v0.$ === 1) {
 		return $elm$core$Array$empty;
 	} else {
 		var value = _v0.a;
@@ -13035,7 +12899,7 @@ var $folkertdev$elm_flate$ByteArray$fromBytes = function (buffer) {
 };
 var $folkertdev$elm_flate$Deflate$Internal$compress = F2(
 	function (maybeWindowSize, buf) {
-		if (maybeWindowSize.$ === 'Nothing') {
+		if (maybeWindowSize.$ === 1) {
 			return A2(
 				$elm$core$Array$push,
 				$folkertdev$elm_flate$Deflate$Symbol$EndOfBlock,
@@ -13053,39 +12917,39 @@ var $folkertdev$elm_flate$Deflate$Internal$compress = F2(
 					$folkertdev$elm_flate$Deflate$Internal$codeToSymbol,
 					A2(
 						$folkertdev$elm_flate$LZ77$encodeWithOptions,
-						{windowSize: windowSize},
+						{df: windowSize},
 						buf)));
 		}
 	});
 var $folkertdev$elm_flate$Deflate$BitWriter$flushIfNeeded = F3(
 	function (tag, bitsWritten, encoders) {
 		return (bitsWritten >= 16) ? {
-			bitsWritten: bitsWritten - 16,
-			encoders: A2(
+			z: bitsWritten - 16,
+			B: A2(
 				$elm$core$List$cons,
-				A2($elm$bytes$Bytes$Encode$unsignedInt16, $elm$bytes$Bytes$LE, tag),
+				A2($elm$bytes$Bytes$Encode$unsignedInt16, 0, tag),
 				encoders),
-			tag: tag >> 16
-		} : {bitsWritten: bitsWritten, encoders: encoders, tag: tag};
+			N: tag >> 16
+		} : {z: bitsWritten, B: encoders, N: tag};
 	});
 var $folkertdev$elm_flate$Deflate$BitWriter$writeBits = F3(
 	function (bitwidth, bits, state) {
-		return A3($folkertdev$elm_flate$Deflate$BitWriter$flushIfNeeded, state.tag | (bits << state.bitsWritten), state.bitsWritten + bitwidth, state.encoders);
+		return A3($folkertdev$elm_flate$Deflate$BitWriter$flushIfNeeded, state.N | (bits << state.z), state.z + bitwidth, state.B);
 	});
 var $folkertdev$elm_flate$Huffman$encode = F2(
 	function (symbol, _v0) {
-		var table = _v0.a;
+		var table = _v0;
 		var _v1 = A2($elm$core$Array$get, symbol, table);
-		if (_v1.$ === 'Nothing') {
+		if (_v1.$ === 1) {
 			return A2($folkertdev$elm_flate$Deflate$BitWriter$writeBits, 0, 0);
 		} else {
-			var width = _v1.a.a.width;
-			var bits = _v1.a.a.bits;
+			var width = _v1.a.cf;
+			var bits = _v1.a.a;
 			return A2($folkertdev$elm_flate$Deflate$BitWriter$writeBits, width, bits);
 		}
 	});
 var $folkertdev$elm_flate$Deflate$Symbol$extraLength = function (symbol) {
-	if (symbol.$ === 'Share') {
+	if (symbol.$ === 2) {
 		var length = symbol.a;
 		return (((length >= 3) && (length <= 10)) || (length === 258)) ? $elm$core$Maybe$Nothing : (((length >= 11) && (length <= 18)) ? $elm$core$Maybe$Just(
 			_Utils_Tuple2(
@@ -13111,7 +12975,7 @@ var $folkertdev$elm_flate$Deflate$Symbol$encode = F3(
 	function (symbol, htrees, bitWriter) {
 		var maybeExtra = function () {
 			var _v2 = $folkertdev$elm_flate$Deflate$Symbol$extraLength(symbol);
-			if (_v2.$ === 'Nothing') {
+			if (_v2.$ === 1) {
 				return $elm$core$Basics$identity;
 			} else {
 				var _v3 = _v2.a;
@@ -13122,7 +12986,7 @@ var $folkertdev$elm_flate$Deflate$Symbol$encode = F3(
 		}();
 		var maybeDistance = function () {
 			var _v0 = $folkertdev$elm_flate$Deflate$Symbol$distance(symbol);
-			if (_v0.$ === 'Nothing') {
+			if (_v0.$ === 1) {
 				return $elm$core$Basics$identity;
 			} else {
 				var _v1 = _v0.a;
@@ -13131,7 +12995,7 @@ var $folkertdev$elm_flate$Deflate$Symbol$encode = F3(
 				var extra = _v1.c;
 				return A2(
 					$elm$core$Basics$composeR,
-					A2($folkertdev$elm_flate$Huffman$encode, code_, htrees.distance),
+					A2($folkertdev$elm_flate$Huffman$encode, code_, htrees.P),
 					(bits > 0) ? A2($folkertdev$elm_flate$Deflate$BitWriter$writeBits, bits, extra) : $elm$core$Basics$identity);
 			}
 		}();
@@ -13140,7 +13004,7 @@ var $folkertdev$elm_flate$Deflate$Symbol$encode = F3(
 				A3(
 					$folkertdev$elm_flate$Huffman$encode,
 					$folkertdev$elm_flate$Deflate$Symbol$code(symbol),
-					htrees.literal,
+					htrees.V,
 					bitWriter)));
 	});
 var $folkertdev$elm_flate$Deflate$Symbol$bitwidth_code_order = _List_fromArray(
@@ -13169,7 +13033,7 @@ var $folkertdev$elm_flate$Deflate$Symbol$calculateCodes = function (runLengths) 
 						A2(
 							$elm$core$Array$repeat,
 							c,
-							_Utils_Tuple3(r.value, 0, 0)));
+							_Utils_Tuple3(r.bg, 0, 0)));
 				}
 			}
 		});
@@ -13207,24 +13071,24 @@ var $folkertdev$elm_flate$Deflate$Symbol$calculateCodes = function (runLengths) 
 		});
 	var folder = F2(
 		function (r, codes) {
-			return (!r.value) ? A2(loop1, r.count, codes) : A3(
+			return (!r.bg) ? A2(loop1, r.T, codes) : A3(
 				loop2,
 				r,
-				r.count - 1,
+				r.T - 1,
 				A2(
 					$elm$core$Array$push,
-					_Utils_Tuple3(r.value, 0, 0),
+					_Utils_Tuple3(r.bg, 0, 0),
 					codes));
 		});
 	return A3($elm$core$Array$foldl, folder, $elm$core$Array$empty, runLengths);
 };
 var $folkertdev$elm_flate$Huffman$getWidth = function (_v0) {
-	var width = _v0.a.width;
+	var width = _v0.cf;
 	return width;
 };
 var $folkertdev$elm_flate$Huffman$lookup = F2(
 	function (symbol, _v0) {
-		var array = _v0.a;
+		var array = _v0;
 		return A2($elm$core$Array$get, symbol, array);
 	});
 var $folkertdev$elm_flate$Deflate$Symbol$calculateRunLengths = F2(
@@ -13260,17 +13124,17 @@ var $folkertdev$elm_flate$Deflate$Symbol$calculateRunLengths = F2(
 						if (!runLengths.b) {
 							return A2(
 								$elm$core$List$cons,
-								{count: 1, value: c},
+								{T: 1, bg: c},
 								runLengths);
 						} else {
 							var last = runLengths.a;
 							var remaining = runLengths.b;
-							return _Utils_eq(last.value, c) ? A2(
+							return _Utils_eq(last.bg, c) ? A2(
 								$elm$core$List$cons,
-								{count: last.count + 1, value: last.value},
+								{T: last.T + 1, bg: last.bg},
 								remaining) : A2(
 								$elm$core$List$cons,
-								{count: 1, value: c},
+								{T: 1, bg: c},
 								runLengths);
 						}
 					});
@@ -13288,8 +13152,8 @@ var $folkertdev$elm_flate$Deflate$Symbol$buildBitWidthCodes = F3(
 			$folkertdev$elm_flate$Deflate$Symbol$calculateRunLengths,
 			_List_fromArray(
 				[
-					_Utils_Tuple2(trees.literal, literalCodeCount),
-					_Utils_Tuple2(trees.distance, distanceCodeCount)
+					_Utils_Tuple2(trees.V, literalCodeCount),
+					_Utils_Tuple2(trees.P, distanceCodeCount)
 				]),
 			_List_Nil);
 		return $folkertdev$elm_flate$Deflate$Symbol$calculateCodes(runLengths);
@@ -13327,7 +13191,7 @@ var $folkertdev$elm_flate$Huffman$positionFromTheEnd = F2(
 			function (element, _v1) {
 				var index = _v1.a;
 				var accum = _v1.b;
-				if (accum.$ === 'Just') {
+				if (!accum.$) {
 					return _Utils_Tuple2(index, accum);
 				} else {
 					return predicated(element) ? _Utils_Tuple2(
@@ -13348,7 +13212,7 @@ var $folkertdev$elm_flate$Huffman$positionFromTheEnd = F2(
 				array).b);
 	});
 var $folkertdev$elm_flate$Huffman$usedMaxSymbol = function (_v0) {
-	var array = _v0.a;
+	var array = _v0;
 	return A2(
 		$elm$core$Maybe$map,
 		function (trailingZeros) {
@@ -13357,8 +13221,8 @@ var $folkertdev$elm_flate$Huffman$usedMaxSymbol = function (_v0) {
 		A2(
 			$folkertdev$elm_flate$Huffman$positionFromTheEnd,
 			function (_v1) {
-				var value = _v1.a;
-				return value.width > 0;
+				var value = _v1;
+				return value.cf > 0;
 			},
 			array));
 };
@@ -13370,19 +13234,19 @@ var $folkertdev$elm_flate$Deflate$Symbol$writeDynamicHuffmanCodec = F2(
 			A2(
 				$elm$core$Maybe$withDefault,
 				0,
-				$folkertdev$elm_flate$Huffman$usedMaxSymbol(trees.literal)) + 1);
+				$folkertdev$elm_flate$Huffman$usedMaxSymbol(trees.V)) + 1);
 		var distance_code_count = A2(
 			$elm$core$Basics$max,
 			1,
 			A2(
 				$elm$core$Maybe$withDefault,
 				0,
-				$folkertdev$elm_flate$Huffman$usedMaxSymbol(trees.distance)) + 1);
+				$folkertdev$elm_flate$Huffman$usedMaxSymbol(trees.P)) + 1);
 		var codes = A3(
 			$folkertdev$elm_flate$Deflate$Symbol$buildBitWidthCodes,
 			literal_code_count,
 			distance_code_count,
-			{distance: trees.distance, literal: trees.literal});
+			{P: trees.P, V: trees.V});
 		var codeCounts = A3(
 			$elm$core$Array$foldl,
 			function (_v2) {
@@ -13412,7 +13276,7 @@ var $folkertdev$elm_flate$Deflate$Symbol$writeDynamicHuffmanCodec = F2(
 						$folkertdev$elm_flate$Deflate$Symbol$position,
 						function (i) {
 							var _v1 = A2($folkertdev$elm_flate$Huffman$lookup, i, bitWidthEncoder);
-							if (_v1.$ === 'Nothing') {
+							if (_v1.$ === 1) {
 								return false;
 							} else {
 								var value = _v1.a;
@@ -13519,15 +13383,15 @@ var $folkertdev$elm_flate$Deflate$BitWriter$flushLoop = F3(
 				encoders = $temp$encoders;
 				continue flushLoop;
 			} else {
-				return {bitsWritten: bitsWritten, encoders: encoders, tag: tag};
+				return {z: bitsWritten, B: encoders, N: tag};
 			}
 		}
 	});
 var $folkertdev$elm_flate$Deflate$BitWriter$flush = function (state) {
-	return A3($folkertdev$elm_flate$Deflate$BitWriter$flushLoop, state.tag, state.bitsWritten, state.encoders);
+	return A3($folkertdev$elm_flate$Deflate$BitWriter$flushLoop, state.N, state.z, state.B);
 };
 var $folkertdev$elm_flate$Deflate$BitWriter$run = function (state) {
-	return $elm$core$List$reverse(state.encoders);
+	return $elm$core$List$reverse(state.B);
 };
 var $folkertdev$elm_flate$Deflate$Internal$encodeDynamic = F2(
 	function (windowSize, buffer) {
@@ -13574,7 +13438,7 @@ var $elm$core$Array$sliceLeft = F2(
 				var skipNodes = (from / $elm$core$Array$branchFactor) | 0;
 				var helper = F2(
 					function (node, acc) {
-						if (node.$ === 'SubTree') {
+						if (!node.$) {
 							var subTree = node.a;
 							return A3($elm$core$Elm$JsArray$foldr, helper, acc, subTree);
 						} else {
@@ -13596,9 +13460,9 @@ var $elm$core$Array$sliceLeft = F2(
 					var rest = nodesToInsert.b;
 					var firstSlice = from - (skipNodes * $elm$core$Array$branchFactor);
 					var initialBuilder = {
-						nodeList: _List_Nil,
-						nodeListSize: 0,
-						tail: A3(
+						h: _List_Nil,
+						d: 0,
+						g: A3(
 							$elm$core$Elm$JsArray$slice,
 							firstSlice,
 							$elm$core$Elm$JsArray$length(head),
@@ -13618,7 +13482,7 @@ var $elm$core$Array$fetchNewTail = F4(
 		while (true) {
 			var pos = $elm$core$Array$bitMask & (treeEnd >>> shift);
 			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-			if (_v0.$ === 'SubTree') {
+			if (!_v0.$) {
 				var sub = _v0.a;
 				var $temp$shift = shift - $elm$core$Array$shiftStep,
 					$temp$end = end,
@@ -13643,7 +13507,7 @@ var $elm$core$Array$hoistTree = F3(
 				return tree;
 			} else {
 				var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, 0, tree);
-				if (_v0.$ === 'SubTree') {
+				if (!_v0.$) {
 					var sub = _v0.a;
 					var $temp$oldShift = oldShift - $elm$core$Array$shiftStep,
 						$temp$newShift = newShift,
@@ -13662,7 +13526,7 @@ var $elm$core$Array$sliceTree = F3(
 	function (shift, endIdx, tree) {
 		var lastPos = $elm$core$Array$bitMask & (endIdx >>> shift);
 		var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, lastPos, tree);
-		if (_v0.$ === 'SubTree') {
+		if (!_v0.$) {
 			var sub = _v0.a;
 			var newSub = A3($elm$core$Array$sliceTree, shift - $elm$core$Array$shiftStep, endIdx, sub);
 			return (!$elm$core$Elm$JsArray$length(newSub)) ? A3($elm$core$Elm$JsArray$slice, 0, lastPos, tree) : A3(
@@ -13750,7 +13614,7 @@ var $folkertdev$elm_flate$ByteArray$fasterEncodeFolderR = F2(
 					0,
 					A2(
 						$elm$core$List$cons,
-						A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$BE, value),
+						A2($elm$bytes$Bytes$Encode$unsignedInt32, 1, value),
 						encoders));
 		}
 	});
@@ -13770,14 +13634,14 @@ var $folkertdev$elm_flate$ByteArray$fasterEncodeR = function (_v0) {
 			case 2:
 				return A2(
 					$elm$core$List$cons,
-					A2($elm$bytes$Bytes$Encode$unsignedInt16, $elm$bytes$Bytes$BE, accum),
+					A2($elm$bytes$Bytes$Encode$unsignedInt16, 1, accum),
 					otherEncoders);
 			default:
 				var otherBytes = accum >> 8;
 				var firstByte = 255 & accum;
 				return A2(
 					$elm$core$List$cons,
-					A2($elm$bytes$Bytes$Encode$unsignedInt16, $elm$bytes$Bytes$BE, otherBytes),
+					A2($elm$bytes$Bytes$Encode$unsignedInt16, 1, otherBytes),
 					A2(
 						$elm$core$List$cons,
 						$elm$bytes$Bytes$Encode$unsignedInt8(firstByte),
@@ -13799,9 +13663,9 @@ var $folkertdev$elm_flate$ByteArray$toBytes = function (array) {
 var $folkertdev$elm_flate$Deflate$BitWriter$writeEncoder = F2(
 	function (encoder, state) {
 		return {
-			bitsWritten: state.bitsWritten,
-			encoders: A2($elm$core$List$cons, encoder, state.encoders),
-			tag: state.tag
+			z: state.z,
+			B: A2($elm$core$List$cons, encoder, state.B),
+			N: state.N
 		};
 	});
 var $folkertdev$elm_flate$Deflate$Internal$encodeRawBlock = F2(
@@ -13820,10 +13684,10 @@ var $folkertdev$elm_flate$Deflate$Internal$encodeRawBlock = F2(
 				$folkertdev$elm_flate$ByteArray$toBytes(sliced)),
 			A2(
 				$folkertdev$elm_flate$Deflate$BitWriter$writeEncoder,
-				A2($elm$bytes$Bytes$Encode$unsignedInt16, $elm$bytes$Bytes$LE, ~size),
+				A2($elm$bytes$Bytes$Encode$unsignedInt16, 0, ~size),
 				A2(
 					$folkertdev$elm_flate$Deflate$BitWriter$writeEncoder,
-					A2($elm$bytes$Bytes$Encode$unsignedInt16, $elm$bytes$Bytes$LE, size),
+					A2($elm$bytes$Bytes$Encode$unsignedInt16, 0, size),
 					$folkertdev$elm_flate$Deflate$BitWriter$flush(
 						A3(
 							$folkertdev$elm_flate$Deflate$BitWriter$writeBits,
@@ -13849,334 +13713,334 @@ var $folkertdev$elm_flate$Deflate$Internal$encodeRaw = function (buffer) {
 };
 var $folkertdev$elm_flate$Huffman$fromList = A2(
 	$elm$core$Basics$composeL,
-	A2($elm$core$Basics$composeL, $folkertdev$elm_flate$Huffman$Tree, $elm$core$Array$fromList),
+	A2($elm$core$Basics$composeL, $elm$core$Basics$identity, $elm$core$Array$fromList),
 	$elm$core$List$map($folkertdev$elm_flate$Huffman$codeFromRecord));
 var $folkertdev$elm_flate$Huffman$hardcodedStaticHuffmanTree = {
-	distance: $folkertdev$elm_flate$Huffman$fromList(
+	P: $folkertdev$elm_flate$Huffman$fromList(
 		_List_fromArray(
 			[
-				{bits: 0, width: 5},
-				{bits: 16, width: 5},
-				{bits: 8, width: 5},
-				{bits: 24, width: 5},
-				{bits: 4, width: 5},
-				{bits: 20, width: 5},
-				{bits: 12, width: 5},
-				{bits: 28, width: 5},
-				{bits: 2, width: 5},
-				{bits: 18, width: 5},
-				{bits: 10, width: 5},
-				{bits: 26, width: 5},
-				{bits: 6, width: 5},
-				{bits: 22, width: 5},
-				{bits: 14, width: 5},
-				{bits: 30, width: 5},
-				{bits: 1, width: 5},
-				{bits: 17, width: 5},
-				{bits: 9, width: 5},
-				{bits: 25, width: 5},
-				{bits: 5, width: 5},
-				{bits: 21, width: 5},
-				{bits: 13, width: 5},
-				{bits: 29, width: 5},
-				{bits: 3, width: 5},
-				{bits: 19, width: 5},
-				{bits: 11, width: 5},
-				{bits: 27, width: 5},
-				{bits: 7, width: 5},
-				{bits: 23, width: 5}
+				{a: 0, cf: 5},
+				{a: 16, cf: 5},
+				{a: 8, cf: 5},
+				{a: 24, cf: 5},
+				{a: 4, cf: 5},
+				{a: 20, cf: 5},
+				{a: 12, cf: 5},
+				{a: 28, cf: 5},
+				{a: 2, cf: 5},
+				{a: 18, cf: 5},
+				{a: 10, cf: 5},
+				{a: 26, cf: 5},
+				{a: 6, cf: 5},
+				{a: 22, cf: 5},
+				{a: 14, cf: 5},
+				{a: 30, cf: 5},
+				{a: 1, cf: 5},
+				{a: 17, cf: 5},
+				{a: 9, cf: 5},
+				{a: 25, cf: 5},
+				{a: 5, cf: 5},
+				{a: 21, cf: 5},
+				{a: 13, cf: 5},
+				{a: 29, cf: 5},
+				{a: 3, cf: 5},
+				{a: 19, cf: 5},
+				{a: 11, cf: 5},
+				{a: 27, cf: 5},
+				{a: 7, cf: 5},
+				{a: 23, cf: 5}
 			])),
-	literal: $folkertdev$elm_flate$Huffman$fromList(
+	V: $folkertdev$elm_flate$Huffman$fromList(
 		_List_fromArray(
 			[
-				{bits: 12, width: 8},
-				{bits: 140, width: 8},
-				{bits: 76, width: 8},
-				{bits: 204, width: 8},
-				{bits: 44, width: 8},
-				{bits: 172, width: 8},
-				{bits: 108, width: 8},
-				{bits: 236, width: 8},
-				{bits: 28, width: 8},
-				{bits: 156, width: 8},
-				{bits: 92, width: 8},
-				{bits: 220, width: 8},
-				{bits: 60, width: 8},
-				{bits: 188, width: 8},
-				{bits: 124, width: 8},
-				{bits: 252, width: 8},
-				{bits: 2, width: 8},
-				{bits: 130, width: 8},
-				{bits: 66, width: 8},
-				{bits: 194, width: 8},
-				{bits: 34, width: 8},
-				{bits: 162, width: 8},
-				{bits: 98, width: 8},
-				{bits: 226, width: 8},
-				{bits: 18, width: 8},
-				{bits: 146, width: 8},
-				{bits: 82, width: 8},
-				{bits: 210, width: 8},
-				{bits: 50, width: 8},
-				{bits: 178, width: 8},
-				{bits: 114, width: 8},
-				{bits: 242, width: 8},
-				{bits: 10, width: 8},
-				{bits: 138, width: 8},
-				{bits: 74, width: 8},
-				{bits: 202, width: 8},
-				{bits: 42, width: 8},
-				{bits: 170, width: 8},
-				{bits: 106, width: 8},
-				{bits: 234, width: 8},
-				{bits: 26, width: 8},
-				{bits: 154, width: 8},
-				{bits: 90, width: 8},
-				{bits: 218, width: 8},
-				{bits: 58, width: 8},
-				{bits: 186, width: 8},
-				{bits: 122, width: 8},
-				{bits: 250, width: 8},
-				{bits: 6, width: 8},
-				{bits: 134, width: 8},
-				{bits: 70, width: 8},
-				{bits: 198, width: 8},
-				{bits: 38, width: 8},
-				{bits: 166, width: 8},
-				{bits: 102, width: 8},
-				{bits: 230, width: 8},
-				{bits: 22, width: 8},
-				{bits: 150, width: 8},
-				{bits: 86, width: 8},
-				{bits: 214, width: 8},
-				{bits: 54, width: 8},
-				{bits: 182, width: 8},
-				{bits: 118, width: 8},
-				{bits: 246, width: 8},
-				{bits: 14, width: 8},
-				{bits: 142, width: 8},
-				{bits: 78, width: 8},
-				{bits: 206, width: 8},
-				{bits: 46, width: 8},
-				{bits: 174, width: 8},
-				{bits: 110, width: 8},
-				{bits: 238, width: 8},
-				{bits: 30, width: 8},
-				{bits: 158, width: 8},
-				{bits: 94, width: 8},
-				{bits: 222, width: 8},
-				{bits: 62, width: 8},
-				{bits: 190, width: 8},
-				{bits: 126, width: 8},
-				{bits: 254, width: 8},
-				{bits: 1, width: 8},
-				{bits: 129, width: 8},
-				{bits: 65, width: 8},
-				{bits: 193, width: 8},
-				{bits: 33, width: 8},
-				{bits: 161, width: 8},
-				{bits: 97, width: 8},
-				{bits: 225, width: 8},
-				{bits: 17, width: 8},
-				{bits: 145, width: 8},
-				{bits: 81, width: 8},
-				{bits: 209, width: 8},
-				{bits: 49, width: 8},
-				{bits: 177, width: 8},
-				{bits: 113, width: 8},
-				{bits: 241, width: 8},
-				{bits: 9, width: 8},
-				{bits: 137, width: 8},
-				{bits: 73, width: 8},
-				{bits: 201, width: 8},
-				{bits: 41, width: 8},
-				{bits: 169, width: 8},
-				{bits: 105, width: 8},
-				{bits: 233, width: 8},
-				{bits: 25, width: 8},
-				{bits: 153, width: 8},
-				{bits: 89, width: 8},
-				{bits: 217, width: 8},
-				{bits: 57, width: 8},
-				{bits: 185, width: 8},
-				{bits: 121, width: 8},
-				{bits: 249, width: 8},
-				{bits: 5, width: 8},
-				{bits: 133, width: 8},
-				{bits: 69, width: 8},
-				{bits: 197, width: 8},
-				{bits: 37, width: 8},
-				{bits: 165, width: 8},
-				{bits: 101, width: 8},
-				{bits: 229, width: 8},
-				{bits: 21, width: 8},
-				{bits: 149, width: 8},
-				{bits: 85, width: 8},
-				{bits: 213, width: 8},
-				{bits: 53, width: 8},
-				{bits: 181, width: 8},
-				{bits: 117, width: 8},
-				{bits: 245, width: 8},
-				{bits: 13, width: 8},
-				{bits: 141, width: 8},
-				{bits: 77, width: 8},
-				{bits: 205, width: 8},
-				{bits: 45, width: 8},
-				{bits: 173, width: 8},
-				{bits: 109, width: 8},
-				{bits: 237, width: 8},
-				{bits: 29, width: 8},
-				{bits: 157, width: 8},
-				{bits: 93, width: 8},
-				{bits: 221, width: 8},
-				{bits: 61, width: 8},
-				{bits: 189, width: 8},
-				{bits: 125, width: 8},
-				{bits: 253, width: 8},
-				{bits: 19, width: 9},
-				{bits: 275, width: 9},
-				{bits: 147, width: 9},
-				{bits: 403, width: 9},
-				{bits: 83, width: 9},
-				{bits: 339, width: 9},
-				{bits: 211, width: 9},
-				{bits: 467, width: 9},
-				{bits: 51, width: 9},
-				{bits: 307, width: 9},
-				{bits: 179, width: 9},
-				{bits: 435, width: 9},
-				{bits: 115, width: 9},
-				{bits: 371, width: 9},
-				{bits: 243, width: 9},
-				{bits: 499, width: 9},
-				{bits: 11, width: 9},
-				{bits: 267, width: 9},
-				{bits: 139, width: 9},
-				{bits: 395, width: 9},
-				{bits: 75, width: 9},
-				{bits: 331, width: 9},
-				{bits: 203, width: 9},
-				{bits: 459, width: 9},
-				{bits: 43, width: 9},
-				{bits: 299, width: 9},
-				{bits: 171, width: 9},
-				{bits: 427, width: 9},
-				{bits: 107, width: 9},
-				{bits: 363, width: 9},
-				{bits: 235, width: 9},
-				{bits: 491, width: 9},
-				{bits: 27, width: 9},
-				{bits: 283, width: 9},
-				{bits: 155, width: 9},
-				{bits: 411, width: 9},
-				{bits: 91, width: 9},
-				{bits: 347, width: 9},
-				{bits: 219, width: 9},
-				{bits: 475, width: 9},
-				{bits: 59, width: 9},
-				{bits: 315, width: 9},
-				{bits: 187, width: 9},
-				{bits: 443, width: 9},
-				{bits: 123, width: 9},
-				{bits: 379, width: 9},
-				{bits: 251, width: 9},
-				{bits: 507, width: 9},
-				{bits: 7, width: 9},
-				{bits: 263, width: 9},
-				{bits: 135, width: 9},
-				{bits: 391, width: 9},
-				{bits: 71, width: 9},
-				{bits: 327, width: 9},
-				{bits: 199, width: 9},
-				{bits: 455, width: 9},
-				{bits: 39, width: 9},
-				{bits: 295, width: 9},
-				{bits: 167, width: 9},
-				{bits: 423, width: 9},
-				{bits: 103, width: 9},
-				{bits: 359, width: 9},
-				{bits: 231, width: 9},
-				{bits: 487, width: 9},
-				{bits: 23, width: 9},
-				{bits: 279, width: 9},
-				{bits: 151, width: 9},
-				{bits: 407, width: 9},
-				{bits: 87, width: 9},
-				{bits: 343, width: 9},
-				{bits: 215, width: 9},
-				{bits: 471, width: 9},
-				{bits: 55, width: 9},
-				{bits: 311, width: 9},
-				{bits: 183, width: 9},
-				{bits: 439, width: 9},
-				{bits: 119, width: 9},
-				{bits: 375, width: 9},
-				{bits: 247, width: 9},
-				{bits: 503, width: 9},
-				{bits: 15, width: 9},
-				{bits: 271, width: 9},
-				{bits: 143, width: 9},
-				{bits: 399, width: 9},
-				{bits: 79, width: 9},
-				{bits: 335, width: 9},
-				{bits: 207, width: 9},
-				{bits: 463, width: 9},
-				{bits: 47, width: 9},
-				{bits: 303, width: 9},
-				{bits: 175, width: 9},
-				{bits: 431, width: 9},
-				{bits: 111, width: 9},
-				{bits: 367, width: 9},
-				{bits: 239, width: 9},
-				{bits: 495, width: 9},
-				{bits: 31, width: 9},
-				{bits: 287, width: 9},
-				{bits: 159, width: 9},
-				{bits: 415, width: 9},
-				{bits: 95, width: 9},
-				{bits: 351, width: 9},
-				{bits: 223, width: 9},
-				{bits: 479, width: 9},
-				{bits: 63, width: 9},
-				{bits: 319, width: 9},
-				{bits: 191, width: 9},
-				{bits: 447, width: 9},
-				{bits: 127, width: 9},
-				{bits: 383, width: 9},
-				{bits: 255, width: 9},
-				{bits: 511, width: 9},
-				{bits: 0, width: 7},
-				{bits: 64, width: 7},
-				{bits: 32, width: 7},
-				{bits: 96, width: 7},
-				{bits: 16, width: 7},
-				{bits: 80, width: 7},
-				{bits: 48, width: 7},
-				{bits: 112, width: 7},
-				{bits: 8, width: 7},
-				{bits: 72, width: 7},
-				{bits: 40, width: 7},
-				{bits: 104, width: 7},
-				{bits: 24, width: 7},
-				{bits: 88, width: 7},
-				{bits: 56, width: 7},
-				{bits: 120, width: 7},
-				{bits: 4, width: 7},
-				{bits: 68, width: 7},
-				{bits: 36, width: 7},
-				{bits: 100, width: 7},
-				{bits: 20, width: 7},
-				{bits: 84, width: 7},
-				{bits: 52, width: 7},
-				{bits: 116, width: 7},
-				{bits: 3, width: 8},
-				{bits: 131, width: 8},
-				{bits: 67, width: 8},
-				{bits: 195, width: 8},
-				{bits: 35, width: 8},
-				{bits: 163, width: 8},
-				{bits: 99, width: 8},
-				{bits: 227, width: 8}
+				{a: 12, cf: 8},
+				{a: 140, cf: 8},
+				{a: 76, cf: 8},
+				{a: 204, cf: 8},
+				{a: 44, cf: 8},
+				{a: 172, cf: 8},
+				{a: 108, cf: 8},
+				{a: 236, cf: 8},
+				{a: 28, cf: 8},
+				{a: 156, cf: 8},
+				{a: 92, cf: 8},
+				{a: 220, cf: 8},
+				{a: 60, cf: 8},
+				{a: 188, cf: 8},
+				{a: 124, cf: 8},
+				{a: 252, cf: 8},
+				{a: 2, cf: 8},
+				{a: 130, cf: 8},
+				{a: 66, cf: 8},
+				{a: 194, cf: 8},
+				{a: 34, cf: 8},
+				{a: 162, cf: 8},
+				{a: 98, cf: 8},
+				{a: 226, cf: 8},
+				{a: 18, cf: 8},
+				{a: 146, cf: 8},
+				{a: 82, cf: 8},
+				{a: 210, cf: 8},
+				{a: 50, cf: 8},
+				{a: 178, cf: 8},
+				{a: 114, cf: 8},
+				{a: 242, cf: 8},
+				{a: 10, cf: 8},
+				{a: 138, cf: 8},
+				{a: 74, cf: 8},
+				{a: 202, cf: 8},
+				{a: 42, cf: 8},
+				{a: 170, cf: 8},
+				{a: 106, cf: 8},
+				{a: 234, cf: 8},
+				{a: 26, cf: 8},
+				{a: 154, cf: 8},
+				{a: 90, cf: 8},
+				{a: 218, cf: 8},
+				{a: 58, cf: 8},
+				{a: 186, cf: 8},
+				{a: 122, cf: 8},
+				{a: 250, cf: 8},
+				{a: 6, cf: 8},
+				{a: 134, cf: 8},
+				{a: 70, cf: 8},
+				{a: 198, cf: 8},
+				{a: 38, cf: 8},
+				{a: 166, cf: 8},
+				{a: 102, cf: 8},
+				{a: 230, cf: 8},
+				{a: 22, cf: 8},
+				{a: 150, cf: 8},
+				{a: 86, cf: 8},
+				{a: 214, cf: 8},
+				{a: 54, cf: 8},
+				{a: 182, cf: 8},
+				{a: 118, cf: 8},
+				{a: 246, cf: 8},
+				{a: 14, cf: 8},
+				{a: 142, cf: 8},
+				{a: 78, cf: 8},
+				{a: 206, cf: 8},
+				{a: 46, cf: 8},
+				{a: 174, cf: 8},
+				{a: 110, cf: 8},
+				{a: 238, cf: 8},
+				{a: 30, cf: 8},
+				{a: 158, cf: 8},
+				{a: 94, cf: 8},
+				{a: 222, cf: 8},
+				{a: 62, cf: 8},
+				{a: 190, cf: 8},
+				{a: 126, cf: 8},
+				{a: 254, cf: 8},
+				{a: 1, cf: 8},
+				{a: 129, cf: 8},
+				{a: 65, cf: 8},
+				{a: 193, cf: 8},
+				{a: 33, cf: 8},
+				{a: 161, cf: 8},
+				{a: 97, cf: 8},
+				{a: 225, cf: 8},
+				{a: 17, cf: 8},
+				{a: 145, cf: 8},
+				{a: 81, cf: 8},
+				{a: 209, cf: 8},
+				{a: 49, cf: 8},
+				{a: 177, cf: 8},
+				{a: 113, cf: 8},
+				{a: 241, cf: 8},
+				{a: 9, cf: 8},
+				{a: 137, cf: 8},
+				{a: 73, cf: 8},
+				{a: 201, cf: 8},
+				{a: 41, cf: 8},
+				{a: 169, cf: 8},
+				{a: 105, cf: 8},
+				{a: 233, cf: 8},
+				{a: 25, cf: 8},
+				{a: 153, cf: 8},
+				{a: 89, cf: 8},
+				{a: 217, cf: 8},
+				{a: 57, cf: 8},
+				{a: 185, cf: 8},
+				{a: 121, cf: 8},
+				{a: 249, cf: 8},
+				{a: 5, cf: 8},
+				{a: 133, cf: 8},
+				{a: 69, cf: 8},
+				{a: 197, cf: 8},
+				{a: 37, cf: 8},
+				{a: 165, cf: 8},
+				{a: 101, cf: 8},
+				{a: 229, cf: 8},
+				{a: 21, cf: 8},
+				{a: 149, cf: 8},
+				{a: 85, cf: 8},
+				{a: 213, cf: 8},
+				{a: 53, cf: 8},
+				{a: 181, cf: 8},
+				{a: 117, cf: 8},
+				{a: 245, cf: 8},
+				{a: 13, cf: 8},
+				{a: 141, cf: 8},
+				{a: 77, cf: 8},
+				{a: 205, cf: 8},
+				{a: 45, cf: 8},
+				{a: 173, cf: 8},
+				{a: 109, cf: 8},
+				{a: 237, cf: 8},
+				{a: 29, cf: 8},
+				{a: 157, cf: 8},
+				{a: 93, cf: 8},
+				{a: 221, cf: 8},
+				{a: 61, cf: 8},
+				{a: 189, cf: 8},
+				{a: 125, cf: 8},
+				{a: 253, cf: 8},
+				{a: 19, cf: 9},
+				{a: 275, cf: 9},
+				{a: 147, cf: 9},
+				{a: 403, cf: 9},
+				{a: 83, cf: 9},
+				{a: 339, cf: 9},
+				{a: 211, cf: 9},
+				{a: 467, cf: 9},
+				{a: 51, cf: 9},
+				{a: 307, cf: 9},
+				{a: 179, cf: 9},
+				{a: 435, cf: 9},
+				{a: 115, cf: 9},
+				{a: 371, cf: 9},
+				{a: 243, cf: 9},
+				{a: 499, cf: 9},
+				{a: 11, cf: 9},
+				{a: 267, cf: 9},
+				{a: 139, cf: 9},
+				{a: 395, cf: 9},
+				{a: 75, cf: 9},
+				{a: 331, cf: 9},
+				{a: 203, cf: 9},
+				{a: 459, cf: 9},
+				{a: 43, cf: 9},
+				{a: 299, cf: 9},
+				{a: 171, cf: 9},
+				{a: 427, cf: 9},
+				{a: 107, cf: 9},
+				{a: 363, cf: 9},
+				{a: 235, cf: 9},
+				{a: 491, cf: 9},
+				{a: 27, cf: 9},
+				{a: 283, cf: 9},
+				{a: 155, cf: 9},
+				{a: 411, cf: 9},
+				{a: 91, cf: 9},
+				{a: 347, cf: 9},
+				{a: 219, cf: 9},
+				{a: 475, cf: 9},
+				{a: 59, cf: 9},
+				{a: 315, cf: 9},
+				{a: 187, cf: 9},
+				{a: 443, cf: 9},
+				{a: 123, cf: 9},
+				{a: 379, cf: 9},
+				{a: 251, cf: 9},
+				{a: 507, cf: 9},
+				{a: 7, cf: 9},
+				{a: 263, cf: 9},
+				{a: 135, cf: 9},
+				{a: 391, cf: 9},
+				{a: 71, cf: 9},
+				{a: 327, cf: 9},
+				{a: 199, cf: 9},
+				{a: 455, cf: 9},
+				{a: 39, cf: 9},
+				{a: 295, cf: 9},
+				{a: 167, cf: 9},
+				{a: 423, cf: 9},
+				{a: 103, cf: 9},
+				{a: 359, cf: 9},
+				{a: 231, cf: 9},
+				{a: 487, cf: 9},
+				{a: 23, cf: 9},
+				{a: 279, cf: 9},
+				{a: 151, cf: 9},
+				{a: 407, cf: 9},
+				{a: 87, cf: 9},
+				{a: 343, cf: 9},
+				{a: 215, cf: 9},
+				{a: 471, cf: 9},
+				{a: 55, cf: 9},
+				{a: 311, cf: 9},
+				{a: 183, cf: 9},
+				{a: 439, cf: 9},
+				{a: 119, cf: 9},
+				{a: 375, cf: 9},
+				{a: 247, cf: 9},
+				{a: 503, cf: 9},
+				{a: 15, cf: 9},
+				{a: 271, cf: 9},
+				{a: 143, cf: 9},
+				{a: 399, cf: 9},
+				{a: 79, cf: 9},
+				{a: 335, cf: 9},
+				{a: 207, cf: 9},
+				{a: 463, cf: 9},
+				{a: 47, cf: 9},
+				{a: 303, cf: 9},
+				{a: 175, cf: 9},
+				{a: 431, cf: 9},
+				{a: 111, cf: 9},
+				{a: 367, cf: 9},
+				{a: 239, cf: 9},
+				{a: 495, cf: 9},
+				{a: 31, cf: 9},
+				{a: 287, cf: 9},
+				{a: 159, cf: 9},
+				{a: 415, cf: 9},
+				{a: 95, cf: 9},
+				{a: 351, cf: 9},
+				{a: 223, cf: 9},
+				{a: 479, cf: 9},
+				{a: 63, cf: 9},
+				{a: 319, cf: 9},
+				{a: 191, cf: 9},
+				{a: 447, cf: 9},
+				{a: 127, cf: 9},
+				{a: 383, cf: 9},
+				{a: 255, cf: 9},
+				{a: 511, cf: 9},
+				{a: 0, cf: 7},
+				{a: 64, cf: 7},
+				{a: 32, cf: 7},
+				{a: 96, cf: 7},
+				{a: 16, cf: 7},
+				{a: 80, cf: 7},
+				{a: 48, cf: 7},
+				{a: 112, cf: 7},
+				{a: 8, cf: 7},
+				{a: 72, cf: 7},
+				{a: 40, cf: 7},
+				{a: 104, cf: 7},
+				{a: 24, cf: 7},
+				{a: 88, cf: 7},
+				{a: 56, cf: 7},
+				{a: 120, cf: 7},
+				{a: 4, cf: 7},
+				{a: 68, cf: 7},
+				{a: 36, cf: 7},
+				{a: 100, cf: 7},
+				{a: 20, cf: 7},
+				{a: 84, cf: 7},
+				{a: 52, cf: 7},
+				{a: 116, cf: 7},
+				{a: 3, cf: 8},
+				{a: 131, cf: 8},
+				{a: 67, cf: 8},
+				{a: 195, cf: 8},
+				{a: 35, cf: 8},
+				{a: 163, cf: 8},
+				{a: 99, cf: 8},
+				{a: 227, cf: 8}
 			]))
 };
 var $folkertdev$elm_flate$Deflate$Internal$encodeCompressStatic = F3(
@@ -14224,10 +14088,10 @@ var $folkertdev$elm_flate$Deflate$Internal$encodeStatic = F2(
 var $folkertdev$elm_flate$Flate$deflateWithOptions = F2(
 	function (encoding, buffer) {
 		switch (encoding.$) {
-			case 'Raw':
+			case 0:
 				return $folkertdev$elm_flate$Deflate$Internal$encodeRaw(buffer);
-			case 'Static':
-				if (encoding.a.$ === 'NoCompression') {
+			case 2:
+				if (!encoding.a.$) {
 					var _v1 = encoding.a;
 					return A2($folkertdev$elm_flate$Deflate$Internal$encodeStatic, $elm$core$Maybe$Nothing, buffer);
 				} else {
@@ -14238,7 +14102,7 @@ var $folkertdev$elm_flate$Flate$deflateWithOptions = F2(
 						buffer);
 				}
 			default:
-				if (encoding.a.$ === 'NoCompression') {
+				if (!encoding.a.$) {
 					var _v2 = encoding.a;
 					return A2($folkertdev$elm_flate$Deflate$Internal$encodeDynamic, $elm$core$Maybe$Nothing, buffer);
 				} else {
@@ -14256,11 +14120,11 @@ var $folkertdev$elm_flate$Flate$deflateGZipWithOptions = F2(
 			[
 				A2(
 				$elm$bytes$Bytes$Encode$unsignedInt32,
-				$elm$bytes$Bytes$LE,
+				0,
 				$folkertdev$elm_flate$Checksum$Crc32$crc32(buffer)),
 				A2(
 				$elm$bytes$Bytes$Encode$unsignedInt32,
-				$elm$bytes$Bytes$LE,
+				0,
 				A2(
 					$elm$core$Basics$modBy,
 					4294967296,
@@ -14272,7 +14136,7 @@ var $folkertdev$elm_flate$Flate$deflateGZipWithOptions = F2(
 				$elm$bytes$Bytes$Encode$unsignedInt8(139),
 				$elm$bytes$Bytes$Encode$unsignedInt8(8),
 				$elm$bytes$Bytes$Encode$unsignedInt8(0),
-				A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$LE, 0),
+				A2($elm$bytes$Bytes$Encode$unsignedInt32, 0, 0),
 				$elm$bytes$Bytes$Encode$unsignedInt8(0),
 				$elm$bytes$Bytes$Encode$unsignedInt8(255)
 			]);
@@ -14306,11 +14170,11 @@ var $danfishgold$base64_bytes$Decode$unsafeToChar = function (n) {
 			} else {
 				switch (n) {
 					case 62:
-						return _Utils_chr('+');
+						return '+';
 					case 63:
-						return _Utils_chr('/');
+						return '/';
 					default:
-						return _Utils_chr('\u0000');
+						return '\u0000';
 				}
 			}
 		}
@@ -14415,42 +14279,41 @@ var $danfishgold$base64_bytes$Decode$decode18Help = F5(
 			combined1,
 			A4($danfishgold$base64_bytes$Decode$bitsToCharSpecialized, combined6, combined5, combined4, ''));
 	});
-var $danfishgold$base64_bytes$Decode$u16BE = $elm$bytes$Bytes$Decode$unsignedInt16($elm$bytes$Bytes$BE);
-var $danfishgold$base64_bytes$Decode$u32BE = $elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE);
+var $danfishgold$base64_bytes$Decode$u16BE = $elm$bytes$Bytes$Decode$unsignedInt16(1);
+var $danfishgold$base64_bytes$Decode$u32BE = $elm$bytes$Bytes$Decode$unsignedInt32(1);
 var $danfishgold$base64_bytes$Decode$decode18Bytes = A6($elm$bytes$Bytes$Decode$map5, $danfishgold$base64_bytes$Decode$decode18Help, $danfishgold$base64_bytes$Decode$u32BE, $danfishgold$base64_bytes$Decode$u32BE, $danfishgold$base64_bytes$Decode$u32BE, $danfishgold$base64_bytes$Decode$u32BE, $danfishgold$base64_bytes$Decode$u16BE);
 var $elm$bytes$Bytes$Decode$map3 = F4(
 	function (func, _v0, _v1, _v2) {
-		var decodeA = _v0.a;
-		var decodeB = _v1.a;
-		var decodeC = _v2.a;
-		return $elm$bytes$Bytes$Decode$Decoder(
-			F2(
-				function (bites, offset) {
-					var _v3 = A2(decodeA, bites, offset);
-					var aOffset = _v3.a;
-					var a = _v3.b;
-					var _v4 = A2(decodeB, bites, aOffset);
-					var bOffset = _v4.a;
-					var b = _v4.b;
-					var _v5 = A2(decodeC, bites, bOffset);
-					var cOffset = _v5.a;
-					var c = _v5.b;
-					return _Utils_Tuple2(
-						cOffset,
-						A3(func, a, b, c));
-				}));
+		var decodeA = _v0;
+		var decodeB = _v1;
+		var decodeC = _v2;
+		return F2(
+			function (bites, offset) {
+				var _v3 = A2(decodeA, bites, offset);
+				var aOffset = _v3.a;
+				var a = _v3.b;
+				var _v4 = A2(decodeB, bites, aOffset);
+				var bOffset = _v4.a;
+				var b = _v4.b;
+				var _v5 = A2(decodeC, bites, bOffset);
+				var cOffset = _v5.a;
+				var c = _v5.b;
+				return _Utils_Tuple2(
+					cOffset,
+					A3(func, a, b, c));
+			});
 	});
 var $danfishgold$base64_bytes$Decode$loopHelp = function (_v0) {
-	var remaining = _v0.remaining;
-	var string = _v0.string;
+	var remaining = _v0.aK;
+	var string = _v0.aM;
 	if (remaining >= 18) {
 		return A2(
 			$elm$bytes$Bytes$Decode$map,
 			function (result) {
 				return $elm$bytes$Bytes$Decode$Loop(
 					{
-						remaining: remaining - 18,
-						string: _Utils_ap(string, result)
+						aK: remaining - 18,
+						aM: _Utils_ap(string, result)
 					});
 			},
 			$danfishgold$base64_bytes$Decode$decode18Bytes);
@@ -14461,8 +14324,8 @@ var $danfishgold$base64_bytes$Decode$loopHelp = function (_v0) {
 					var combined = ((a << 16) | (b << 8)) | c;
 					return $elm$bytes$Bytes$Decode$Loop(
 						{
-							remaining: remaining - 3,
-							string: _Utils_ap(
+							aK: remaining - 3,
+							aM: _Utils_ap(
 								string,
 								A2($danfishgold$base64_bytes$Decode$bitsToChars, combined, 0))
 						});
@@ -14501,7 +14364,7 @@ var $danfishgold$base64_bytes$Decode$loopHelp = function (_v0) {
 var $danfishgold$base64_bytes$Decode$decoder = function (width) {
 	return A2(
 		$elm$bytes$Bytes$Decode$loop,
-		{remaining: width, string: ''},
+		{aK: width, aM: ''},
 		$danfishgold$base64_bytes$Decode$loopHelp);
 };
 var $danfishgold$base64_bytes$Decode$fromBytes = function (bytes) {
@@ -14512,9 +14375,7 @@ var $danfishgold$base64_bytes$Decode$fromBytes = function (bytes) {
 		bytes);
 };
 var $danfishgold$base64_bytes$Base64$fromBytes = $danfishgold$base64_bytes$Decode$fromBytes;
-var $pablohirafuji$elm_qrcode$QRCode$QRCode = function (a) {
-	return {$: 'QRCode', a: a};
-};
+var $pablohirafuji$elm_qrcode$QRCode$QRCode = $elm$core$Basics$identity;
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$getIndex = F3(
 	function (size, row, col) {
 		return (size * row) + col;
@@ -14525,24 +14386,24 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$isOccupy = F4(
 			$elm$core$Array$get,
 			A3($pablohirafuji$elm_qrcode$QRCode$Matrix$getIndex, size, row, col),
 			matrix);
-		if ((_v0.$ === 'Just') && (_v0.a.$ === 'Just')) {
+		if ((!_v0.$) && (!_v0.a.$)) {
 			return true;
 		} else {
 			return false;
 		}
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$nextModule = function (placement) {
-	var row = placement.row;
-	var col = placement.col;
-	var isRight = placement.isRight;
-	var isUp = placement.isUp;
+	var row = placement.G;
+	var col = placement.w;
+	var isRight = placement.K;
+	var isUp = placement.ah;
 	return isRight ? _Utils_update(
 		placement,
-		{col: col - 1, isRight: false}) : (isUp ? _Utils_update(
+		{w: col - 1, K: false}) : (isUp ? _Utils_update(
 		placement,
-		{col: col + 1, isRight: true, row: row - 1}) : _Utils_update(
+		{w: col + 1, K: true, G: row - 1}) : _Utils_update(
 		placement,
-		{col: col + 1, isRight: true, row: row + 1}));
+		{w: col + 1, K: true, G: row + 1}));
 };
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$bitToColor = F2(
 	function (_byte, offset) {
@@ -14550,9 +14411,9 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$bitToColor = F2(
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$setDataModule = F3(
 	function (_v0, _byte, offset) {
-		var size = _v0.size;
-		var row = _v0.row;
-		var col = _v0.col;
+		var size = _v0.b6;
+		var row = _v0.G;
+		var col = _v0.w;
 		return A2(
 			$elm$core$Array$set,
 			A3($pablohirafuji$elm_qrcode$QRCode$Matrix$getIndex, size, row, col),
@@ -14565,9 +14426,9 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$addDataModule = F4(
 	function (placement, bytes, offset, matrix) {
 		addDataModule:
 		while (true) {
-			var size = placement.size;
-			var row = placement.row;
-			var col = placement.col;
+			var size = placement.b6;
+			var row = placement.G;
+			var col = placement.w;
 			if (!bytes.b) {
 				return matrix;
 			} else {
@@ -14587,7 +14448,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$addDataModule = F4(
 					if (col === 6) {
 						var $temp$placement = _Utils_update(
 							placement,
-							{col: col - 1, isRight: true}),
+							{w: col - 1, K: true}),
 							$temp$bytes = bytes,
 							$temp$offset = offset,
 							$temp$matrix = matrix;
@@ -14600,7 +14461,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$addDataModule = F4(
 						if (row < 0) {
 							var $temp$placement = _Utils_update(
 								placement,
-								{col: col - 2, isRight: true, isUp: false, row: 0}),
+								{w: col - 2, K: true, ah: false, G: 0}),
 								$temp$bytes = bytes,
 								$temp$offset = offset,
 								$temp$matrix = matrix;
@@ -14613,7 +14474,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$addDataModule = F4(
 							if (_Utils_cmp(row, size) > -1) {
 								var $temp$placement = _Utils_update(
 									placement,
-									{col: col - 2, isRight: true, isUp: true, row: size - 1}),
+									{w: col - 2, K: true, ah: true, G: size - 1}),
 									$temp$bytes = bytes,
 									$temp$offset = offset,
 									$temp$matrix = matrix;
@@ -14652,7 +14513,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$addDataModule = F4(
 		}
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$initPlacement = function (size) {
-	return {col: size + 1, isRight: true, isUp: true, row: size + 1, size: size};
+	return {w: size + 1, K: true, ah: true, G: size + 1, b6: size};
 };
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$addData = F3(
 	function (size, bytes, matrix) {
@@ -14663,7 +14524,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$addData = F3(
 			0,
 			matrix);
 	});
-var $pablohirafuji$elm_qrcode$QRCode$Error$AlignmentPatternNotFound = {$: 'AlignmentPatternNotFound'};
+var $pablohirafuji$elm_qrcode$QRCode$Error$AlignmentPatternNotFound = {$: 0};
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$alignmentPatternData = $elm$core$Array$fromList(
 	_List_fromArray(
 		[
@@ -14749,7 +14610,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$alignmentPatternData = $elm$core$Arr
 		]));
 var $elm$core$Result$fromMaybe = F2(
 	function (err, maybe) {
-		if (maybe.$ === 'Just') {
+		if (!maybe.$) {
 			var v = maybe.a;
 			return $elm$core$Result$Ok(v);
 		} else {
@@ -14871,7 +14732,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$finderPattern = F4(
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$applyMaskColor = F2(
 	function (maybeModule, isChange) {
 		if (isChange) {
-			if ((maybeModule.$ === 'Just') && (!maybeModule.a.a)) {
+			if ((!maybeModule.$) && (!maybeModule.a.a)) {
 				var _v1 = maybeModule.a;
 				var isDark = _v1.b;
 				return $elm$core$Maybe$Just(
@@ -14898,30 +14759,30 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$applyMaskFunction = F4(
 				A2($pablohirafuji$elm_qrcode$QRCode$Matrix$getCoord, size, index)));
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$maskFunction = function (mask) {
-	switch (mask.$) {
-		case 'Pattern0':
+	switch (mask) {
+		case 0:
 			return function (_v1) {
 				var row = _v1.a;
 				var col = _v1.b;
 				return !A2($elm$core$Basics$modBy, 2, row + col);
 			};
-		case 'Pattern1':
+		case 1:
 			return function (_v2) {
 				var row = _v2.a;
 				return !A2($elm$core$Basics$modBy, 2, row);
 			};
-		case 'Pattern2':
+		case 2:
 			return function (_v3) {
 				var col = _v3.b;
 				return !A2($elm$core$Basics$modBy, 3, col);
 			};
-		case 'Pattern3':
+		case 3:
 			return function (_v4) {
 				var row = _v4.a;
 				var col = _v4.b;
 				return !A2($elm$core$Basics$modBy, 3, row + col);
 			};
-		case 'Pattern4':
+		case 4:
 			return function (_v5) {
 				var row = _v5.a;
 				var col = _v5.b;
@@ -14930,13 +14791,13 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$maskFunction = function (mask) {
 					2,
 					$elm$core$Basics$floor(row / 2) + $elm$core$Basics$floor(col / 3));
 			};
-		case 'Pattern5':
+		case 5:
 			return function (_v6) {
 				var row = _v6.a;
 				var col = _v6.b;
 				return !(A2($elm$core$Basics$modBy, 2, row * col) + A2($elm$core$Basics$modBy, 3, row * col));
 			};
-		case 'Pattern6':
+		case 6:
 			return function (_v7) {
 				var row = _v7.a;
 				var col = _v7.b;
@@ -15230,12 +15091,12 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$getMaskScore = F2(
 			A2($pablohirafuji$elm_qrcode$QRCode$Matrix$rule4Score, size, list) + ($pablohirafuji$elm_qrcode$QRCode$Matrix$rule3Score(transposedRowList) + ($pablohirafuji$elm_qrcode$QRCode$Matrix$rule3Score(rowList) + (A2($pablohirafuji$elm_qrcode$QRCode$Matrix$rule2Score, rowList, 0) + ($pablohirafuji$elm_qrcode$QRCode$Matrix$rule1Score(transposedRowList) + $pablohirafuji$elm_qrcode$QRCode$Matrix$rule1Score(rowList))))));
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$ecLevelToInt = function (ecLevel) {
-	switch (ecLevel.$) {
-		case 'L':
+	switch (ecLevel) {
+		case 0:
 			return 1;
-		case 'M':
+		case 1:
 			return 0;
-		case 'Q':
+		case 2:
 			return 3;
 		default:
 			return 2;
@@ -15260,20 +15121,20 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$getBCHDigit = function (_int) {
 	return A2(helper, 0, _int);
 };
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$maskToInt = function (mask) {
-	switch (mask.$) {
-		case 'Pattern0':
+	switch (mask) {
+		case 0:
 			return 0;
-		case 'Pattern1':
+		case 1:
 			return 1;
-		case 'Pattern2':
+		case 2:
 			return 2;
-		case 'Pattern3':
+		case 3:
 			return 3;
-		case 'Pattern4':
+		case 4:
 			return 4;
-		case 'Pattern5':
+		case 5:
 			return 5;
-		case 'Pattern6':
+		case 6:
 			return 6;
 		default:
 			return 7;
@@ -15377,16 +15238,16 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$getBestMask_ = F5(
 		var maskScore = _v1.b;
 		return ((_Utils_cmp(minScore, maskScore) < 0) && (!_Utils_eq(minScore, -1))) ? _Utils_Tuple2(minSMatrix, minScore) : _Utils_Tuple2(maskSMatrix, maskScore);
 	});
-var $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern0 = {$: 'Pattern0'};
-var $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern1 = {$: 'Pattern1'};
-var $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern2 = {$: 'Pattern2'};
-var $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern3 = {$: 'Pattern3'};
-var $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern4 = {$: 'Pattern4'};
-var $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern5 = {$: 'Pattern5'};
-var $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern6 = {$: 'Pattern6'};
-var $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern7 = {$: 'Pattern7'};
+var $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern0 = 0;
+var $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern1 = 1;
+var $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern2 = 2;
+var $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern3 = 3;
+var $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern4 = 4;
+var $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern5 = 5;
+var $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern6 = 6;
+var $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern7 = 7;
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$patternList = _List_fromArray(
-	[$pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern0, $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern1, $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern2, $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern3, $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern4, $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern5, $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern6, $pablohirafuji$elm_qrcode$QRCode$Matrix$Pattern7]);
+	[0, 1, 2, 3, 4, 5, 6, 7]);
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$getBestMask = F3(
 	function (ecLevel, size, matrix) {
 		return A3(
@@ -15510,10 +15371,10 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$timingPattern = F2(
 			range);
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$apply = function (_v0) {
-	var ecLevel = _v0.a.ecLevel;
-	var groupInfo = _v0.a.groupInfo;
+	var ecLevel = _v0.a.bs;
+	var groupInfo = _v0.a.cG;
 	var bytes = _v0.b;
-	var version = groupInfo.version;
+	var version = groupInfo.bh;
 	var size = ((version - 1) * 4) + 21;
 	return A2(
 		$elm$core$Result$map,
@@ -15559,48 +15420,48 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$apply = function (_v0) {
 												size * size,
 												$elm$core$Basics$always($elm$core$Maybe$Nothing))))))))))));
 };
-var $pablohirafuji$elm_qrcode$QRCode$ECLevel$H = {$: 'H'};
-var $pablohirafuji$elm_qrcode$QRCode$ECLevel$L = {$: 'L'};
-var $pablohirafuji$elm_qrcode$QRCode$ECLevel$M = {$: 'M'};
-var $pablohirafuji$elm_qrcode$QRCode$ECLevel$Q = {$: 'Q'};
+var $pablohirafuji$elm_qrcode$QRCode$ECLevel$H = 3;
+var $pablohirafuji$elm_qrcode$QRCode$ECLevel$L = 0;
+var $pablohirafuji$elm_qrcode$QRCode$ECLevel$M = 1;
+var $pablohirafuji$elm_qrcode$QRCode$ECLevel$Q = 2;
 var $pablohirafuji$elm_qrcode$QRCode$convertEC = function (ec) {
-	switch (ec.$) {
-		case 'Low':
-			return $pablohirafuji$elm_qrcode$QRCode$ECLevel$L;
-		case 'Medium':
-			return $pablohirafuji$elm_qrcode$QRCode$ECLevel$M;
-		case 'Quartile':
-			return $pablohirafuji$elm_qrcode$QRCode$ECLevel$Q;
+	switch (ec) {
+		case 0:
+			return 0;
+		case 1:
+			return 1;
+		case 2:
+			return 2;
 		default:
-			return $pablohirafuji$elm_qrcode$QRCode$ECLevel$H;
+			return 3;
 	}
 };
-var $pablohirafuji$elm_qrcode$QRCode$AlignmentPatternNotFound = {$: 'AlignmentPatternNotFound'};
-var $pablohirafuji$elm_qrcode$QRCode$InputLengthOverflow = {$: 'InputLengthOverflow'};
-var $pablohirafuji$elm_qrcode$QRCode$InvalidAlphanumericChar = {$: 'InvalidAlphanumericChar'};
-var $pablohirafuji$elm_qrcode$QRCode$InvalidNumericChar = {$: 'InvalidNumericChar'};
-var $pablohirafuji$elm_qrcode$QRCode$InvalidUTF8Char = {$: 'InvalidUTF8Char'};
+var $pablohirafuji$elm_qrcode$QRCode$AlignmentPatternNotFound = {$: 0};
+var $pablohirafuji$elm_qrcode$QRCode$InputLengthOverflow = {$: 7};
+var $pablohirafuji$elm_qrcode$QRCode$InvalidAlphanumericChar = {$: 2};
+var $pablohirafuji$elm_qrcode$QRCode$InvalidNumericChar = {$: 1};
+var $pablohirafuji$elm_qrcode$QRCode$InvalidUTF8Char = {$: 3};
 var $pablohirafuji$elm_qrcode$QRCode$LogTableException = function (a) {
-	return {$: 'LogTableException', a: a};
+	return {$: 4, a: a};
 };
-var $pablohirafuji$elm_qrcode$QRCode$PolynomialModException = {$: 'PolynomialModException'};
-var $pablohirafuji$elm_qrcode$QRCode$PolynomialMultiplyException = {$: 'PolynomialMultiplyException'};
+var $pablohirafuji$elm_qrcode$QRCode$PolynomialModException = {$: 6};
+var $pablohirafuji$elm_qrcode$QRCode$PolynomialMultiplyException = {$: 5};
 var $pablohirafuji$elm_qrcode$QRCode$convertError = function (e) {
 	switch (e.$) {
-		case 'AlignmentPatternNotFound':
+		case 0:
 			return $pablohirafuji$elm_qrcode$QRCode$AlignmentPatternNotFound;
-		case 'InvalidNumericChar':
+		case 1:
 			return $pablohirafuji$elm_qrcode$QRCode$InvalidNumericChar;
-		case 'InvalidAlphanumericChar':
+		case 2:
 			return $pablohirafuji$elm_qrcode$QRCode$InvalidAlphanumericChar;
-		case 'InvalidUTF8Char':
+		case 3:
 			return $pablohirafuji$elm_qrcode$QRCode$InvalidUTF8Char;
-		case 'LogTableException':
+		case 4:
 			var n = e.a;
 			return $pablohirafuji$elm_qrcode$QRCode$LogTableException(n);
-		case 'PolynomialMultiplyException':
+		case 5:
 			return $pablohirafuji$elm_qrcode$QRCode$PolynomialMultiplyException;
-		case 'PolynomialModException':
+		case 6:
 			return $pablohirafuji$elm_qrcode$QRCode$PolynomialModException;
 		default:
 			return $pablohirafuji$elm_qrcode$QRCode$InputLengthOverflow;
@@ -15729,39 +15590,39 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$bitsToBytes = function (bits) {
 			_Utils_Tuple2(0, 0),
 			_List_Nil));
 };
-var $pablohirafuji$elm_qrcode$QRCode$Encode$UTF8 = {$: 'UTF8'};
+var $pablohirafuji$elm_qrcode$QRCode$Encode$UTF8 = 3;
 var $pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicatorLength = F2(
 	function (mode, version) {
 		if (version <= 9) {
-			switch (mode.$) {
-				case 'Numeric':
+			switch (mode) {
+				case 0:
 					return 10;
-				case 'Alphanumeric':
+				case 1:
 					return 9;
-				case 'Byte':
+				case 2:
 					return 8;
 				default:
 					return 8;
 			}
 		} else {
 			if (version <= 26) {
-				switch (mode.$) {
-					case 'Numeric':
+				switch (mode) {
+					case 0:
 						return 12;
-					case 'Alphanumeric':
+					case 1:
 						return 11;
-					case 'Byte':
+					case 2:
 						return 16;
 					default:
 						return 16;
 				}
 			} else {
-				switch (mode.$) {
-					case 'Numeric':
+				switch (mode) {
+					case 0:
 						return 14;
-					case 'Alphanumeric':
+					case 1:
 						return 13;
-					case 'Byte':
+					case 2:
 						return 16;
 					default:
 						return 16;
@@ -15771,20 +15632,20 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicatorLength = F2(
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicator = F2(
 	function (_v0, bits) {
-		var groupInfo = _v0.groupInfo;
-		var inputStr = _v0.inputStr;
-		var mode = _v0.mode;
-		var length = A2($pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicatorLength, mode, groupInfo.version);
-		var charCount = _Utils_eq(mode, $pablohirafuji$elm_qrcode$QRCode$Encode$UTF8) ? $elm$core$List$length(bits) : $elm$core$String$length(inputStr);
+		var groupInfo = _v0.cG;
+		var inputStr = _v0.a0;
+		var mode = _v0.aH;
+		var length = A2($pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicatorLength, mode, groupInfo.bh);
+		var charCount = (mode === 3) ? $elm$core$List$length(bits) : $elm$core$String$length(inputStr);
 		return _Utils_Tuple2(charCount, length);
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Encode$modeIndicator = function (mode) {
-	switch (mode.$) {
-		case 'Numeric':
+	switch (mode) {
+		case 0:
 			return 1;
-		case 'Alphanumeric':
+		case 1:
 			return 2;
-		case 'Byte':
+		case 2:
 			return 4;
 		default:
 			return 4;
@@ -15797,16 +15658,16 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$addInfoAndFinalBits = function (_v0)
 		model,
 		A2(
 			$pablohirafuji$elm_qrcode$QRCode$Encode$addFiller,
-			model.groupInfo.capacity,
+			model.cG.aw,
 			$pablohirafuji$elm_qrcode$QRCode$Encode$bitsToBytes(
 				A3(
 					$pablohirafuji$elm_qrcode$QRCode$Encode$addTerminator,
-					model.groupInfo.capacity,
-					model.bitsCount,
+					model.cG.aw,
+					model.aQ,
 					A2(
 						$elm$core$List$cons,
 						_Utils_Tuple2(
-							$pablohirafuji$elm_qrcode$QRCode$Encode$modeIndicator(model.mode),
+							$pablohirafuji$elm_qrcode$QRCode$Encode$modeIndicator(model.aH),
 							4),
 						A2(
 							$elm$core$List$cons,
@@ -15854,145 +15715,55 @@ var $elm_community$list_extra$List$Extra$greedyGroupsOf = F2(
 	function (size, xs) {
 		return A3($elm_community$list_extra$List$Extra$greedyGroupsOfWithStep, size, size, xs);
 	});
-var $pablohirafuji$elm_qrcode$QRCode$Error$InvalidAlphanumericChar = {$: 'InvalidAlphanumericChar'};
+var $pablohirafuji$elm_qrcode$QRCode$Error$InvalidAlphanumericChar = {$: 2};
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric$alphanumericCodes = $elm$core$Dict$fromList(
 	_List_fromArray(
 		[
-			_Utils_Tuple2(
-			_Utils_chr('0'),
-			0),
-			_Utils_Tuple2(
-			_Utils_chr('1'),
-			1),
-			_Utils_Tuple2(
-			_Utils_chr('2'),
-			2),
-			_Utils_Tuple2(
-			_Utils_chr('3'),
-			3),
-			_Utils_Tuple2(
-			_Utils_chr('4'),
-			4),
-			_Utils_Tuple2(
-			_Utils_chr('5'),
-			5),
-			_Utils_Tuple2(
-			_Utils_chr('6'),
-			6),
-			_Utils_Tuple2(
-			_Utils_chr('7'),
-			7),
-			_Utils_Tuple2(
-			_Utils_chr('8'),
-			8),
-			_Utils_Tuple2(
-			_Utils_chr('9'),
-			9),
-			_Utils_Tuple2(
-			_Utils_chr('A'),
-			10),
-			_Utils_Tuple2(
-			_Utils_chr('B'),
-			11),
-			_Utils_Tuple2(
-			_Utils_chr('C'),
-			12),
-			_Utils_Tuple2(
-			_Utils_chr('D'),
-			13),
-			_Utils_Tuple2(
-			_Utils_chr('E'),
-			14),
-			_Utils_Tuple2(
-			_Utils_chr('F'),
-			15),
-			_Utils_Tuple2(
-			_Utils_chr('G'),
-			16),
-			_Utils_Tuple2(
-			_Utils_chr('H'),
-			17),
-			_Utils_Tuple2(
-			_Utils_chr('I'),
-			18),
-			_Utils_Tuple2(
-			_Utils_chr('J'),
-			19),
-			_Utils_Tuple2(
-			_Utils_chr('K'),
-			20),
-			_Utils_Tuple2(
-			_Utils_chr('L'),
-			21),
-			_Utils_Tuple2(
-			_Utils_chr('M'),
-			22),
-			_Utils_Tuple2(
-			_Utils_chr('N'),
-			23),
-			_Utils_Tuple2(
-			_Utils_chr('O'),
-			24),
-			_Utils_Tuple2(
-			_Utils_chr('P'),
-			25),
-			_Utils_Tuple2(
-			_Utils_chr('Q'),
-			26),
-			_Utils_Tuple2(
-			_Utils_chr('R'),
-			27),
-			_Utils_Tuple2(
-			_Utils_chr('S'),
-			28),
-			_Utils_Tuple2(
-			_Utils_chr('T'),
-			29),
-			_Utils_Tuple2(
-			_Utils_chr('U'),
-			30),
-			_Utils_Tuple2(
-			_Utils_chr('V'),
-			31),
-			_Utils_Tuple2(
-			_Utils_chr('W'),
-			32),
-			_Utils_Tuple2(
-			_Utils_chr('X'),
-			33),
-			_Utils_Tuple2(
-			_Utils_chr('Y'),
-			34),
-			_Utils_Tuple2(
-			_Utils_chr('Z'),
-			35),
-			_Utils_Tuple2(
-			_Utils_chr(' '),
-			36),
-			_Utils_Tuple2(
-			_Utils_chr('$'),
-			37),
-			_Utils_Tuple2(
-			_Utils_chr('%'),
-			38),
-			_Utils_Tuple2(
-			_Utils_chr('*'),
-			39),
-			_Utils_Tuple2(
-			_Utils_chr('+'),
-			40),
-			_Utils_Tuple2(
-			_Utils_chr('-'),
-			41),
-			_Utils_Tuple2(
-			_Utils_chr('.'),
-			42),
-			_Utils_Tuple2(
-			_Utils_chr('/'),
-			43),
-			_Utils_Tuple2(
-			_Utils_chr(':'),
-			44)
+			_Utils_Tuple2('0', 0),
+			_Utils_Tuple2('1', 1),
+			_Utils_Tuple2('2', 2),
+			_Utils_Tuple2('3', 3),
+			_Utils_Tuple2('4', 4),
+			_Utils_Tuple2('5', 5),
+			_Utils_Tuple2('6', 6),
+			_Utils_Tuple2('7', 7),
+			_Utils_Tuple2('8', 8),
+			_Utils_Tuple2('9', 9),
+			_Utils_Tuple2('A', 10),
+			_Utils_Tuple2('B', 11),
+			_Utils_Tuple2('C', 12),
+			_Utils_Tuple2('D', 13),
+			_Utils_Tuple2('E', 14),
+			_Utils_Tuple2('F', 15),
+			_Utils_Tuple2('G', 16),
+			_Utils_Tuple2('H', 17),
+			_Utils_Tuple2('I', 18),
+			_Utils_Tuple2('J', 19),
+			_Utils_Tuple2('K', 20),
+			_Utils_Tuple2('L', 21),
+			_Utils_Tuple2('M', 22),
+			_Utils_Tuple2('N', 23),
+			_Utils_Tuple2('O', 24),
+			_Utils_Tuple2('P', 25),
+			_Utils_Tuple2('Q', 26),
+			_Utils_Tuple2('R', 27),
+			_Utils_Tuple2('S', 28),
+			_Utils_Tuple2('T', 29),
+			_Utils_Tuple2('U', 30),
+			_Utils_Tuple2('V', 31),
+			_Utils_Tuple2('W', 32),
+			_Utils_Tuple2('X', 33),
+			_Utils_Tuple2('Y', 34),
+			_Utils_Tuple2('Z', 35),
+			_Utils_Tuple2(' ', 36),
+			_Utils_Tuple2('$', 37),
+			_Utils_Tuple2('%', 38),
+			_Utils_Tuple2('*', 39),
+			_Utils_Tuple2('+', 40),
+			_Utils_Tuple2('-', 41),
+			_Utils_Tuple2('.', 42),
+			_Utils_Tuple2('/', 43),
+			_Utils_Tuple2(':', 44)
 		]));
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric$toAlphanumericCode = function (_char) {
 	return A2(
@@ -16059,7 +15830,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$Byte$encode = function (str) {
 			},
 			$elm$core$String$toList(str)));
 };
-var $pablohirafuji$elm_qrcode$QRCode$Error$InvalidNumericChar = {$: 'InvalidNumericChar'};
+var $pablohirafuji$elm_qrcode$QRCode$Error$InvalidNumericChar = {$: 1};
 var $elm$core$String$fromList = _String_fromList;
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Numeric$numericLength = function (str) {
 	var _v0 = $elm$core$String$length(str);
@@ -16099,7 +15870,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$Numeric$encode = function (str) {
 				3,
 				$elm$core$String$toList(str))));
 };
-var $pablohirafuji$elm_qrcode$QRCode$Error$InvalidUTF8Char = {$: 'InvalidUTF8Char'};
+var $pablohirafuji$elm_qrcode$QRCode$Error$InvalidUTF8Char = {$: 3};
 var $elm$bytes$Bytes$Encode$getStringWidth = _Bytes_getStringWidth;
 var $pablohirafuji$elm_qrcode$QRCode$Encode$UTF8$step = function (_v0) {
 	var n = _v0.a;
@@ -16121,7 +15892,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$UTF8$step = function (_v0) {
 };
 var $elm$bytes$Bytes$Encode$Utf8 = F2(
 	function (a, b) {
-		return {$: 'Utf8', a: a, b: b};
+		return {$: 9, a: a, b: b};
 	});
 var $elm$bytes$Bytes$Encode$string = function (str) {
 	return A2(
@@ -16145,12 +15916,12 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$UTF8$encode = function (str) {
 				$elm$bytes$Bytes$Encode$string(str))));
 };
 var $pablohirafuji$elm_qrcode$QRCode$Encode$encoder = function (mode) {
-	switch (mode.$) {
-		case 'Numeric':
+	switch (mode) {
+		case 0:
 			return $pablohirafuji$elm_qrcode$QRCode$Encode$Numeric$encode;
-		case 'Alphanumeric':
+		case 1:
 			return $pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric$encode;
-		case 'Byte':
+		case 2:
 			return $pablohirafuji$elm_qrcode$QRCode$Encode$Byte$encode;
 		default:
 			return $pablohirafuji$elm_qrcode$QRCode$Encode$UTF8$encode;
@@ -16168,9 +15939,9 @@ var $pablohirafuji$elm_qrcode$QRCode$ErrorCorrection$getExp = function (index) {
 			A2($elm$core$Basics$modBy, 255, index),
 			$pablohirafuji$elm_qrcode$QRCode$ErrorCorrection$expTable));
 };
-var $pablohirafuji$elm_qrcode$QRCode$Error$PolynomialMultiplyException = {$: 'PolynomialMultiplyException'};
+var $pablohirafuji$elm_qrcode$QRCode$Error$PolynomialMultiplyException = {$: 5};
 var $pablohirafuji$elm_qrcode$QRCode$Error$LogTableException = function (a) {
-	return {$: 'LogTableException', a: a};
+	return {$: 4, a: a};
 };
 var $pablohirafuji$elm_qrcode$QRCode$ErrorCorrection$logTable = $elm$core$Array$fromList(
 	_List_fromArray(
@@ -16344,7 +16115,7 @@ var $pablohirafuji$elm_qrcode$QRCode$ErrorCorrection$get___ = F2(
 						A2($elm$core$Array$get, modIndex, modPoly)) : 0;
 				}));
 	});
-var $pablohirafuji$elm_qrcode$QRCode$Error$PolynomialModException = {$: 'PolynomialModException'};
+var $pablohirafuji$elm_qrcode$QRCode$Error$PolynomialModException = {$: 6};
 var $pablohirafuji$elm_qrcode$QRCode$ErrorCorrection$mod = F2(
 	function (poly1, poly2) {
 		if (($elm$core$Array$length(poly1) - $elm$core$Array$length(poly2)) < 0) {
@@ -16484,20 +16255,20 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$getErrorCorrection = function (_v0) 
 		function (c) {
 			return _Utils_Tuple3(model, dataBlocks, c);
 		},
-		A2($pablohirafuji$elm_qrcode$QRCode$ErrorCorrection$get, model.groupInfo.ecPerBlock, dataBlocks));
+		A2($pablohirafuji$elm_qrcode$QRCode$ErrorCorrection$get, model.cG.cz, dataBlocks));
 };
-var $pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric = {$: 'Alphanumeric'};
-var $pablohirafuji$elm_qrcode$QRCode$Encode$Byte = {$: 'Byte'};
-var $pablohirafuji$elm_qrcode$QRCode$Encode$Numeric = {$: 'Numeric'};
+var $pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric = 1;
+var $pablohirafuji$elm_qrcode$QRCode$Encode$Byte = 2;
+var $pablohirafuji$elm_qrcode$QRCode$Encode$Numeric = 0;
 var $elm$regex$Regex$Match = F4(
 	function (match, index, number, submatches) {
-		return {index: index, match: match, number: number, submatches: submatches};
+		return {cN: index, cQ: match, cV: number, c7: submatches};
 	});
 var $elm$regex$Regex$contains = _Regex_contains;
 var $elm$regex$Regex$fromStringWith = _Regex_fromStringWith;
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric$onlyAlphanumeric = A2(
 	$elm$regex$Regex$fromStringWith,
-	{caseInsensitive: false, multiline: false},
+	{co: false, cU: false},
 	'^[0-9A-Z $%*+\\-.\\/:]+$');
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric$isValid = function (input) {
 	return A2(
@@ -16512,7 +16283,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric$isValid = function (inp
 };
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Byte$only8Bit = A2(
 	$elm$regex$Regex$fromStringWith,
-	{caseInsensitive: false, multiline: false},
+	{co: false, cU: false},
 	'^[\\u0000-\\u00ff]+$');
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Byte$isValid = function (input) {
 	return A2(
@@ -16527,7 +16298,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$Byte$isValid = function (input) {
 };
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Numeric$onlyNumber = A2(
 	$elm$regex$Regex$fromStringWith,
-	{caseInsensitive: false, multiline: false},
+	{co: false, cU: false},
 	'^[0-9]+$');
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Numeric$isValid = function (input) {
 	return A2(
@@ -16541,13 +16312,13 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$Numeric$isValid = function (input) {
 			$pablohirafuji$elm_qrcode$QRCode$Encode$Numeric$onlyNumber));
 };
 var $pablohirafuji$elm_qrcode$QRCode$Encode$selectMode = function (input) {
-	return $pablohirafuji$elm_qrcode$QRCode$Encode$Numeric$isValid(input) ? $pablohirafuji$elm_qrcode$QRCode$Encode$Numeric : ($pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric$isValid(input) ? $pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric : ($pablohirafuji$elm_qrcode$QRCode$Encode$Byte$isValid(input) ? $pablohirafuji$elm_qrcode$QRCode$Encode$Byte : $pablohirafuji$elm_qrcode$QRCode$Encode$UTF8));
+	return $pablohirafuji$elm_qrcode$QRCode$Encode$Numeric$isValid(input) ? 0 : ($pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric$isValid(input) ? 1 : ($pablohirafuji$elm_qrcode$QRCode$Encode$Byte$isValid(input) ? 2 : 3));
 };
-var $pablohirafuji$elm_qrcode$QRCode$Error$InputLengthOverflow = {$: 'InputLengthOverflow'};
+var $pablohirafuji$elm_qrcode$QRCode$Error$InputLengthOverflow = {$: 7};
 var $pablohirafuji$elm_qrcode$QRCode$Encode$filterCapacity = F3(
 	function (mode, dataLength, _v0) {
-		var version = _v0.version;
-		var capacity = _v0.capacity;
+		var version = _v0.bh;
+		var capacity = _v0.aw;
 		return _Utils_cmp(
 			A2($pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicatorLength, mode, version) + dataLength,
 			capacity) < 1;
@@ -16559,7 +16330,7 @@ var $pablohirafuji$elm_qrcode$QRCode$GroupInfo$blockByteCapacity = function (_v0
 };
 var $pablohirafuji$elm_qrcode$QRCode$GroupInfo$byteCapacity = F2(
 	function (group1, maybeGroup2) {
-		if (maybeGroup2.$ === 'Just') {
+		if (!maybeGroup2.$) {
 			var block2 = maybeGroup2.a;
 			return $pablohirafuji$elm_qrcode$QRCode$GroupInfo$blockByteCapacity(group1) + $pablohirafuji$elm_qrcode$QRCode$GroupInfo$blockByteCapacity(block2);
 		} else {
@@ -16569,11 +16340,11 @@ var $pablohirafuji$elm_qrcode$QRCode$GroupInfo$byteCapacity = F2(
 var $pablohirafuji$elm_qrcode$QRCode$GroupInfo$newGroupInfo = F4(
 	function (version, ecPerBlock, group1, maybeGroup2) {
 		return {
-			capacity: A2($pablohirafuji$elm_qrcode$QRCode$GroupInfo$byteCapacity, group1, maybeGroup2) * 8,
-			ecPerBlock: ecPerBlock,
-			group1: group1,
-			maybeGroup2: maybeGroup2,
-			version: version
+			aw: A2($pablohirafuji$elm_qrcode$QRCode$GroupInfo$byteCapacity, group1, maybeGroup2) * 8,
+			cz: ecPerBlock,
+			bC: group1,
+			cR: maybeGroup2,
+			bh: version
 		};
 	});
 var $pablohirafuji$elm_qrcode$QRCode$GroupInfo$dataH = _List_fromArray(
@@ -17677,12 +17448,12 @@ var $pablohirafuji$elm_qrcode$QRCode$GroupInfo$dataQ = _List_fromArray(
 			_Utils_Tuple2(34, 25)))
 	]);
 var $pablohirafuji$elm_qrcode$QRCode$GroupInfo$getGroupData = function (ecLevel) {
-	switch (ecLevel.$) {
-		case 'L':
+	switch (ecLevel) {
+		case 0:
 			return $pablohirafuji$elm_qrcode$QRCode$GroupInfo$dataL;
-		case 'M':
+		case 1:
 			return $pablohirafuji$elm_qrcode$QRCode$GroupInfo$dataM;
-		case 'Q':
+		case 2:
 			return $pablohirafuji$elm_qrcode$QRCode$GroupInfo$dataQ;
 		default:
 			return $pablohirafuji$elm_qrcode$QRCode$GroupInfo$dataH;
@@ -17697,7 +17468,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$getVersion = F3(
 				A2(
 					$elm$core$List$sortBy,
 					function ($) {
-						return $.capacity;
+						return $.aw;
 					},
 					A2(
 						$elm$core$List$filter,
@@ -17707,11 +17478,11 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$getVersion = F3(
 var $pablohirafuji$elm_qrcode$QRCode$Encode$versionToModel = F5(
 	function (inputStr, ecLevel, mode, partialBitsCount, groupInfo) {
 		return {
-			bitsCount: partialBitsCount + A2($pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicatorLength, mode, groupInfo.version),
-			ecLevel: ecLevel,
-			groupInfo: groupInfo,
-			inputStr: inputStr,
-			mode: mode
+			aQ: partialBitsCount + A2($pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicatorLength, mode, groupInfo.bh),
+			bs: ecLevel,
+			cG: groupInfo,
+			a0: inputStr,
+			aH: mode
 		};
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Encode$selectVersion = F4(
@@ -17766,10 +17537,10 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$breakList = F3(
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Encode$toBlocks = function (_v0) {
 	var model = _v0.a;
-	var groupInfo = model.groupInfo;
+	var groupInfo = model.cG;
 	var byteList = _v0.b;
-	var _v1 = groupInfo.maybeGroup2;
-	if (_v1.$ === 'Just') {
+	var _v1 = groupInfo.cR;
+	if (!_v1.$) {
 		var group2 = _v1.a;
 		return A2(
 			$elm$core$Result$map,
@@ -17785,7 +17556,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$toBlocks = function (_v0) {
 					A3(
 						$pablohirafuji$elm_qrcode$QRCode$Encode$breakList,
 						false,
-						groupInfo.group1,
+						groupInfo.bC,
 						_Utils_Tuple2(byteList, _List_Nil)))));
 	} else {
 		return A2(
@@ -17799,7 +17570,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$toBlocks = function (_v0) {
 				A3(
 					$pablohirafuji$elm_qrcode$QRCode$Encode$breakList,
 					true,
-					groupInfo.group1,
+					groupInfo.bC,
 					_Utils_Tuple2(byteList, _List_Nil))));
 	}
 };
@@ -17836,8 +17607,7 @@ var $pablohirafuji$elm_qrcode$QRCode$fromStringWith = F2(
 					return A2(
 						$elm$core$Result$map,
 						function (matrix) {
-							return $pablohirafuji$elm_qrcode$QRCode$QRCode(
-								{matrix: matrix, version: encodeModel.groupInfo.version});
+							return {al: matrix, bh: encodeModel.cG.bh};
 						},
 						$pablohirafuji$elm_qrcode$QRCode$Matrix$apply(
 							_Utils_Tuple2(encodeModel, encodedData)));
@@ -17847,9 +17617,9 @@ var $pablohirafuji$elm_qrcode$QRCode$fromStringWith = F2(
 					input,
 					$pablohirafuji$elm_qrcode$QRCode$convertEC(ecLevel))));
 	});
-var $author$project$Main$DownloadDemoData = {$: 'DownloadDemoData'};
-var $author$project$Main$LoadDemoData = {$: 'LoadDemoData'};
-var $author$project$Main$OpenFileBrowser = {$: 'OpenFileBrowser'};
+var $author$project$Main$DownloadDemoData = {$: 12};
+var $author$project$Main$LoadDemoData = {$: 11};
+var $author$project$Main$OpenFileBrowser = {$: 8};
 var $elm$html$Html$b = _VirtualDom_node('b');
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$html$Html$h3 = _VirtualDom_node('h3');
@@ -17858,7 +17628,7 @@ var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
+	return {$: 0, a: a};
 };
 var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
 var $elm$html$Html$Events$on = F2(
@@ -18064,7 +17834,7 @@ var $author$project$Main$getStartedPage = function (decodeError) {
 				])));
 };
 var $author$project$Main$resultCollect = function (res) {
-	if (res.$ === 'Ok') {
+	if (!res.$) {
 		var ok = res.a;
 		return ok;
 	} else {
@@ -18074,7 +17844,7 @@ var $author$project$Main$resultCollect = function (res) {
 };
 var $elm$url$Url$Builder$QueryParameter = F2(
 	function (a, b) {
-		return {$: 'QueryParameter', a: a, b: b};
+		return {$: 0, a: a, b: b};
 	});
 var $elm$url$Url$percentEncode = _Url_percentEncode;
 var $elm$url$Url$Builder$string = F2(
@@ -18105,7 +17875,7 @@ var $author$project$Main$stateUrl = F2(
 			_Utils_update(
 				url,
 				{
-					query: $elm$core$Maybe$Just(
+					bZ: $elm$core$Maybe$Just(
 						A2(
 							$elm$core$String$dropLeft,
 							1,
@@ -18120,7 +17890,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Render$Svg$appendLastRect = function (_v0) 
 	var rowLines = _v0.b;
 	return A2(
 		$elm$core$List$cons,
-		'h' + $elm$core$String$fromInt(lastRect.width * $pablohirafuji$elm_qrcode$QRCode$Render$Svg$moduleSize),
+		'h' + $elm$core$String$fromInt(lastRect.cf * $pablohirafuji$elm_qrcode$QRCode$Render$Svg$moduleSize),
 		rowLines);
 };
 var $elm$core$String$concat = function (strings) {
@@ -18133,26 +17903,26 @@ var $pablohirafuji$elm_qrcode$QRCode$Render$Svg$toRowLines = F2(
 	function (isDark, _v0) {
 		var lastRect = _v0.a;
 		var rowLines = _v0.b;
-		return isDark ? ((!lastRect.space) ? _Utils_Tuple2(
+		return isDark ? ((!lastRect.Y) ? _Utils_Tuple2(
 			_Utils_update(
 				lastRect,
-				{width: lastRect.width + 1}),
+				{cf: lastRect.cf + 1}),
 			rowLines) : _Utils_Tuple2(
-			{space: 0, width: 1},
+			{Y: 0, cf: 1},
 			A2(
 				$elm$core$List$cons,
 				$elm$core$String$concat(
 					_List_fromArray(
 						[
-							(lastRect.width > 0) ? ('h' + $elm$core$String$fromInt(lastRect.width * $pablohirafuji$elm_qrcode$QRCode$Render$Svg$moduleSize)) : '',
+							(lastRect.cf > 0) ? ('h' + $elm$core$String$fromInt(lastRect.cf * $pablohirafuji$elm_qrcode$QRCode$Render$Svg$moduleSize)) : '',
 							'm',
-							$elm$core$String$fromInt(lastRect.space * $pablohirafuji$elm_qrcode$QRCode$Render$Svg$moduleSize),
+							$elm$core$String$fromInt(lastRect.Y * $pablohirafuji$elm_qrcode$QRCode$Render$Svg$moduleSize),
 							' 0'
 						])),
 				rowLines))) : _Utils_Tuple2(
 			_Utils_update(
 				lastRect,
-				{space: lastRect.space + 1}),
+				{Y: lastRect.Y + 1}),
 			rowLines);
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Render$Svg$viewRow = F3(
@@ -18211,7 +17981,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Render$Svg$viewBase = F3(
 											$elm$core$List$foldl,
 											$pablohirafuji$elm_qrcode$QRCode$Render$Svg$toRowLines,
 											_Utils_Tuple2(
-												{space: 0, width: 0},
+												{Y: 0, cf: 0},
 												_List_Nil)),
 										A2($elm$core$Basics$composeR, $pablohirafuji$elm_qrcode$QRCode$Render$Svg$appendLastRect, $elm$core$List$reverse)),
 									matrix)))))));
@@ -18219,39 +17989,39 @@ var $pablohirafuji$elm_qrcode$QRCode$Render$Svg$viewBase = F3(
 var $pablohirafuji$elm_qrcode$QRCode$Render$Svg$view = $pablohirafuji$elm_qrcode$QRCode$Render$Svg$viewBase(4);
 var $pablohirafuji$elm_qrcode$QRCode$toSvg = F2(
 	function (extraAttrs, _v0) {
-		var matrix = _v0.a.matrix;
+		var matrix = _v0.al;
 		return A2($pablohirafuji$elm_qrcode$QRCode$Render$Svg$view, extraAttrs, matrix);
 	});
 var $abadi199$elm_input_extra$Dropdown$Item = F3(
 	function (value, text, enabled) {
-		return {enabled: enabled, text: text, value: value};
+		return {bt: enabled, cb: text, bg: value};
 	});
 var $abadi199$elm_input_extra$Dropdown$Options = F3(
 	function (items, emptyItem, onChange) {
-		return {emptyItem: emptyItem, items: items, onChange: onChange};
+		return {aC: emptyItem, aG: items, a5: onChange};
 	});
 var $author$project$Main$ShowOptions = function (a) {
-	return {$: 'ShowOptions', a: a};
+	return {$: 3, a: a};
 };
 var $author$project$Main$ShowPage = function (a) {
-	return {$: 'ShowPage', a: a};
+	return {$: 1, a: a};
 };
-var $author$project$Main$ShowQR = {$: 'ShowQR'};
+var $author$project$Main$ShowQR = {$: 13};
 var $author$project$Main$TypeEnabled = F2(
 	function (a, b) {
-		return {$: 'TypeEnabled', a: a, b: b};
+		return {$: 2, a: a, b: b};
 	});
 var $author$project$Main$UpdateDistanceDetail = function (a) {
-	return {$: 'UpdateDistanceDetail', a: a};
+	return {$: 7, a: a};
 };
 var $author$project$Main$UpdateItemSpacing = function (a) {
-	return {$: 'UpdateItemSpacing', a: a};
+	return {$: 6, a: a};
 };
 var $author$project$Main$UpdateTotalDistanceDisplay = function (a) {
-	return {$: 'UpdateTotalDistanceDisplay', a: a};
+	return {$: 4, a: a};
 };
 var $author$project$Main$UpdateWaypointSelection = function (a) {
-	return {$: 'UpdateWaypointSelection', a: a};
+	return {$: 5, a: a};
 };
 var $elm$html$Html$Attributes$boolProperty = F2(
 	function (key, bool) {
@@ -18313,7 +18083,7 @@ var $abadi199$elm_input_extra$Dropdown$onChange = F2(
 					A2(
 						$elm$core$Basics$composeR,
 						function ($) {
-							return $.value;
+							return $.bg;
 						},
 						$elm$core$Basics$eq(string)),
 					emptyItem)) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(string);
@@ -18333,12 +18103,12 @@ var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('
 var $abadi199$elm_input_extra$Dropdown$dropdown = F3(
 	function (options, attributes, currentValue) {
 		var itemsWithEmptyItems = function () {
-			var _v1 = options.emptyItem;
-			if (_v1.$ === 'Just') {
+			var _v1 = options.aC;
+			if (!_v1.$) {
 				var emptyItem = _v1.a;
-				return A2($elm$core$List$cons, emptyItem, options.items);
+				return A2($elm$core$List$cons, emptyItem, options.aG);
 			} else {
-				return options.items;
+				return options.aG;
 			}
 		}();
 		var isSelected = function (value) {
@@ -18351,9 +18121,9 @@ var $abadi199$elm_input_extra$Dropdown$dropdown = F3(
 					currentValue));
 		};
 		var toOption = function (_v0) {
-			var value = _v0.value;
-			var text = _v0.text;
-			var enabled = _v0.enabled;
+			var value = _v0.bg;
+			var text = _v0.cb;
+			var enabled = _v0.bt;
 			return A2(
 				$elm$html$Html$option,
 				_List_fromArray(
@@ -18374,7 +18144,7 @@ var $abadi199$elm_input_extra$Dropdown$dropdown = F3(
 				attributes,
 				_List_fromArray(
 					[
-						A2($abadi199$elm_input_extra$Dropdown$onChange, options.emptyItem, options.onChange)
+						A2($abadi199$elm_input_extra$Dropdown$onChange, options.aC, options.a5)
 					])),
 			A2($elm$core$List$map, toOption, itemsWithEmptyItems));
 	});
@@ -18386,7 +18156,7 @@ var $elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
 };
 var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 'MayStopPropagation', a: a};
+	return {$: 1, a: a};
 };
 var $elm$html$Html$Events$stopPropagationOn = F2(
 	function (event, decoder) {
@@ -18519,8 +18289,8 @@ var $author$project$Main$viewOptions = F4(
 														$author$project$Main$UpdateWaypointSelection))),
 											_List_Nil,
 											$elm$core$Maybe$Just(
-												waypointOptions.locationFilterEnabled ? 'filtered' : 'all')),
-										waypointOptions.locationFilterEnabled ? _List_fromArray(
+												waypointOptions.n ? 'filtered' : 'all')),
+										waypointOptions.n ? _List_fromArray(
 											[
 												A2(
 												$elm$html$Html$fieldset,
@@ -18536,7 +18306,7 @@ var $author$project$Main$viewOptions = F4(
 															A2($author$project$Main$TypeEnabled, typ, !included),
 															(typ !== '') ? typ : 'unknown');
 													},
-													$elm$core$Dict$toList(waypointOptions.filteredLocationTypes)))
+													$elm$core$Dict$toList(waypointOptions.m)))
 											]) : _List_Nil)),
 									A2($elm$html$Html$hr, _List_Nil, _List_Nil),
 									A2(
@@ -18552,18 +18322,18 @@ var $author$project$Main$viewOptions = F4(
 													[
 														A3(
 														$abadi199$elm_input_extra$Dropdown$Item,
-														$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromZero),
-														$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromZero),
+														$author$project$Main$formatTotalDistanceDisplay(0),
+														$author$project$Main$formatTotalDistanceDisplay(0),
 														true),
 														A3(
 														$abadi199$elm_input_extra$Dropdown$Item,
-														$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromLast),
-														$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromLast),
+														$author$project$Main$formatTotalDistanceDisplay(1),
+														$author$project$Main$formatTotalDistanceDisplay(1),
 														true),
 														A3(
 														$abadi199$elm_input_extra$Dropdown$Item,
-														$author$project$Main$formatTotalDistanceDisplay($author$project$Main$None),
-														$author$project$Main$formatTotalDistanceDisplay($author$project$Main$None),
+														$author$project$Main$formatTotalDistanceDisplay(2),
+														$author$project$Main$formatTotalDistanceDisplay(2),
 														true)
 													]),
 												$elm$core$Maybe$Nothing,
@@ -18576,7 +18346,7 @@ var $author$project$Main$viewOptions = F4(
 														$author$project$Main$UpdateTotalDistanceDisplay))),
 											_List_Nil,
 											$elm$core$Maybe$Just(
-												$author$project$Main$formatTotalDistanceDisplay(cuesViewOptions.totalDistanceDisplay)))
+												$author$project$Main$formatTotalDistanceDisplay(cuesViewOptions.v)))
 										])),
 									A2($elm$html$Html$hr, _List_Nil, _List_Nil),
 									A2(
@@ -18592,7 +18362,7 @@ var $author$project$Main$viewOptions = F4(
 													$elm$html$Html$Attributes$min('1'),
 													$elm$html$Html$Attributes$max('50'),
 													$elm$html$Html$Attributes$value(
-													$elm$core$String$fromInt(cuesViewOptions.itemSpacing)),
+													$elm$core$String$fromInt(cuesViewOptions.c)),
 													$elm$html$Html$Events$onInput(
 													A2(
 														$elm$core$Basics$composeR,
@@ -18618,7 +18388,7 @@ var $author$project$Main$viewOptions = F4(
 													$elm$html$Html$Attributes$min('0'),
 													$elm$html$Html$Attributes$max('3'),
 													$elm$html$Html$Attributes$value(
-													$elm$core$String$fromInt(cuesViewOptions.distanceDetail)),
+													$elm$core$String$fromInt(cuesViewOptions.k)),
 													$elm$html$Html$Events$onInput(
 													A2(
 														$elm$core$Basics$composeR,
@@ -18688,11 +18458,11 @@ var $author$project$Main$viewOptions = F4(
 							decodeError))
 					])));
 	});
-var $author$project$Main$GetStartedPage = {$: 'GetStartedPage'};
+var $author$project$Main$GetStartedPage = {$: 1};
 var $elm$html$Html$h4 = _VirtualDom_node('h4');
 var $elm$core$Dict$map = F2(
 	function (func, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
+		if (dict.$ === -2) {
 			return $elm$core$Dict$RBEmpty_elm_builtin;
 		} else {
 			var color = dict.a;
@@ -18862,10 +18632,10 @@ var $author$project$Main$welcomePage = function (toGo) {
 									toGo ? _Utils_Tuple3(
 									'Distance to go',
 									$elm$core$Basics$identity,
-									A3($author$project$Main$CuesViewOptions, $author$project$Main$FromLast, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail)) : _Utils_Tuple3(
+									A3($author$project$Main$CuesViewOptions, 1, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail)) : _Utils_Tuple3(
 									'Distance from zero',
 									$elm$core$Basics$identity,
-									A3($author$project$Main$CuesViewOptions, $author$project$Main$FromZero, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail)),
+									A3($author$project$Main$CuesViewOptions, 0, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail)),
 									_Utils_Tuple3(
 									'Custom location types',
 									$elm$core$List$map(
@@ -18873,12 +18643,12 @@ var $author$project$Main$welcomePage = function (toGo) {
 											return _Utils_update(
 												w,
 												{
-													typ: A2(
+													R: A2(
 														$elm$core$Maybe$withDefault,
 														'',
 														A2(
 															$elm$core$Dict$get,
-															w.typ,
+															w.R,
 															$elm$core$Dict$fromList(
 																_List_fromArray(
 																	[
@@ -18887,11 +18657,11 @@ var $author$project$Main$welcomePage = function (toGo) {
 																	]))))
 												});
 										}),
-									A3($author$project$Main$CuesViewOptions, $author$project$Main$None, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail)),
+									A3($author$project$Main$CuesViewOptions, 2, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail)),
 									_Utils_Tuple3(
 									'Custom spacing',
 									$elm$core$Basics$identity,
-									A3($author$project$Main$CuesViewOptions, $author$project$Main$None, $author$project$Main$defaultSpacing - 10, $author$project$Main$defaultDistanceDetail)),
+									A3($author$project$Main$CuesViewOptions, 2, $author$project$Main$defaultSpacing - 10, $author$project$Main$defaultDistanceDetail)),
 									_Utils_Tuple3(
 									'Filter location types',
 									$author$project$Main$cues(
@@ -18905,7 +18675,7 @@ var $author$project$Main$welcomePage = function (toGo) {
 														return _Utils_eq(k, climbType) || (k === '');
 													}),
 												$author$project$Main$initialFilteredLocations(exampleWaypoints)))),
-									A3($author$project$Main$CuesViewOptions, $author$project$Main$None, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail))
+									A3($author$project$Main$CuesViewOptions, 2, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail))
 								])))
 					])
 				])));
@@ -18917,11 +18687,11 @@ var $author$project$Main$view = function (model) {
 		_List_fromArray(
 			[
 				function () {
-				var _v0 = model.page;
+				var _v0 = model.F;
 				switch (_v0.$) {
-					case 'CuesheetPage':
+					case 2:
 						var cuesheetModel = _v0.a;
-						return model.showQR ? A2(
+						return model.aL ? A2(
 							$elm$html$Html$div,
 							_List_fromArray(
 								[
@@ -18968,38 +18738,38 @@ var $author$project$Main$view = function (model) {
 													$elm$core$Result$mapError,
 													function (err) {
 														switch (err.$) {
-															case 'AlignmentPatternNotFound':
+															case 0:
 																return _List_fromArray(
 																	[
 																		$author$project$Main$viewErrorPanel('😞 there was an error encoding your share code, please contact me and give me this state error: AlignmentPatternNotFound')
 																	]);
-															case 'InvalidNumericChar':
+															case 1:
 																return _List_fromArray(
 																	[
 																		$author$project$Main$viewErrorPanel('😞 there was an error encoding your share code, please contact me and give me this state error: InvalidNumericChar')
 																	]);
-															case 'InvalidAlphanumericChar':
+															case 2:
 																return _List_fromArray(
 																	[
 																		$author$project$Main$viewErrorPanel('😞 there was an error encoding your share code, please contact me and give me this state error: InvalidAlphanumericChar')
 																	]);
-															case 'InvalidUTF8Char':
+															case 3:
 																return _List_fromArray(
 																	[
 																		$author$project$Main$viewErrorPanel('😞 there was an error encoding your share code, please contact me and give me this state error: InvalidUTF8Char')
 																	]);
-															case 'LogTableException':
+															case 4:
 																var table = err.a;
 																return _List_fromArray(
 																	[
 																		$author$project$Main$viewErrorPanel('😞 there was an error encoding your share code, please contact me and give me this state error: LogTableException')
 																	]);
-															case 'PolynomialMultiplyException':
+															case 5:
 																return _List_fromArray(
 																	[
 																		$author$project$Main$viewErrorPanel('😞 there was an error encoding your share code, please contact me and give me this state error: PolynomialMultiplyException')
 																	]);
-															case 'PolynomialModException':
+															case 6:
 																return _List_fromArray(
 																	[
 																		$author$project$Main$viewErrorPanel('😞 there was an error encoding your share code, please contact me and give me this state error: PolynomialModException')
@@ -19061,11 +18831,11 @@ var $author$project$Main$view = function (model) {
 																		]))
 																]);
 														},
-														A2($pablohirafuji$elm_qrcode$QRCode$fromStringWith, $pablohirafuji$elm_qrcode$QRCode$Medium, url))));
+														A2($pablohirafuji$elm_qrcode$QRCode$fromStringWith, 1, url))));
 										},
 										A2(
 											$elm$core$Maybe$map,
-											$author$project$Main$stateUrl(model.url),
+											$author$project$Main$stateUrl(model.cd),
 											$danfishgold$base64_bytes$Base64$fromBytes(
 												$folkertdev$elm_flate$Flate$deflateGZip(
 													$elm$bytes$Bytes$Encode$encode(
@@ -19081,7 +18851,7 @@ var $author$project$Main$view = function (model) {
 								]),
 							_List_fromArray(
 								[
-									A4($author$project$Main$viewOptions, model.showOptions, cuesheetModel.waypointOptions, model.cuesViewOptions, model.csvDecodeError),
+									A4($author$project$Main$viewOptions, model.bc, cuesheetModel.H, model.q, model.aB),
 									A2(
 									$elm$html$Html$div,
 									_List_fromArray(
@@ -19096,35 +18866,35 @@ var $author$project$Main$view = function (model) {
 										[
 											A2(
 											$author$project$Main$cuesheet,
-											A2($author$project$Main$cues, cuesheetModel.waypointOptions, cuesheetModel.waypoints),
-											model.cuesViewOptions)
+											A2($author$project$Main$cues, cuesheetModel.H, cuesheetModel.I),
+											model.q)
 										]))
 								]));
-					case 'WelcomePage':
+					case 0:
 						var val = _v0.a;
 						return $author$project$Main$welcomePage(val);
 					default:
-						return $author$project$Main$getStartedPage(model.csvDecodeError);
+						return $author$project$Main$getStartedPage(model.aB);
 				}
 			}()
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$application(
 	{
-		init: $author$project$Main$init,
-		onUrlChange: function (_v0) {
+		cO: $author$project$Main$init,
+		cW: function (_v0) {
 			return $author$project$Main$Never;
 		},
-		onUrlRequest: function (_v1) {
+		cX: function (_v1) {
 			return $author$project$Main$Never;
 		},
-		subscriptions: $elm$core$Basics$always(
+		c8: $elm$core$Basics$always(
 			A2(
 				$elm$time$Time$every,
 				1500,
 				$elm$core$Basics$always($author$project$Main$Tick))),
-		update: $author$project$Main$update,
-		view: $author$project$Main$view
+		dc: $author$project$Main$update,
+		dd: $author$project$Main$view
 	});
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	$elm$json$Json$Decode$oneOf(
