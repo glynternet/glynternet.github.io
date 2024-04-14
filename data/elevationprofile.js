@@ -5638,19 +5638,13 @@ var $author$project$Main$init = F3(
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $elm$json$Json$Decode$null = _Json_decodeNull;
-var $author$project$Main$FileStringed = function (a) {
-	return {$: 'FileStringed', a: a};
-};
 var $author$project$Main$FileUploaded = function (a) {
 	return {$: 'FileUploaded', a: a};
 };
+var $author$project$Main$Loading = {$: 'Loading'};
 var $author$project$Main$ProfileDataResponse = function (a) {
 	return {$: 'ProfileDataResponse', a: a};
 };
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
-	});
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
@@ -6271,7 +6265,62 @@ var $elm$file$File$Select$file = F2(
 			toMsg,
 			_File_uploadOne(mimes));
 	});
-var $elm$http$Http$emptyBody = _Http_emptyBody;
+var $elm$http$Http$fileBody = _Http_pair('');
+var $author$project$Main$httpErrorString = function (err) {
+	switch (err.$) {
+		case 'BadUrl':
+			var msg = err.a;
+			return 'bad url: ' + msg;
+		case 'Timeout':
+			return 'timeout';
+		case 'NetworkError':
+			return 'network error';
+		case 'BadStatus':
+			var code = err.a;
+			return 'bad status: ' + $elm$core$String$fromInt(code);
+		default:
+			var msg = err.a;
+			return 'bad body: ' + msg;
+	}
+};
+var $author$project$Main$Error = function (a) {
+	return {$: 'Error', a: a};
+};
+var $elm$core$Result$map = F2(
+	function (func, ra) {
+		if (ra.$ === 'Ok') {
+			var a = ra.a;
+			return $elm$core$Result$Ok(
+				func(a));
+		} else {
+			var e = ra.a;
+			return $elm$core$Result$Err(e);
+		}
+	});
+var $author$project$Main$resultCollect = function (res) {
+	if (res.$ === 'Ok') {
+		var a = res.a;
+		return a;
+	} else {
+		var a = res.a;
+		return a;
+	}
+};
+var $author$project$Main$loadableResourceFromResult = A2(
+	$elm$core$Basics$composeR,
+	$elm$core$Result$map($author$project$Main$Loaded),
+	A2(
+		$elm$core$Basics$composeR,
+		$elm$core$Result$mapError($author$project$Main$Error),
+		$author$project$Main$resultCollect));
+var $elm$core$Tuple$mapSecond = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			x,
+			func(y));
+	});
 var $elm$http$Http$Request = function (a) {
 	return {$: 'Request', a: a};
 };
@@ -6440,49 +6489,10 @@ var $elm$http$Http$request = function (r) {
 		$elm$http$Http$Request(
 			{allowCookiesFromOtherDomains: false, body: r.body, expect: r.expect, headers: r.headers, method: r.method, timeout: r.timeout, tracker: r.tracker, url: r.url}));
 };
-var $elm$http$Http$get = function (r) {
+var $elm$http$Http$post = function (r) {
 	return $elm$http$Http$request(
-		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
+		{body: r.body, expect: r.expect, headers: _List_Nil, method: 'POST', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
-var $author$project$Main$Error = function (a) {
-	return {$: 'Error', a: a};
-};
-var $elm$core$Result$map = F2(
-	function (func, ra) {
-		if (ra.$ === 'Ok') {
-			var a = ra.a;
-			return $elm$core$Result$Ok(
-				func(a));
-		} else {
-			var e = ra.a;
-			return $elm$core$Result$Err(e);
-		}
-	});
-var $author$project$Main$resultCollect = function (res) {
-	if (res.$ === 'Ok') {
-		var a = res.a;
-		return a;
-	} else {
-		var a = res.a;
-		return a;
-	}
-};
-var $author$project$Main$loadableResourceFromResult = A2(
-	$elm$core$Basics$composeR,
-	$elm$core$Result$map($author$project$Main$Loaded),
-	A2(
-		$elm$core$Basics$composeR,
-		$elm$core$Result$mapError($author$project$Main$Error),
-		$author$project$Main$resultCollect));
-var $elm$core$Tuple$mapSecond = F2(
-	function (func, _v0) {
-		var x = _v0.a;
-		var y = _v0.b;
-		return _Utils_Tuple2(
-			x,
-			func(y));
-	});
-var $elm$file$File$toString = _File_toString;
 var $elm$json$Json$Encode$float = _Json_wrap;
 var $elm$json$Json$Encode$list = F2(
 	function (func, entries) {
@@ -6550,6 +6560,8 @@ var $author$project$Main$encodeSavedState = function (model) {
 					switch (profilePage.$) {
 						case 'NotLoaded':
 							return _List_Nil;
+						case 'Loading':
+							return _List_Nil;
 						case 'Error':
 							return _List_Nil;
 						default:
@@ -6596,14 +6608,6 @@ var $author$project$Main$update = F2(
 						$author$project$Main$FileUploaded));
 			case 'FileUploaded':
 				var file = msg.a;
-				return _Utils_Tuple2(
-					model,
-					A2(
-						$elm$core$Task$perform,
-						$author$project$Main$FileStringed,
-						$elm$file$File$toString(file)));
-			case 'FileStringed':
-				var file = msg.a;
 				return A2(
 					$elm$core$Tuple$mapSecond,
 					function (cmd) {
@@ -6611,20 +6615,20 @@ var $author$project$Main$update = F2(
 							_List_fromArray(
 								[
 									cmd,
-									$elm$http$Http$get(
+									$elm$http$Http$post(
 									{
+										body: $elm$http$Http$fileBody(file),
 										expect: A2(
 											$elm$http$Http$expectJson,
 											A2(
 												$elm$core$Basics$composeR,
-												$elm$core$Result$mapError(
-													$elm$core$Basics$always('some error')),
+												$elm$core$Result$mapError($author$project$Main$httpErrorString),
 												A2(
 													$elm$core$Basics$composeR,
 													$elm$core$Result$map($author$project$Main$ProfileData),
 													$author$project$Main$ProfileDataResponse)),
 											$author$project$Main$decodeElevationProfile),
-										url: '/data/testelevation.ep'
+										url: 'http://127.0.0.1:4001'
 									})
 								]));
 					},
@@ -6632,7 +6636,7 @@ var $author$project$Main$update = F2(
 						_Utils_update(
 							model,
 							{
-								file: $elm$core$Maybe$Just(file)
+								page: $author$project$Main$ProfilePage($author$project$Main$Loading)
 							})));
 			case 'ProfileDataResponse':
 				var resp = msg.a;
@@ -6781,6 +6785,10 @@ var $author$project$Main$OpenFileBrowser = {$: 'OpenFileBrowser'};
 var $author$project$Main$ShowOptions = function (a) {
 	return {$: 'ShowOptions', a: a};
 };
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
 var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$core$List$append = F2(
 	function (xs, ys) {
@@ -7054,14 +7062,11 @@ var $author$project$Main$view = function (model) {
 							$author$project$Main$viewOptions,
 							model.showOptions,
 							function () {
-								switch (profileModel.$) {
-									case 'NotLoaded':
-										return $elm$core$Maybe$Nothing;
-									case 'Error':
-										var err = profileModel.a;
-										return $elm$core$Maybe$Just(err);
-									default:
-										return $elm$core$Maybe$Nothing;
+								if (profileModel.$ === 'Error') {
+									var err = profileModel.a;
+									return $elm$core$Maybe$Just(err);
+								} else {
+									return $elm$core$Maybe$Nothing;
 								}
 							}()),
 							A2(
@@ -7087,6 +7092,14 @@ var $author$project$Main$view = function (model) {
 												_List_fromArray(
 													[
 														$elm$html$Html$text('Load your profile!')
+													]));
+										case 'Loading':
+											return A2(
+												$elm$html$Html$p,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Loading profile...')
 													]));
 										case 'Error':
 											var err = res.a;

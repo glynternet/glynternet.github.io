@@ -13,7 +13,6 @@ import Json.Encode
 import String
 import Svg
 import Svg.Attributes
-import Task
 import Url exposing (Protocol(..))
 
 
@@ -38,6 +37,7 @@ main =
 
 type LoadableResource a
     = NotLoaded
+    | Loading
     | Error String
     | Loaded a
 
@@ -105,7 +105,6 @@ type Msg
     | OpenFileBrowser
     | FileUploaded File.File
       -- can probably streamline some of these steps
-    | FileStringed String
     | ProfileDataResponse (Result String ProfileData)
 
 
@@ -122,19 +121,18 @@ update msg model =
             ( model, File.Select.file [ "application/gpx+xml" ] FileUploaded )
 
         FileUploaded file ->
-            ( model, Task.perform FileStringed <| File.toString file )
-
-        FileStringed file ->
-            updateModel { model | file = Just file }
+            updateModel { model | page = ProfilePage Loading }
                 |> Tuple.mapSecond
                     (\cmd ->
                         Cmd.batch
                             [ cmd
-                            , Http.get
-                                { url = "/data/testelevation.ep"
+                            , Http.post
+                                { url = "http://127.0.0.1:4001"
+                                , body = Http.fileBody file
                                 , expect =
                                     Http.expectJson
-                                        (Result.mapError (always "some error") >> Result.map ProfileData >> ProfileDataResponse)
+                                        -- TODO(glynternet): actually handle and bubble up this error
+                                        (Result.mapError httpErrorString >> Result.map ProfileData >> ProfileDataResponse)
                                         decodeElevationProfile
                                 }
                             ]
@@ -145,6 +143,25 @@ update msg model =
 
         Ignore ->
             ( model, Cmd.none )
+
+
+httpErrorString : Http.Error -> String
+httpErrorString err =
+    case err of
+        Http.BadUrl msg ->
+            "bad url: " ++ msg
+
+        Http.Timeout ->
+            "timeout"
+
+        Http.NetworkError ->
+            "network error"
+
+        Http.BadStatus code ->
+            "bad status: " ++ String.fromInt code
+
+        Http.BadBody msg ->
+            "bad body: " ++ msg
 
 
 updateModel : Model -> ( Model, Cmd Msg )
@@ -173,13 +190,10 @@ view model =
                     ]
                     [ viewOptions model.showOptions
                         (case profileModel of
-                            NotLoaded ->
-                                Nothing
-
                             Error err ->
                                 Just err
 
-                            Loaded _ ->
+                            _ ->
                                 Nothing
                         )
                     , Html.div
@@ -194,6 +208,9 @@ view model =
                                 case res of
                                     NotLoaded ->
                                         Html.p [] [ Html.text "Load your profile!" ]
+
+                                    Loading ->
+                                        Html.p [] [ Html.text "Loading profile..." ]
 
                                     Error err ->
                                         Html.p [] [ Html.text <| "Error loading your profile: " ++ err ]
@@ -411,6 +428,9 @@ encodeSavedState model =
                     ProfilePage profilePage ->
                         case profilePage of
                             NotLoaded ->
+                                []
+
+                            Loading ->
                                 []
 
                             Error _ ->
