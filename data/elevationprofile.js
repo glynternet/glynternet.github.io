@@ -5517,6 +5517,7 @@ var $author$project$Main$Model = F3(
 	function (file, page, showOptions) {
 		return {file: file, page: page, showOptions: showOptions};
 	});
+var $author$project$Main$NotLoaded = {$: 'NotLoaded'};
 var $author$project$Main$ProfilePage = function (a) {
 	return {$: 'ProfilePage', a: a};
 };
@@ -5578,13 +5579,8 @@ var $author$project$Main$storedStateDecoder = A3(
 			$elm$json$Json$Decode$field,
 			'profileData',
 			A2($elm$json$Json$Decode$map, $author$project$Main$ProfileData, $author$project$Main$decodeElevationProfile))));
-var $author$project$Main$storedStateModel = function (state) {
-	return A3(
-		$author$project$Main$Model,
-		state.file,
-		$author$project$Main$ProfilePage(
-			$elm$core$Result$Ok(state.profileData)),
-		true);
+var $author$project$Main$Loaded = function (a) {
+	return {$: 'Loaded', a: a};
 };
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
@@ -5595,6 +5591,18 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
+var $author$project$Main$loadableResourceFromMaybe = A2(
+	$elm$core$Basics$composeR,
+	$elm$core$Maybe$map($author$project$Main$Loaded),
+	$elm$core$Maybe$withDefault($author$project$Main$NotLoaded));
+var $author$project$Main$storedStateModel = function (state) {
+	return A3(
+		$author$project$Main$Model,
+		state.file,
+		$author$project$Main$ProfilePage(
+			$author$project$Main$loadableResourceFromMaybe(state.profileData)),
+		true);
+};
 var $elm$core$Result$withDefault = F2(
 	function (def, result) {
 		if (result.$ === 'Ok') {
@@ -5612,8 +5620,7 @@ var $author$project$Main$init = F3(
 				A3(
 					$author$project$Main$Model,
 					$elm$core$Maybe$Nothing,
-					$author$project$Main$ProfilePage(
-						$elm$core$Result$Err('todo')),
+					$author$project$Main$ProfilePage($author$project$Main$NotLoaded),
 					true),
 				A2(
 					$elm$core$Maybe$map,
@@ -6437,6 +6444,9 @@ var $elm$http$Http$get = function (r) {
 	return $elm$http$Http$request(
 		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
+var $author$project$Main$Error = function (a) {
+	return {$: 'Error', a: a};
+};
 var $elm$core$Result$map = F2(
 	function (func, ra) {
 		if (ra.$ === 'Ok') {
@@ -6448,6 +6458,22 @@ var $elm$core$Result$map = F2(
 			return $elm$core$Result$Err(e);
 		}
 	});
+var $author$project$Main$resultCollect = function (res) {
+	if (res.$ === 'Ok') {
+		var a = res.a;
+		return a;
+	} else {
+		var a = res.a;
+		return a;
+	}
+};
+var $author$project$Main$loadableResourceFromResult = A2(
+	$elm$core$Basics$composeR,
+	$elm$core$Result$map($author$project$Main$Loaded),
+	A2(
+		$elm$core$Basics$composeR,
+		$elm$core$Result$mapError($author$project$Main$Error),
+		$author$project$Main$resultCollect));
 var $elm$core$Tuple$mapSecond = F2(
 	function (func, _v0) {
 		var x = _v0.a;
@@ -6521,20 +6547,21 @@ var $author$project$Main$encodeSavedState = function (model) {
 				function () {
 					var _v1 = model.page;
 					var profilePage = _v1.a;
-					return A2(
-						$elm$core$Maybe$withDefault,
-						_List_Nil,
-						A2(
-							$elm$core$Maybe$map,
-							function (profileData) {
-								return _List_fromArray(
-									[
-										_Utils_Tuple2(
-										'profileData',
-										$author$project$Main$encodeElevationProfile(profileData.points))
-									]);
-							},
-							A2($elm$core$Result$withDefault, $elm$core$Maybe$Nothing, profilePage)));
+					switch (profilePage.$) {
+						case 'NotLoaded':
+							return _List_Nil;
+						case 'Error':
+							var string = profilePage.a;
+							return _List_Nil;
+						default:
+							var data = profilePage.a;
+							return _List_fromArray(
+								[
+									_Utils_Tuple2(
+									'profileData',
+									$author$project$Main$encodeElevationProfile(data.points))
+								]);
+					}
 				}())));
 };
 var $author$project$Main$storeState = _Platform_outgoingPort('storeState', $elm$json$Json$Encode$string);
@@ -6615,7 +6642,7 @@ var $author$project$Main$update = F2(
 						model,
 						{
 							page: $author$project$Main$ProfilePage(
-								A2($elm$core$Result$map, $elm$core$Maybe$Just, resp))
+								$author$project$Main$loadableResourceFromResult(resp))
 						}));
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -6664,15 +6691,6 @@ var $author$project$Main$profile = A2(
 			}(),
 			_List_Nil)
 		]));
-var $author$project$Main$resultCollect = function (res) {
-	if (res.$ === 'Ok') {
-		var a = res.a;
-		return a;
-	} else {
-		var a = res.a;
-		return a;
-	}
-};
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -6954,11 +6972,14 @@ var $author$project$Main$view = function (model) {
 							$author$project$Main$viewOptions,
 							model.showOptions,
 							function () {
-								if (profileModel.$ === 'Ok') {
-									return $elm$core$Maybe$Nothing;
-								} else {
-									var msg = profileModel.a;
-									return $elm$core$Maybe$Just(msg);
+								switch (profileModel.$) {
+									case 'NotLoaded':
+										return $elm$core$Maybe$Nothing;
+									case 'Error':
+										var err = profileModel.a;
+										return $elm$core$Maybe$Just(err);
+									default:
+										return $elm$core$Maybe$Nothing;
 								}
 							}()),
 							A2(
@@ -6996,20 +7017,17 @@ var $author$project$Main$view = function (model) {
 											function () {
 												var _v2 = model.page;
 												var res = _v2.a;
-												return $author$project$Main$resultCollect(
-													A2(
-														$elm$core$Result$map,
-														A2(
-															$elm$core$Basics$composeR,
-															$elm$core$Maybe$map(
-																A2(
-																	$elm$core$Basics$composeR,
-																	function ($) {
-																		return $.points;
-																	},
-																	A2($elm$core$Basics$composeR, $elm$core$List$length, $elm$core$String$fromInt))),
-															$elm$core$Maybe$withDefault('No profile points just yet')),
-														res));
+												switch (res.$) {
+													case 'NotLoaded':
+														return 'Load your profile!';
+													case 'Error':
+														var err = res.a;
+														return 'Error loading your profile: ' + err;
+													default:
+														var a = res.a;
+														return $elm$core$String$fromInt(
+															$elm$core$List$length(a.points));
+												}
 											}())
 										])),
 									$author$project$Main$profile

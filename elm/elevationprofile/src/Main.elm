@@ -36,6 +36,22 @@ main =
 -- MODEL
 
 
+type LoadableResource a
+    = NotLoaded
+    | Error String
+    | Loaded a
+
+
+loadableResourceFromMaybe : Maybe a -> LoadableResource a
+loadableResourceFromMaybe =
+    Maybe.map Loaded >> Maybe.withDefault NotLoaded
+
+
+loadableResourceFromResult : Result String a -> LoadableResource a
+loadableResourceFromResult =
+    Result.map Loaded >> Result.mapError Error >> resultCollect
+
+
 type alias StoredState =
     { file : Maybe String
     , profileData : Maybe ProfileData
@@ -50,12 +66,12 @@ type alias Model =
 
 
 type Page
-    = ProfilePage (Result String (Maybe ProfileData))
+    = ProfilePage (LoadableResource ProfileData)
 
 
 storedStateModel : StoredState -> Model
 storedStateModel state =
-    Model state.file (ProfilePage (Ok <| state.profileData)) True
+    Model state.file (ProfilePage (loadableResourceFromMaybe state.profileData)) True
 
 
 type alias Point =
@@ -77,7 +93,7 @@ init maybeState _ _ =
                 >> Result.withDefault (StoredState Nothing Nothing)
                 >> storedStateModel
             )
-        |> Maybe.withDefault (Model Nothing (ProfilePage (Err "todo")) True)
+        |> Maybe.withDefault (Model Nothing (ProfilePage NotLoaded) True)
     , Cmd.none
     )
 
@@ -125,7 +141,7 @@ update msg model =
                     )
 
         ProfileDataResponse resp ->
-            updateModel { model | page = ProfilePage <| Result.map Just resp }
+            updateModel { model | page = ProfilePage <| loadableResourceFromResult resp }
 
         Ignore ->
             ( model, Cmd.none )
@@ -157,11 +173,14 @@ view model =
                     ]
                     [ viewOptions model.showOptions
                         (case profileModel of
-                            Ok _ ->
+                            NotLoaded ->
                                 Nothing
 
-                            Err msg ->
-                                Just msg
+                            Error err ->
+                                Just err
+
+                            Loaded _ ->
+                                Nothing
                         )
                     , Html.div
                         [ Html.Attributes.class "flex-container"
@@ -175,7 +194,15 @@ view model =
                             [ Html.text
                                 (case model.page of
                                     ProfilePage res ->
-                                        res |> Result.map (Maybe.map (.points >> List.length >> String.fromInt) >> Maybe.withDefault "No profile points just yet") |> resultCollect
+                                        case res of
+                                            NotLoaded ->
+                                                "Load your profile!"
+
+                                            Error err ->
+                                                "Error loading your profile: " ++ err
+
+                                            Loaded a ->
+                                                a |> .points |> List.length |> String.fromInt
                                 )
                             ]
                         , profile
@@ -198,6 +225,10 @@ optionGroup : String -> List (Html Msg) -> Html Msg
 optionGroup title elements =
     Html.div [ Html.Attributes.class "flex-container", Html.Attributes.class "column" ]
         (Html.legend [] [ Html.text title ] :: elements)
+
+
+
+-- TODO(glynternet): move the decode error out of the view options?
 
 
 viewOptions : Bool -> Maybe String -> Html Msg
@@ -326,10 +357,15 @@ encodeSavedState model =
          )
             ++ (case model.page of
                     ProfilePage profilePage ->
-                        profilePage
-                            |> Result.withDefault Nothing
-                            |> Maybe.map (\profileData -> [ ( "profileData", encodeElevationProfile profileData.points ) ])
-                            |> Maybe.withDefault []
+                        case profilePage of
+                            NotLoaded ->
+                                []
+
+                            Error string ->
+                                []
+
+                            Loaded data ->
+                                [ ( "profileData", encodeElevationProfile data.points ) ]
                )
         )
         |> Json.Encode.encode 0
