@@ -36,8 +36,7 @@ main =
 
 
 type alias Model =
-    { file : Maybe String
-    , profileData : LoadableResource ProfileData
+    { profileData : LoadableResource ProfileData
     , showOptions : Bool
     }
 
@@ -60,7 +59,7 @@ type alias StoredState =
 
 storedStateModel : StoredState -> Model
 storedStateModel state =
-    Model state.file (loadableResourceFromMaybe state.profileData) True
+    Model (loadableResourceFromMaybe state.profileData) True
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
@@ -72,7 +71,7 @@ init maybeState _ _ =
                 >> Result.withDefault (StoredState Nothing Nothing)
                 >> storedStateModel
             )
-        |> Maybe.withDefault (Model Nothing NotLoaded True)
+        |> Maybe.withDefault (Model NotLoaded True)
     , Cmd.none
     )
 
@@ -342,20 +341,12 @@ decodeElevationProfile =
 encodeSavedState : Model -> String
 encodeSavedState model =
     Json.Encode.object
-        ((case model.file of
-            Just file ->
-                [ ( "file", Json.Encode.string file ) ]
+        (case model.profileData of
+            Loaded data ->
+                [ ( "profileData", encodeElevationProfile data.points ) ]
 
-            Nothing ->
+            _ ->
                 []
-         )
-            ++ (case model.profileData of
-                    Loaded data ->
-                        [ ( "profileData", encodeElevationProfile data.points ) ]
-
-                    _ ->
-                        []
-               )
         )
         |> Json.Encode.encode 0
 

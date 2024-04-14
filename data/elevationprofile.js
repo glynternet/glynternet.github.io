@@ -5513,9 +5513,9 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$application = _Browser_application;
-var $author$project$Main$Model = F3(
-	function (file, profileData, showOptions) {
-		return {file: file, profileData: profileData, showOptions: showOptions};
+var $author$project$Main$Model = F2(
+	function (profileData, showOptions) {
+		return {profileData: profileData, showOptions: showOptions};
 	});
 var $author$project$Main$NotLoaded = {$: 'NotLoaded'};
 var $author$project$Main$StoredState = F2(
@@ -5593,9 +5593,8 @@ var $author$project$Main$loadableResourceFromMaybe = A2(
 	$elm$core$Maybe$map($author$project$Main$Loaded),
 	$elm$core$Maybe$withDefault($author$project$Main$NotLoaded));
 var $author$project$Main$storedStateModel = function (state) {
-	return A3(
+	return A2(
 		$author$project$Main$Model,
-		state.file,
 		$author$project$Main$loadableResourceFromMaybe(state.profileData),
 		true);
 };
@@ -5613,7 +5612,7 @@ var $author$project$Main$init = F3(
 		return _Utils_Tuple2(
 			A2(
 				$elm$core$Maybe$withDefault,
-				A3($author$project$Main$Model, $elm$core$Maybe$Nothing, $author$project$Main$NotLoaded, true),
+				A2($author$project$Main$Model, $author$project$Main$NotLoaded, true),
 				A2(
 					$elm$core$Maybe$map,
 					A2(
@@ -6530,42 +6529,27 @@ var $author$project$Main$encodeElevationProfile = function (points) {
 		},
 		points);
 };
-var $elm$json$Json$Encode$string = _Json_wrap;
 var $author$project$Main$encodeSavedState = function (model) {
 	return A2(
 		$elm$json$Json$Encode$encode,
 		0,
 		$elm$json$Json$Encode$object(
-			_Utils_ap(
-				function () {
-					var _v0 = model.file;
-					if (_v0.$ === 'Just') {
-						var file = _v0.a;
-						return _List_fromArray(
-							[
-								_Utils_Tuple2(
-								'file',
-								$elm$json$Json$Encode$string(file))
-							]);
-					} else {
-						return _List_Nil;
-					}
-				}(),
-				function () {
-					var _v1 = model.profileData;
-					if (_v1.$ === 'Loaded') {
-						var data = _v1.a;
-						return _List_fromArray(
-							[
-								_Utils_Tuple2(
-								'profileData',
-								$author$project$Main$encodeElevationProfile(data.points))
-							]);
-					} else {
-						return _List_Nil;
-					}
-				}())));
+			function () {
+				var _v0 = model.profileData;
+				if (_v0.$ === 'Loaded') {
+					var data = _v0.a;
+					return _List_fromArray(
+						[
+							_Utils_Tuple2(
+							'profileData',
+							$author$project$Main$encodeElevationProfile(data.points))
+						]);
+				} else {
+					return _List_Nil;
+				}
+			}()));
 };
+var $elm$json$Json$Encode$string = _Json_wrap;
 var $author$project$Main$storeState = _Platform_outgoingPort('storeState', $elm$json$Json$Encode$string);
 var $author$project$Main$updateModel = function (model) {
 	var localStoredState = $author$project$Main$encodeSavedState(model);
