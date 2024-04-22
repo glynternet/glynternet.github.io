@@ -713,6 +713,7 @@ viewOptions show waypointOptions cuesViewOptions decodeError =
                                                                 "unknown"
                                                             )
                                                     )
+                                             --        TODO(glynternet): add 'clear' and 'all' buttons
                                             )
                                         ]
 
@@ -889,6 +890,7 @@ cuesheet waypoints cuesViewOptions =
             , Svg.Attributes.height <| String.fromInt svgHeight
             , Svg.Attributes.viewBox <| "-120 -10 240 " ++ String.fromInt (svgHeight + cuesViewOptions.itemSpacing)
             ]
+            -- TODO(glynternet): handle when no waypoints present after filtering
             (info
                 |> List.indexedMap
                     (\i item ->
