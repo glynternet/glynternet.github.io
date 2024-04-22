@@ -105,8 +105,12 @@ type TotalDistanceDisplay
 type alias Waypoint =
     { name : String
     , distance : Float
-    , typ : String
+    , types : List String
     }
+
+
+unknownType =
+    ""
 
 
 type Info
@@ -205,8 +209,15 @@ initialWaypointOptions waypoints =
 
 
 initialFilteredLocations : List Waypoint -> Dict.Dict String Bool
-initialFilteredLocations waypoints =
-    List.map (\el -> ( el.typ, True )) waypoints |> Dict.fromList
+initialFilteredLocations =
+    List.foldl
+        (\el current ->
+            List.foldl
+                (\typ _ -> Dict.insert typ True current)
+                current
+                el.types
+        )
+        (Dict.singleton unknownType True)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -327,7 +338,7 @@ decodeCSV =
         (Csv.Decode.into Waypoint
             |> Csv.Decode.pipeline (Csv.Decode.field "Name" Csv.Decode.string)
             |> Csv.Decode.pipeline (Csv.Decode.field "Distance" Csv.Decode.float)
-            |> Csv.Decode.pipeline (Csv.Decode.field "Type" Csv.Decode.string)
+            |> Csv.Decode.pipeline (Csv.Decode.field "Type" (Csv.Decode.map (String.split ",") Csv.Decode.string))
         )
 
 
@@ -504,15 +515,18 @@ welcomePage toGo =
         cafeType =
             "CAFE"
 
+        waterType =
+            "WATER"
+
         exampleWaypoints =
-            [ Waypoint "Start" 0.0 ""
-            , Waypoint "Blue shoes" 56.1 cafeType
-            , Waypoint "Lungburner" 56.3 climbType
-            , Waypoint "Steep Street" 63.7 climbType
-            , Waypoint "Foosville fountain" 98.3 "WATER"
-            , Waypoint "Cosy hedge" 198.2 "😴"
-            , Waypoint "Legburner" 243.8 climbType
-            , Waypoint "Finish" 273.5 ""
+            [ Waypoint "Start" 0.0 []
+            , Waypoint "Blue shoes" 56.1 [ cafeType ]
+            , Waypoint "Lungburner" 56.3 [ climbType ]
+            , Waypoint "Steep Street" 63.7 [ climbType ]
+            , Waypoint "Foosville fountain" 98.3 [ waterType, cafeType ]
+            , Waypoint "Cosy hedge" 198.2 [ "😴" ]
+            , Waypoint "Legburner" 243.8 [ climbType ]
+            , Waypoint "Finish" 273.5 []
             ]
     in
     Html.div
@@ -561,15 +575,19 @@ welcomePage toGo =
                           , List.map
                                 (\w ->
                                     { w
-                                        | typ =
-                                            Dict.get w.typ (Dict.fromList [ ( cafeType, "☕" ), ( climbType, "⛰️" ) ])
-                                                |> Maybe.withDefault ""
+                                        | types =
+                                            List.map
+                                                (\typ ->
+                                                    Dict.get typ (Dict.fromList [ ( cafeType, "☕" ), ( climbType, "⛰️" ), ( waterType, "🚰" ) ])
+                                                        |> Maybe.withDefault typ
+                                                )
+                                                w.types
                                     }
                                 )
                           , CuesViewOptions None defaultSpacing defaultDistanceDetail
                           )
                         , ( "Custom spacing", identity, CuesViewOptions None (defaultSpacing - 10) defaultDistanceDetail )
-                        , ( "Filter location types", cues (WaypointsOptions True (initialFilteredLocations exampleWaypoints |> Dict.map (\k _ -> k == climbType || k == ""))), CuesViewOptions None defaultSpacing defaultDistanceDetail )
+                        , ( "Filter location types", cues (WaypointsOptions True (initialFilteredLocations exampleWaypoints |> Dict.map (\typ _ -> List.member typ [ unknownType, climbType, waterType ]))), CuesViewOptions None defaultSpacing defaultDistanceDetail )
                         ]
                     )
               ]
@@ -688,7 +706,7 @@ viewOptions show waypointOptions cuesViewOptions decodeError =
                                                     (\( typ, included ) ->
                                                         checkbox included
                                                             (TypeEnabled typ (not included))
-                                                            (if typ /= "" then
+                                                            (if typ /= unknownType then
                                                                 typ
 
                                                              else
@@ -813,7 +831,33 @@ formatTotalDistanceDisplay v =
 cues : WaypointsOptions -> List Waypoint -> List Waypoint
 cues waypointOptions waypoints =
     if waypointOptions.locationFilterEnabled then
-        List.filter (\w -> Dict.get w.typ waypointOptions.filteredLocationTypes |> Maybe.withDefault True) waypoints
+        List.filterMap
+            (\w ->
+                let
+                    includeType =
+                        \typ ->
+                            Dict.get typ waypointOptions.filteredLocationTypes
+                                |> Maybe.withDefault True
+                in
+                case w.types of
+                    -- if no types then we just check the unknown type key
+                    [] ->
+                        if includeType unknownType then
+                            Maybe.Just w
+
+                        else
+                            Maybe.Nothing
+
+                    types ->
+                        case List.filter includeType types of
+                            -- If there are types and they are all filtered out, don't show waypoint
+                            [] ->
+                                Maybe.Nothing
+
+                            some ->
+                                Maybe.Just { w | types = some }
+            )
+            waypoints
 
     else
         waypoints
@@ -869,11 +913,12 @@ cuesheet waypoints cuesViewOptions =
                                     waypointInfo =
                                         List.filterMap identity
                                             [ waypointDistance
-                                            , if waypoint.typ /= "" then
-                                                Maybe.Just waypoint.typ
+                                            , case waypoint.types of
+                                                [] ->
+                                                    Maybe.Nothing
 
-                                              else
-                                                Maybe.Nothing
+                                                types ->
+                                                    Maybe.Just <| String.join ", " types
                                             ]
 
                                     waypointInfoLines =
@@ -1093,7 +1138,7 @@ decodeWaypoints fieldNames =
         (Json.Decode.map3 Waypoint
             (Json.Decode.field fieldNames.waypointName Json.Decode.string)
             (Json.Decode.field fieldNames.waypointDistance Json.Decode.float)
-            (Json.Decode.field fieldNames.waypointType Json.Decode.string)
+            (Json.Decode.field fieldNames.waypointType (Json.Decode.list Json.Decode.string))
         )
 
 
@@ -1104,7 +1149,7 @@ encodeWaypoints fieldNames waypoints =
             Json.Encode.object
                 [ ( fieldNames.waypointName, Json.Encode.string waypoint.name )
                 , ( fieldNames.waypointDistance, Json.Encode.float waypoint.distance )
-                , ( fieldNames.waypointType, Json.Encode.string waypoint.typ )
+                , ( fieldNames.waypointType, Json.Encode.list Json.Encode.string waypoint.types )
                 ]
         )
         waypoints
@@ -1123,7 +1168,7 @@ demoData =
 0,286,,Start,Warwick,,,
 125,286,RS,Kwik-E-Mart,,,,Close 22:00
 292.5,585,RS,Morrisons,Bridgwater,Big town,,Opens 07:00
-311.5,585,⛺,Moorhouse Campsite,,,,
+311.5,585,"⛺,🚰",Moorhouse Campsite,,,,
 408.4,585,🍴,Quay Cafe,,,slight,09:00-17:00
 417,585,RS,Des' Veg,South Molton,Town,,06:00-21:00
 435,585,🍴,Griffins Yard,South Molton,Town,Not A316,09:30-17:00
