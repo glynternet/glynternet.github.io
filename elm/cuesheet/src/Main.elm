@@ -894,7 +894,7 @@ cuesheet waypoints cuesViewOptions =
         [ Svg.svg
             [ Svg.Attributes.width "100%"
             , Svg.Attributes.height <| String.fromInt svgHeight
-            , Svg.Attributes.viewBox <| "-120 -10 240 " ++ String.fromInt (svgHeight + cuesViewOptions.itemSpacing)
+            , Svg.Attributes.viewBox <| "-40 -10 240 " ++ String.fromInt (svgHeight + cuesViewOptions.itemSpacing)
             ]
             -- TODO(glynternet): handle when no waypoints present after filtering
             (info

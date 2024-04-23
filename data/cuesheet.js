@@ -11506,7 +11506,7 @@ var $author$project$Main$cuesheet = F2(
 							$elm$svg$Svg$Attributes$height(
 							$elm$core$String$fromInt(svgHeight)),
 							$elm$svg$Svg$Attributes$viewBox(
-							'-120 -10 240 ' + $elm$core$String$fromInt(svgHeight + cuesViewOptions.c))
+							'-40 -10 240 ' + $elm$core$String$fromInt(svgHeight + cuesViewOptions.c))
 						]),
 					A2(
 						$elm$core$List$indexedMap,
