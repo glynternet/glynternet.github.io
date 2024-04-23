@@ -57,6 +57,7 @@ type alias StoredState =
     , filteredLocationTypes : Maybe (Dict.Dict String Bool)
     , itemSpacing : Maybe Int
     , distanceDetail : Maybe Int
+    , showOptions : Maybe Bool
     }
 
 
@@ -141,7 +142,7 @@ init maybeState url key =
                 |> Maybe.map
                     (Json.Decode.decodeValue (storedStateDecoder longFieldNames)
                         -- TODO: handle error
-                        >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
+                        >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
                         >> storedStateModel url
                     )
                 |> Maybe.withDefault (Model (WelcomePage False) Maybe.Nothing True (CuesViewOptions FromZero defaultSpacing defaultDistanceDetail) False url)
@@ -174,7 +175,7 @@ storedStateModel url state =
             |> Maybe.withDefault (WelcomePage False)
         )
         Maybe.Nothing
-        True
+        (state.showOptions |> Maybe.withDefault True)
         (CuesViewOptions
             (state.totalDistanceDisplay |> Maybe.andThen parseTotalDistanceDisplay |> Maybe.withDefault FromZero)
             (Maybe.withDefault defaultSpacing state.itemSpacing)
@@ -242,7 +243,7 @@ update msg model =
                     ( model, Cmd.none )
 
         ShowOptions show ->
-            ( { model | showOptions = show }, Cmd.none )
+            updateModel { model | showOptions = show }
 
         UpdateTotalDistanceDisplay maybeSelection ->
             maybeSelection
@@ -434,7 +435,7 @@ view model =
                                                         QRCode.InvalidUTF8Char ->
                                                             [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidUTF8Char" ]
 
-                                                        QRCode.LogTableException table ->
+                                                        QRCode.LogTableException _ ->
                                                             [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: LogTableException" ]
 
                                                         QRCode.PolynomialMultiplyException ->
@@ -1065,6 +1066,7 @@ type alias StoredStateCodeFields =
     , locationFilterEnabled : String
     , filteredLocationTypes : String
     , itemSpacing : String
+    , showOptions : String
     }
 
 
@@ -1079,6 +1081,7 @@ longFieldNames =
     , locationFilterEnabled = "locationFilterEnabled"
     , filteredLocationTypes = "filteredLocationTypes"
     , itemSpacing = "itemSpacing"
+    , showOptions = "showOptions"
     }
 
 
@@ -1099,6 +1102,7 @@ shortFieldNames =
     , locationFilterEnabled = "lfe"
     , filteredLocationTypes = "flt"
     , itemSpacing = "is"
+    , showOptions = "so"
     }
 
 
@@ -1118,6 +1122,7 @@ encodeSavedState fieldNames model =
             ++ [ ( fieldNames.totalDistanceDisplay, Json.Encode.string <| formatTotalDistanceDisplay model.cuesViewOptions.totalDistanceDisplay )
                , ( fieldNames.distanceDetail, Json.Encode.int model.cuesViewOptions.distanceDetail )
                , ( fieldNames.itemSpacing, Json.Encode.int model.cuesViewOptions.itemSpacing )
+               , ( fieldNames.showOptions, Json.Encode.bool model.showOptions )
                ]
         )
         |> Json.Encode.encode 0
@@ -1125,13 +1130,14 @@ encodeSavedState fieldNames model =
 
 storedStateDecoder : StoredStateCodeFields -> Json.Decode.Decoder StoredState
 storedStateDecoder fieldNames =
-    Json.Decode.map6 StoredState
+    Json.Decode.map7 StoredState
         (Json.Decode.maybe (Json.Decode.field fieldNames.waypoints (decodeWaypoints fieldNames)))
         (Json.Decode.maybe (Json.Decode.field fieldNames.totalDistanceDisplay Json.Decode.string))
         (Json.Decode.maybe (Json.Decode.field fieldNames.locationFilterEnabled Json.Decode.bool))
         (Json.Decode.maybe (Json.Decode.field fieldNames.filteredLocationTypes (Json.Decode.dict Json.Decode.bool)))
         (Json.Decode.maybe (Json.Decode.field fieldNames.itemSpacing Json.Decode.int))
         (Json.Decode.maybe (Json.Decode.field fieldNames.distanceDetail Json.Decode.int))
+        (Json.Decode.maybe (Json.Decode.field fieldNames.showOptions Json.Decode.bool))
 
 
 decodeWaypoints : StoredStateCodeFields -> Json.Decode.Decoder (List Waypoint)
