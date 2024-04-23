@@ -18263,6 +18263,7 @@ var $author$project$Main$optionGroup = F2(
 						])),
 				elements));
 	});
+var $elm$html$Html$span = _VirtualDom_node('span');
 var $author$project$Main$viewOptions = F4(
 	function (show, waypointOptions, cuesViewOptions, decodeError) {
 		return A2(
@@ -18281,15 +18282,40 @@ var $author$project$Main$viewOptions = F4(
 					$elm$html$Html$p,
 					_List_fromArray(
 						[
-							$elm$html$Html$Events$onClick(
-							$author$project$Main$ShowOptions(true)),
 							A2($elm$html$Html$Attributes$style, 'transform', 'rotate(90deg)'),
 							A2($elm$html$Html$Attributes$style, 'white-space', 'nowrap'),
 							A2($elm$html$Html$Attributes$style, 'width', '1em')
 						]),
 					_List_fromArray(
 						[
-							$elm$html$Html$text('(show options)')
+							A2(
+							$elm$html$Html$span,
+							_List_fromArray(
+								[
+									$elm$html$Html$Events$onClick(
+									$author$project$Main$ShowOptions(true))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('options')
+								])),
+							A2(
+							$elm$html$Html$span,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text(' | ')
+								])),
+							A2(
+							$elm$html$Html$span,
+							_List_fromArray(
+								[
+									$elm$html$Html$Events$onClick($author$project$Main$ShowQR)
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('share')
+								]))
 						]))
 				]) : $elm$core$List$concat(
 				_List_fromArray(
