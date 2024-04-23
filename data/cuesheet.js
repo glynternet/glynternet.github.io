@@ -10481,6 +10481,17 @@ var $BrianHicks$elm_csv$Csv$Decode$field = F2(
 					row);
 			});
 	});
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
 var $BrianHicks$elm_csv$Csv$Decode$ExpectedFloat = function (a) {
 	return {$: 5, a: a};
 };
@@ -10705,6 +10716,7 @@ var $BrianHicks$elm_csv$Csv$Decode$map = F2(
 					A4(decoder, location, fieldNames, rowNum, row));
 			});
 	});
+var $elm$core$Basics$not = _Basics_not;
 var $elm$core$Result$map2 = F3(
 	function (func, ra, rb) {
 		if (ra.$ === 1) {
@@ -10751,7 +10763,14 @@ var $author$project$Main$decodeCSV = A2(
 			'Type',
 			A2(
 				$BrianHicks$elm_csv$Csv$Decode$map,
-				$elm$core$String$split(','),
+				A2(
+					$elm$core$Basics$composeR,
+					$elm$core$String$split(','),
+					A2(
+						$elm$core$Basics$composeR,
+						$elm$core$List$map($elm$core$String$trim),
+						$elm$core$List$filter(
+							A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$String$isEmpty)))),
 				$BrianHicks$elm_csv$Csv$Decode$string)),
 		A2(
 			$BrianHicks$elm_csv$Csv$Decode$pipeline,
@@ -10769,7 +10788,6 @@ var $elm$file$File$Select$file = F2(
 			_File_uploadOne(mimes));
 	});
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $elm$core$Basics$not = _Basics_not;
 var $elm$file$File$Download$string = F3(
 	function (name, mime, content) {
 		return A2(
@@ -11106,17 +11124,6 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 			$elm$json$Json$Encode$string(string));
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
-var $elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
-	});
 var $elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
 		var _v0 = f(mx);

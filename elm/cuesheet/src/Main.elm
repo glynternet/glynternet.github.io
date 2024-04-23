@@ -339,7 +339,10 @@ decodeCSV =
         (Csv.Decode.into Waypoint
             |> Csv.Decode.pipeline (Csv.Decode.field "Name" Csv.Decode.string)
             |> Csv.Decode.pipeline (Csv.Decode.field "Distance" Csv.Decode.float)
-            |> Csv.Decode.pipeline (Csv.Decode.field "Type" (Csv.Decode.map (String.split ",") Csv.Decode.string))
+            |> Csv.Decode.pipeline
+                (Csv.Decode.field "Type"
+                    (Csv.Decode.map (String.split "," >> List.map String.trim >> List.filter (not << String.isEmpty)) Csv.Decode.string)
+                )
         )
 
 
