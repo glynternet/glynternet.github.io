@@ -409,7 +409,7 @@ view model =
                                         QRCode.fromStringWith QRCode.Medium url
                                             |> Result.map
                                                 (\qr ->
-                                                    [ QRCode.toSvg [ Svg.Attributes.width "500", Svg.Attributes.height "500" ] qr
+                                                    [ QRCode.toSvg [ Svg.Attributes.width "100%", Svg.Attributes.height "500" ] qr
                                                     , Html.br [] []
                                                     , Html.p [] [ Html.text "Scan the QR code above on your device" ]
                                                     , Html.p [] [ Html.text "and follow the link to load in the current cues." ]

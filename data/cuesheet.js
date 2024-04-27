@@ -18933,7 +18933,7 @@ var $author$project$Main$view = function (model) {
 																	$pablohirafuji$elm_qrcode$QRCode$toSvg,
 																	_List_fromArray(
 																		[
-																			$elm$svg$Svg$Attributes$width('500'),
+																			$elm$svg$Svg$Attributes$width('100%'),
 																			$elm$svg$Svg$Attributes$height('500')
 																		]),
 																	qr),
