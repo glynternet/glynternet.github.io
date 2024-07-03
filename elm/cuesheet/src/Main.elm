@@ -53,6 +53,7 @@ main =
 type alias StoredState =
     { waypoints : Maybe (List Waypoint)
     , totalDistanceDisplay : Maybe String
+    , lastReferencePoint : Maybe Float
     , locationFilterEnabled : Maybe Bool
     , filteredLocationTypes : Maybe (Dict.Dict String Bool)
     , itemSpacing : Maybe Int
@@ -92,6 +93,7 @@ type alias WaypointsOptions =
 
 type alias CuesViewOptions =
     { totalDistanceDisplay : TotalDistanceDisplay
+    , referencePoint : Float
     , position : Float
     , itemSpacing : Int
     , distanceDetail : Int
@@ -101,7 +103,7 @@ type alias CuesViewOptions =
 type TotalDistanceDisplay
     = FromZero
     | ToLast
-    | ToPoint Float
+    | ToPoint
     | None
 
 
@@ -144,10 +146,11 @@ init maybeState url key =
                 |> Maybe.map
                     (Json.Decode.decodeValue (storedStateDecoder longFieldNames)
                         -- TODO: handle error
-                        >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
+                        >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
                         >> storedStateModel url
                     )
-                |> Maybe.withDefault (Model (WelcomePage False) Maybe.Nothing True (CuesViewOptions FromZero 0 defaultSpacing defaultDistanceDetail) False url)
+                -- TODO(glynternet): best default value for last reference point/?
+                |> Maybe.withDefault (Model (WelcomePage False) Maybe.Nothing True (CuesViewOptions FromZero 1000 0 defaultSpacing defaultDistanceDetail) False url)
     )
         |> updateModel
         |> Tuple.mapSecond
@@ -181,6 +184,8 @@ storedStateModel url state =
         (CuesViewOptions
             -- TODO(glynternet): store "to point" state
             (state.totalDistanceDisplay |> Maybe.andThen (parseTotalDistanceDisplay Maybe.Nothing) |> Maybe.withDefault FromZero)
+            (state.lastReferencePoint |> Maybe.withDefault 1000)
+            -- TODO(glynternet): best default or getting last point here?
             0
             (Maybe.withDefault defaultSpacing state.itemSpacing)
             (Maybe.withDefault defaultDistanceDetail state.distanceDetail)
@@ -197,6 +202,7 @@ type Msg
     | UpdateTotalDistanceDisplay (Maybe TotalDistanceDisplay)
     | UpdateWaypointSelection (Maybe Bool)
     | UpdatePosition Float
+    | UpdateReferencePoint Float
     | UpdateItemSpacing Int
     | UpdateDistanceDetail Int
     | OpenFileBrowser
@@ -302,6 +308,13 @@ update msg model =
                     model.cuesViewOptions
             in
             updateModel { model | cuesViewOptions = { options | position = position } }
+
+        UpdateReferencePoint point ->
+            let
+                options =
+                    model.cuesViewOptions
+            in
+            updateModel { model | cuesViewOptions = { options | referencePoint = point } }
 
         UpdateItemSpacing spacing ->
             let
@@ -601,10 +614,10 @@ welcomePage toGo =
                     ]
                     (List.map (\( desc, waypointModifier, opts ) -> Html.div [] [ Html.h4 [ Html.Attributes.style "text-align" "center" ] [ Html.text desc ], cuesheet (waypointModifier exampleWaypoints) opts ])
                         [ if toGo then
-                            ( "Distance to go", identity, CuesViewOptions ToLast 0 defaultSpacing defaultDistanceDetail )
+                            ( "Distance to go", identity, CuesViewOptions ToLast 1000 0 defaultSpacing defaultDistanceDetail )
 
                           else
-                            ( "Distance from zero", identity, CuesViewOptions FromZero 0 defaultSpacing defaultDistanceDetail )
+                            ( "Distance from zero", identity, CuesViewOptions FromZero 1000 0 defaultSpacing defaultDistanceDetail )
                         , ( "Custom location types"
                           , List.map
                                 (\w ->
@@ -618,10 +631,10 @@ welcomePage toGo =
                                                 w.types
                                     }
                                 )
-                          , CuesViewOptions None 0 defaultSpacing defaultDistanceDetail
+                          , CuesViewOptions None 1000 0 defaultSpacing defaultDistanceDetail
                           )
-                        , ( "Custom spacing", identity, CuesViewOptions None 0 (defaultSpacing - 10) defaultDistanceDetail )
-                        , ( "Filter location types", cues (WaypointsOptions True (initialFilteredLocations exampleWaypoints |> Dict.map (\typ _ -> List.member typ [ unknownType, climbType, waterType ]))), CuesViewOptions None 0 defaultSpacing defaultDistanceDetail )
+                        , ( "Custom spacing", identity, CuesViewOptions None 1000 0 (defaultSpacing - 10) defaultDistanceDetail )
+                        , ( "Filter location types", cues (WaypointsOptions True (initialFilteredLocations exampleWaypoints |> Dict.map (\typ _ -> List.member typ [ unknownType, climbType, waterType ]))), CuesViewOptions None 1000 0 defaultSpacing defaultDistanceDetail )
                         ]
                     )
               ]
@@ -763,7 +776,7 @@ viewOptions show maxDistance waypointOptions cuesViewOptions decodeError =
                                 (Dropdown.Options
                                     [ Dropdown.Item (formatTotalDistanceDisplay FromZero) (formatTotalDistanceDisplay FromZero) True
                                     , Dropdown.Item (formatTotalDistanceDisplay ToLast) (formatTotalDistanceDisplay ToLast) True
-                                    , Dropdown.Item (formatTotalDistanceDisplay (ToPoint 0)) (formatTotalDistanceDisplay (ToPoint 0)) True
+                                    , Dropdown.Item (formatTotalDistanceDisplay ToPoint) (formatTotalDistanceDisplay ToPoint) True
                                     , Dropdown.Item (formatTotalDistanceDisplay None) (formatTotalDistanceDisplay None) True
                                     ]
                                     Maybe.Nothing
@@ -776,14 +789,14 @@ viewOptions show maxDistance waypointOptions cuesViewOptions decodeError =
                                 (Maybe.Just <| formatTotalDistanceDisplay cuesViewOptions.totalDistanceDisplay)
                              ]
                                 ++ (case cuesViewOptions.totalDistanceDisplay of
-                                        ToPoint point ->
+                                        ToPoint ->
                                             [ Html.p []
                                                 [ Html.input
                                                     [ Html.Attributes.type_ "number"
                                                     , Html.Attributes.min "0"
                                                     , maxDistance |> Maybe.map (String.fromFloat >> Html.Attributes.max) |> Maybe.withDefault (Html.Attributes.disabled True)
-                                                    , Html.Attributes.value <| String.fromFloat point
-                                                    , Html.Events.onInput (String.toFloat >> Maybe.withDefault 0 >> ToPoint >> Maybe.Just >> UpdateTotalDistanceDisplay)
+                                                    , Html.Attributes.value <| String.fromFloat cuesViewOptions.referencePoint
+                                                    , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1000 >> UpdateReferencePoint)
                                                     ]
                                                     []
                                                 ]
@@ -875,7 +888,7 @@ parseTotalDistanceDisplay point v =
             Maybe.Just ToLast
 
         "to point" ->
-            Maybe.Just <| ToPoint (Maybe.withDefault 100 point)
+            Maybe.Just <| ToPoint
 
         "hide" ->
             Maybe.Just None
@@ -893,7 +906,7 @@ formatTotalDistanceDisplay v =
         ToLast ->
             "to last"
 
-        ToPoint _ ->
+        ToPoint ->
             "to point"
 
         None ->
@@ -983,8 +996,8 @@ cuesheet waypoints cuesViewOptions =
                                             ToLast ->
                                                 lastWaypointDistance |> Maybe.map (\last -> formatFloat cuesViewOptions.distanceDetail (last - waypoint.distance) ++ "km")
 
-                                            ToPoint point ->
-                                                Maybe.Just (formatFloat cuesViewOptions.distanceDetail (point - waypoint.distance) ++ "km")
+                                            ToPoint ->
+                                                Maybe.Just (formatFloat cuesViewOptions.distanceDetail (cuesViewOptions.referencePoint - waypoint.distance) ++ "km")
 
                                     waypointInfo =
                                         List.filterMap identity
@@ -1139,6 +1152,7 @@ type alias StoredStateCodeFields =
     , waypointDistance : String
     , waypointType : String
     , totalDistanceDisplay : String
+    , referencePoint : String
     , distanceDetail : String
     , locationFilterEnabled : String
     , filteredLocationTypes : String
@@ -1154,6 +1168,7 @@ longFieldNames =
     , waypointDistance = "distance"
     , waypointType = "typ"
     , totalDistanceDisplay = "totalDistanceDisplay"
+    , referencePoint = "referencePoint"
     , distanceDetail = "distanceDetail"
     , locationFilterEnabled = "locationFilterEnabled"
     , filteredLocationTypes = "filteredLocationTypes"
@@ -1175,6 +1190,7 @@ shortFieldNames =
     , waypointDistance = "d"
     , waypointType = "t"
     , totalDistanceDisplay = "tdd"
+    , referencePoint = "rp"
     , distanceDetail = "dd"
     , locationFilterEnabled = "lfe"
     , filteredLocationTypes = "flt"
@@ -1197,6 +1213,7 @@ encodeSavedState fieldNames model =
                 []
          )
             ++ [ ( fieldNames.totalDistanceDisplay, Json.Encode.string <| formatTotalDistanceDisplay model.cuesViewOptions.totalDistanceDisplay )
+               , ( fieldNames.referencePoint, Json.Encode.float model.cuesViewOptions.referencePoint )
                , ( fieldNames.distanceDetail, Json.Encode.int model.cuesViewOptions.distanceDetail )
                , ( fieldNames.itemSpacing, Json.Encode.int model.cuesViewOptions.itemSpacing )
                , ( fieldNames.showOptions, Json.Encode.bool model.showOptions )
@@ -1207,9 +1224,10 @@ encodeSavedState fieldNames model =
 
 storedStateDecoder : StoredStateCodeFields -> Json.Decode.Decoder StoredState
 storedStateDecoder fieldNames =
-    Json.Decode.map7 StoredState
+    Json.Decode.map8 StoredState
         (Json.Decode.maybe (Json.Decode.field fieldNames.waypoints (decodeWaypoints fieldNames)))
         (Json.Decode.maybe (Json.Decode.field fieldNames.totalDistanceDisplay Json.Decode.string))
+        (Json.Decode.maybe (Json.Decode.field fieldNames.referencePoint Json.Decode.float))
         (Json.Decode.maybe (Json.Decode.field fieldNames.locationFilterEnabled Json.Decode.bool))
         (Json.Decode.maybe (Json.Decode.field fieldNames.filteredLocationTypes (Json.Decode.dict Json.Decode.bool)))
         (Json.Decode.maybe (Json.Decode.field fieldNames.itemSpacing Json.Decode.int))
