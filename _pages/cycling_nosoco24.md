@@ -24,3 +24,4 @@ tags: cycling
 - Locations first 3 splits - [GPX](/data/nosoco24-locations-012.gpx)
 - Locations last 2 splits - [GPX](/data/nosoco24-locations-34.gpx)
 - Cuesheet data - [CSV](/data/nosoco24-cuesheetpoints.csv)
+- [Caltopo Map](https://caltopo.com/m/N1FGA60)
