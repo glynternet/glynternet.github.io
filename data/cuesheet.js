@@ -8594,7 +8594,7 @@ var $folkertdev$elm_flate$Inflate$Internal$inflateBlockDataHelp = F2(
 									A3($folkertdev$elm_flate$Experimental$ByteArray$copyToBack, offset, length, output)));
 						}),
 					$folkertdev$elm_flate$Inflate$Internal$decodeLength(symbol),
-					A2($folkertdev$elm_flate$Inflate$Internal$decodeOffset, outputLength, trees.Q)));
+					A2($folkertdev$elm_flate$Inflate$Internal$decodeOffset, outputLength, trees.R)));
 			},
 			A2($folkertdev$elm_flate$Inflate$Internal$decodeSymbol, table, trees.W));
 	});
@@ -8914,7 +8914,7 @@ var $folkertdev$elm_flate$Inflate$Internal$uncompressHelp = function (output) {
 			case 1:
 				return A3(
 					$folkertdev$elm_flate$Inflate$Internal$inflateBlockData,
-					{Q: $folkertdev$elm_flate$Inflate$Internal$sdtree, W: $folkertdev$elm_flate$Inflate$Internal$sltree},
+					{R: $folkertdev$elm_flate$Inflate$Internal$sdtree, W: $folkertdev$elm_flate$Inflate$Internal$sltree},
 					$folkertdev$elm_flate$Experimental$ByteArray$length(output),
 					output);
 			case 2:
@@ -8925,7 +8925,7 @@ var $folkertdev$elm_flate$Inflate$Internal$uncompressHelp = function (output) {
 						var dtree = _v2.b;
 						return A3(
 							$folkertdev$elm_flate$Inflate$Internal$inflateBlockData,
-							{Q: dtree, W: ltree},
+							{R: dtree, W: ltree},
 							$folkertdev$elm_flate$Experimental$ByteArray$length(output),
 							output);
 					},
@@ -9159,7 +9159,7 @@ var $author$project$Main$shortFieldNames = {k: 'dd', m: 'flt', c: 'is', n: 'lfe'
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $author$project$Main$Waypoint = F3(
 	function (name, distance, types) {
-		return {Q: distance, a3: name, S: types};
+		return {R: distance, a3: name, P: types};
 	});
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
@@ -9244,25 +9244,43 @@ var $author$project$Main$WaypointsOptions = F2(
 	function (locationFilterEnabled, filteredLocationTypes) {
 		return {m: filteredLocationTypes, n: locationFilterEnabled};
 	});
-var $elm$core$Dict$singleton = F2(
-	function (key, value) {
-		return A5($elm$core$Dict$RBNode_elm_builtin, 1, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
-	});
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
 var $author$project$Main$unknownType = '';
 var $author$project$Main$initialFilteredLocations = A2(
-	$elm$core$List$foldl,
-	F2(
-		function (el, waypointsInterationCurrent) {
-			return A3(
-				$elm$core$List$foldl,
-				F2(
-					function (typ, waypointIterationCurrent) {
-						return A3($elm$core$Dict$insert, typ, true, waypointIterationCurrent);
-					}),
-				waypointsInterationCurrent,
-				el.S);
-		}),
-	A2($elm$core$Dict$singleton, $author$project$Main$unknownType, true));
+	$elm$core$Basics$composeR,
+	A2(
+		$elm$core$List$foldl,
+		F2(
+			function (el, _v0) {
+				var waypointsIterationCurrent = _v0.a;
+				var includeUnknown = _v0.b;
+				return $elm$core$List$isEmpty(el.P) ? _Utils_Tuple2(waypointsIterationCurrent, true) : _Utils_Tuple2(
+					A3(
+						$elm$core$List$foldl,
+						F2(
+							function (typ, waypointIterationCurrent) {
+								return A3($elm$core$Dict$insert, typ, true, waypointIterationCurrent);
+							}),
+						waypointsIterationCurrent,
+						el.P),
+					includeUnknown);
+			}),
+		_Utils_Tuple2($elm$core$Dict$empty, false)),
+	function (base) {
+		if (base.b) {
+			var d = base.a;
+			return A3($elm$core$Dict$insert, $author$project$Main$unknownType, true, d);
+		} else {
+			var d = base.a;
+			return d;
+		}
+	});
 var $author$project$Main$FromLast = 1;
 var $author$project$Main$None = 2;
 var $author$project$Main$parseTotalDistanceDisplay = function (v) {
@@ -9611,10 +9629,10 @@ var $author$project$Main$encodeWaypoints = F2(
 							$elm$json$Json$Encode$string(waypoint.a3)),
 							_Utils_Tuple2(
 							fieldNames.as,
-							$elm$json$Json$Encode$float(waypoint.Q)),
+							$elm$json$Json$Encode$float(waypoint.R)),
 							_Utils_Tuple2(
 							fieldNames.au,
-							A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$string, waypoint.S))
+							A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$string, waypoint.P))
 						]));
 			},
 			waypoints);
@@ -10907,7 +10925,7 @@ var $author$project$Main$initialCuesModel = function (waypoints) {
 	var sortedWaypoint = A2(
 		$elm$core$List$sortBy,
 		function ($) {
-			return $.Q;
+			return $.R;
 		},
 		waypoints);
 	return A2(
@@ -11153,7 +11171,7 @@ var $author$project$Main$cues = F2(
 						true,
 						A2($elm$core$Dict$get, typ, waypointOptions.m));
 				};
-				var _v0 = w.S;
+				var _v0 = w.P;
 				if (!_v0.b) {
 					return includeType($author$project$Main$unknownType) ? $elm$core$Maybe$Just(w) : $elm$core$Maybe$Nothing;
 				} else {
@@ -11166,7 +11184,7 @@ var $author$project$Main$cues = F2(
 						return $elm$core$Maybe$Just(
 							_Utils_update(
 								w,
-								{S: some}));
+								{P: some}));
 					}
 				}
 			},
@@ -11418,13 +11436,6 @@ var $author$project$Main$formatFloat = F2(
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
-var $elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
-};
 var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
 var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
@@ -11461,7 +11472,7 @@ var $author$project$Main$waypointInfos = function (waypoints) {
 										function (previous) {
 											return _List_fromArray(
 												[
-													$author$project$Main$Ride(el.Q - previous.Q)
+													$author$project$Main$Ride(el.R - previous.R)
 												]);
 										},
 										accum.a))),
@@ -11484,7 +11495,7 @@ var $author$project$Main$cuesheet = F2(
 		var lastWaypointDistance = A2(
 			$elm$core$Maybe$map,
 			function ($) {
-				return $.Q;
+				return $.R;
 			},
 			$elm$core$List$head(
 				$elm$core$List$reverse(waypoints)));
@@ -11523,12 +11534,12 @@ var $author$project$Main$cuesheet = F2(
 												return $elm$core$Maybe$Nothing;
 											case 0:
 												return $elm$core$Maybe$Just(
-													A2($author$project$Main$formatFloat, cuesViewOptions.k, waypoint.Q) + 'km');
+													A2($author$project$Main$formatFloat, cuesViewOptions.k, waypoint.R) + 'km');
 											default:
 												return A2(
 													$elm$core$Maybe$map,
 													function (last) {
-														return A2($author$project$Main$formatFloat, cuesViewOptions.k, last - waypoint.Q) + 'km';
+														return A2($author$project$Main$formatFloat, cuesViewOptions.k, last - waypoint.R) + 'km';
 													},
 													lastWaypointDistance);
 										}
@@ -11540,7 +11551,7 @@ var $author$project$Main$cuesheet = F2(
 											[
 												waypointDistance,
 												function () {
-												var _v1 = waypoint.S;
+												var _v1 = waypoint.P;
 												if (!_v1.b) {
 													return $elm$core$Maybe$Nothing;
 												} else {
@@ -12339,7 +12350,7 @@ var $folkertdev$elm_flate$Deflate$Symbol$buildDynamicHuffmanCodec = function (sy
 	var distanceCounts = _v0.b;
 	var emptyDistanceCount = _v0.c;
 	return {
-		Q: emptyDistanceCount ? A2(
+		R: emptyDistanceCount ? A2(
 			$folkertdev$elm_flate$Huffman$fromFrequencies,
 			A3($elm$core$Array$set, 0, 1, distanceCounts),
 			15) : A2($folkertdev$elm_flate$Huffman$fromFrequencies, distanceCounts, 15),
@@ -13063,7 +13074,7 @@ var $folkertdev$elm_flate$Deflate$Symbol$encode = F3(
 				var extra = _v1.c;
 				return A2(
 					$elm$core$Basics$composeR,
-					A2($folkertdev$elm_flate$Huffman$encode, code_, htrees.Q),
+					A2($folkertdev$elm_flate$Huffman$encode, code_, htrees.R),
 					(bits > 0) ? A2($folkertdev$elm_flate$Deflate$BitWriter$writeBits, bits, extra) : $elm$core$Basics$identity);
 			}
 		}();
@@ -13221,7 +13232,7 @@ var $folkertdev$elm_flate$Deflate$Symbol$buildBitWidthCodes = F3(
 			_List_fromArray(
 				[
 					_Utils_Tuple2(trees.W, literalCodeCount),
-					_Utils_Tuple2(trees.Q, distanceCodeCount)
+					_Utils_Tuple2(trees.R, distanceCodeCount)
 				]),
 			_List_Nil);
 		return $folkertdev$elm_flate$Deflate$Symbol$calculateCodes(runLengths);
@@ -13309,12 +13320,12 @@ var $folkertdev$elm_flate$Deflate$Symbol$writeDynamicHuffmanCodec = F2(
 			A2(
 				$elm$core$Maybe$withDefault,
 				0,
-				$folkertdev$elm_flate$Huffman$usedMaxSymbol(trees.Q)) + 1);
+				$folkertdev$elm_flate$Huffman$usedMaxSymbol(trees.R)) + 1);
 		var codes = A3(
 			$folkertdev$elm_flate$Deflate$Symbol$buildBitWidthCodes,
 			literal_code_count,
 			distance_code_count,
-			{Q: trees.Q, W: trees.W});
+			{R: trees.R, W: trees.W});
 		var codeCounts = A3(
 			$elm$core$Array$foldl,
 			function (_v2) {
@@ -13784,7 +13795,7 @@ var $folkertdev$elm_flate$Huffman$fromList = A2(
 	A2($elm$core$Basics$composeL, $elm$core$Basics$identity, $elm$core$Array$fromList),
 	$elm$core$List$map($folkertdev$elm_flate$Huffman$codeFromRecord));
 var $folkertdev$elm_flate$Huffman$hardcodedStaticHuffmanTree = {
-	Q: $folkertdev$elm_flate$Huffman$fromList(
+	R: $folkertdev$elm_flate$Huffman$fromList(
 		_List_fromArray(
 			[
 				{a: 0, ce: 5},
@@ -18777,7 +18788,7 @@ var $author$project$Main$welcomePage = function (toGo) {
 											return _Utils_update(
 												w,
 												{
-													S: A2(
+													P: A2(
 														$elm$core$List$map,
 														function (typ) {
 															return A2(
@@ -18794,7 +18805,7 @@ var $author$project$Main$welcomePage = function (toGo) {
 																				_Utils_Tuple2(waterType, '🚰')
 																			]))));
 														},
-														w.S)
+														w.P)
 												});
 										}),
 									A3($author$project$Main$CuesViewOptions, 2, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail)),
