@@ -212,10 +212,10 @@ initialWaypointOptions waypoints =
 initialFilteredLocations : List Waypoint -> Dict.Dict String Bool
 initialFilteredLocations =
     List.foldl
-        (\el current ->
+        (\el waypointsInterationCurrent ->
             List.foldl
-                (\typ _ -> Dict.insert typ True current)
-                current
+                (\typ waypointIterationCurrent -> Dict.insert typ True waypointIterationCurrent)
+                waypointsInterationCurrent
                 el.types
         )
         (Dict.singleton unknownType True)

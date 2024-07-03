@@ -9252,14 +9252,14 @@ var $author$project$Main$unknownType = '';
 var $author$project$Main$initialFilteredLocations = A2(
 	$elm$core$List$foldl,
 	F2(
-		function (el, current) {
+		function (el, waypointsInterationCurrent) {
 			return A3(
 				$elm$core$List$foldl,
 				F2(
-					function (typ, _v0) {
-						return A3($elm$core$Dict$insert, typ, true, current);
+					function (typ, waypointIterationCurrent) {
+						return A3($elm$core$Dict$insert, typ, true, waypointIterationCurrent);
 					}),
-				current,
+				waypointsInterationCurrent,
 				el.S);
 		}),
 	A2($elm$core$Dict$singleton, $author$project$Main$unknownType, true));
