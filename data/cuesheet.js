@@ -11036,27 +11036,19 @@ var $author$project$Main$update = F2(
 						},
 						maybeSelection));
 			case 5:
-				var maybeSelection = msg.a;
+				var enabled = msg.a;
 				var _v2 = model.I;
 				if (_v2.$ === 2) {
 					var cuesModel = _v2.a;
-					return A2(
-						$elm$core$Maybe$withDefault,
-						_Utils_Tuple2(model, $elm$core$Platform$Cmd$none),
-						A2(
-							$elm$core$Maybe$map,
-							function (locationFilterEnabled) {
-								var options = cuesModel.L;
-								var newCuesModel = _Utils_update(
-									cuesModel,
-									{
-										L: _Utils_update(
-											options,
-											{o: locationFilterEnabled})
-									});
-								return A2($author$project$Main$updateCuesModel, model, newCuesModel);
-							},
-							maybeSelection));
+					var options = cuesModel.L;
+					var newCuesModel = _Utils_update(
+						cuesModel,
+						{
+							L: _Utils_update(
+								options,
+								{o: enabled})
+						});
+					return A2($author$project$Main$updateCuesModel, model, newCuesModel);
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
@@ -18135,6 +18127,9 @@ var $author$project$Main$TypeEnabled = F2(
 var $author$project$Main$UpdateDistanceDetail = function (a) {
 	return {$: 9, a: a};
 };
+var $author$project$Main$UpdateFilterEnabled = function (a) {
+	return {$: 5, a: a};
+};
 var $author$project$Main$UpdateItemSpacing = function (a) {
 	return {$: 8, a: a};
 };
@@ -18146,9 +18141,6 @@ var $author$project$Main$UpdateReferencePoint = function (a) {
 };
 var $author$project$Main$UpdateTotalDistanceDisplay = function (a) {
 	return {$: 4, a: a};
-};
-var $author$project$Main$UpdateWaypointSelection = function (a) {
-	return {$: 5, a: a};
 };
 var $elm$html$Html$Attributes$boolProperty = F2(
 	function (key, bool) {
@@ -18429,17 +18421,14 @@ var $author$project$Main$viewOptions = F5(
 														function (selection) {
 															switch (selection) {
 																case 'all':
-																	return $elm$core$Maybe$Just(false);
+																	return $author$project$Main$UpdateFilterEnabled(false);
 																case 'filtered':
-																	return $elm$core$Maybe$Just(true);
+																	return $author$project$Main$UpdateFilterEnabled(true);
 																default:
-																	return $elm$core$Maybe$Nothing;
+																	return $author$project$Main$Never;
 															}
 														}),
-													A2(
-														$elm$core$Basics$composeR,
-														$elm$core$Maybe$withDefault($elm$core$Maybe$Nothing),
-														$author$project$Main$UpdateWaypointSelection))),
+													$elm$core$Maybe$withDefault($author$project$Main$Never))),
 											_List_Nil,
 											$elm$core$Maybe$Just(
 												waypointOptions.o ? 'filtered' : 'all')),

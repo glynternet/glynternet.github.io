@@ -200,7 +200,7 @@ type Msg
     | TypeEnabled String Bool
     | ShowOptions Bool
     | UpdateTotalDistanceDisplay (Maybe TotalDistanceDisplay)
-    | UpdateWaypointSelection (Maybe Bool)
+    | UpdateFilterEnabled Bool
     | UpdatePosition Float
     | UpdateReferencePoint Float
     | UpdateItemSpacing Int
@@ -282,22 +282,17 @@ update msg model =
                     )
                 |> Maybe.withDefault ( model, Cmd.none )
 
-        UpdateWaypointSelection maybeSelection ->
+        UpdateFilterEnabled enabled ->
             case model.page of
                 CuesheetPage cuesModel ->
-                    maybeSelection
-                        |> Maybe.map
-                            (\locationFilterEnabled ->
-                                let
-                                    options =
-                                        cuesModel.waypointOptions
+                    let
+                        options =
+                            cuesModel.waypointOptions
 
-                                    newCuesModel =
-                                        { cuesModel | waypointOptions = { options | locationFilterEnabled = locationFilterEnabled } }
-                                in
-                                updateCuesModel model newCuesModel
-                            )
-                        |> Maybe.withDefault ( model, Cmd.none )
+                        newCuesModel =
+                            { cuesModel | waypointOptions = { options | locationFilterEnabled = enabled } }
+                    in
+                    updateCuesModel model newCuesModel
 
                 _ ->
                     ( model, Cmd.none )
@@ -727,16 +722,15 @@ viewOptions show maxDistance waypointOptions cuesViewOptions decodeError =
                                         (\selection ->
                                             case selection of
                                                 "all" ->
-                                                    Maybe.Just False
+                                                    UpdateFilterEnabled False
 
                                                 "filtered" ->
-                                                    Maybe.Just True
+                                                    UpdateFilterEnabled True
 
                                                 _ ->
-                                                    Maybe.Nothing
+                                                    Never
                                         )
-                                        >> Maybe.withDefault Maybe.Nothing
-                                        >> UpdateWaypointSelection
+                                        >> Maybe.withDefault Never
                                     )
                                 )
                                 []
