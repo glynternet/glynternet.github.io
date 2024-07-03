@@ -389,6 +389,10 @@ updateModel model =
     ( model, storeState localStoredState )
 
 
+
+-- TODO(glynternet): update reference point to last point when new CSV uploaded
+
+
 updateCSVDecodeModel : Model -> Result Csv.Decode.Error (List Waypoint) -> ( Model, Cmd Msg )
 updateCSVDecodeModel model result =
     case result of
