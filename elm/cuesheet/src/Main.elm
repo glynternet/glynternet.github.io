@@ -101,6 +101,7 @@ type alias CuesViewOptions =
 type TotalDistanceDisplay
     = FromZero
     | ToLast
+    | ToPoint Float
     | None
 
 
@@ -178,7 +179,8 @@ storedStateModel url state =
         Maybe.Nothing
         (state.showOptions |> Maybe.withDefault True)
         (CuesViewOptions
-            (state.totalDistanceDisplay |> Maybe.andThen parseTotalDistanceDisplay |> Maybe.withDefault FromZero)
+            -- TODO(glynternet): store "to point" state
+            (state.totalDistanceDisplay |> Maybe.andThen (parseTotalDistanceDisplay Maybe.Nothing) |> Maybe.withDefault FromZero)
             0
             (Maybe.withDefault defaultSpacing state.itemSpacing)
             (Maybe.withDefault defaultDistanceDetail state.distanceDetail)
@@ -496,13 +498,7 @@ view model =
                         , Html.Attributes.style "height" "100%"
                         ]
                         [ viewOptions model.showOptions
-                            (case List.sortBy .distance cuesheetModel.waypoints |> List.reverse of
-                                first :: _ ->
-                                    Maybe.Just first.distance
-
-                                _ ->
-                                    Maybe.Nothing
-                            )
+                            (List.head (List.reverse cuesheetModel.waypoints) |> Maybe.map .distance)
                             cuesheetModel.waypointOptions
                             model.cuesViewOptions
                             model.csvDecodeError
@@ -763,21 +759,40 @@ viewOptions show maxDistance waypointOptions cuesViewOptions decodeError =
                             )
                         , Html.hr [] []
                         , optionGroup "Total distance"
-                            [ Dropdown.dropdown
+                            ([ Dropdown.dropdown
                                 (Dropdown.Options
                                     [ Dropdown.Item (formatTotalDistanceDisplay FromZero) (formatTotalDistanceDisplay FromZero) True
                                     , Dropdown.Item (formatTotalDistanceDisplay ToLast) (formatTotalDistanceDisplay ToLast) True
+                                    , Dropdown.Item (formatTotalDistanceDisplay (ToPoint 0)) (formatTotalDistanceDisplay (ToPoint 0)) True
                                     , Dropdown.Item (formatTotalDistanceDisplay None) (formatTotalDistanceDisplay None) True
                                     ]
                                     Maybe.Nothing
-                                    (Maybe.map parseTotalDistanceDisplay
+                                    (Maybe.map (parseTotalDistanceDisplay Maybe.Nothing)
                                         >> Maybe.withDefault Maybe.Nothing
                                         >> UpdateTotalDistanceDisplay
                                     )
                                 )
                                 []
                                 (Maybe.Just <| formatTotalDistanceDisplay cuesViewOptions.totalDistanceDisplay)
-                            ]
+                             ]
+                                ++ (case cuesViewOptions.totalDistanceDisplay of
+                                        ToPoint point ->
+                                            [ Html.p []
+                                                [ Html.input
+                                                    [ Html.Attributes.type_ "number"
+                                                    , Html.Attributes.min "0"
+                                                    , maxDistance |> Maybe.map (String.fromFloat >> Html.Attributes.max) |> Maybe.withDefault (Html.Attributes.disabled True)
+                                                    , Html.Attributes.value <| String.fromFloat point
+                                                    , Html.Events.onInput (String.toFloat >> Maybe.withDefault 0 >> ToPoint >> Maybe.Just >> UpdateTotalDistanceDisplay)
+                                                    ]
+                                                    []
+                                                ]
+                                            ]
+
+                                        _ ->
+                                            []
+                                   )
+                            )
                         , Html.hr [] []
                         , optionGroup "Position"
                             [ Html.input
@@ -850,14 +865,17 @@ viewButtonWithAttributes attrs text msg =
         [ Html.text text ]
 
 
-parseTotalDistanceDisplay : String -> Maybe TotalDistanceDisplay
-parseTotalDistanceDisplay v =
+parseTotalDistanceDisplay : Maybe Float -> String -> Maybe TotalDistanceDisplay
+parseTotalDistanceDisplay point v =
     case v of
         "from zero" ->
             Maybe.Just FromZero
 
         "to last" ->
             Maybe.Just ToLast
+
+        "to point" ->
+            Maybe.Just <| ToPoint (Maybe.withDefault 100 point)
 
         "hide" ->
             Maybe.Just None
@@ -874,6 +892,9 @@ formatTotalDistanceDisplay v =
 
         ToLast ->
             "to last"
+
+        ToPoint _ ->
+            "to point"
 
         None ->
             "hide"
@@ -961,6 +982,9 @@ cuesheet waypoints cuesViewOptions =
 
                                             ToLast ->
                                                 lastWaypointDistance |> Maybe.map (\last -> formatFloat cuesViewOptions.distanceDetail (last - waypoint.distance) ++ "km")
+
+                                            ToPoint point ->
+                                                Maybe.Just (formatFloat cuesViewOptions.distanceDetail (point - waypoint.distance) ++ "km")
 
                                     waypointInfo =
                                         List.filterMap identity

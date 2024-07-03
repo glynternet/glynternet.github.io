@@ -6131,16 +6131,16 @@ var $elm$time$Time$every = F2(
 	});
 var $author$project$Main$CuesViewOptions = F4(
 	function (totalDistanceDisplay, position, itemSpacing, distanceDetail) {
-		return {l: distanceDetail, c: itemSpacing, aJ: position, v: totalDistanceDisplay};
+		return {i: distanceDetail, c: itemSpacing, aJ: position, r: totalDistanceDisplay};
 	});
-var $author$project$Main$FromZero = 0;
+var $author$project$Main$FromZero = {$: 0};
 var $author$project$Main$Model = F6(
 	function (page, csvDecodeError, showOptions, cuesViewOptions, showQR, url) {
-		return {aB: csvDecodeError, k: cuesViewOptions, I: page, A: showOptions, aM: showQR, cd: url};
+		return {aB: csvDecodeError, l: cuesViewOptions, I: page, A: showOptions, aM: showQR, cd: url};
 	});
 var $author$project$Main$StoredState = F7(
 	function (waypoints, totalDistanceDisplay, locationFilterEnabled, filteredLocationTypes, itemSpacing, distanceDetail, showOptions) {
-		return {l: distanceDetail, n: filteredLocationTypes, c: itemSpacing, o: locationFilterEnabled, A: showOptions, v: totalDistanceDisplay, B: waypoints};
+		return {i: distanceDetail, n: filteredLocationTypes, c: itemSpacing, o: locationFilterEnabled, A: showOptions, r: totalDistanceDisplay, B: waypoints};
 	});
 var $author$project$Main$WelcomePage = function (a) {
 	return {$: 0, a: a};
@@ -6623,7 +6623,7 @@ var $elm$bytes$Bytes$Encode$bytes = $elm$bytes$Bytes$Encode$Bytes;
 var $folkertdev$elm_flate$Inflate$BitReader$decode = F2(
 	function (bytes, _v0) {
 		var reader = _v0;
-		var initialState = {b: 0, m: bytes, j: 0, f: 0, P: 0};
+		var initialState = {b: 0, m: bytes, k: 0, f: 0, P: 0};
 		var _v1 = reader(initialState);
 		if (!_v1.$) {
 			var _v2 = _v1.a;
@@ -7827,8 +7827,8 @@ var $elm$core$Array$get = F2(
 	});
 var $folkertdev$elm_flate$Inflate$BitReader$moveFromReserve = F2(
 	function (nbits, state) {
-		var masked = (nbits === 32) ? (state.j << state.b) : ((((1 << nbits) - 1) & state.j) << state.b);
-		return {b: state.b + nbits, m: state.m, j: state.j >>> nbits, f: state.f - nbits, P: masked | state.P};
+		var masked = (nbits === 32) ? (state.k << state.b) : ((((1 << nbits) - 1) & state.k) << state.b);
+		return {b: state.b + nbits, m: state.m, k: state.k >>> nbits, f: state.f - nbits, P: masked | state.P};
 	});
 var $elm$core$Tuple$pair = F2(
 	function (a, b) {
@@ -7922,7 +7922,7 @@ var $folkertdev$elm_flate$Inflate$BitReader$readMoreBits = function (state) {
 					var _v3 = _v2.a;
 					var newReserve = _v3.a;
 					var newBuffer = _v3.b;
-					var $temp$state = {b: state1.b, m: newBuffer, j: newReserve, f: additionallyAvailable, P: state1.P};
+					var $temp$state = {b: state1.b, m: newBuffer, k: newReserve, f: additionallyAvailable, P: state1.P};
 					state = $temp$state;
 					continue readMoreBits;
 				}
@@ -7952,7 +7952,7 @@ var $folkertdev$elm_flate$Inflate$Internal$decodeSymbol = F2(
 					return $elm$core$Result$Ok(
 						_Utils_Tuple2(
 							result,
-							{b: bitsAvailable, m: d.m, j: d.j, f: d.f, P: tag}));
+							{b: bitsAvailable, m: d.m, k: d.k, f: d.f, P: tag}));
 				}
 			}
 		};
@@ -7975,7 +7975,7 @@ var $folkertdev$elm_flate$Inflate$BitReader$readBits = F2(
 					return $elm$core$Result$Ok(
 						_Utils_Tuple2(
 							val + base,
-							{b: d.b - numberOfBits, m: d.m, j: d.j, f: d.f, P: newTag}));
+							{b: d.b - numberOfBits, m: d.m, k: d.k, f: d.f, P: newTag}));
 				}
 			}
 		};
@@ -8817,17 +8817,17 @@ var $folkertdev$elm_flate$Inflate$BitReader$flushHelp = function (state0) {
 		state0);
 	var reserveEncoder = (state.f > 24) ? _List_fromArray(
 		[
-			A2($elm$bytes$Bytes$Encode$unsignedInt32, 0, state.j)
+			A2($elm$bytes$Bytes$Encode$unsignedInt32, 0, state.k)
 		]) : ((state.f > 16) ? _List_fromArray(
 		[
-			A2($elm$bytes$Bytes$Encode$unsignedInt16, 0, state.j),
-			$elm$bytes$Bytes$Encode$unsignedInt8(state.j >> 16)
+			A2($elm$bytes$Bytes$Encode$unsignedInt16, 0, state.k),
+			$elm$bytes$Bytes$Encode$unsignedInt8(state.k >> 16)
 		]) : ((state.f > 8) ? _List_fromArray(
 		[
-			A2($elm$bytes$Bytes$Encode$unsignedInt16, 0, state.j)
+			A2($elm$bytes$Bytes$Encode$unsignedInt16, 0, state.k)
 		]) : ((state.f > 1) ? _List_fromArray(
 		[
-			$elm$bytes$Bytes$Encode$unsignedInt8(state.j)
+			$elm$bytes$Bytes$Encode$unsignedInt8(state.k)
 		]) : _List_Nil)));
 	var tagEncoder = (state.b > 24) ? _List_fromArray(
 		[
@@ -8858,7 +8858,7 @@ var $folkertdev$elm_flate$Inflate$BitReader$flush = function (state) {
 	return {
 		b: 0,
 		m: $folkertdev$elm_flate$Inflate$BitReader$flushHelp(state),
-		j: 0,
+		k: 0,
 		f: 0,
 		P: 0
 	};
@@ -8994,7 +8994,7 @@ var $folkertdev$elm_flate$Inflate$GZip$inflate = function (buffer) {
 };
 var $folkertdev$elm_flate$Inflate$Inflate$inflateGZip = $folkertdev$elm_flate$Inflate$GZip$inflate;
 var $folkertdev$elm_flate$Flate$inflateGZip = $folkertdev$elm_flate$Inflate$Inflate$inflateGZip;
-var $author$project$Main$longFieldNames = {l: 'distanceDetail', n: 'filteredLocationTypes', c: 'itemSpacing', o: 'locationFilterEnabled', A: 'showOptions', v: 'totalDistanceDisplay', as: 'distance', at: 'name', au: 'typ', B: 'waypoints'};
+var $author$project$Main$longFieldNames = {i: 'distanceDetail', n: 'filteredLocationTypes', c: 'itemSpacing', o: 'locationFilterEnabled', A: 'showOptions', r: 'totalDistanceDisplay', as: 'distance', at: 'name', au: 'typ', B: 'waypoints'};
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (!maybe.$) {
@@ -9155,7 +9155,7 @@ var $elm$url$Url$Parser$query = function (_v0) {
 	};
 };
 var $elm$browser$Browser$Navigation$replaceUrl = _Browser_replaceUrl;
-var $author$project$Main$shortFieldNames = {l: 'dd', n: 'flt', c: 'is', o: 'lfe', A: 'so', v: 'tdd', as: 'd', at: 'n', au: 't', B: 'w'};
+var $author$project$Main$shortFieldNames = {i: 'dd', n: 'flt', c: 'is', o: 'lfe', A: 'so', r: 'tdd', as: 'd', at: 'n', au: 't', B: 'w'};
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $author$project$Main$Waypoint = F3(
 	function (name, distance, types) {
@@ -9218,7 +9218,7 @@ var $author$project$Main$storedStateDecoder = function (fieldNames) {
 				fieldNames.B,
 				$author$project$Main$decodeWaypoints(fieldNames))),
 		$elm$json$Json$Decode$maybe(
-			A2($elm$json$Json$Decode$field, fieldNames.v, $elm$json$Json$Decode$string)),
+			A2($elm$json$Json$Decode$field, fieldNames.r, $elm$json$Json$Decode$string)),
 		$elm$json$Json$Decode$maybe(
 			A2($elm$json$Json$Decode$field, fieldNames.o, $elm$json$Json$Decode$bool)),
 		$elm$json$Json$Decode$maybe(
@@ -9229,7 +9229,7 @@ var $author$project$Main$storedStateDecoder = function (fieldNames) {
 		$elm$json$Json$Decode$maybe(
 			A2($elm$json$Json$Decode$field, fieldNames.c, $elm$json$Json$Decode$int)),
 		$elm$json$Json$Decode$maybe(
-			A2($elm$json$Json$Decode$field, fieldNames.l, $elm$json$Json$Decode$int)),
+			A2($elm$json$Json$Decode$field, fieldNames.i, $elm$json$Json$Decode$int)),
 		$elm$json$Json$Decode$maybe(
 			A2($elm$json$Json$Decode$field, fieldNames.A, $elm$json$Json$Decode$bool)));
 };
@@ -9281,20 +9281,28 @@ var $author$project$Main$initialFilteredLocations = A2(
 			return d;
 		}
 	});
-var $author$project$Main$None = 2;
-var $author$project$Main$ToLast = 1;
-var $author$project$Main$parseTotalDistanceDisplay = function (v) {
-	switch (v) {
-		case 'from zero':
-			return $elm$core$Maybe$Just(0);
-		case 'to last':
-			return $elm$core$Maybe$Just(1);
-		case 'hide':
-			return $elm$core$Maybe$Just(2);
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
+var $author$project$Main$None = {$: 3};
+var $author$project$Main$ToLast = {$: 1};
+var $author$project$Main$ToPoint = function (a) {
+	return {$: 2, a: a};
 };
+var $author$project$Main$parseTotalDistanceDisplay = F2(
+	function (point, v) {
+		switch (v) {
+			case 'from zero':
+				return $elm$core$Maybe$Just($author$project$Main$FromZero);
+			case 'to last':
+				return $elm$core$Maybe$Just($author$project$Main$ToLast);
+			case 'to point':
+				return $elm$core$Maybe$Just(
+					$author$project$Main$ToPoint(
+						A2($elm$core$Maybe$withDefault, 100, point)));
+			case 'hide':
+				return $elm$core$Maybe$Just($author$project$Main$None);
+			default:
+				return $elm$core$Maybe$Nothing;
+		}
+	});
 var $author$project$Main$storedStateModel = F2(
 	function (url, state) {
 		return A6(
@@ -9324,11 +9332,14 @@ var $author$project$Main$storedStateModel = F2(
 				$author$project$Main$CuesViewOptions,
 				A2(
 					$elm$core$Maybe$withDefault,
-					0,
-					A2($elm$core$Maybe$andThen, $author$project$Main$parseTotalDistanceDisplay, state.v)),
+					$author$project$Main$FromZero,
+					A2(
+						$elm$core$Maybe$andThen,
+						$author$project$Main$parseTotalDistanceDisplay($elm$core$Maybe$Nothing),
+						state.r)),
 				0,
 				A2($elm$core$Maybe$withDefault, $author$project$Main$defaultSpacing, state.c),
-				A2($elm$core$Maybe$withDefault, $author$project$Main$defaultDistanceDetail, state.l)),
+				A2($elm$core$Maybe$withDefault, $author$project$Main$defaultDistanceDetail, state.i)),
 			false,
 			url);
 	});
@@ -9639,11 +9650,13 @@ var $author$project$Main$encodeWaypoints = F2(
 			waypoints);
 	});
 var $author$project$Main$formatTotalDistanceDisplay = function (v) {
-	switch (v) {
+	switch (v.$) {
 		case 0:
 			return 'from zero';
 		case 1:
 			return 'to last';
+		case 2:
+			return 'to point';
 		default:
 			return 'hide';
 	}
@@ -9679,15 +9692,15 @@ var $author$project$Main$encodeSavedState = F2(
 					_List_fromArray(
 						[
 							_Utils_Tuple2(
-							fieldNames.v,
+							fieldNames.r,
 							$elm$json$Json$Encode$string(
-								$author$project$Main$formatTotalDistanceDisplay(model.k.v))),
+								$author$project$Main$formatTotalDistanceDisplay(model.l.r))),
 							_Utils_Tuple2(
-							fieldNames.l,
-							$elm$json$Json$Encode$int(model.k.l)),
+							fieldNames.i,
+							$elm$json$Json$Encode$int(model.l.i)),
 							_Utils_Tuple2(
 							fieldNames.c,
-							$elm$json$Json$Encode$int(model.k.c)),
+							$elm$json$Json$Encode$int(model.l.c)),
 							_Utils_Tuple2(
 							fieldNames.A,
 							$elm$json$Json$Encode$bool(model.A))
@@ -9781,7 +9794,7 @@ var $author$project$Main$init = F3(
 								$author$project$Main$WelcomePage(false),
 								$elm$core$Maybe$Nothing,
 								true,
-								A4($author$project$Main$CuesViewOptions, 0, 0, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail),
+								A4($author$project$Main$CuesViewOptions, $author$project$Main$FromZero, 0, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail),
 								false,
 								url),
 							A2(
@@ -11009,14 +11022,14 @@ var $author$project$Main$update = F2(
 					A2(
 						$elm$core$Maybe$map,
 						function (selection) {
-							var options = model.k;
+							var options = model.l;
 							return $author$project$Main$updateModel(
 								_Utils_update(
 									model,
 									{
-										k: _Utils_update(
+										l: _Utils_update(
 											options,
-											{v: selection})
+											{r: selection})
 									}));
 						},
 						maybeSelection));
@@ -11047,36 +11060,36 @@ var $author$project$Main$update = F2(
 				}
 			case 6:
 				var position = msg.a;
-				var options = model.k;
+				var options = model.l;
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
 						{
-							k: _Utils_update(
+							l: _Utils_update(
 								options,
 								{aJ: position})
 						}));
 			case 7:
 				var spacing = msg.a;
-				var options = model.k;
+				var options = model.l;
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
 						{
-							k: _Utils_update(
+							l: _Utils_update(
 								options,
 								{c: spacing})
 						}));
 			case 8:
 				var detail = msg.a;
-				var options = model.k;
+				var options = model.l;
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
 						{
-							k: _Utils_update(
+							l: _Utils_update(
 								options,
-								{l: detail})
+								{i: detail})
 						}));
 			case 9:
 				return _Utils_Tuple2(
@@ -11541,20 +11554,24 @@ var $author$project$Main$cuesheet = F2(
 								if (!item.$) {
 									var waypoint = item.a;
 									var waypointDistance = function () {
-										var _v2 = cuesViewOptions.v;
-										switch (_v2) {
-											case 2:
+										var _v2 = cuesViewOptions.r;
+										switch (_v2.$) {
+											case 3:
 												return $elm$core$Maybe$Nothing;
 											case 0:
 												return $elm$core$Maybe$Just(
-													A2($author$project$Main$formatFloat, cuesViewOptions.l, waypoint.x) + 'km');
-											default:
+													A2($author$project$Main$formatFloat, cuesViewOptions.i, waypoint.x) + 'km');
+											case 1:
 												return A2(
 													$elm$core$Maybe$map,
 													function (last) {
-														return A2($author$project$Main$formatFloat, cuesViewOptions.l, last - waypoint.x) + 'km';
+														return A2($author$project$Main$formatFloat, cuesViewOptions.i, last - waypoint.x) + 'km';
 													},
 													lastWaypointDistance);
+											default:
+												var point = _v2.a;
+												return $elm$core$Maybe$Just(
+													A2($author$project$Main$formatFloat, cuesViewOptions.i, point - waypoint.x) + 'km');
 										}
 									}();
 									var waypointInfo = A2(
@@ -11686,7 +11703,7 @@ var $author$project$Main$cuesheet = F2(
 												_List_fromArray(
 													[
 														$elm$svg$Svg$text(
-														A2($author$project$Main$formatFloat, cuesViewOptions.l, dist) + 'km')
+														A2($author$project$Main$formatFloat, cuesViewOptions.i, dist) + 'km')
 													]))
 											]));
 								}
@@ -18433,42 +18450,96 @@ var $author$project$Main$viewOptions = F5(
 									A2(
 									$author$project$Main$optionGroup,
 									'Total distance',
-									_List_fromArray(
-										[
-											A3(
-											$abadi199$elm_input_extra$Dropdown$dropdown,
-											A3(
-												$abadi199$elm_input_extra$Dropdown$Options,
-												_List_fromArray(
-													[
-														A3(
-														$abadi199$elm_input_extra$Dropdown$Item,
-														$author$project$Main$formatTotalDistanceDisplay(0),
-														$author$project$Main$formatTotalDistanceDisplay(0),
-														true),
-														A3(
-														$abadi199$elm_input_extra$Dropdown$Item,
-														$author$project$Main$formatTotalDistanceDisplay(1),
-														$author$project$Main$formatTotalDistanceDisplay(1),
-														true),
-														A3(
-														$abadi199$elm_input_extra$Dropdown$Item,
-														$author$project$Main$formatTotalDistanceDisplay(2),
-														$author$project$Main$formatTotalDistanceDisplay(2),
-														true)
-													]),
-												$elm$core$Maybe$Nothing,
-												A2(
-													$elm$core$Basics$composeR,
-													$elm$core$Maybe$map($author$project$Main$parseTotalDistanceDisplay),
+									_Utils_ap(
+										_List_fromArray(
+											[
+												A3(
+												$abadi199$elm_input_extra$Dropdown$dropdown,
+												A3(
+													$abadi199$elm_input_extra$Dropdown$Options,
+													_List_fromArray(
+														[
+															A3(
+															$abadi199$elm_input_extra$Dropdown$Item,
+															$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromZero),
+															$author$project$Main$formatTotalDistanceDisplay($author$project$Main$FromZero),
+															true),
+															A3(
+															$abadi199$elm_input_extra$Dropdown$Item,
+															$author$project$Main$formatTotalDistanceDisplay($author$project$Main$ToLast),
+															$author$project$Main$formatTotalDistanceDisplay($author$project$Main$ToLast),
+															true),
+															A3(
+															$abadi199$elm_input_extra$Dropdown$Item,
+															$author$project$Main$formatTotalDistanceDisplay(
+																$author$project$Main$ToPoint(0)),
+															$author$project$Main$formatTotalDistanceDisplay(
+																$author$project$Main$ToPoint(0)),
+															true),
+															A3(
+															$abadi199$elm_input_extra$Dropdown$Item,
+															$author$project$Main$formatTotalDistanceDisplay($author$project$Main$None),
+															$author$project$Main$formatTotalDistanceDisplay($author$project$Main$None),
+															true)
+														]),
+													$elm$core$Maybe$Nothing,
 													A2(
 														$elm$core$Basics$composeR,
-														$elm$core$Maybe$withDefault($elm$core$Maybe$Nothing),
-														$author$project$Main$UpdateTotalDistanceDisplay))),
-											_List_Nil,
-											$elm$core$Maybe$Just(
-												$author$project$Main$formatTotalDistanceDisplay(cuesViewOptions.v)))
-										])),
+														$elm$core$Maybe$map(
+															$author$project$Main$parseTotalDistanceDisplay($elm$core$Maybe$Nothing)),
+														A2(
+															$elm$core$Basics$composeR,
+															$elm$core$Maybe$withDefault($elm$core$Maybe$Nothing),
+															$author$project$Main$UpdateTotalDistanceDisplay))),
+												_List_Nil,
+												$elm$core$Maybe$Just(
+													$author$project$Main$formatTotalDistanceDisplay(cuesViewOptions.r)))
+											]),
+										function () {
+											var _v2 = cuesViewOptions.r;
+											if (_v2.$ === 2) {
+												var point = _v2.a;
+												return _List_fromArray(
+													[
+														A2(
+														$elm$html$Html$p,
+														_List_Nil,
+														_List_fromArray(
+															[
+																A2(
+																$elm$html$Html$input,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$Attributes$type_('number'),
+																		$elm$html$Html$Attributes$min('0'),
+																		A2(
+																		$elm$core$Maybe$withDefault,
+																		$elm$html$Html$Attributes$disabled(true),
+																		A2(
+																			$elm$core$Maybe$map,
+																			A2($elm$core$Basics$composeR, $elm$core$String$fromFloat, $elm$html$Html$Attributes$max),
+																			maxDistance)),
+																		$elm$html$Html$Attributes$value(
+																		$elm$core$String$fromFloat(point)),
+																		$elm$html$Html$Events$onInput(
+																		A2(
+																			$elm$core$Basics$composeR,
+																			$elm$core$String$toFloat,
+																			A2(
+																				$elm$core$Basics$composeR,
+																				$elm$core$Maybe$withDefault(0),
+																				A2(
+																					$elm$core$Basics$composeR,
+																					$author$project$Main$ToPoint,
+																					A2($elm$core$Basics$composeR, $elm$core$Maybe$Just, $author$project$Main$UpdateTotalDistanceDisplay)))))
+																	]),
+																_List_Nil)
+															]))
+													]);
+											} else {
+												return _List_Nil;
+											}
+										}())),
 									A2($elm$html$Html$hr, _List_Nil, _List_Nil),
 									A2(
 									$author$project$Main$optionGroup,
@@ -18540,7 +18611,7 @@ var $author$project$Main$viewOptions = F5(
 													$elm$html$Html$Attributes$min('0'),
 													$elm$html$Html$Attributes$max('3'),
 													$elm$html$Html$Attributes$value(
-													$elm$core$String$fromInt(cuesViewOptions.l)),
+													$elm$core$String$fromInt(cuesViewOptions.i)),
 													$elm$html$Html$Events$onInput(
 													A2(
 														$elm$core$Basics$composeR,
@@ -18824,10 +18895,10 @@ var $author$project$Main$welcomePage = function (toGo) {
 									toGo ? _Utils_Tuple3(
 									'Distance to go',
 									$elm$core$Basics$identity,
-									A4($author$project$Main$CuesViewOptions, 1, 0, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail)) : _Utils_Tuple3(
+									A4($author$project$Main$CuesViewOptions, $author$project$Main$ToLast, 0, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail)) : _Utils_Tuple3(
 									'Distance from zero',
 									$elm$core$Basics$identity,
-									A4($author$project$Main$CuesViewOptions, 0, 0, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail)),
+									A4($author$project$Main$CuesViewOptions, $author$project$Main$FromZero, 0, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail)),
 									_Utils_Tuple3(
 									'Custom location types',
 									$elm$core$List$map(
@@ -18855,11 +18926,11 @@ var $author$project$Main$welcomePage = function (toGo) {
 														w.Q)
 												});
 										}),
-									A4($author$project$Main$CuesViewOptions, 2, 0, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail)),
+									A4($author$project$Main$CuesViewOptions, $author$project$Main$None, 0, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail)),
 									_Utils_Tuple3(
 									'Custom spacing',
 									$elm$core$Basics$identity,
-									A4($author$project$Main$CuesViewOptions, 2, 0, $author$project$Main$defaultSpacing - 10, $author$project$Main$defaultDistanceDetail)),
+									A4($author$project$Main$CuesViewOptions, $author$project$Main$None, 0, $author$project$Main$defaultSpacing - 10, $author$project$Main$defaultDistanceDetail)),
 									_Utils_Tuple3(
 									'Filter location types',
 									$author$project$Main$cues(
@@ -18877,7 +18948,7 @@ var $author$project$Main$welcomePage = function (toGo) {
 																[$author$project$Main$unknownType, climbType, waterType]));
 													}),
 												$author$project$Main$initialFilteredLocations(exampleWaypoints)))),
-									A4($author$project$Main$CuesViewOptions, 2, 0, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail))
+									A4($author$project$Main$CuesViewOptions, $author$project$Main$None, 0, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail))
 								])))
 					])
 				])));
@@ -19055,23 +19126,15 @@ var $author$project$Main$view = function (model) {
 									A5(
 									$author$project$Main$viewOptions,
 									model.A,
-									function () {
-										var _v2 = $elm$core$List$reverse(
-											A2(
-												$elm$core$List$sortBy,
-												function ($) {
-													return $.x;
-												},
-												cuesheetModel.B));
-										if (_v2.b) {
-											var first = _v2.a;
-											return $elm$core$Maybe$Just(first.x);
-										} else {
-											return $elm$core$Maybe$Nothing;
-										}
-									}(),
+									A2(
+										$elm$core$Maybe$map,
+										function ($) {
+											return $.x;
+										},
+										$elm$core$List$head(
+											$elm$core$List$reverse(cuesheetModel.B))),
 									cuesheetModel.K,
-									model.k,
+									model.l,
 									model.aB),
 									A2(
 									$elm$html$Html$div,
@@ -19088,7 +19151,7 @@ var $author$project$Main$view = function (model) {
 											A2(
 											$author$project$Main$cuesheet,
 											A2($author$project$Main$cues, cuesheetModel.K, cuesheetModel.B),
-											model.k)
+											model.l)
 										]))
 								]));
 					case 0:
