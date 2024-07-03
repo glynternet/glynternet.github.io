@@ -92,6 +92,7 @@ type alias WaypointsOptions =
 
 type alias CuesViewOptions =
     { totalDistanceDisplay : TotalDistanceDisplay
+    , position : Float
     , itemSpacing : Int
     , distanceDetail : Int
     }
@@ -99,7 +100,7 @@ type alias CuesViewOptions =
 
 type TotalDistanceDisplay
     = FromZero
-    | FromLast
+    | ToLast
     | None
 
 
@@ -145,7 +146,7 @@ init maybeState url key =
                         >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
                         >> storedStateModel url
                     )
-                |> Maybe.withDefault (Model (WelcomePage False) Maybe.Nothing True (CuesViewOptions FromZero defaultSpacing defaultDistanceDetail) False url)
+                |> Maybe.withDefault (Model (WelcomePage False) Maybe.Nothing True (CuesViewOptions FromZero 0 defaultSpacing defaultDistanceDetail) False url)
     )
         |> updateModel
         |> Tuple.mapSecond
@@ -178,6 +179,7 @@ storedStateModel url state =
         (state.showOptions |> Maybe.withDefault True)
         (CuesViewOptions
             (state.totalDistanceDisplay |> Maybe.andThen parseTotalDistanceDisplay |> Maybe.withDefault FromZero)
+            0
             (Maybe.withDefault defaultSpacing state.itemSpacing)
             (Maybe.withDefault defaultDistanceDetail state.distanceDetail)
         )
@@ -192,6 +194,7 @@ type Msg
     | ShowOptions Bool
     | UpdateTotalDistanceDisplay (Maybe TotalDistanceDisplay)
     | UpdateWaypointSelection (Maybe Bool)
+    | UpdatePosition Float
     | UpdateItemSpacing Int
     | UpdateDistanceDetail Int
     | OpenFileBrowser
@@ -290,6 +293,13 @@ update msg model =
 
                 _ ->
                     ( model, Cmd.none )
+
+        UpdatePosition position ->
+            let
+                options =
+                    model.cuesViewOptions
+            in
+            updateModel { model | cuesViewOptions = { options | position = position } }
 
         UpdateItemSpacing spacing ->
             let
@@ -485,7 +495,17 @@ view model =
                         , Html.Attributes.class "page"
                         , Html.Attributes.style "height" "100%"
                         ]
-                        [ viewOptions model.showOptions cuesheetModel.waypointOptions model.cuesViewOptions model.csvDecodeError
+                        [ viewOptions model.showOptions
+                            (case List.sortBy .distance cuesheetModel.waypoints |> List.reverse of
+                                first :: _ ->
+                                    Maybe.Just first.distance
+
+                                _ ->
+                                    Maybe.Nothing
+                            )
+                            cuesheetModel.waypointOptions
+                            model.cuesViewOptions
+                            model.csvDecodeError
                         , Html.div
                             [ Html.Attributes.class "flex-container"
                             , Html.Attributes.class "column"
@@ -585,10 +605,10 @@ welcomePage toGo =
                     ]
                     (List.map (\( desc, waypointModifier, opts ) -> Html.div [] [ Html.h4 [ Html.Attributes.style "text-align" "center" ] [ Html.text desc ], cuesheet (waypointModifier exampleWaypoints) opts ])
                         [ if toGo then
-                            ( "Distance to go", identity, CuesViewOptions FromLast defaultSpacing defaultDistanceDetail )
+                            ( "Distance to go", identity, CuesViewOptions ToLast 0 defaultSpacing defaultDistanceDetail )
 
                           else
-                            ( "Distance from zero", identity, CuesViewOptions FromZero defaultSpacing defaultDistanceDetail )
+                            ( "Distance from zero", identity, CuesViewOptions FromZero 0 defaultSpacing defaultDistanceDetail )
                         , ( "Custom location types"
                           , List.map
                                 (\w ->
@@ -602,10 +622,10 @@ welcomePage toGo =
                                                 w.types
                                     }
                                 )
-                          , CuesViewOptions None defaultSpacing defaultDistanceDetail
+                          , CuesViewOptions None 0 defaultSpacing defaultDistanceDetail
                           )
-                        , ( "Custom spacing", identity, CuesViewOptions None (defaultSpacing - 10) defaultDistanceDetail )
-                        , ( "Filter location types", cues (WaypointsOptions True (initialFilteredLocations exampleWaypoints |> Dict.map (\typ _ -> List.member typ [ unknownType, climbType, waterType ]))), CuesViewOptions None defaultSpacing defaultDistanceDetail )
+                        , ( "Custom spacing", identity, CuesViewOptions None 0 (defaultSpacing - 10) defaultDistanceDetail )
+                        , ( "Filter location types", cues (WaypointsOptions True (initialFilteredLocations exampleWaypoints |> Dict.map (\typ _ -> List.member typ [ unknownType, climbType, waterType ]))), CuesViewOptions None 0 defaultSpacing defaultDistanceDetail )
                         ]
                     )
               ]
@@ -660,8 +680,8 @@ optionGroup title elements =
         (Html.legend [] [ Html.text title ] :: elements)
 
 
-viewOptions : Bool -> WaypointsOptions -> CuesViewOptions -> Maybe String -> Html Msg
-viewOptions show waypointOptions cuesViewOptions decodeError =
+viewOptions : Bool -> Maybe Float -> WaypointsOptions -> CuesViewOptions -> Maybe String -> Html Msg
+viewOptions show maxDistance waypointOptions cuesViewOptions decodeError =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "column"
@@ -746,7 +766,7 @@ viewOptions show waypointOptions cuesViewOptions decodeError =
                             [ Dropdown.dropdown
                                 (Dropdown.Options
                                     [ Dropdown.Item (formatTotalDistanceDisplay FromZero) (formatTotalDistanceDisplay FromZero) True
-                                    , Dropdown.Item (formatTotalDistanceDisplay FromLast) (formatTotalDistanceDisplay FromLast) True
+                                    , Dropdown.Item (formatTotalDistanceDisplay ToLast) (formatTotalDistanceDisplay ToLast) True
                                     , Dropdown.Item (formatTotalDistanceDisplay None) (formatTotalDistanceDisplay None) True
                                     ]
                                     Maybe.Nothing
@@ -759,6 +779,16 @@ viewOptions show waypointOptions cuesViewOptions decodeError =
                                 (Maybe.Just <| formatTotalDistanceDisplay cuesViewOptions.totalDistanceDisplay)
                             ]
                         , Html.hr [] []
+                        , optionGroup "Position"
+                            [ Html.input
+                                [ Html.Attributes.type_ "range"
+                                , Html.Attributes.min "0"
+                                , maxDistance |> Maybe.map (String.fromFloat >> Html.Attributes.max) |> Maybe.withDefault (Html.Attributes.disabled True)
+                                , Html.Attributes.value <| String.fromFloat cuesViewOptions.position
+                                , Html.Events.onInput (String.toFloat >> Maybe.withDefault 0.0 >> UpdatePosition)
+                                ]
+                                []
+                            ]
                         , optionGroup "Spacing"
                             [ Html.input
                                 [ Html.Attributes.type_ "range"
@@ -826,8 +856,8 @@ parseTotalDistanceDisplay v =
         "from zero" ->
             Maybe.Just FromZero
 
-        "from last" ->
-            Maybe.Just FromLast
+        "to last" ->
+            Maybe.Just ToLast
 
         "hide" ->
             Maybe.Just None
@@ -842,8 +872,8 @@ formatTotalDistanceDisplay v =
         FromZero ->
             "from zero"
 
-        FromLast ->
-            "from last"
+        ToLast ->
+            "to last"
 
         None ->
             "hide"
@@ -888,7 +918,7 @@ cuesheet : List Waypoint -> CuesViewOptions -> Html Msg
 cuesheet waypoints cuesViewOptions =
     let
         info =
-            waypointInfos waypoints
+            waypointInfos cuesViewOptions.position waypoints
 
         svgHeight =
             (*) cuesViewOptions.itemSpacing (List.length info)
@@ -929,7 +959,7 @@ cuesheet waypoints cuesViewOptions =
                                             FromZero ->
                                                 Maybe.Just (formatFloat cuesViewOptions.distanceDetail waypoint.distance ++ "km")
 
-                                            FromLast ->
+                                            ToLast ->
                                                 lastWaypointDistance |> Maybe.map (\last -> formatFloat cuesViewOptions.distanceDetail (last - waypoint.distance) ++ "km")
 
                                     waypointInfo =
@@ -1028,19 +1058,23 @@ cuesheet waypoints cuesViewOptions =
         ]
 
 
-waypointInfos : List Waypoint -> List Info
-waypointInfos waypoints =
+waypointInfos : Float -> List Waypoint -> List Info
+waypointInfos position waypoints =
     List.foldl
         (\el accum ->
-            ( Maybe.Just el
-            , (InfoWaypoint el
-                :: (Tuple.first accum
-                        |> Maybe.map (\previous -> [ Ride (el.distance - previous.distance) ])
-                        |> Maybe.withDefault []
-                   )
-              )
-                ++ Tuple.second accum
-            )
+            if el.distance < position then
+                accum
+
+            else
+                ( Maybe.Just el
+                , (InfoWaypoint el
+                    :: (Tuple.first accum
+                            |> Maybe.map (\previous -> [ Ride (el.distance - previous.distance) ])
+                            |> Maybe.withDefault []
+                       )
+                  )
+                    ++ Tuple.second accum
+                )
         )
         ( Maybe.Nothing, [] )
         waypoints
