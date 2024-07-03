@@ -23,3 +23,4 @@ tags: cycling
 - Split 4 - [GPX](/data/nosoco24-4.gpx)
 - Locations first 3 splits - [GPX](/data/nosoco24-locations-012.gpx)
 - Locations last 2 splits - [GPX](/data/nosoco24-locations-34.gpx)
+- Cuesheet data - [CSV](/data/nosoco24-cuesheetpoints.csv)
