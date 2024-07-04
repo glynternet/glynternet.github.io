@@ -21,3 +21,5 @@ tags: cycling
 - Split 2 - [GPX](/data/nosoco24-2.gpx)
 - Split 3 - [GPX](/data/nosoco24-3.gpx)
 - Split 4 - [GPX](/data/nosoco24-4.gpx)
+- Locations first 3 splits - [GPX](/data/nosoco24-locations-012.gpx)
+- Locations last 2 splits - [GPX](/data/nosoco24-locations-34.gpx)

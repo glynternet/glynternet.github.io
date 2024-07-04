@@ -1,0 +1,915 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx  xmlns="http://www.topografix.com/GPX/1/1" version="1.1" creator="https://github.com/tkrajina/gpxgo">
+	<metadata>
+		<name>ns1</name>
+		<author></author>
+	</metadata>
+	<wpt lat="37.62160628" lon="-104.7833183">
+		<name>ns1-7-Eleven</name>
+		<desc>{&#34;addr:city&#34;:&#34;Walsenburg&#34;,&#34;addr:housenumber&#34;:&#34;235&#34;,&#34;addr:postcode&#34;:&#34;81089&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;West 7th Street&#34;,&#34;amenity&#34;:&#34;fuel&#34;,&#34;brand&#34;:&#34;7-Eleven&#34;,&#34;brand:wikidata&#34;:&#34;Q259340&#34;,&#34;building&#34;:&#34;roof&#34;,&#34;name&#34;:&#34;7-Eleven&#34;,&#34;opening_hours&#34;:&#34;24/7&#34;,&#34;operator&#34;:&#34;7-Eleven&#34;}</desc>
+		<sym>Gas Station</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.62147574" lon="-104.78301428">
+		<name>ns1-7-Eleven(2)</name>
+		<desc>{&#34;addr:city&#34;:&#34;Walsenburg&#34;,&#34;addr:housenumber&#34;:&#34;235&#34;,&#34;addr:postcode&#34;:&#34;81089&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;West 7th Street&#34;,&#34;brand&#34;:&#34;7-Eleven&#34;,&#34;brand:wikidata&#34;:&#34;Q259340&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;contact:website&#34;:&#34;https://www.7-eleven.com/locations/co/walsenburg/235-west-7th-19585&#34;,&#34;name&#34;:&#34;7-Eleven&#34;,&#34;opening_hours&#34;:&#34;24/7&#34;,&#34;operator&#34;:&#34;7-Eleven&#34;,&#34;shop&#34;:&#34;convenience&#34;}</desc>
+		<sym>Shopping Center</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.6536455" lon="-104.793949">
+		<name>ns1-A&amp;W</name>
+		<desc>{&#34;amenity&#34;:&#34;fast_food&#34;,&#34;brand&#34;:&#34;A\u0026W&#34;,&#34;brand:wikidata&#34;:&#34;Q277641&#34;,&#34;cuisine&#34;:&#34;burger&#34;,&#34;name&#34;:&#34;A\u0026W&#34;,&#34;takeaway&#34;:&#34;yes&#34;,&#34;website&#34;:&#34;https://awrestaurants.com/locations/colorado/walsenburg/455-us-highway-85/&#34;}</desc>
+		<sym>Fast Food</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.6555664" lon="-104.9586042">
+		<name>ns1-Alamo</name>
+		<desc>{&#34;ele&#34;:&#34;2085&#34;,&#34;gnis:feature_id&#34;:&#34;194234&#34;,&#34;name&#34;:&#34;Alamo&#34;,&#34;place&#34;:&#34;hamlet&#34;}</desc>
+		<sym>City Hall</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.3204444021" lon="-104.8526813238">
+		<name>ns1-ApishapaRiver</name>
+		<desc>{&#34;intermittent&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;Apishapa River&#34;,&#34;source&#34;:&#34;Bing&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.4101921067" lon="-105.1686262511">
+		<name>ns1-ArkansasRiver</name>
+		<desc>{&#34;name&#34;:&#34;Arkansas River&#34;,&#34;name:ar&#34;:&#34;نهر أركنساس&#34;,&#34;name:azb&#34;:&#34;آرکانزاس چایی&#34;,&#34;name:chr&#34;:&#34;ᏚᏯᏓᏛᎢ ᎡᏉᏂ ᎤᏪᏴᎢ&#34;,&#34;name:en&#34;:&#34;Arkansas River&#34;,&#34;name:fa&#34;:&#34;رود آرکانزاس&#34;,&#34;name:fr&#34;:&#34;L&#39;Arkansas&#34;,&#34;name:he&#34;:&#34;נהר ארקנסו&#34;,&#34;name:kk&#34;:&#34;Арканзас өзені&#34;,&#34;name:ko&#34;:&#34;아칸소강&#34;,&#34;name:ug&#34;:&#34;ئاركانزاس دەرياسى&#34;,&#34;name:ur&#34;:&#34;دریائے آرکنساس&#34;,&#34;name:zh&#34;:&#34;阿肯色河&#34;,&#34;source&#34;:&#34;bing,Yahoo;Yahoo&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.9542103" lon="-105.2338985">
+		<name>ns1-BlueSpring</name>
+		<desc>{&#34;name&#34;:&#34;Blue Spring&#34;,&#34;natural&#34;:&#34;spring&#34;}</desc>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.62266894" lon="-104.7799446">
+		<name>ns1-Carl&#39;sJr.</name>
+		<desc>{&#34;addr:city&#34;:&#34;Walsenburg&#34;,&#34;addr:housenumber&#34;:&#34;700&#34;,&#34;addr:postcode&#34;:&#34;81089&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;Main Street&#34;,&#34;amenity&#34;:&#34;fast_food&#34;,&#34;brand&#34;:&#34;Carl&#39;s Jr.&#34;,&#34;brand:wikidata&#34;:&#34;Q1043486&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;cuisine&#34;:&#34;burger&#34;,&#34;name&#34;:&#34;Carl&#39;s Jr.&#34;,&#34;phone&#34;:&#34;+1 719 738 1002&#34;,&#34;ref&#34;:&#34;1101188&#34;,&#34;source&#34;:&#34;Bing&#34;,&#34;takeaway&#34;:&#34;yes&#34;,&#34;website&#34;:&#34;https://locations.carlsjr.com/co/walsenburg/700-s-main-st&#34;}</desc>
+		<sym>Fast Food</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.4269975681" lon="-105.2379088915">
+		<name>ns1-CañonCity</name>
+		<desc>{&#34;border_type&#34;:&#34;city&#34;,&#34;gnis:feature_id&#34;:&#34;2409976&#34;,&#34;name&#34;:&#34;Cañon City&#34;,&#34;place&#34;:&#34;city&#34;,&#34;source&#34;:&#34;TIGER/Line® 2008 Place Shapefiles (http://www.census.gov/geo/www/tiger/)&#34;,&#34;tiger:CLASSFP&#34;:&#34;C1&#34;,&#34;tiger:CPI&#34;:&#34;Y&#34;,&#34;tiger:FUNCSTAT&#34;:&#34;A&#34;,&#34;tiger:LSAD&#34;:&#34;25&#34;,&#34;tiger:MTFCC&#34;:&#34;G4110&#34;,&#34;tiger:NAME&#34;:&#34;Cañon City&#34;,&#34;tiger:NAMELSAD&#34;:&#34;Cañon City city&#34;,&#34;tiger:PCICBSA&#34;:&#34;Y&#34;,&#34;tiger:PCINECTA&#34;:&#34;N&#34;,&#34;tiger:PLACEFP&#34;:&#34;11810&#34;,&#34;tiger:PLCIDFP&#34;:&#34;0811810&#34;,&#34;tiger:STATEFP&#34;:&#34;08&#34;}</desc>
+		<sym>City Hall</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.43570268" lon="-105.24221031">
+		<name>ns1-CentennialPark</name>
+		<desc>{&#34;leisure&#34;:&#34;park&#34;,&#34;name&#34;:&#34;Centennial Park&#34;}</desc>
+		<sym>Park</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.5084625" lon="-105.0093398">
+		<name>ns1-Charlie&#39;sMarket</name>
+		<desc>{&#34;name&#34;:&#34;Charlie&#39;s Market&#34;,&#34;shop&#34;:&#34;supermarket&#34;}</desc>
+		<sym>Shopping Center</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.50545264" lon="-105.00878242">
+		<name>ns1-ChristtheKingCatholicMission</name>
+		<desc>{&#34;addr:city&#34;:&#34;La Veta&#34;,&#34;addr:country&#34;:&#34;US&#34;,&#34;addr:housenumber&#34;:&#34;505&#34;,&#34;addr:postcode&#34;:&#34;81055&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;South Main Street&#34;,&#34;amenity&#34;:&#34;place_of_worship&#34;,&#34;denomination&#34;:&#34;roman_catholic&#34;,&#34;diocese&#34;:&#34;Pueblo&#34;,&#34;name&#34;:&#34;Christ the King Catholic Mission&#34;,&#34;note&#34;:&#34;Phone and mail St Mary&#39;s in Walsenburg;address tagged does not receive mail&#34;,&#34;phone&#34;:&#34;+1 719-738-1204&#34;,&#34;religion&#34;:&#34;christian&#34;}</desc>
+		<sym>Church</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.6288889" lon="-104.7833333">
+		<name>ns1-ChurchoftheNazarene</name>
+		<desc>{&#34;amenity&#34;:&#34;place_of_worship&#34;,&#34;ele&#34;:&#34;1903&#34;,&#34;gnis:county_id&#34;:&#34;055&#34;,&#34;gnis:created&#34;:&#34;10/16/2007&#34;,&#34;gnis:feature_id&#34;:&#34;2356784&#34;,&#34;gnis:state_id&#34;:&#34;08&#34;,&#34;name&#34;:&#34;Church of the Nazarene&#34;,&#34;religion&#34;:&#34;christian&#34;}</desc>
+		<sym>Church</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.1698621214" lon="-104.50866595">
+		<name>ns1-CiminoPark</name>
+		<desc>{&#34;addr:city&#34;:&#34;Trinidad&#34;,&#34;addr:postcode&#34;:&#34;81082&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;leisure&#34;:&#34;park&#34;,&#34;name&#34;:&#34;Cimino Park&#34;}</desc>
+		<sym>Park</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.61883029" lon="-104.79057179">
+		<name>ns1-CityPark</name>
+		<desc>{&#34;ele&#34;:&#34;1886&#34;,&#34;gnis:county_id&#34;:&#34;055&#34;,&#34;gnis:created&#34;:&#34;10/17/2007&#34;,&#34;gnis:feature_id&#34;:&#34;2356777&#34;,&#34;gnis:state_id&#34;:&#34;08&#34;,&#34;leisure&#34;:&#34;park&#34;,&#34;name&#34;:&#34;City Park&#34;,&#34;wikidata&#34;:&#34;Q49541257&#34;}</desc>
+		<sym>Park</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.1355997" lon="-105.4553845">
+		<name>ns1-Conoco</name>
+		<desc>{&#34;addr:housenumber&#34;:&#34;60&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;East Main Street&#34;,&#34;amenity&#34;:&#34;fuel&#34;,&#34;brand&#34;:&#34;Conoco&#34;,&#34;brand:wikidata&#34;:&#34;Q109341187&#34;,&#34;building&#34;:&#34;roof&#34;,&#34;capacity&#34;:&#34;4&#34;,&#34;fuel:HGV_diesel&#34;:&#34;no&#34;,&#34;fuel:diesel&#34;:&#34;yes&#34;,&#34;fuel:octane_85&#34;:&#34;yes&#34;,&#34;fuel:octane_87&#34;:&#34;yes&#34;,&#34;fuel:octane_91&#34;:&#34;yes&#34;,&#34;full_service&#34;:&#34;no&#34;,&#34;maxheight&#34;:&#34;13 ft&#34;,&#34;name&#34;:&#34;Conoco&#34;,&#34;opening_hours&#34;:&#34;24/7&#34;,&#34;self_service&#34;:&#34;yes&#34;,&#34;shop&#34;:&#34;no&#34;}</desc>
+		<sym>Gas Station</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.3485337" lon="-105.02461">
+		<name>ns1-CordovaPass</name>
+		<desc>{&#34;ele&#34;:&#34;3430&#34;,&#34;mountain_pass&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;Cordova Pass&#34;,&#34;natural&#34;:&#34;saddle&#34;,&#34;wikidata&#34;:&#34;Q5170052&#34;,&#34;wikipedia&#34;:&#34;en:Cordova Pass (Colorado)&#34;}</desc>
+		<sym>Summit</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.34852669" lon="-105.025376695">
+		<name>ns1-CordovaPassCampground</name>
+		<desc>{&#34;access:conditional&#34;:&#34;no @ Nov-Apr&#34;,&#34;name&#34;:&#34;Cordova Pass Campground&#34;,&#34;source&#34;:&#34;publiclands.org&#34;,&#34;tourism&#34;:&#34;camp_site&#34;}</desc>
+		<sym>Campground</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.7466555" lon="-105.1783149">
+		<name>ns1-CrippleCreek</name>
+		<desc>{&#34;capital&#34;:&#34;6&#34;,&#34;ele&#34;:&#34;2882&#34;,&#34;name&#34;:&#34;Cripple Creek&#34;,&#34;place&#34;:&#34;town&#34;,&#34;population&#34;:&#34;1068&#34;,&#34;population:date&#34;:&#34;2006&#34;,&#34;source:population&#34;:&#34;US Census&#34;,&#34;wikidata&#34;:&#34;Q117605&#34;}</desc>
+		<sym>City Hall</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.74724282" lon="-105.18066486">
+		<name>ns1-CrippleCreekBaptistChurch</name>
+		<desc>{&#34;addr:city&#34;:&#34;Cripple Creek&#34;,&#34;addr:housenumber&#34;:&#34;137&#34;,&#34;addr:postcode&#34;:&#34;80813&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;North 1st Street&#34;,&#34;amenity&#34;:&#34;place_of_worship&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;denomination&#34;:&#34;baptist&#34;,&#34;name&#34;:&#34;Cripple Creek Baptist Church&#34;,&#34;religion&#34;:&#34;christian&#34;}</desc>
+		<sym>Church</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.746425" lon="-105.1791665">
+		<name>ns1-CrippleCreekCoffee</name>
+		<desc>{&#34;addr:city&#34;:&#34;Cripple Creek&#34;,&#34;addr:housenumber&#34;:&#34;166&#34;,&#34;addr:postcode&#34;:&#34;80813&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;East Bennett Avenue&#34;,&#34;amenity&#34;:&#34;cafe&#34;,&#34;internet_access&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;Cripple Creek Coffee&#34;,&#34;website&#34;:&#34;http://www.cripplecreekcoffee.com&#34;}</desc>
+		<sym>Restaurant</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.3792418" lon="-105.1002874">
+		<name>ns1-Cuchara</name>
+		<desc>{&#34;ele&#34;:&#34;2581&#34;,&#34;gnis:feature_id&#34;:&#34;203635&#34;,&#34;name&#34;:&#34;Cuchara&#34;,&#34;place&#34;:&#34;hamlet&#34;,&#34;wikidata&#34;:&#34;Q5192321&#34;}</desc>
+		<sym>City Hall</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.4099964507" lon="-105.0687910955">
+		<name>ns1-CucharaRiver</name>
+		<desc>{&#34;name&#34;:&#34;Cuchara River&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.3703822" lon="-105.1046137">
+		<name>ns1-CucharasRiver</name>
+		<desc>{&#34;layer&#34;:&#34;-1&#34;,&#34;name&#34;:&#34;Cucharas River&#34;,&#34;tunnel&#34;:&#34;culvert&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.3747235" lon="-105.10381325">
+		<name>ns1-CucharasRiver(2)</name>
+		<desc>{&#34;layer&#34;:&#34;-1&#34;,&#34;name&#34;:&#34;Cucharas River&#34;,&#34;tunnel&#34;:&#34;culvert&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.3522446405" lon="-105.1035436833">
+		<name>ns1-CucharasRiver(3)</name>
+		<desc>{&#34;name&#34;:&#34;Cucharas River&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.3655682031" lon="-105.1036825477">
+		<name>ns1-CucharasRiver(4)</name>
+		<desc>{&#34;name&#34;:&#34;Cucharas River&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.3725174519" lon="-105.1044940704">
+		<name>ns1-CucharasRiver(5)</name>
+		<desc>{&#34;name&#34;:&#34;Cucharas River&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.3764866241" lon="-105.1022868138">
+		<name>ns1-CucharasRiver(6)</name>
+		<desc>{&#34;name&#34;:&#34;Cucharas River&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.3911950441" lon="-105.0892946824">
+		<name>ns1-CucharasRiver(7)</name>
+		<desc>{&#34;name&#34;:&#34;Cucharas River&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.4001277533" lon="-105.0842412267">
+		<name>ns1-CucharasRiver(8)</name>
+		<desc>{&#34;name&#34;:&#34;Cucharas River&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.4039895929" lon="-105.0748494381">
+		<name>ns1-CucharasRiver(9)</name>
+		<desc>{&#34;name&#34;:&#34;Cucharas River&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.4187232311" lon="-105.0558192718">
+		<name>ns1-CucharasRiver(10)</name>
+		<desc>{&#34;name&#34;:&#34;Cucharas River&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.4364251149" lon="-105.0431933881">
+		<name>ns1-CucharasRiver(11)</name>
+		<desc>{&#34;name&#34;:&#34;Cucharas River&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.6453017143" lon="-104.7909841429">
+		<name>ns1-DakotaCampgrounds</name>
+		<desc>{&#34;name&#34;:&#34;Dakota Campgrounds&#34;,&#34;tourism&#34;:&#34;camp_site&#34;}</desc>
+		<sym>Campground</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.3797438" lon="-105.0990271714">
+		<name>ns1-DogBar</name>
+		<desc>{&#34;amenity&#34;:&#34;bar&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;Dog Bar&#34;}</desc>
+		<sym>Bar</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.4391529" lon="-105.24047288">
+		<name>ns1-Exxon</name>
+		<desc>{&#34;addr:city&#34;:&#34;Cañon City&#34;,&#34;addr:housenumber&#34;:&#34;420&#34;,&#34;addr:postcode&#34;:&#34;81212&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;Royal Gorge Boulevard&#34;,&#34;amenity&#34;:&#34;fuel&#34;,&#34;brand&#34;:&#34;Exxon&#34;,&#34;brand:wikidata&#34;:&#34;Q109675651&#34;,&#34;building&#34;:&#34;roof&#34;,&#34;layer&#34;:&#34;1&#34;,&#34;name&#34;:&#34;Exxon&#34;,&#34;website&#34;:&#34;https://www.shell.us/&#34;}</desc>
+		<sym>Gas Station</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.7447305" lon="-105.0713848">
+		<name>ns1-Farisita</name>
+		<desc>{&#34;ele&#34;:&#34;2027&#34;,&#34;gnis:feature_id&#34;:&#34;192689&#34;,&#34;name&#34;:&#34;Farisita&#34;,&#34;place&#34;:&#34;hamlet&#34;}</desc>
+		<sym>City Hall</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.5106403" lon="-105.003468">
+		<name>ns1-FeedStoreChurch</name>
+		<desc>{&#34;amenity&#34;:&#34;place_of_worship&#34;,&#34;name&#34;:&#34;Feed Store Church&#34;,&#34;religion&#34;:&#34;christian&#34;}</desc>
+		<sym>Church</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.1314785222" lon="-105.4642932778">
+		<name>ns1-FirstBaptistChurchWestcliffe</name>
+		<desc>{&#34;addr:housenumber&#34;:&#34;410&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;South Sixth Street Westcliffe&#34;,&#34;amenity&#34;:&#34;place_of_worship&#34;,&#34;building&#34;:&#34;church&#34;,&#34;denomination&#34;:&#34;baptist&#34;,&#34;name&#34;:&#34;First Baptist Church Westcliffe&#34;,&#34;religion&#34;:&#34;christian&#34;}</desc>
+		<sym>Church</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.6343801353" lon="-104.7900599412">
+		<name>ns1-FirstChoiceMarket</name>
+		<desc>{&#34;building&#34;:&#34;commercial&#34;,&#34;name&#34;:&#34;First Choice Market&#34;,&#34;shop&#34;:&#34;supermarket&#34;,&#34;source&#34;:&#34;Bing&#34;}</desc>
+		<sym>Shopping Center</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.7833397" lon="-105.1655542">
+		<name>ns1-Gardner</name>
+		<desc>{&#34;ele&#34;:&#34;2124&#34;,&#34;gnis:feature_id&#34;:&#34;192598&#34;,&#34;name&#34;:&#34;Gardner&#34;,&#34;place&#34;:&#34;hamlet&#34;,&#34;wikidata&#34;:&#34;Q5522569&#34;}</desc>
+		<sym>City Hall</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.6526804" lon="-104.7920341">
+		<name>ns1-George’sDineInn</name>
+		<desc>{&#34;air_conditioning&#34;:&#34;yes&#34;,&#34;amenity&#34;:&#34;restaurant&#34;,&#34;bar&#34;:&#34;no&#34;,&#34;check_date&#34;:&#34;2022-06-07&#34;,&#34;image&#34;:&#34;https://imgur.com/a/xt0lHCj&#34;,&#34;internet_access&#34;:&#34;no&#34;,&#34;name&#34;:&#34;George’s Dine Inn&#34;,&#34;opening_hours&#34;:&#34;Tu-Sa 06:00-15:00&#34;,&#34;outdoor_seating&#34;:&#34;yes&#34;,&#34;payment:mastercard&#34;:&#34;yes&#34;,&#34;payment:visa&#34;:&#34;yes&#34;,&#34;wheelchair&#34;:&#34;limited&#34;}</desc>
+		<sym>Restaurant</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="39.1705957923" lon="-105.3590895385">
+		<name>ns1-GooseCreekCampground</name>
+		<desc>{&#34;name&#34;:&#34;Goose Creek Campground&#34;,&#34;tourism&#34;:&#34;camp_site&#34;}</desc>
+		<sym>Campground</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.6188296667" lon="-104.7933723333">
+		<name>ns1-H&amp;HCafe</name>
+		<desc>{&#34;amenity&#34;:&#34;restaurant&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;H\u0026H Cafe&#34;,&#34;source&#34;:&#34;Bing&#34;}</desc>
+		<sym>Restaurant</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.437541" lon="-105.2417049">
+		<name>ns1-HappyEndingsCadooseCafe</name>
+		<desc>{&#34;addr:city&#34;:&#34;Canon City&#34;,&#34;addr:housenumber&#34;:&#34;403&#34;,&#34;addr:postcode&#34;:&#34;81212&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;Water Street&#34;,&#34;amenity&#34;:&#34;cafe&#34;,&#34;name&#34;:&#34;Happy Endings Cadoose Cafe&#34;,&#34;website&#34;:&#34;https://happyendingscaboose.com/&#34;}</desc>
+		<sym>Restaurant</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.6252618" lon="-104.7813212">
+		<name>ns1-HeritagePark</name>
+		<desc>{&#34;name&#34;:&#34;Heritage Park&#34;,&#34;tourism&#34;:&#34;picnic_site&#34;}</desc>
+		<sym>Picnic Area</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.130543" lon="-105.46660824">
+		<name>ns1-HermitPark</name>
+		<desc>{&#34;leisure&#34;:&#34;park&#34;,&#34;name&#34;:&#34;Hermit Park&#34;,&#34;operator&#34;:&#34;Town of Westcliffe&#34;}</desc>
+		<sym>Park</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.1690063067" lon="-104.5081416333">
+		<name>ns1-HolyTrinityCatholicChurch</name>
+		<desc>{&#34;amenity&#34;:&#34;place_of_worship&#34;,&#34;denomination&#34;:&#34;roman_catholic&#34;,&#34;diocese&#34;:&#34;Pueblo&#34;,&#34;ele&#34;:&#34;1833&#34;,&#34;gnis:county_id&#34;:&#34;071&#34;,&#34;gnis:created&#34;:&#34;10/23/2007&#34;,&#34;gnis:feature_id&#34;:&#34;2357334&#34;,&#34;gnis:state_id&#34;:&#34;08&#34;,&#34;name&#34;:&#34;Holy Trinity Catholic Church&#34;,&#34;religion&#34;:&#34;christian&#34;,&#34;website&#34;:&#34;https://www.trinidadcatholic.org/&#34;}</desc>
+		<sym>Church</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.0666099" lon="-105.4878787">
+		<name>ns1-HornCreek</name>
+		<desc>{&#34;gnis:feature_id&#34;:&#34;192281&#34;,&#34;name&#34;:&#34;Horn Creek&#34;,&#34;nhd:com_id&#34;:&#34;133048587&#34;,&#34;nhd:fcode&#34;:&#34;55800&#34;,&#34;nhd:ftype&#34;:&#34;ArtificialPath&#34;,&#34;nhd:reach_code&#34;:&#34;11020001000681&#34;,&#34;waterway&#34;:&#34;artificial&#34;}</desc>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.7373863202" lon="-104.9551723342">
+		<name>ns1-HuerfanoRiver</name>
+		<desc>{&#34;name&#34;:&#34;Huerfano River&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.7466120647" lon="-105.1836458412">
+		<name>ns1-JackassCafe</name>
+		<desc>{&#34;addr:city&#34;:&#34;Cripple Creek&#34;,&#34;addr:housenumber&#34;:&#34;227&#34;,&#34;addr:postcode&#34;:&#34;80813&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;West Bennett Avenue&#34;,&#34;amenity&#34;:&#34;cafe&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;Jackass Cafe&#34;,&#34;phone&#34;:&#34;+1-719-689-3900&#34;}</desc>
+		<sym>Restaurant</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.1494638" lon="-104.5388752">
+		<name>ns1-Jansen</name>
+		<desc>{&#34;ele&#34;:&#34;1868&#34;,&#34;gnis:feature_id&#34;:&#34;204812&#34;,&#34;name&#34;:&#34;Jansen&#34;,&#34;place&#34;:&#34;hamlet&#34;,&#34;wikidata&#34;:&#34;Q3472922&#34;,&#34;wikipedia&#34;:&#34;en:Jansen, Colorado&#34;}</desc>
+		<sym>City Hall</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.5080612397" lon="-105.0079830017">
+		<name>ns1-LaVeta</name>
+		<desc>{&#34;admin_level&#34;:&#34;8&#34;,&#34;border_type&#34;:&#34;village&#34;,&#34;boundary&#34;:&#34;administrative&#34;,&#34;gnis:feature_id&#34;:&#34;2412857&#34;,&#34;is_in:iso_3166_2&#34;:&#34;US:CO&#34;,&#34;name&#34;:&#34;La Veta&#34;,&#34;place&#34;:&#34;village&#34;,&#34;source&#34;:&#34;TIGER/Line® 2008 Place Shapefiles (http://www.census.gov/geo/www/tiger/)&#34;,&#34;tiger:CLASSFP&#34;:&#34;C1&#34;,&#34;tiger:CPI&#34;:&#34;N&#34;,&#34;tiger:FUNCSTAT&#34;:&#34;A&#34;,&#34;tiger:LSAD&#34;:&#34;43&#34;,&#34;tiger:MTFCC&#34;:&#34;G4110&#34;,&#34;tiger:NAME&#34;:&#34;La Veta&#34;,&#34;tiger:NAMELSAD&#34;:&#34;La Veta town&#34;,&#34;tiger:PCICBSA&#34;:&#34;N&#34;,&#34;tiger:PCINECTA&#34;:&#34;N&#34;,&#34;tiger:PLACEFP&#34;:&#34;44100&#34;,&#34;tiger:PLCIDFP&#34;:&#34;0844100&#34;,&#34;tiger:STATEFP&#34;:&#34;08&#34;,&#34;tiger:reviewed&#34;:&#34;no&#34;,&#34;wikidata&#34;:&#34;Q961938&#34;,&#34;wikipedia&#34;:&#34;en:La Veta, Colorado&#34;}</desc>
+		<sym>City Hall</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.50388544" lon="-105.01182344">
+		<name>ns1-LaVetaPinesRVPark</name>
+		<desc>{&#34;addr:housenumber&#34;:&#34;226&#34;,&#34;addr:postcode&#34;:&#34;80155&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;West Grand Street&#34;,&#34;name&#34;:&#34;La Veta Pines RV Park&#34;,&#34;source&#34;:&#34;Bing / rvparkreviews.com&#34;,&#34;tourism&#34;:&#34;camp_site&#34;}</desc>
+		<sym>Campground</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.9804001" lon="-105.3584308">
+		<name>ns1-LakeGeorge</name>
+		<desc>{&#34;ele&#34;:&#34;2436&#34;,&#34;gnis:feature_id&#34;:&#34;191146&#34;,&#34;name&#34;:&#34;Lake George&#34;,&#34;place&#34;:&#34;town&#34;,&#34;wikidata&#34;:&#34;Q3033301&#34;,&#34;wikipedia&#34;:&#34;en:Lake George, Colorado&#34;}</desc>
+		<sym>City Hall</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.9828875" lon="-105.3592898">
+		<name>ns1-LakeGeorgePizza&amp;Cafe</name>
+		<desc>{&#34;amenity&#34;:&#34;cafe&#34;,&#34;cuisine&#34;:&#34;sandwich&#34;,&#34;name&#34;:&#34;Lake George Pizza \u0026 Cafe&#34;}</desc>
+		<sym>Restaurant</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.6272039" lon="-104.78251244">
+		<name>ns1-Loaf&#39;NJug</name>
+		<desc>{&#34;addr:postcode&#34;:&#34;81089&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;amenity&#34;:&#34;fuel&#34;,&#34;brand&#34;:&#34;Loaf &#39;N Jug&#34;,&#34;brand:wikidata&#34;:&#34;Q6663398&#34;,&#34;building&#34;:&#34;roof&#34;,&#34;name&#34;:&#34;Loaf &#39;N Jug&#34;,&#34;opening_hours&#34;:&#34;24/7&#34;,&#34;operator&#34;:&#34;Loaf &#39;N Jug&#34;}</desc>
+		<sym>Gas Station</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.62746294" lon="-104.7824098">
+		<name>ns1-Loaf&#39;NJug(2)</name>
+		<desc>{&#34;addr:postcode&#34;:&#34;81089&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;brand&#34;:&#34;Loaf &#39;N Jug&#34;,&#34;brand:wikidata&#34;:&#34;Q6663398&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;Loaf &#39;N Jug&#34;,&#34;opening_hours&#34;:&#34;24/7&#34;,&#34;operator&#34;:&#34;Loaf &#39;N Jug&#34;,&#34;shop&#34;:&#34;convenience&#34;}</desc>
+		<sym>Shopping Center</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.5034339222" lon="-105.0089281667">
+		<name>ns1-LokalBurger</name>
+		<desc>{&#34;amenity&#34;:&#34;fast_food&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;cuisine&#34;:&#34;burger&#34;,&#34;name&#34;:&#34;Lokal Burger&#34;}</desc>
+		<sym>Fast Food</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.4465237" lon="-105.2445231154">
+		<name>ns1-MagdalenePark</name>
+		<desc>{&#34;leisure&#34;:&#34;park&#34;,&#34;name&#34;:&#34;Magdalene Park&#34;}</desc>
+		<sym>Park</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.1705361222" lon="-104.5097671556">
+		<name>ns1-McDonald&#39;s</name>
+		<desc>{&#34;addr:city&#34;:&#34;Trinidad&#34;,&#34;addr:housenumber&#34;:&#34;322&#34;,&#34;addr:postcode&#34;:&#34;81082&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;Nevada Avenue&#34;,&#34;amenity&#34;:&#34;fast_food&#34;,&#34;brand&#34;:&#34;McDonald&#39;s&#34;,&#34;brand:wikidata&#34;:&#34;Q38076&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;cuisine&#34;:&#34;burger&#34;,&#34;name&#34;:&#34;McDonald&#39;s&#34;,&#34;takeaway&#34;:&#34;yes&#34;,&#34;website&#34;:&#34;https://www.mcdonalds.com/us/en-us/location/co/trinidad/322-nevada-ave/7412.html&#34;}</desc>
+		<sym>Fast Food</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.1319512143" lon="-105.4669689857">
+		<name>ns1-MemorialPark</name>
+		<desc>{&#34;leisure&#34;:&#34;park&#34;,&#34;name&#34;:&#34;Memorial Park&#34;,&#34;operator&#34;:&#34;Town of Westcliffe&#34;,&#34;source&#34;:&#34;Bing&#34;}</desc>
+		<sym>Park</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.62159898" lon="-104.78448596">
+		<name>ns1-Mike&#39;s</name>
+		<desc>{&#34;amenity&#34;:&#34;cafe&#34;,&#34;building&#34;:&#34;retail&#34;,&#34;name&#34;:&#34;Mike&#39;s&#34;,&#34;source&#34;:&#34;Bing&#34;}</desc>
+		<sym>Restaurant</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.65362828" lon="-104.79394512">
+		<name>ns1-MinitMart</name>
+		<desc>{&#34;addr:city&#34;:&#34;Walsenburg&#34;,&#34;addr:postcode&#34;:&#34;81089&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;brand&#34;:&#34;Minit Mart&#34;,&#34;brand:wikidata&#34;:&#34;Q18154470&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;Minit Mart&#34;,&#34;opening_hours&#34;:&#34;24/7&#34;,&#34;operator&#34;:&#34;Minit Mart&#34;,&#34;shop&#34;:&#34;convenience&#34;}</desc>
+		<sym>Shopping Center</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.5006855381" lon="-105.0111209429">
+		<name>ns1-MissionDeliMesaSteakHouse</name>
+		<desc>{&#34;amenity&#34;:&#34;restaurant&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;Mission Deli Mesa Steak House&#34;}</desc>
+		<sym>Restaurant</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.50773374" lon="-105.00876218">
+		<name>ns1-ParadiseCoffee</name>
+		<desc>{&#34;amenity&#34;:&#34;cafe&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;cuisine&#34;:&#34;coffee_shop&#34;,&#34;name&#34;:&#34;Paradise Coffee&#34;}</desc>
+		<sym>Restaurant</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.65340396" lon="-104.79380286">
+		<name>ns1-Phillips66</name>
+		<desc>{&#34;addr:city&#34;:&#34;Walsenburg&#34;,&#34;addr:postcode&#34;:&#34;81089&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;amenity&#34;:&#34;fuel&#34;,&#34;brand&#34;:&#34;Phillips 66&#34;,&#34;brand:wikidata&#34;:&#34;Q1656230&#34;,&#34;building&#34;:&#34;roof&#34;,&#34;name&#34;:&#34;Phillips 66&#34;,&#34;opening_hours&#34;:&#34;24/7&#34;,&#34;operator&#34;:&#34;Phillips 66&#34;,&#34;website&#34;:&#34;https://www.phillips66gas.com/station/P66-TA-EXPRESS-WALSENBURG-CO-0000881247/&#34;}</desc>
+		<sym>Gas Station</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.65374176" lon="-104.79358406">
+		<name>ns1-Phillips66(2)</name>
+		<desc>{&#34;addr:city&#34;:&#34;Walsenburg&#34;,&#34;addr:postcode&#34;:&#34;81089&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;amenity&#34;:&#34;fuel&#34;,&#34;brand&#34;:&#34;Phillips 66&#34;,&#34;brand:wikidata&#34;:&#34;Q1656230&#34;,&#34;building&#34;:&#34;roof&#34;,&#34;name&#34;:&#34;Phillips 66&#34;,&#34;opening_hours&#34;:&#34;24/7&#34;,&#34;operator&#34;:&#34;Phillips 66&#34;}</desc>
+		<sym>Gas Station</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.9217323106" lon="-105.3250342542">
+		<name>ns1-PromontoryDivide</name>
+		<desc>{&#34;name&#34;:&#34;Promontory Divide&#34;,&#34;natural&#34;:&#34;ridge&#34;,&#34;wikipedia&#34;:&#34;en:Promontory Divide&#34;}</desc>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.426387" lon="-105.2374901">
+		<name>ns1-ProspectHeights</name>
+		<desc>{&#34;ele&#34;:&#34;1653&#34;,&#34;gnis:feature_id&#34;:&#34;192009&#34;,&#34;name&#34;:&#34;Prospect Heights&#34;,&#34;place&#34;:&#34;hamlet&#34;}</desc>
+		<sym>City Hall</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.131896347" lon="-104.7846901999">
+		<name>ns1-PurgatoireRiver</name>
+		<desc>{&#34;name&#34;:&#34;Purgatoire River&#34;,&#34;oneway&#34;:&#34;yes&#34;,&#34;source&#34;:&#34;Bing / USGS&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.17104515" lon="-104.5089514667">
+		<name>ns1-PurgatoireRiver(2)</name>
+		<desc>{&#34;name&#34;:&#34;Purgatoire River&#34;,&#34;source&#34;:&#34;Bing&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.2023838013" lon="-104.4703608466">
+		<name>ns1-PurgatoireRiver(3)</name>
+		<desc>{&#34;name&#34;:&#34;Purgatoire River&#34;,&#34;source&#34;:&#34;Bing&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.509456" lon="-105.0105032636">
+		<name>ns1-RailroadPark</name>
+		<desc>{&#34;leisure&#34;:&#34;park&#34;,&#34;name&#34;:&#34;Railroad Park&#34;,&#34;natural&#34;:&#34;wood&#34;,&#34;source&#34;:&#34;Bing&#34;}</desc>
+		<sym>Park</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.5889860471" lon="-105.2539593118">
+		<name>ns1-RedCanyonPark</name>
+		<desc>{&#34;boundary&#34;:&#34;protected_area&#34;,&#34;landuse&#34;:&#34;recreation_ground&#34;,&#34;name&#34;:&#34;Red Canyon Park&#34;,&#34;operator&#34;:&#34;City of Cañon City&#34;,&#34;ownership&#34;:&#34;municipal&#34;,&#34;protect_class&#34;:&#34;6&#34;,&#34;protection_title&#34;:&#34;Open Space&#34;}</desc>
+		<sym>Park</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.4611065" lon="-105.0315415">
+		<name>ns1-RillingCreek</name>
+		<desc>{&#34;layer&#34;:&#34;-1&#34;,&#34;name&#34;:&#34;Rilling Creek&#34;,&#34;tunnel&#34;:&#34;culvert&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.4575997988" lon="-105.0453594659">
+		<name>ns1-RillingCreek(2)</name>
+		<desc>{&#34;name&#34;:&#34;Rilling Creek&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.46070679" lon="-105.0291563">
+		<name>ns1-RillingCreek(3)</name>
+		<desc>{&#34;name&#34;:&#34;Rilling Creek&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.1361785" lon="-105.44811346">
+		<name>ns1-Roadhouse</name>
+		<desc>{&#34;amenity&#34;:&#34;restaurant&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;cuisine&#34;:&#34;american&#34;,&#34;name&#34;:&#34;Roadhouse&#34;,&#34;outdoor_seating&#34;:&#34;yes&#34;}</desc>
+		<sym>Restaurant</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.4404854857" lon="-105.2416648">
+		<name>ns1-RoyalGorgeBrewery</name>
+		<desc>{&#34;amenity&#34;:&#34;restaurant&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;Royal Gorge Brewery&#34;}</desc>
+		<sym>Restaurant</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.7836341286" lon="-105.1639978143">
+		<name>ns1-SacredHeartCatholicChurch</name>
+		<desc>{&#34;amenity&#34;:&#34;place_of_worship&#34;,&#34;denomination&#34;:&#34;roman_catholic&#34;,&#34;description&#34;:&#34;mail goes to: P.O. Box 86 ​Walsenburg, Colorado 81089&#34;,&#34;diocese&#34;:&#34;Pueblo&#34;,&#34;name&#34;:&#34;Sacred Heart Catholic Church&#34;,&#34;religion&#34;:&#34;christian&#34;}</desc>
+		<sym>Church</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.6226600636" lon="-104.7829439636">
+		<name>ns1-Safeway</name>
+		<desc>{&#34;addr:city&#34;:&#34;Walsenburg&#34;,&#34;addr:housenumber&#34;:&#34;222&#34;,&#34;addr:postcode&#34;:&#34;81089&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;West 7th Street&#34;,&#34;brand&#34;:&#34;Safeway&#34;,&#34;brand:wikidata&#34;:&#34;Q1508234&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;Safeway&#34;,&#34;opening_hours&#34;:&#34;Mo-Su 07:00-21:00&#34;,&#34;phone&#34;:&#34;+1 719-738-3300&#34;,&#34;shop&#34;:&#34;supermarket&#34;,&#34;source&#34;:&#34;Bing&#34;,&#34;website&#34;:&#34;https://local.safeway.com/safeway/co/walsenburg/222-w-7th-st.html&#34;}</desc>
+		<sym>Shopping Center</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.302054675" lon="-105.0283845821">
+		<name>ns1-SanIsabelNationalForest</name>
+		<desc>{&#34;attribution&#34;:&#34;US Forest Service&#34;,&#34;boundary&#34;:&#34;protected_area&#34;,&#34;layer&#34;:&#34;-1&#34;,&#34;name&#34;:&#34;San Isabel National Forest&#34;}</desc>
+		<sym>Park</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.4380258643" lon="-105.0978571571">
+		<name>ns1-SanIsabelNationalForest(2)</name>
+		<desc>{&#34;attribution&#34;:&#34;US Forest Service&#34;,&#34;boundary&#34;:&#34;protected_area&#34;,&#34;layer&#34;:&#34;-1&#34;,&#34;name&#34;:&#34;San Isabel National Forest&#34;}</desc>
+		<sym>Park</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.62071324" lon="-104.78895874">
+		<name>ns1-SecondSpanishPresbytarianChurch</name>
+		<desc>{&#34;amenity&#34;:&#34;place_of_worship&#34;,&#34;denomination&#34;:&#34;presbyterian&#34;,&#34;name&#34;:&#34;Second Spanish Presbytarian Church&#34;,&#34;religion&#34;:&#34;christian&#34;,&#34;source&#34;:&#34;Bing&#34;}</desc>
+		<sym>Church</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.6238954" lon="-104.7808117">
+		<name>ns1-Serendipity</name>
+		<desc>{&#34;addr:city&#34;:&#34;Walsenburg&#34;,&#34;addr:country&#34;:&#34;US&#34;,&#34;addr:housenumber&#34;:&#34;528&#34;,&#34;addr:postcode&#34;:&#34;81089&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;Main Street&#34;,&#34;name&#34;:&#34;Serendipity&#34;,&#34;shop&#34;:&#34;coffee&#34;}</desc>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.979249775" lon="-105.219380175">
+		<name>ns1-SheepCreek</name>
+		<desc>{&#34;gnis:feature_id&#34;:&#34;192484&#34;,&#34;name&#34;:&#34;Sheep Creek&#34;,&#34;nhd:com_id&#34;:&#34;133048702&#34;,&#34;nhd:fcode&#34;:&#34;55800&#34;,&#34;nhd:ftype&#34;:&#34;ArtificialPath&#34;,&#34;nhd:reach_code&#34;:&#34;11020001012662&#34;,&#34;waterway&#34;:&#34;artificial&#34;}</desc>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.1313342167" lon="-105.4635432333">
+		<name>ns1-Shell</name>
+		<desc>{&#34;amenity&#34;:&#34;fuel&#34;,&#34;brand&#34;:&#34;Shell&#34;,&#34;brand:wikidata&#34;:&#34;Q110716465&#34;,&#34;fuel:diesel&#34;:&#34;yes&#34;,&#34;fuel:e85&#34;:&#34;yes&#34;,&#34;fuel:octane_91&#34;:&#34;yes&#34;,&#34;fuel:octane_95&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;Shell&#34;,&#34;opening_hours&#34;:&#34;24/7&#34;}</desc>
+		<sym>Gas Station</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.1286274615" lon="-105.3914865346">
+		<name>ns1-SilverCliff</name>
+		<desc>{&#34;admin_level&#34;:&#34;8&#34;,&#34;border_type&#34;:&#34;town&#34;,&#34;boundary&#34;:&#34;administrative&#34;,&#34;gnis:feature_id&#34;:&#34;2413286&#34;,&#34;is_in:iso_3166_2&#34;:&#34;US:CO&#34;,&#34;name&#34;:&#34;Silver Cliff&#34;,&#34;place&#34;:&#34;town&#34;,&#34;source&#34;:&#34;TIGER/Line® 2008 Place Shapefiles (http://www.census.gov/geo/www/tiger/)&#34;,&#34;tiger:CLASSFP&#34;:&#34;C1&#34;,&#34;tiger:CPI&#34;:&#34;N&#34;,&#34;tiger:FUNCSTAT&#34;:&#34;A&#34;,&#34;tiger:LSAD&#34;:&#34;43&#34;,&#34;tiger:MTFCC&#34;:&#34;G4110&#34;,&#34;tiger:NAME&#34;:&#34;Silver Cliff&#34;,&#34;tiger:NAMELSAD&#34;:&#34;Silver Cliff town&#34;,&#34;tiger:PCICBSA&#34;:&#34;N&#34;,&#34;tiger:PCINECTA&#34;:&#34;N&#34;,&#34;tiger:PLACEFP&#34;:&#34;70250&#34;,&#34;tiger:PLCIDFP&#34;:&#34;0870250&#34;,&#34;tiger:STATEFP&#34;:&#34;08&#34;,&#34;tiger:reviewed&#34;:&#34;no&#34;,&#34;wikidata&#34;:&#34;Q2275079&#34;,&#34;wikipedia&#34;:&#34;en:Silver Cliff, Colorado&#34;}</desc>
+		<sym>City Hall</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.1352969" lon="-105.4464545">
+		<name>ns1-SilverCliff(2)</name>
+		<desc>{&#34;ele&#34;:&#34;2434&#34;,&#34;gnis:feature_id&#34;:&#34;192157&#34;,&#34;name&#34;:&#34;Silver Cliff&#34;,&#34;place&#34;:&#34;village&#34;,&#34;population&#34;:&#34;609&#34;,&#34;population:date&#34;:&#34;2020&#34;,&#34;source:population&#34;:&#34;US Census&#34;,&#34;wikidata&#34;:&#34;Q2275079&#34;,&#34;wikipedia&#34;:&#34;en:Silver Cliff, Colorado&#34;}</desc>
+		<sym>City Hall</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.1352845714" lon="-105.4437177143">
+		<name>ns1-SilverCliffMoutainInn</name>
+		<desc>{&#34;addr:housenumber&#34;:&#34;700&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;Ohio Street&#34;,&#34;amenity&#34;:&#34;restaurant&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;cuisine&#34;:&#34;american&#34;,&#34;internet_access&#34;:&#34;wlan&#34;,&#34;internet_access:fee&#34;:&#34;no&#34;,&#34;name&#34;:&#34;Silver Cliff Moutain Inn&#34;,&#34;operator&#34;:&#34;Willie&#34;,&#34;smoking&#34;:&#34;no&#34;}</desc>
+		<sym>Restaurant</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.5001498444" lon="-105.0125594111">
+		<name>ns1-Sinclair</name>
+		<desc>{&#34;addr:city&#34;:&#34;La Veta&#34;,&#34;addr:housenumber&#34;:&#34;5519&#34;,&#34;addr:postcode&#34;:&#34;80155&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;Highway Of Legends&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;Sinclair&#34;,&#34;opening_hours&#34;:&#34;Mo-Su 07:00-21:00&#34;,&#34;shop&#34;:&#34;convenience&#34;}</desc>
+		<sym>Shopping Center</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.9713964671" lon="-105.3907966469">
+		<name>ns1-SouthForkoftheSouthPlatteRiver</name>
+		<desc>{&#34;name&#34;:&#34;South Fork of the South Platte River&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.5075494222" lon="-105.0087848222">
+		<name>ns1-SpainishPeaksChurch</name>
+		<desc>{&#34;addr:city&#34;:&#34;La Veta&#34;,&#34;addr:housenumber&#34;:&#34;311&#34;,&#34;addr:postcode&#34;:&#34;80155&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;South Main Street&#34;,&#34;amenity&#34;:&#34;place_of_worship&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;denomination&#34;:&#34;baptist&#34;,&#34;name&#34;:&#34;Spainish Peaks Church&#34;,&#34;religion&#34;:&#34;christian&#34;}</desc>
+		<sym>Church</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.9800353" lon="-105.3578253">
+		<name>ns1-StarkeysGeneralStore</name>
+		<desc>{&#34;name&#34;:&#34;Starkeys General Store&#34;,&#34;shop&#34;:&#34;convenience&#34;}</desc>
+		<sym>Shopping Center</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.6269732" lon="-104.7822967">
+		<name>ns1-Subway</name>
+		<desc>{&#34;addr:city&#34;:&#34;Walsenburg&#34;,&#34;addr:housenumber&#34;:&#34;228&#34;,&#34;addr:postcode&#34;:&#34;81089&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;North Main Street&#34;,&#34;amenity&#34;:&#34;fast_food&#34;,&#34;brand&#34;:&#34;Subway&#34;,&#34;brand:wikidata&#34;:&#34;Q244457&#34;,&#34;cuisine&#34;:&#34;sandwich&#34;,&#34;name&#34;:&#34;Subway&#34;,&#34;opening_hours&#34;:&#34;08:00-22:00&#34;,&#34;phone&#34;:&#34;+1 719-738-1332&#34;,&#34;takeaway&#34;:&#34;yes&#34;,&#34;website&#34;:&#34;https://restaurants.subway.com/united-states/co/walsenburg/228-n-main-st&#34;}</desc>
+		<sym>Fast Food</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.1312564" lon="-105.4632882">
+		<name>ns1-Subway(2)</name>
+		<desc>{&#34;addr:city&#34;:&#34;Westcliffe&#34;,&#34;addr:housenumber&#34;:&#34;425&#34;,&#34;addr:postcode&#34;:&#34;81252&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;South 6th Street&#34;,&#34;amenity&#34;:&#34;fast_food&#34;,&#34;brand&#34;:&#34;Subway&#34;,&#34;brand:wikidata&#34;:&#34;Q244457&#34;,&#34;cuisine&#34;:&#34;sandwich&#34;,&#34;name&#34;:&#34;Subway&#34;,&#34;opening_hours&#34;:&#34;Mo-Sa 06:30-20:00; Su 07:00-19:00&#34;,&#34;phone&#34;:&#34;+1 719-783-2748&#34;,&#34;takeaway&#34;:&#34;yes&#34;,&#34;website&#34;:&#34;https://restaurants.subway.com/united-states/co/westcliffe/425-s-6th-street&#34;}</desc>
+		<sym>Fast Food</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.1698448455" lon="-104.5098063364">
+		<name>ns1-TacoBell</name>
+		<desc>{&#34;addr:city&#34;:&#34;Trinidad&#34;,&#34;addr:housenumber&#34;:&#34;212&#34;,&#34;addr:postcode&#34;:&#34;81082&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;Nevada Avenue&#34;,&#34;amenity&#34;:&#34;fast_food&#34;,&#34;brand&#34;:&#34;Taco Bell&#34;,&#34;brand:wikidata&#34;:&#34;Q752941&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;cuisine&#34;:&#34;tex-mex&#34;,&#34;name&#34;:&#34;Taco Bell&#34;,&#34;opening_hours&#34;:&#34;Mo-Th 10:30-21:00; Fr-Sa 10:30-22:00; Su 10:30-21:00&#34;,&#34;phone&#34;:&#34;+1 719-846-7723&#34;,&#34;takeaway&#34;:&#34;yes&#34;,&#34;website&#34;:&#34;https://locations.tacobell.com/co/trinidad/212-nevada-avenue.html&#34;}</desc>
+		<sym>Fast Food</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.1353736" lon="-105.4552202">
+		<name>ns1-TacosElTapatio</name>
+		<desc>{&#34;amenity&#34;:&#34;restaurant&#34;,&#34;name&#34;:&#34;Tacos El Tapatio&#34;,&#34;opening_hours&#34;:&#34;Mo-Sa 08:00-20:00&#34;}</desc>
+		<sym>Restaurant</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="39.1224531264" lon="-105.4443565434">
+		<name>ns1-TarryallCreek</name>
+		<desc>{&#34;name&#34;:&#34;Tarryall Creek&#34;,&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.1353751" lon="-105.4554221">
+		<name>ns1-TheCountryStore</name>
+		<desc>{&#34;name&#34;:&#34;The Country Store&#34;,&#34;opening_hours&#34;:&#34;Mo-Su 06:00-20:00&#34;,&#34;shop&#34;:&#34;general&#34;}</desc>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.7467666" lon="-105.178206">
+		<name>ns1-TheCrippledCow</name>
+		<desc>{&#34;amenity&#34;:&#34;restaurant&#34;,&#34;cuisine&#34;:&#34;pizza&#34;,&#34;name&#34;:&#34;The Crippled Cow&#34;,&#34;phone&#34;:&#34;+1-719-689-2142 ext 186&#34;}</desc>
+		<sym>Pizza</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.4391301" lon="-105.241702">
+		<name>ns1-TheCupandCone</name>
+		<desc>{&#34;addr:city&#34;:&#34;Cañon City&#34;,&#34;addr:housenumber&#34;:&#34;331&#34;,&#34;addr:postcode&#34;:&#34;81212&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;Royal Gorge Boulevard&#34;,&#34;amenity&#34;:&#34;ice_cream&#34;,&#34;contact:email&#34;:&#34;thecupandcone@gmail.com&#34;,&#34;contact:facebook&#34;:&#34;https://www.facebook.com/thecupandcone&#34;,&#34;contact:phone&#34;:&#34;+1 719 2753434&#34;,&#34;name&#34;:&#34;The Cup and Cone&#34;,&#34;opening_hours&#34;:&#34;Mo-Su 10:00-22:00&#34;}</desc>
+		<sym>Fast Food</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.3801328643" lon="-105.0993766786">
+		<name>ns1-Timbers</name>
+		<desc>{&#34;amenity&#34;:&#34;restaurant&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;Timbers&#34;}</desc>
+		<sym>Restaurant</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.13609774" lon="-105.44416346">
+		<name>ns1-Tony&#39;sPizza</name>
+		<desc>{&#34;addr:housenumber&#34;:&#34;630&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;East Main Street&#34;,&#34;amenity&#34;:&#34;restaurant&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;cuisine&#34;:&#34;italian&#34;,&#34;delivery&#34;:&#34;no&#34;,&#34;internet_access&#34;:&#34;wlan&#34;,&#34;internet_access:fee&#34;:&#34;no&#34;,&#34;name&#34;:&#34;Tony&#39;s Pizza&#34;,&#34;smoking&#34;:&#34;no&#34;,&#34;takeaway&#34;:&#34;yes&#34;}</desc>
+		<sym>Restaurant</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.4999073" lon="-105.012464">
+		<name>ns1-TrailheadGeneralStore</name>
+		<desc>{&#34;addr:city&#34;:&#34;La Veta&#34;,&#34;addr:housenumber&#34;:&#34;5519&#34;,&#34;addr:postcode&#34;:&#34;80155&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;State Highway 12&#34;,&#34;amenity&#34;:&#34;fuel&#34;,&#34;brand&#34;:&#34;Sinclair&#34;,&#34;name&#34;:&#34;Trailhead General Store&#34;,&#34;opening_hours&#34;:&#34;07:00-21:00&#34;}</desc>
+		<sym>Gas Station</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.1314077992" lon="-104.578864037">
+		<name>ns1-TrinidadLakeStatePark</name>
+		<desc>{&#34;addr:city&#34;:&#34;Trinidad&#34;,&#34;addr:housenumber&#34;:&#34;32610&#34;,&#34;addr:postcode&#34;:&#34;81082&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;Colorado Highway 12&#34;,&#34;boundary&#34;:&#34;protected_area&#34;,&#34;ele&#34;:&#34;1917&#34;,&#34;gnis:county_id&#34;:&#34;071&#34;,&#34;gnis:created&#34;:&#34;07/06/2007&#34;,&#34;gnis:feature_id&#34;:&#34;2128695&#34;,&#34;gnis:state_id&#34;:&#34;08&#34;,&#34;leisure&#34;:&#34;nature_reserve&#34;,&#34;name&#34;:&#34;Trinidad Lake State Park&#34;,&#34;operator&#34;:&#34;Colorado Parks \u0026 Wildlife&#34;,&#34;operator:short&#34;:&#34;CPW&#34;,&#34;operator:type&#34;:&#34;public&#34;,&#34;operator:wikidata&#34;:&#34;Q5148857&#34;,&#34;protect_class&#34;:&#34;5&#34;,&#34;protection_title&#34;:&#34;State Park&#34;,&#34;website&#34;:&#34;https://cpw.state.co.us/placestogo/parks/TrinidadLake&#34;,&#34;wikidata&#34;:&#34;Q7842393&#34;,&#34;wikipedia&#34;:&#34;en:Trinidad Lake State Park&#34;}</desc>
+		<sym>Park</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.6277778" lon="-104.7827778">
+		<name>ns1-UnitedChurchofWalsenburg</name>
+		<desc>{&#34;amenity&#34;:&#34;place_of_worship&#34;,&#34;ele&#34;:&#34;1894&#34;,&#34;gnis:county_id&#34;:&#34;055&#34;,&#34;gnis:created&#34;:&#34;10/17/2007&#34;,&#34;gnis:feature_id&#34;:&#34;2356786&#34;,&#34;gnis:state_id&#34;:&#34;08&#34;,&#34;name&#34;:&#34;United Church of Walsenburg&#34;,&#34;religion&#34;:&#34;christian&#34;}</desc>
+		<sym>Church</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.506206625" lon="-105.009466125">
+		<name>ns1-UnitedMethodistChurch</name>
+		<desc>{&#34;addr:city&#34;:&#34;La Veta&#34;,&#34;addr:housenumber&#34;:&#34;420&#34;,&#34;addr:postcode&#34;:&#34;80155&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;South Main Street&#34;,&#34;amenity&#34;:&#34;place_of_worship&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;United Methodist Church&#34;,&#34;religion&#34;:&#34;christian&#34;}</desc>
+		<sym>Church</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.7508224" lon="-105.19308182">
+		<name>ns1-VentureFoods&amp;AceHardware</name>
+		<desc>{&#34;building&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;Venture Foods \u0026 Ace Hardware&#34;,&#34;shop&#34;:&#34;supermarket&#34;}</desc>
+		<sym>Shopping Center</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.7512331" lon="-105.19297516">
+		<name>ns1-VentureFoodsgasstation</name>
+		<desc>{&#34;amenity&#34;:&#34;fuel&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;fuel:octane_91&#34;:&#34;no&#34;,&#34;fuel:octane_92&#34;:&#34;no&#34;,&#34;name&#34;:&#34;Venture Foods gas station&#34;,&#34;shop&#34;:&#34;yes&#34;}</desc>
+		<sym>Gas Station</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.4372644615" lon="-105.2440311923">
+		<name>ns1-VeteransPark</name>
+		<desc>{&#34;leisure&#34;:&#34;park&#34;,&#34;name&#34;:&#34;Veterans Park&#34;}</desc>
+		<sym>Park</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.6235234" lon="-104.780995">
+		<name>ns1-Walsenburg</name>
+		<desc>{&#34;capital&#34;:&#34;6&#34;,&#34;ele&#34;:&#34;1881&#34;,&#34;gnis:feature_id&#34;:&#34;204806&#34;,&#34;name&#34;:&#34;Walsenburg&#34;,&#34;place&#34;:&#34;town&#34;,&#34;population&#34;:&#34;3943&#34;,&#34;population:date&#34;:&#34;2006&#34;,&#34;source:population&#34;:&#34;US Census&#34;,&#34;wikidata&#34;:&#34;Q1778949&#34;,&#34;wikipedia&#34;:&#34;en:Walsenburg, Colorado&#34;}</desc>
+		<sym>City Hall</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.1331910527" lon="-105.4699830962">
+		<name>ns1-Westcliffe</name>
+		<desc>{&#34;admin_level&#34;:&#34;8&#34;,&#34;border_type&#34;:&#34;town&#34;,&#34;boundary&#34;:&#34;administrative&#34;,&#34;gnis:feature_id&#34;:&#34;2413471&#34;,&#34;is_in:iso_3166_2&#34;:&#34;US:CO&#34;,&#34;name&#34;:&#34;Westcliffe&#34;,&#34;place&#34;:&#34;town&#34;,&#34;source&#34;:&#34;TIGER/Line® 2008 Place Shapefiles (http://www.census.gov/geo/www/tiger/)&#34;,&#34;tiger:CLASSFP&#34;:&#34;C1&#34;,&#34;tiger:CPI&#34;:&#34;N&#34;,&#34;tiger:FUNCSTAT&#34;:&#34;A&#34;,&#34;tiger:LSAD&#34;:&#34;43&#34;,&#34;tiger:MTFCC&#34;:&#34;G4110&#34;,&#34;tiger:NAME&#34;:&#34;Westcliffe&#34;,&#34;tiger:NAMELSAD&#34;:&#34;Westcliffe town&#34;,&#34;tiger:PCICBSA&#34;:&#34;N&#34;,&#34;tiger:PCINECTA&#34;:&#34;N&#34;,&#34;tiger:PLACEFP&#34;:&#34;83450&#34;,&#34;tiger:PLCIDFP&#34;:&#34;0883450&#34;,&#34;tiger:STATEFP&#34;:&#34;08&#34;,&#34;tiger:reviewed&#34;:&#34;no&#34;,&#34;wikidata&#34;:&#34;Q521692&#34;,&#34;wikipedia&#34;:&#34;en:Westcliffe, Colorado&#34;}</desc>
+		<sym>City Hall</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.4402940833" lon="-105.2420441">
+		<name>ns1-World&#39;sEndBrewingCompany</name>
+		<desc>{&#34;addr:city&#34;:&#34;Cañon City&#34;,&#34;addr:housenumber&#34;:&#34;401&#34;,&#34;addr:postcode&#34;:&#34;81212&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;Main Street&#34;,&#34;amenity&#34;:&#34;pub&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;microbrewery&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;World&#39;s End Brewing Company&#34;,&#34;opening_hours&#34;:&#34;PH, Su-Sa 11:00-22:00&#34;,&#34;website&#34;:&#34;http://www.worldsendbrewingco.com&#34;}</desc>
+		<sym>Bar</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.37971624" lon="-105.09955894">
+		<name>ns1-YachtClub</name>
+		<desc>{&#34;amenity&#34;:&#34;bar&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;Yacht Club&#34;,&#34;website&#34;:&#34;https://www.cucharayachtclub.com/&#34;}</desc>
+		<sym>Bar</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.9806847364" lon="-105.3574865182">
+		<name>ns1-Yeagers</name>
+		<desc>{&#34;amenity&#34;:&#34;cafe&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;name&#34;:&#34;Yeagers&#34;}</desc>
+		<sym>Restaurant</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.1958975363" lon="-105.3979076919">
+		<name>ns1-artificial</name>
+		<desc>{&#34;nhd:com_id&#34;:&#34;133048474&#34;,&#34;nhd:fcode&#34;:&#34;55800&#34;,&#34;nhd:ftype&#34;:&#34;ArtificialPath&#34;,&#34;nhd:reach_code&#34;:&#34;11020001001941&#34;,&#34;waterway&#34;:&#34;artificial&#34;}</desc>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.1662022667" lon="-105.4201365333">
+		<name>ns1-artificial(2)</name>
+		<desc>{&#34;nhd:com_id&#34;:&#34;133048503&#34;,&#34;nhd:fcode&#34;:&#34;55800&#34;,&#34;nhd:ftype&#34;:&#34;ArtificialPath&#34;,&#34;nhd:reach_code&#34;:&#34;11020001001935&#34;,&#34;waterway&#34;:&#34;artificial&#34;}</desc>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.0580211" lon="-105.4666518">
+		<name>ns1-artificial(3)</name>
+		<desc>{&#34;nhd:com_id&#34;:&#34;133048595&#34;,&#34;nhd:fcode&#34;:&#34;55800&#34;,&#34;nhd:ftype&#34;:&#34;ArtificialPath&#34;,&#34;nhd:reach_code&#34;:&#34;11020001012033&#34;,&#34;waterway&#34;:&#34;artificial&#34;}</desc>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.5926553" lon="-105.253432">
+		<name>ns1-camp_pitch</name>
+		<desc>{&#34;tourism&#34;:&#34;camp_pitch&#34;}</desc>
+		<sym>Campground</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.945661" lon="-105.3507333">
+		<name>ns1-camp_site</name>
+		<desc>{&#34;drinking_water&#34;:&#34;no&#34;,&#34;fee&#34;:&#34;no&#34;,&#34;impromptu&#34;:&#34;yes&#34;,&#34;openfire&#34;:&#34;yes&#34;,&#34;tents&#34;:&#34;yes&#34;,&#34;tourism&#34;:&#34;camp_site&#34;}</desc>
+		<sym>Campground</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.1313677533" lon="-105.46333212">
+		<name>ns1-convenience</name>
+		<desc>{&#34;addr:city&#34;:&#34;Westcliffe&#34;,&#34;addr:housenumber&#34;:&#34;425&#34;,&#34;addr:postcode&#34;:&#34;81252&#34;,&#34;addr:state&#34;:&#34;CO&#34;,&#34;addr:street&#34;:&#34;South 6th Street&#34;,&#34;building&#34;:&#34;retail&#34;,&#34;opening_hours&#34;:&#34;Mo-Sa 06:30-20:00; Su 07:00-19:00&#34;,&#34;shop&#34;:&#34;convenience&#34;}</desc>
+		<sym>Shopping Center</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.4377134" lon="-105.2399661">
+		<name>ns1-drinking_water</name>
+		<desc>{&#34;amenity&#34;:&#34;drinking_water&#34;,&#34;indoor&#34;:&#34;no&#34;}</desc>
+		<sym>Drinking Water</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.1311398" lon="-105.4668415">
+		<name>ns1-drinking_water(2)</name>
+		<desc>{&#34;amenity&#34;:&#34;drinking_water&#34;}</desc>
+		<sym>Drinking Water</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.4360749" lon="-105.2410452">
+		<name>ns1-fountain</name>
+		<desc>{&#34;amenity&#34;:&#34;fountain&#34;}</desc>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.5094287" lon="-105.0092868">
+		<name>ns1-fuel</name>
+		<desc>{&#34;amenity&#34;:&#34;fuel&#34;}</desc>
+		<sym>Gas Station</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.6227684" lon="-104.7807661">
+		<name>ns1-fuel(2)</name>
+		<desc>{&#34;amenity&#34;:&#34;fuel&#34;}</desc>
+		<sym>Gas Station</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.7460598458" lon="-105.1799437667">
+		<name>ns1-park</name>
+		<desc>{&#34;leisure&#34;:&#34;park&#34;}</desc>
+		<sym>Park</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.7466992429" lon="-105.1812731643">
+		<name>ns1-park(2)</name>
+		<desc>{&#34;leisure&#34;:&#34;park&#34;}</desc>
+		<sym>Park</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.50935748" lon="-105.00759952">
+		<name>ns1-picnic_site</name>
+		<desc>{&#34;operator&#34;:&#34;Town of La Veta&#34;,&#34;tourism&#34;:&#34;picnic_site&#34;}</desc>
+		<sym>Picnic Area</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.3482973643" lon="-105.0246431643">
+		<name>ns1-picnic_site(2)</name>
+		<desc>{&#34;source&#34;:&#34;Bing&#34;,&#34;tourism&#34;:&#34;picnic_site&#34;}</desc>
+		<sym>Picnic Area</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.37848348" lon="-105.10167046">
+		<name>ns1-place_of_worship</name>
+		<desc>{&#34;amenity&#34;:&#34;place_of_worship&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;religion&#34;:&#34;christian&#34;}</desc>
+		<sym>Church</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.0335655021" lon="-105.2259398486">
+		<name>ns1-protected_area</name>
+		<desc>{&#34;attribution&#34;:&#34;US Forest Service&#34;,&#34;boundary&#34;:&#34;protected_area&#34;}</desc>
+		<sym>Park</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.1677956269" lon="-105.0900423141">
+		<name>ns1-protected_area(2)</name>
+		<desc>{&#34;attribution&#34;:&#34;US Forest Service&#34;,&#34;boundary&#34;:&#34;protected_area&#34;}</desc>
+		<sym>Park</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.6202507538" lon="-104.7868592231">
+		<name>ns1-restaurant</name>
+		<desc>{&#34;amenity&#34;:&#34;restaurant&#34;,&#34;building&#34;:&#34;yes&#34;,&#34;source&#34;:&#34;Bing&#34;}</desc>
+		<sym>Restaurant</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.3326972" lon="-104.97764565">
+		<name>ns1-ridge</name>
+		<desc>{&#34;natural&#34;:&#34;ridge&#34;,&#34;source&#34;:&#34;Bing&#34;}</desc>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.344682125" lon="-104.9915498">
+		<name>ns1-ridge(2)</name>
+		<desc>{&#34;natural&#34;:&#34;ridge&#34;,&#34;source&#34;:&#34;Bing&#34;}</desc>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.47338835" lon="-105.02670395">
+		<name>ns1-ridge(3)</name>
+		<desc>{&#34;natural&#34;:&#34;ridge&#34;,&#34;source&#34;:&#34;Bing&#34;}</desc>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.46592435" lon="-105.02824395">
+		<name>ns1-ridge(4)</name>
+		<desc>{&#34;natural&#34;:&#34;ridge&#34;}</desc>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.444936348" lon="-105.250256488">
+		<name>ns1-ridge(5)</name>
+		<desc>{&#34;natural&#34;:&#34;ridge&#34;}</desc>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.47408288" lon="-105.254421386">
+		<name>ns1-ridge(6)</name>
+		<desc>{&#34;natural&#34;:&#34;ridge&#34;}</desc>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.9855006294" lon="-105.3651931235">
+		<name>ns1-river</name>
+		<desc>{&#34;waterway&#34;:&#34;river&#34;}</desc>
+		<sym>Water Source</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.13080156" lon="-105.46595374">
+		<name>ns1-shelter</name>
+		<desc>{&#34;amenity&#34;:&#34;shelter&#34;,&#34;building&#34;:&#34;roof&#34;,&#34;roof:colour&#34;:&#34;green&#34;,&#34;shelter_type&#34;:&#34;picnic_shelter&#34;}</desc>
+		<sym>Building</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.5858312" lon="-105.2492223">
+		<name>ns1-shelter(2)</name>
+		<desc>{&#34;amenity&#34;:&#34;shelter&#34;,&#34;shelter_type&#34;:&#34;picnic_shelter&#34;}</desc>
+		<sym>Building</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.592401" lon="-105.2529538">
+		<name>ns1-shelter(3)</name>
+		<desc>{&#34;amenity&#34;:&#34;shelter&#34;,&#34;shelter_type&#34;:&#34;picnic_shelter&#34;}</desc>
+		<sym>Building</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.7458372" lon="-105.1800452">
+		<name>ns1-shelter(4)</name>
+		<desc>{&#34;amenity&#34;:&#34;shelter&#34;}</desc>
+		<sym>Building</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.7463749" lon="-105.1801753">
+		<name>ns1-shelter(5)</name>
+		<desc>{&#34;amenity&#34;:&#34;shelter&#34;}</desc>
+		<sym>Building</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.51042578" lon="-105.00965666">
+		<name>ns1-toilets</name>
+		<desc>{&#34;amenity&#34;:&#34;toilets&#34;,&#34;building&#34;:&#34;yes&#34;}</desc>
+		<sym>Restroom</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="37.51046836" lon="-105.0016146">
+		<name>ns1-toilets(2)</name>
+		<desc>{&#34;amenity&#34;:&#34;toilets&#34;,&#34;building&#34;:&#34;yes&#34;}</desc>
+		<sym>Restroom</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.5860872" lon="-105.2485192">
+		<name>ns1-toilets(3)</name>
+		<desc>{&#34;amenity&#34;:&#34;toilets&#34;}</desc>
+		<sym>Restroom</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.5923758" lon="-105.2532046">
+		<name>ns1-toilets(4)</name>
+		<desc>{&#34;amenity&#34;:&#34;toilets&#34;}</desc>
+		<sym>Restroom</sym>
+		<type>user</type>
+	</wpt>
+	<wpt lat="38.4619554" lon="-105.2515165">
+		<name>ns1-viewpoint</name>
+		<desc>{&#34;tourism&#34;:&#34;viewpoint&#34;}</desc>
+		<sym>Scenic Area</sym>
+		<type>user</type>
+	</wpt>
+</gpx>
