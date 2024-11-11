@@ -38,3 +38,6 @@ elm-sh:
 
 elm-docker-image:
 	docker build -f elm.Dockerfile -t glynternet/elm:latest .
+
+calendars:
+	${MAKE} -C _calendar
