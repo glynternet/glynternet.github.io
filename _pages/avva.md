@@ -36,7 +36,7 @@ Create shortcut to batch file and move it to the startup directory.
 
 1. Open Task Scheduler
 1. Create basic task
-1. Configure for startup on login (probably don't need always?)
+1. Configure to "run whether user is logged in or not" (if setting this to just when logged in, there is a popup)
 1. Give .bat script as path
 
 https://superuser.com/a/1168592
