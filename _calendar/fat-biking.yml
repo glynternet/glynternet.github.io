@@ -1,5 +1,14 @@
 name: Fat biking events
 events:
+  - summary: Silverton Whiteout (Most likely in February, not sure yet)
+    begin: 2025-02-01
+    end: 2025-02-28
+    location: |
+      TBD
+    description: |
+      urls:
+        - https://www.facebook.com/silvertonwhiteout/
+        - https://www.durangocyclery.com/whiteout
   - summary: Cottonwood Crusher (Most likely in February, not sure yet)
     begin: 2025-02-01
     end: 2025-02-28
