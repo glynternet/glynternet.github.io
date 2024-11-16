@@ -34,10 +34,10 @@ Create shortcut to batch file and move it to the startup directory.
 
 #### Without popup
 
-Open Task Scheduler
-Create basic task
-Configure for startup on login (probably don't need always?)
-Give .bat script as path
+1. Open Task Scheduler
+1. Create basic task
+1. Configure for startup on login (probably don't need always?)
+1. Give .bat script as path
 
 https://superuser.com/a/1168592
 
