@@ -11,9 +11,7 @@ events:
         - https://www.durangocyclery.com/whiteout
   - summary: Cottonwood Crusher (Most likely in February, not sure yet)
     begin: 2025-02-01
-    end: 2025-02-28
-    location: |
-      TBD
+    location: https://goo.gl/maps/PSgGf2qwJfsK9jhL7
     description: |
       urls:
         - https://www.instagram.com/CottonwoodCrusher/

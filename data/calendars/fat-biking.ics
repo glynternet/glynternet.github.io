@@ -5,82 +5,82 @@ BEGIN:VEVENT
 DTSTART:20250201T000000
 DTEND:20250228T000000
 SUMMARY:Silverton Whiteout (Most likely in February\, not sure yet)
-UID:e30d32bc-e2ed-4e14-9b98-0e39db27b658@e30d.org
+UID:ffcaf5af-8ed3-431c-b07b-6197de53306c@ffca.org
 DESCRIPTION:urls:\n  - https://www.facebook.com/silvertonwhiteout/\n  - 
  https://www.durangocyclery.com/whiteout
 LOCATION:TBD
-DTSTAMP:20241116T050946Z
+DTSTAMP:20241117T225209Z
 END:VEVENT
 BEGIN:VEVENT
-DTSTART:20250201T000000
-DTEND:20250228T000000
+DTSTART;VALUE=DATE:20250201
+DTEND;VALUE=DATE:20250202
 SUMMARY:Cottonwood Crusher (Most likely in February\, not sure yet)
-UID:f93cfdd5-669c-46c0-a4a6-4fb99a1f3844@f93c.org
+UID:ab1707fc-971b-44a4-891f-86ae73b629a0@ab17.org
 DESCRIPTION:urls:\n  - https://www.instagram.com/CottonwoodCrusher/\n  - 
  https://www.facebook.com/groups/cottonwoodcrusher/info/?_rdr\n  - 
  https://www.facebook.com/groups/cottonwoodcrusher/\n  - 
  https://coloradoes.wordpress.com/swes-event-list/cottonwood-crusher/
-LOCATION:TBD
-DTSTAMP:20241116T050946Z
+LOCATION:https://goo.gl/maps/PSgGf2qwJfsK9jhL7
+DTSTAMP:20241117T225209Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250118
 DTEND;VALUE=DATE:20250119
 SUMMARY:Colorado Cup ITT (Leadville Winter Series)
-UID:ae97fc42-2d99-4310-92f2-721fe5e9c2a9@ae97.org
+UID:d7932e33-d605-4ba5-8fec-8ef5029c9c7e@d793.org
 DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
  series
 LOCATION:Leadville
-DTSTAMP:20241116T050946Z
+DTSTAMP:20241117T225209Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART:20250124T000000
 DTEND:20250126T000000
 SUMMARY:Fat Bike Worlds
-UID:2dc1a930-f904-478c-82e2-3222e814a9d7@2dc1.org
+UID:c9ab915b-d943-4ce8-9c6c-4e0704e7b69e@c9ab.org
 DESCRIPTION:urls:\n  - https://fatbikeworlds.org/
 LOCATION:Crested Butte
-DTSTAMP:20241116T050946Z
+DTSTAMP:20241117T225209Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250208
 DTEND;VALUE=DATE:20250209
 SUMMARY:Tennessee Pass Night Jam (Leadville Winter Series)
-UID:59852a01-85df-4f05-bd09-23a6080e80bd@5985.org
+UID:cb6cc03f-780b-4bec-b3b7-059993b40ffa@cb6c.org
 DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
  series
 LOCATION:Leadville
-DTSTAMP:20241116T050946Z
+DTSTAMP:20241117T225209Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250301
 DTEND;VALUE=DATE:20250302
 SUMMARY:Mineral Belt Mayhem (Leadville Winter Series)
-UID:02158c21-67d9-43fb-ad71-97dbb70bc202@0215.org
+UID:694215a7-04de-49d3-94ff-e7e06c7b7b53@6942.org
 DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
  series
 LOCATION:Leadville
-DTSTAMP:20241116T050946Z
+DTSTAMP:20241117T225209Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250315
 DTEND;VALUE=DATE:20250316
 SUMMARY:Fatty Patty 50K (Leadville Winter Series)
-UID:89b4fb23-cc34-4c6f-92d0-711fc0d199be@89b4.org
+UID:5a0d903c-cc12-4037-884c-187e4c0e1d7b@5a0d.org
 DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
  series
 LOCATION:Leadville
-DTSTAMP:20241116T050946Z
+DTSTAMP:20241117T225209Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250405
 DTEND;VALUE=DATE:20250406
 SUMMARY:East Side Epic (Leadville Winter Series)
-UID:ccce9f73-7875-43d5-97d9-cdc642b79ebb@ccce.org
+UID:43354068-53d1-4e2b-988e-ff8377722842@4335.org
 DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
  series
 LOCATION:Leadville
-DTSTAMP:20241116T050946Z
+DTSTAMP:20241117T225209Z
 END:VEVENT
 NAME:Fat biking events
 X-WR-CALNAME:Fat biking events
