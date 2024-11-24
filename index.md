@@ -12,3 +12,4 @@ title: glyn.io
 [🏕️](/camping)
 [🧦](/socks)
 [📝](/project_and_plans)
+[🪢](/knots)
