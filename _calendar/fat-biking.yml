@@ -1,5 +1,38 @@
 name: Fat biking events
 events:
+
+  - summary: East Side Epic (Leadville Winter Series)
+    begin: 2025-04-05
+    location: |
+      Leadville
+    description: |
+      urls:
+        - https://www.cloudcitywheelers.com/the-winter-bike-series
+
+  - summary: Fatty Patty 50K (Leadville Winter Series)
+    begin: 2025-03-15
+    location: |
+      Leadville
+    description: |
+      urls:
+        - https://www.cloudcitywheelers.com/the-winter-bike-series
+
+  - summary: Mineral Belt Mayhem (Leadville Winter Series)
+    begin: 2025-03-01
+    location: |
+      Leadville
+    description: |
+      urls:
+        - https://www.cloudcitywheelers.com/the-winter-bike-series
+
+  - summary: Tennessee Pass Night Jam (Leadville Winter Series)
+    begin: 2025-02-08
+    location: |
+      Leadville
+    description: |
+      urls:
+        - https://www.cloudcitywheelers.com/the-winter-bike-series
+
   - summary: Cottonwood Crusher
     begin: 2025-02-01
     location: https://goo.gl/maps/PSgGf2qwJfsK9jhL7
@@ -9,13 +42,7 @@ events:
         - https://www.facebook.com/groups/cottonwoodcrusher/info/?_rdr
         - https://www.facebook.com/groups/cottonwoodcrusher/
         - https://coloradoes.wordpress.com/swes-event-list/cottonwood-crusher/
-  - summary: Colorado Cup ITT (Leadville Winter Series)
-    begin: 2025-01-18
-    location: |
-      Leadville
-    description: |
-      urls:
-        - https://www.cloudcitywheelers.com/the-winter-bike-series
+
   - summary: Fat Bike Worlds
     begin: 2025-01-24
     end: 2025-01-26
@@ -24,29 +51,9 @@ events:
     description: |
       urls:
         - https://fatbikeworlds.org/
-  - summary: Tennessee Pass Night Jam (Leadville Winter Series)
-    begin: 2025-02-08
-    location: |
-      Leadville
-    description: |
-      urls:
-        - https://www.cloudcitywheelers.com/the-winter-bike-series
-  - summary: Mineral Belt Mayhem (Leadville Winter Series)
-    begin: 2025-03-01
-    location: |
-      Leadville
-    description: |
-      urls:
-        - https://www.cloudcitywheelers.com/the-winter-bike-series
-  - summary: Fatty Patty 50K (Leadville Winter Series)
-    begin: 2025-03-15
-    location: |
-      Leadville
-    description: |
-      urls:
-        - https://www.cloudcitywheelers.com/the-winter-bike-series
-  - summary: East Side Epic (Leadville Winter Series)
-    begin: 2025-04-05
+
+  - summary: Colorado Cup ITT (Leadville Winter Series)
+    begin: 2025-01-18
     location: |
       Leadville
     description: |
