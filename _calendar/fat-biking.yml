@@ -25,6 +25,16 @@ events:
       urls:
         - https://www.cloudcitywheelers.com/the-winter-bike-series
 
+  - summary: Frisco Freeze
+    begin: 2025-02-12
+    location: |
+      Frisco Nordic Center
+      616 Recreation Way
+      Frisco, CO 80443
+    description: |
+      urls:
+        - https://www.townoffrisco.com/event/nordic-center-events/frisco-freeze-winter-bike-race/
+
   - summary: Tennessee Pass Night Jam (Leadville Winter Series)
     begin: 2025-02-08
     location: |
