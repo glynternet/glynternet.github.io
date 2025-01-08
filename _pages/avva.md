@@ -13,7 +13,7 @@ Take a backup of the current project before starting this.
 	- Call it avva.studio_YYYYQ?
 1. Close the project
 1. Copy over `avvaunity` folder from `Assets` folder of previous project into `Assets` folder of new project.
-1. Copy over `avvaunity/ProjectSettings/TagManager.asset` to `ProjectSettings` folder.
+1. In the `ProjectSettings` in the root of the project, replace the `TagManager.asset` file with theone from `avvaunity/ProjectSettings/TagManager.asset`.
 1. Open new project.
 
 ### Windows: start an application at startup
