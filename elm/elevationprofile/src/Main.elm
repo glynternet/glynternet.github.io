@@ -225,6 +225,10 @@ profile data =
             -- TODO(ghanmer): handle empty list etc better, although this is probably fine
             Maybe.withDefault 1 <| List.maximum <| List.map .elevation data.points
 
+        minElevation =
+            -- TODO(ghanmer): handle empty list etc better, although this is probably fine
+            Maybe.withDefault 1 <| List.minimum <| List.map .elevation data.points
+
         maxDistance =
             Maybe.withDefault 1 <| List.maximum <| List.map .distance data.points
 
@@ -249,8 +253,9 @@ profile data =
                     (accumulatePoints
                         { svgHeight = toFloat svgHeight
                         , svgWidth = toFloat svgWidth
-                        , maxElevation = maxElevation
                         , maxDistance = maxDistance
+                        , minElevation = minElevation
+                        , maxElevation = maxElevation
                         }
                     )
                     ( Nothing, [] )
@@ -278,10 +283,19 @@ profile data =
         ]
 
 
+
+-- accumulatePoints takes in a config to form an accumulator.
+-- The accumulator will take a point and form a tuple of (maybePrevPoint, currentLines), where each line in currentLines
+-- is a formed Svg.Svg msg.
+-- The maybePrevPoint is a Maybe (String, String) because the number values have been converted in a prior iteration of
+-- the accumulation loop.
+
+
 accumulatePoints :
     { svgWidth : Float
     , svgHeight : Float
     , maxDistance : Float
+    , minElevation : Float
     , maxElevation : Float
     }
     -> (Point -> ( Maybe ( String, String ), List (Svg.Svg msg) ) -> ( Maybe ( String, String ), List (Svg.Svg msg) ))
@@ -291,8 +305,11 @@ accumulatePoints cfg =
             pointX =
                 String.fromFloat (cfg.svgWidth * point.distance / cfg.maxDistance)
 
+            pointElevationNormalised =
+                (point.elevation - cfg.minElevation) / (cfg.maxElevation - cfg.minElevation)
+
             pointY =
-                String.fromFloat (cfg.svgHeight - cfg.svgHeight * point.elevation / cfg.maxElevation)
+                String.fromFloat (cfg.svgHeight - cfg.svgHeight * pointElevationNormalised)
         in
         case maybePrevPoint of
             Nothing ->
