@@ -37,6 +37,8 @@ main =
 
 type alias Model =
     { profileData : LoadableResource ElevationProfileData
+    , waypoints : List Waypoint
+    , waypointText : String
     , showOptions : Bool
     , gpxServerURLOverride : Maybe String
     }
@@ -52,6 +54,11 @@ type alias ElevationPoint =
     }
 
 
+type alias Waypoint =
+    { distance : Float
+    }
+
+
 type alias StoredState =
     { file : Maybe String
     , profileData : Maybe ElevationProfileData
@@ -61,7 +68,7 @@ type alias StoredState =
 
 storedStateModel : StoredState -> Model
 storedStateModel state =
-    Model (loadableResourceFromMaybe state.profileData) True state.gpxServerURL
+    Model (loadableResourceFromMaybe state.profileData) [] "" True state.gpxServerURL
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
@@ -73,7 +80,7 @@ init maybeState _ _ =
                 >> Result.withDefault (StoredState Nothing Nothing Nothing)
                 >> storedStateModel
             )
-        |> Maybe.withDefault (Model NotLoaded True Nothing)
+        |> Maybe.withDefault (Model NotLoaded [] "" True Nothing)
     , Cmd.none
     )
 
@@ -84,6 +91,7 @@ type Msg
     | OpenFileBrowser
     | FileUploaded File.File
     | ElevationProfileDataResponse (Result String ElevationProfileData)
+    | WaypointsTextChange String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -118,6 +126,13 @@ update msg model =
         Ignore ->
             ( model, Cmd.none )
 
+        WaypointsTextChange text ->
+            updateModel
+                { model
+                    | waypoints = String.lines text |> List.filterMap String.toFloat |> List.map Waypoint
+                    , waypointText = text
+                }
+
 
 updateModel : Model -> ( Model, Cmd Msg )
 updateModel model =
@@ -141,7 +156,7 @@ view model =
             , Html.Attributes.class "page"
             , Html.Attributes.style "height" "100%"
             ]
-            [ viewOptions model.showOptions
+            [ viewOptions model.showOptions model.waypointText
             , Html.div
                 [ Html.Attributes.class "flex-container"
                 , Html.Attributes.class "column"
@@ -160,14 +175,14 @@ view model =
                         viewErrorPanel <| ("There was an error creating your profile. Please fix any error and try again 😇\n\nError: " ++ String.left 1000 err ++ "...")
 
                     Loaded profileData ->
-                        profile profileData
+                        profile profileData model.waypoints
                 ]
             ]
         ]
 
 
-viewOptions : Bool -> Html Msg
-viewOptions show =
+viewOptions : Bool -> String -> Html Msg
+viewOptions show waypointText =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "column"
@@ -199,6 +214,14 @@ viewOptions show =
                             ]
                             [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "upload GPX" OpenFileBrowser
                             ]
+                        , Html.div []
+                            [ Html.textarea
+                                [ Html.Attributes.placeholder "Newline delimited waypoint distances"
+                                , Html.Attributes.value waypointText
+                                , Html.Events.onInput WaypointsTextChange
+                                ]
+                                []
+                            ]
                         ]
                   ]
                 ]
@@ -217,8 +240,8 @@ viewButtonWithAttributes attrs text msg =
         [ Html.text text ]
 
 
-profile : ElevationProfileData -> Html Msg
-profile profileData =
+profile : ElevationProfileData -> List Waypoint -> Html Msg
+profile profileData waypoints =
     let
         -- TODO(ghanmer): combine these max folds to not iterate through twice
         maxElevation =
@@ -237,6 +260,15 @@ profile profileData =
 
         svgWidth =
             500
+
+        calc =
+            xyCalculator
+                { svgHeight = toFloat svgHeight
+                , svgWidth = toFloat svgWidth
+                , maxDistance = maxDistance
+                , minElevation = minElevation
+                , maxElevation = maxElevation
+                }
     in
     Html.div
         [ Html.Attributes.class "TODO"
@@ -248,41 +280,82 @@ profile profileData =
             --                          min-x min-y width height
             , Svg.Attributes.viewBox <| "0 0 " ++ String.fromInt svgWidth ++ " " ++ String.fromInt svgHeight
             ]
-            ((profileData
-                |> List.foldl
-                    (accumulatePoints
-                        (xyCalculator
-                            { svgHeight = toFloat svgHeight
-                            , svgWidth = toFloat svgWidth
-                            , maxDistance = maxDistance
-                            , minElevation = minElevation
-                            , maxElevation = maxElevation
-                            }
-                        )
+            (List.concat
+                [ resolveElevationProfileSVGLine calc profileData
+                , List.map
+                    (\waypoint ->
+                        let
+                            x =
+                                --calc.x waypoint.distance
+                                calc.x waypoint.distance
+
+                            y =
+                                calc.y <| interpolateWaypointElevation profileData waypoint - 5
+                        in
+                        Svg.line
+                            [ Svg.Attributes.x1 <| x
+                            , Svg.Attributes.y1 <| String.fromInt svgHeight
+                            , Svg.Attributes.x2 <| x
+                            , Svg.Attributes.y2 <| y
+                            , Svg.Attributes.stroke "grey"
+                            , Svg.Attributes.strokeWidth "1"
+                            ]
+                            []
                     )
-                    ( Nothing, [] )
-                |> Tuple.second
-             )
-                ++ ([ ( ( 0, 0 ), ( svgHeight, 0 ) )
-                    , ( ( 0, 0 ), ( 0, svgWidth ) )
-                    , ( ( svgHeight, svgWidth ), ( svgHeight, 0 ) )
-                    , ( ( svgHeight, svgWidth ), ( 0, svgWidth ) )
-                    ]
-                        |> List.map
-                            (\( ( y1, x1 ), ( y2, x2 ) ) ->
-                                Svg.line
-                                    [ Svg.Attributes.x1 <| String.fromInt x1
-                                    , Svg.Attributes.y1 <| String.fromInt y1
-                                    , Svg.Attributes.x2 <| String.fromInt x2
-                                    , Svg.Attributes.y2 <| String.fromInt y2
-                                    , Svg.Attributes.stroke "grey"
-                                    , Svg.Attributes.strokeWidth "1"
-                                    ]
-                                    []
-                            )
-                   )
+                    waypoints
+                , [ ( ( 0, 0 ), ( svgHeight, 0 ) )
+                  , ( ( 0, 0 ), ( 0, svgWidth ) )
+                  , ( ( svgHeight, svgWidth ), ( svgHeight, 0 ) )
+                  , ( ( svgHeight, svgWidth ), ( 0, svgWidth ) )
+                  ]
+                    |> List.map
+                        (\( ( y1, x1 ), ( y2, x2 ) ) ->
+                            Svg.line
+                                [ Svg.Attributes.x1 <| String.fromInt x1
+                                , Svg.Attributes.y1 <| String.fromInt y1
+                                , Svg.Attributes.x2 <| String.fromInt x2
+                                , Svg.Attributes.y2 <| String.fromInt y2
+                                , Svg.Attributes.stroke "grey"
+                                , Svg.Attributes.strokeWidth "1"
+                                ]
+                                []
+                        )
+                ]
             )
         ]
+
+
+interpolateWaypointElevation : List ElevationPoint -> Waypoint -> Float
+interpolateWaypointElevation elevationsPoints waypoint =
+    case elevationsPoints of
+        [] ->
+            0
+
+        a :: others ->
+            if a.distance >= waypoint.distance then
+                a.elevation
+
+            else
+                case others of
+                    [] ->
+                        a.elevation
+
+                    b :: _ ->
+                        if b.distance >= waypoint.distance then
+                            -- properly interpolate here
+                            a.elevation
+
+                        else
+                            interpolateWaypointElevation others waypoint
+
+
+resolveElevationProfileSVGLine : XYCalculator -> ElevationProfileData -> List (Svg.Svg msg)
+resolveElevationProfileSVGLine calc profileData =
+    profileData
+        |> List.foldl
+            (accumulatePoints calc)
+            ( Nothing, [] )
+        |> Tuple.second
 
 
 type alias XYCalculator =

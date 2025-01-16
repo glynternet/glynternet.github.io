@@ -784,11 +784,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.O.B === region.U.B)
+	if (region.O.C === region.Y.C)
 	{
-		return 'on line ' + region.O.B;
+		return 'on line ' + region.O.C;
 	}
-	return 'on lines ' + region.O.B + ' through ' + region.U.B;
+	return 'on lines ' + region.O.C + ' through ' + region.Y.C;
 }
 
 
@@ -1857,9 +1857,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aM,
-		impl.a_,
-		impl.aX,
+		impl.aO,
+		impl.a0,
+		impl.aZ,
 		function() { return function() {} }
 	);
 });
@@ -2719,7 +2719,7 @@ var _VirtualDom_mapEventTuple = F2(function(func, tuple)
 var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
-		o: func(record.o),
+		q: func(record.q),
 		P: record.P,
 		L: record.L
 	}
@@ -2989,7 +2989,7 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 		// 3 = Custom
 
 		var value = result.a;
-		var message = !tag ? value : tag < 3 ? value.a : value.o;
+		var message = !tag ? value : tag < 3 ? value.a : value.q;
 		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.P;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
@@ -3943,11 +3943,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aM,
-		impl.a_,
-		impl.aX,
+		impl.aO,
+		impl.a0,
+		impl.aZ,
 		function(sendToApp, initialModel) {
-			var view = impl.a0;
+			var view = impl.a2;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -3979,12 +3979,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aM,
-		impl.a_,
-		impl.aX,
+		impl.aO,
+		impl.a0,
+		impl.aZ,
 		function(sendToApp, initialModel) {
 			var divertHrefToApp = impl.M && impl.M(sendToApp)
-			var view = impl.a0;
+			var view = impl.a2;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -3992,12 +3992,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.aD);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.aF);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.aZ) && (_VirtualDom_doc.title = title = doc.aZ);
+				(title !== doc.a$) && (_VirtualDom_doc.title = title = doc.a$);
 			});
 		}
 	);
@@ -4053,8 +4053,8 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.aP;
-	var onUrlRequest = impl.aQ;
+	var onUrlChange = impl.aR;
+	var onUrlRequest = impl.aS;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
@@ -4074,9 +4074,9 @@ function _Browser_application(impl)
 					var next = $elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.ak === next.ak
-							&& curr._ === next._
-							&& curr.ah.a === next.ah.a
+							&& curr.ao === next.ao
+							&& curr.ad === next.ad
+							&& curr.al.a === next.al.a
 						)
 							? $elm$browser$Browser$Internal(next)
 							: $elm$browser$Browser$External(href)
@@ -4084,13 +4084,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		aM: function(flags)
+		aO: function(flags)
 		{
-			return A3(impl.aM, flags, _Browser_getUrl(), key);
+			return A3(impl.aO, flags, _Browser_getUrl(), key);
 		},
+		a2: impl.a2,
 		a0: impl.a0,
-		a_: impl.a_,
-		aX: impl.aX
+		aZ: impl.aZ
 	});
 }
 
@@ -4156,17 +4156,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { aK: 'hidden', aE: 'visibilitychange' }
+		? { aM: 'hidden', aG: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { aK: 'mozHidden', aE: 'mozvisibilitychange' }
+		? { aM: 'mozHidden', aG: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { aK: 'msHidden', aE: 'msvisibilitychange' }
+		? { aM: 'msHidden', aG: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { aK: 'webkitHidden', aE: 'webkitvisibilitychange' }
-		: { aK: 'hidden', aE: 'visibilitychange' };
+		? { aM: 'webkitHidden', aG: 'webkitvisibilitychange' }
+		: { aM: 'hidden', aG: 'visibilitychange' };
 }
 
 
@@ -4247,12 +4247,12 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		aq: _Browser_getScene(),
-		aw: {
-			ay: _Browser_window.pageXOffset,
-			az: _Browser_window.pageYOffset,
-			ax: _Browser_doc.documentElement.clientWidth,
-			Z: _Browser_doc.documentElement.clientHeight
+		au: _Browser_getScene(),
+		aA: {
+			T: _Browser_window.pageXOffset,
+			U: _Browser_window.pageYOffset,
+			aB: _Browser_doc.documentElement.clientWidth,
+			ac: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4262,8 +4262,8 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		ax: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		Z: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		aB: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		ac: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4286,15 +4286,15 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			aq: {
-				ax: node.scrollWidth,
-				Z: node.scrollHeight
+			au: {
+				aB: node.scrollWidth,
+				ac: node.scrollHeight
 			},
-			aw: {
-				ay: node.scrollLeft,
-				az: node.scrollTop,
-				ax: node.clientWidth,
-				Z: node.clientHeight
+			aA: {
+				T: node.scrollLeft,
+				U: node.scrollTop,
+				aB: node.clientWidth,
+				ac: node.clientHeight
 			}
 		};
 	});
@@ -4324,18 +4324,18 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			aq: _Browser_getScene(),
-			aw: {
-				ay: x,
-				az: y,
-				ax: _Browser_doc.documentElement.clientWidth,
-				Z: _Browser_doc.documentElement.clientHeight
+			au: _Browser_getScene(),
+			aA: {
+				T: x,
+				U: y,
+				aB: _Browser_doc.documentElement.clientWidth,
+				ac: _Browser_doc.documentElement.clientHeight
 			},
-			aG: {
-				ay: x + rect.left,
-				az: y + rect.top,
-				ax: rect.width,
-				Z: rect.height
+			aI: {
+				T: x + rect.left,
+				U: y + rect.top,
+				aB: rect.width,
+				ac: rect.height
 			}
 		};
 	});
@@ -4380,25 +4380,25 @@ var _Http_toTask = F3(function(router, toTask, request)
 	return _Scheduler_binding(function(callback)
 	{
 		function done(response) {
-			callback(toTask(request.aH.a(response)));
+			callback(toTask(request.aJ.a(response)));
 		}
 
 		var xhr = new XMLHttpRequest();
 		xhr.addEventListener('error', function() { done($elm$http$Http$NetworkError_); });
 		xhr.addEventListener('timeout', function() { done($elm$http$Http$Timeout_); });
-		xhr.addEventListener('load', function() { done(_Http_toResponse(request.aH.b, xhr)); });
-		$elm$core$Maybe$isJust(request.av) && _Http_track(router, xhr, request.av.a);
+		xhr.addEventListener('load', function() { done(_Http_toResponse(request.aJ.b, xhr)); });
+		$elm$core$Maybe$isJust(request.az) && _Http_track(router, xhr, request.az.a);
 
 		try {
-			xhr.open(request.aN, request.a$, true);
+			xhr.open(request.aP, request.a1, true);
 		} catch (e) {
-			return done($elm$http$Http$BadUrl_(request.a$));
+			return done($elm$http$Http$BadUrl_(request.a1));
 		}
 
 		_Http_configureRequest(xhr, request);
 
-		request.aD.a && xhr.setRequestHeader('Content-Type', request.aD.a);
-		xhr.send(request.aD.b);
+		request.aF.a && xhr.setRequestHeader('Content-Type', request.aF.a);
+		xhr.send(request.aF.b);
 
 		return function() { xhr.c = true; xhr.abort(); };
 	});
@@ -4409,13 +4409,13 @@ var _Http_toTask = F3(function(router, toTask, request)
 
 function _Http_configureRequest(xhr, request)
 {
-	for (var headers = request.Y; headers.b; headers = headers.b) // WHILE_CONS
+	for (var headers = request.ab; headers.b; headers = headers.b) // WHILE_CONS
 	{
 		xhr.setRequestHeader(headers.a.a, headers.a.b);
 	}
-	xhr.timeout = request.aY.a || 0;
-	xhr.responseType = request.aH.d;
-	xhr.withCredentials = request.aB;
+	xhr.timeout = request.a_.a || 0;
+	xhr.responseType = request.aJ.d;
+	xhr.withCredentials = request.aD;
 }
 
 
@@ -4436,10 +4436,10 @@ function _Http_toResponse(toBody, xhr)
 function _Http_toMetadata(xhr)
 {
 	return {
-		a$: xhr.responseURL,
-		aV: xhr.status,
-		aW: xhr.statusText,
-		Y: _Http_parseHeaders(xhr.getAllResponseHeaders())
+		a1: xhr.responseURL,
+		aX: xhr.status,
+		aY: xhr.statusText,
+		ab: _Http_parseHeaders(xhr.getAllResponseHeaders())
 	};
 }
 
@@ -4534,15 +4534,15 @@ function _Http_track(router, xhr, tracker)
 	xhr.upload.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Sending({
-			aU: event.loaded,
-			ar: event.total
+			aW: event.loaded,
+			av: event.total
 		}))));
 	});
 	xhr.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Receiving({
-			aS: event.loaded,
-			ar: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
+			aU: event.loaded,
+			av: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
 		}))));
 	});
 }
@@ -5228,7 +5228,7 @@ var $elm$url$Url$Http = 0;
 var $elm$url$Url$Https = 1;
 var $elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {W: fragment, _: host, af: path, ah: port_, ak: protocol, al: query};
+		return {_: fragment, ad: host, aj: path, al: port_, ao: protocol, ap: query};
 	});
 var $elm$core$String$contains = _String_contains;
 var $elm$core$String$length = _String_length;
@@ -5507,14 +5507,14 @@ var $elm$core$Task$perform = F2(
 			A2($elm$core$Task$map, toMessage, task));
 	});
 var $elm$browser$Browser$application = _Browser_application;
-var $author$project$Main$Model = F3(
-	function (profileData, showOptions, gpxServerURLOverride) {
-		return {H: gpxServerURLOverride, t: profileData, N: showOptions};
+var $author$project$Main$Model = F5(
+	function (profileData, waypoints, waypointText, showOptions, gpxServerURLOverride) {
+		return {H: gpxServerURLOverride, v: profileData, N: showOptions, R: waypointText, S: waypoints};
 	});
 var $author$project$Main$NotLoaded = {$: 0};
 var $author$project$Main$StoredState = F3(
 	function (file, profileData, gpxServerURL) {
-		return {aJ: file, X: gpxServerURL, t: profileData};
+		return {aL: file, aa: gpxServerURL, v: profileData};
 	});
 var $elm$core$Basics$composeR = F3(
 	function (f, g, x) {
@@ -5536,7 +5536,7 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$ElevationPoint = F2(
 	function (distance, elevation) {
-		return {G: distance, A: elevation};
+		return {j: distance, p: elevation};
 	});
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
@@ -5584,11 +5584,13 @@ var $author$project$Main$loadableResourceFromMaybe = A2(
 	$elm$core$Maybe$map($author$project$Main$Loaded),
 	$elm$core$Maybe$withDefault($author$project$Main$NotLoaded));
 var $author$project$Main$storedStateModel = function (state) {
-	return A3(
+	return A5(
 		$author$project$Main$Model,
-		$author$project$Main$loadableResourceFromMaybe(state.t),
+		$author$project$Main$loadableResourceFromMaybe(state.v),
+		_List_Nil,
+		'',
 		true,
-		state.X);
+		state.aa);
 };
 var $elm$core$Result$withDefault = F2(
 	function (def, result) {
@@ -5604,7 +5606,7 @@ var $author$project$Main$init = F3(
 		return _Utils_Tuple2(
 			A2(
 				$elm$core$Maybe$withDefault,
-				A3($author$project$Main$Model, $author$project$Main$NotLoaded, true, $elm$core$Maybe$Nothing),
+				A5($author$project$Main$Model, $author$project$Main$NotLoaded, _List_Nil, '', true, $elm$core$Maybe$Nothing),
 				A2(
 					$elm$core$Maybe$map,
 					A2(
@@ -5628,6 +5630,9 @@ var $author$project$Main$FileUploaded = function (a) {
 	return {$: 3, a: a};
 };
 var $author$project$Main$Loading = {$: 1};
+var $author$project$Main$Waypoint = function (distance) {
+	return {j: distance};
+};
 var $elm$core$Basics$composeL = F3(
 	function (g, f, x) {
 		return g(
@@ -6220,7 +6225,7 @@ var $elm$http$Http$resolve = F2(
 			case 3:
 				var metadata = response.a;
 				return $elm$core$Result$Err(
-					$elm$http$Http$BadStatus(metadata.aV));
+					$elm$http$Http$BadStatus(metadata.aX));
 			default:
 				var body = response.b;
 				return A2(
@@ -6252,6 +6257,24 @@ var $elm$file$File$Select$file = F2(
 			_File_uploadOne(mimes));
 	});
 var $elm$http$Http$fileBody = _Http_pair('');
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (!_v0.$) {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
 var $author$project$Main$httpErrorString = function (err) {
 	switch (err.$) {
 		case 0:
@@ -6269,6 +6292,7 @@ var $author$project$Main$httpErrorString = function (err) {
 			return 'bad body: ' + msg;
 	}
 };
+var $elm$core$String$lines = _String_lines;
 var $author$project$Main$Error = function (a) {
 	return {$: 2, a: a};
 };
@@ -6312,7 +6336,7 @@ var $elm$http$Http$Request = function (a) {
 };
 var $elm$http$Http$State = F2(
 	function (reqs, subs) {
-		return {an: reqs, as: subs};
+		return {ar: reqs, aw: subs};
 	});
 var $elm$http$Http$init = $elm$core$Task$succeed(
 	A2($elm$http$Http$State, $elm$core$Dict$empty, _List_Nil));
@@ -6356,7 +6380,7 @@ var $elm$http$Http$updateReqs = F3(
 					return A2(
 						$elm$core$Task$andThen,
 						function (pid) {
-							var _v4 = req.av;
+							var _v4 = req.az;
 							if (_v4.$ === 1) {
 								return A3($elm$http$Http$updateReqs, router, otherCmds, reqs);
 							} else {
@@ -6386,25 +6410,7 @@ var $elm$http$Http$onEffects = F4(
 				return $elm$core$Task$succeed(
 					A2($elm$http$Http$State, reqs, subs));
 			},
-			A3($elm$http$Http$updateReqs, router, cmds, state.an));
-	});
-var $elm$core$List$maybeCons = F3(
-	function (f, mx, xs) {
-		var _v0 = f(mx);
-		if (!_v0.$) {
-			var x = _v0.a;
-			return A2($elm$core$List$cons, x, xs);
-		} else {
-			return xs;
-		}
-	});
-var $elm$core$List$filterMap = F2(
-	function (f, xs) {
-		return A3(
-			$elm$core$List$foldr,
-			$elm$core$List$maybeCons(f),
-			_List_Nil,
-			xs);
+			A3($elm$http$Http$updateReqs, router, cmds, state.ar));
 	});
 var $elm$http$Http$maybeSend = F4(
 	function (router, desiredTracker, progress, _v0) {
@@ -6429,7 +6435,7 @@ var $elm$http$Http$onSelfMsg = F3(
 				A2(
 					$elm$core$List$filterMap,
 					A3($elm$http$Http$maybeSend, router, tracker, progress),
-					state.as)));
+					state.aw)));
 	});
 var $elm$http$Http$Cancel = function (a) {
 	return {$: 0, a: a};
@@ -6443,14 +6449,14 @@ var $elm$http$Http$cmdMap = F2(
 			var r = cmd.a;
 			return $elm$http$Http$Request(
 				{
-					aB: r.aB,
 					aD: r.aD,
-					aH: A2(_Http_mapExpect, func, r.aH),
-					Y: r.Y,
-					aN: r.aN,
-					aY: r.aY,
-					av: r.av,
-					a$: r.a$
+					aF: r.aF,
+					aJ: A2(_Http_mapExpect, func, r.aJ),
+					ab: r.ab,
+					aP: r.aP,
+					a_: r.a_,
+					az: r.az,
+					a1: r.a1
 				});
 		}
 	});
@@ -6473,12 +6479,13 @@ var $elm$http$Http$subscription = _Platform_leaf('Http');
 var $elm$http$Http$request = function (r) {
 	return $elm$http$Http$command(
 		$elm$http$Http$Request(
-			{aB: false, aD: r.aD, aH: r.aH, Y: r.Y, aN: r.aN, aY: r.aY, av: r.av, a$: r.a$}));
+			{aD: false, aF: r.aF, aJ: r.aJ, ab: r.ab, aP: r.aP, a_: r.a_, az: r.az, a1: r.a1}));
 };
 var $elm$http$Http$post = function (r) {
 	return $elm$http$Http$request(
-		{aD: r.aD, aH: r.aH, Y: _List_Nil, aN: 'POST', aY: $elm$core$Maybe$Nothing, av: $elm$core$Maybe$Nothing, a$: r.a$});
+		{aF: r.aF, aJ: r.aJ, ab: _List_Nil, aP: 'POST', a_: $elm$core$Maybe$Nothing, az: $elm$core$Maybe$Nothing, a1: r.a1});
 };
+var $elm$core$String$toFloat = _String_toFloat;
 var $elm$json$Json$Encode$float = _Json_wrap;
 var $elm$json$Json$Encode$list = F2(
 	function (func, entries) {
@@ -6511,10 +6518,10 @@ var $author$project$Main$encodeElevationProfile = function (points) {
 					[
 						_Utils_Tuple2(
 						'dist',
-						$elm$json$Json$Encode$float(point.G)),
+						$elm$json$Json$Encode$float(point.j)),
 						_Utils_Tuple2(
 						'ele',
-						$elm$json$Json$Encode$float(point.A))
+						$elm$json$Json$Encode$float(point.p))
 					]));
 		},
 		points);
@@ -6533,7 +6540,7 @@ var $author$project$Main$encodeSavedState = function (model) {
 				_List_fromArray(
 					[
 						function () {
-						var _v0 = model.t;
+						var _v0 = model.v;
 						if (_v0.$ === 3) {
 							var data = _v0.a;
 							return $elm$core$Maybe$Just(
@@ -6590,42 +6597,57 @@ var $author$project$Main$update = F2(
 									cmd,
 									$elm$http$Http$post(
 									{
-										aD: $elm$http$Http$fileBody(file),
-										aH: A2(
+										aF: $elm$http$Http$fileBody(file),
+										aJ: A2(
 											$elm$http$Http$expectJson,
 											A2(
 												$elm$core$Basics$composeR,
 												$elm$core$Result$mapError($author$project$Main$httpErrorString),
 												$author$project$Main$ElevationProfileDataResponse),
 											$author$project$Main$decodeElevationProfile),
-										a$: A2($elm$core$Maybe$withDefault, 'https://gpx.fly.dev', model.H)
+										a1: A2($elm$core$Maybe$withDefault, 'https://gpx.fly.dev', model.H)
 									})
 								]));
 					},
 					$author$project$Main$updateModel(
 						_Utils_update(
 							model,
-							{t: $author$project$Main$Loading})));
+							{v: $author$project$Main$Loading})));
 			case 4:
 				var resp = msg.a;
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
 						{
-							t: A2(
+							v: A2(
 								$elm$core$Basics$composeL,
 								$author$project$Main$loadableResourceFromResult,
 								$elm$core$Result$mapError(
 									$elm$core$Basics$append('getting profile data from GPX: ')))(resp)
 						}));
-			default:
+			case 0:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			default:
+				var text = msg.a;
+				return $author$project$Main$updateModel(
+					_Utils_update(
+						model,
+						{
+							R: text,
+							S: A2(
+								$elm$core$List$map,
+								$author$project$Main$Waypoint,
+								A2(
+									$elm$core$List$filterMap,
+									$elm$core$String$toFloat,
+									$elm$core$String$lines(text)))
+						}));
 		}
 	});
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $elm$browser$Browser$Document = F2(
 	function (title, body) {
-		return {aD: body, aZ: title};
+		return {aF: body, a$: title};
 	});
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -6637,9 +6659,75 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$p = _VirtualDom_node('p');
-var $elm$core$String$fromFloat = _String_fromNumber;
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$core$Basics$ge = _Utils_ge;
+var $author$project$Main$interpolateWaypointElevation = F2(
+	function (elevationsPoints, waypoint) {
+		interpolateWaypointElevation:
+		while (true) {
+			if (!elevationsPoints.b) {
+				return 0;
+			} else {
+				var a = elevationsPoints.a;
+				var others = elevationsPoints.b;
+				if (_Utils_cmp(a.j, waypoint.j) > -1) {
+					return a.p;
+				} else {
+					if (!others.b) {
+						return a.p;
+					} else {
+						var b = others.a;
+						if (_Utils_cmp(b.j, waypoint.j) > -1) {
+							return a.p;
+						} else {
+							var $temp$elevationsPoints = others,
+								$temp$waypoint = waypoint;
+							elevationsPoints = $temp$elevationsPoints;
+							waypoint = $temp$waypoint;
+							continue interpolateWaypointElevation;
+						}
+					}
+				}
+			}
+		}
+	});
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
+var $elm$core$List$maximum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var $elm$core$List$minimum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $elm$core$Basics$min, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
 var $elm$core$Tuple$second = function (_v0) {
 	var y = _v0.b;
 	return y;
@@ -6650,25 +6738,13 @@ var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
 var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
 var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
 var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
-var $author$project$Main$accumulatePoints = function (cfg) {
-	var svgWidthPerDistanceUnit = cfg.at / cfg.ab;
-	var elevationRange = cfg.ac - cfg.J;
-	var normaliseElevation = function (elevation) {
-		return (elevation - cfg.J) / elevationRange;
-	};
-	var calculatePointY = function (elevation) {
-		return $elm$core$String$fromFloat(
-			cfg.Q - (cfg.Q * normaliseElevation(elevation)));
-	};
-	var calculatePointX = function (distance) {
-		return $elm$core$String$fromFloat(distance * svgWidthPerDistanceUnit);
-	};
+var $author$project$Main$accumulatePoints = function (calc) {
 	return F2(
 		function (point, _v0) {
 			var maybePrevPoint = _v0.a;
 			var currLines = _v0.b;
-			var pointY = calculatePointY(point.A);
-			var pointX = calculatePointX(point.G);
+			var pointY = calc.U(point.p);
+			var pointX = calc.T(point.j);
 			if (maybePrevPoint.$ === 1) {
 				return _Utils_Tuple2(
 					$elm$core$Maybe$Just(
@@ -6697,135 +6773,161 @@ var $author$project$Main$accumulatePoints = function (cfg) {
 			}
 		});
 };
-var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
-var $elm$core$List$maximum = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(
-			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
+var $author$project$Main$resolveElevationProfileSVGLine = F2(
+	function (calc, profileData) {
+		return A3(
+			$elm$core$List$foldl,
+			$author$project$Main$accumulatePoints(calc),
+			_Utils_Tuple2($elm$core$Maybe$Nothing, _List_Nil),
+			profileData).b;
 	});
-var $elm$core$List$minimum = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(
-			A3($elm$core$List$foldl, $elm$core$Basics$min, x, xs));
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
 var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
 var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-var $author$project$Main$profile = function (profileData) {
-	var svgWidth = 500;
-	var svgHeight = 200;
-	var minElevation = A2(
-		$elm$core$Maybe$withDefault,
-		1,
-		$elm$core$List$minimum(
-			A2(
-				$elm$core$List$map,
-				function ($) {
-					return $.A;
-				},
-				profileData)));
-	var maxElevation = A2(
-		$elm$core$Maybe$withDefault,
-		1,
-		$elm$core$List$maximum(
-			A2(
-				$elm$core$List$map,
-				function ($) {
-					return $.A;
-				},
-				profileData)));
-	var maxDistance = A2(
-		$elm$core$Maybe$withDefault,
-		1,
-		$elm$core$List$maximum(
-			A2(
-				$elm$core$List$map,
-				function ($) {
-					return $.G;
-				},
-				profileData)));
+var $author$project$Main$XYCalculator = F2(
+	function (x, y) {
+		return {T: x, U: y};
+	});
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $author$project$Main$xyCalculator = function (cfg) {
+	var svgWidthPerDistanceUnit = cfg.ax / cfg.af;
+	var elevationRange = cfg.ag - cfg.J;
+	var normaliseElevation = function (elevation) {
+		return (elevation - cfg.J) / elevationRange;
+	};
 	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('TODO')
-			]),
-		_List_fromArray(
-			[
+		$author$project$Main$XYCalculator,
+		function (distance) {
+			return $elm$core$String$fromFloat(distance * svgWidthPerDistanceUnit);
+		},
+		function (elevation) {
+			return $elm$core$String$fromFloat(
+				cfg.Q - (cfg.Q * normaliseElevation(elevation)));
+		});
+};
+var $author$project$Main$profile = F2(
+	function (profileData, waypoints) {
+		var svgWidth = 500;
+		var svgHeight = 200;
+		var minElevation = A2(
+			$elm$core$Maybe$withDefault,
+			1,
+			$elm$core$List$minimum(
 				A2(
-				$elm$svg$Svg$svg,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$width('100%'),
-						$elm$svg$Svg$Attributes$height(
-						$elm$core$String$fromInt(svgHeight)),
-						$elm$svg$Svg$Attributes$viewBox(
-						'0 0 ' + ($elm$core$String$fromInt(svgWidth) + (' ' + $elm$core$String$fromInt(svgHeight))))
-					]),
-				_Utils_ap(
-					A3(
-						$elm$core$List$foldl,
-						$author$project$Main$accumulatePoints(
-							{ab: maxDistance, ac: maxElevation, J: minElevation, Q: svgHeight, at: svgWidth}),
-						_Utils_Tuple2($elm$core$Maybe$Nothing, _List_Nil),
-						profileData).b,
+					$elm$core$List$map,
+					function ($) {
+						return $.p;
+					},
+					profileData)));
+		var maxElevation = A2(
+			$elm$core$Maybe$withDefault,
+			1,
+			$elm$core$List$maximum(
+				A2(
+					$elm$core$List$map,
+					function ($) {
+						return $.p;
+					},
+					profileData)));
+		var maxDistance = A2(
+			$elm$core$Maybe$withDefault,
+			1,
+			$elm$core$List$maximum(
+				A2(
+					$elm$core$List$map,
+					function ($) {
+						return $.j;
+					},
+					profileData)));
+		var calc = $author$project$Main$xyCalculator(
+			{af: maxDistance, ag: maxElevation, J: minElevation, Q: svgHeight, ax: svgWidth});
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('TODO')
+				]),
+			_List_fromArray(
+				[
 					A2(
-						$elm$core$List$map,
-						function (_v0) {
-							var _v1 = _v0.a;
-							var y1 = _v1.a;
-							var x1 = _v1.b;
-							var _v2 = _v0.b;
-							var y2 = _v2.a;
-							var x2 = _v2.b;
-							return A2(
-								$elm$svg$Svg$line,
-								_List_fromArray(
-									[
-										$elm$svg$Svg$Attributes$x1(
-										$elm$core$String$fromInt(x1)),
-										$elm$svg$Svg$Attributes$y1(
-										$elm$core$String$fromInt(y1)),
-										$elm$svg$Svg$Attributes$x2(
-										$elm$core$String$fromInt(x2)),
-										$elm$svg$Svg$Attributes$y2(
-										$elm$core$String$fromInt(y2)),
-										$elm$svg$Svg$Attributes$stroke('grey'),
-										$elm$svg$Svg$Attributes$strokeWidth('1')
-									]),
-								_List_Nil);
-						},
+					$elm$svg$Svg$svg,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$width('100%'),
+							$elm$svg$Svg$Attributes$height(
+							$elm$core$String$fromInt(svgHeight)),
+							$elm$svg$Svg$Attributes$viewBox(
+							'0 0 ' + ($elm$core$String$fromInt(svgWidth) + (' ' + $elm$core$String$fromInt(svgHeight))))
+						]),
+					$elm$core$List$concat(
 						_List_fromArray(
 							[
-								_Utils_Tuple2(
-								_Utils_Tuple2(0, 0),
-								_Utils_Tuple2(svgHeight, 0)),
-								_Utils_Tuple2(
-								_Utils_Tuple2(0, 0),
-								_Utils_Tuple2(0, svgWidth)),
-								_Utils_Tuple2(
-								_Utils_Tuple2(svgHeight, svgWidth),
-								_Utils_Tuple2(svgHeight, 0)),
-								_Utils_Tuple2(
-								_Utils_Tuple2(svgHeight, svgWidth),
-								_Utils_Tuple2(0, svgWidth))
-							]))))
-			]));
-};
+								A2($author$project$Main$resolveElevationProfileSVGLine, calc, profileData),
+								A2(
+								$elm$core$List$map,
+								function (waypoint) {
+									var y = calc.U(
+										A2($author$project$Main$interpolateWaypointElevation, profileData, waypoint) - 5);
+									var x = calc.T(waypoint.j);
+									return A2(
+										$elm$svg$Svg$line,
+										_List_fromArray(
+											[
+												$elm$svg$Svg$Attributes$x1(x),
+												$elm$svg$Svg$Attributes$y1(
+												$elm$core$String$fromInt(svgHeight)),
+												$elm$svg$Svg$Attributes$x2(x),
+												$elm$svg$Svg$Attributes$y2(y),
+												$elm$svg$Svg$Attributes$stroke('grey'),
+												$elm$svg$Svg$Attributes$strokeWidth('1')
+											]),
+										_List_Nil);
+								},
+								waypoints),
+								A2(
+								$elm$core$List$map,
+								function (_v0) {
+									var _v1 = _v0.a;
+									var y1 = _v1.a;
+									var x1 = _v1.b;
+									var _v2 = _v0.b;
+									var y2 = _v2.a;
+									var x2 = _v2.b;
+									return A2(
+										$elm$svg$Svg$line,
+										_List_fromArray(
+											[
+												$elm$svg$Svg$Attributes$x1(
+												$elm$core$String$fromInt(x1)),
+												$elm$svg$Svg$Attributes$y1(
+												$elm$core$String$fromInt(y1)),
+												$elm$svg$Svg$Attributes$x2(
+												$elm$core$String$fromInt(x2)),
+												$elm$svg$Svg$Attributes$y2(
+												$elm$core$String$fromInt(y2)),
+												$elm$svg$Svg$Attributes$stroke('grey'),
+												$elm$svg$Svg$Attributes$strokeWidth('1')
+											]),
+										_List_Nil);
+								},
+								_List_fromArray(
+									[
+										_Utils_Tuple2(
+										_Utils_Tuple2(0, 0),
+										_Utils_Tuple2(svgHeight, 0)),
+										_Utils_Tuple2(
+										_Utils_Tuple2(0, 0),
+										_Utils_Tuple2(0, svgWidth)),
+										_Utils_Tuple2(
+										_Utils_Tuple2(svgHeight, svgWidth),
+										_Utils_Tuple2(svgHeight, 0)),
+										_Utils_Tuple2(
+										_Utils_Tuple2(svgHeight, svgWidth),
+										_Utils_Tuple2(0, svgWidth))
+									]))
+							])))
+				]));
+	});
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -6846,16 +6948,8 @@ var $author$project$Main$OpenFileBrowser = {$: 2};
 var $author$project$Main$ShowOptions = function (a) {
 	return {$: 1, a: a};
 };
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+var $author$project$Main$WaypointsTextChange = function (a) {
+	return {$: 5, a: a};
 };
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$html$Html$hr = _VirtualDom_node('hr');
@@ -6877,6 +6971,40 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
+var $elm$html$Html$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 1, a: a};
+};
+var $elm$html$Html$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $elm$html$Html$Events$targetValue = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	$elm$json$Json$Decode$string);
+var $elm$html$Html$Events$onInput = function (tagger) {
+	return A2(
+		$elm$html$Html$Events$stopPropagationOn,
+		'input',
+		A2(
+			$elm$json$Json$Decode$map,
+			$elm$html$Html$Events$alwaysStop,
+			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
+};
+var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$html$Html$textarea = _VirtualDom_node('textarea');
+var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $author$project$Main$viewButtonWithAttributes = F3(
 	function (attrs, text, msg) {
@@ -6895,89 +7023,105 @@ var $author$project$Main$viewButtonWithAttributes = F3(
 					$elm$html$Html$text(text)
 				]));
 	});
-var $author$project$Main$viewOptions = function (show) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('flex-container'),
-				$elm$html$Html$Attributes$class('column'),
-				A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-				A2($elm$html$Html$Attributes$style, 'overflow', 'auto'),
-				$elm$html$Html$Attributes$class('narrow')
-			]),
-		(!show) ? _List_fromArray(
-			[
-				A2(
-				$elm$html$Html$p,
-				_List_fromArray(
-					[
-						$elm$html$Html$Events$onClick(
-						$author$project$Main$ShowOptions(true)),
-						A2($elm$html$Html$Attributes$style, 'transform', 'rotate(90deg)'),
-						A2($elm$html$Html$Attributes$style, 'white-space', 'nowrap'),
-						A2($elm$html$Html$Attributes$style, 'width', '1em')
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text('(show options)')
-					]))
-			]) : $elm$core$List$concat(
+var $author$project$Main$viewOptions = F2(
+	function (show, waypointText) {
+		return A2(
+			$elm$html$Html$div,
 			_List_fromArray(
 				[
+					$elm$html$Html$Attributes$class('flex-container'),
+					$elm$html$Html$Attributes$class('column'),
+					A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
+					A2($elm$html$Html$Attributes$style, 'overflow', 'auto'),
+					$elm$html$Html$Attributes$class('narrow')
+				]),
+			(!show) ? _List_fromArray(
+				[
+					A2(
+					$elm$html$Html$p,
 					_List_fromArray(
+						[
+							$elm$html$Html$Events$onClick(
+							$author$project$Main$ShowOptions(true)),
+							A2($elm$html$Html$Attributes$style, 'transform', 'rotate(90deg)'),
+							A2($elm$html$Html$Attributes$style, 'white-space', 'nowrap'),
+							A2($elm$html$Html$Attributes$style, 'width', '1em')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('(show options)')
+						]))
+				]) : $elm$core$List$concat(
+				_List_fromArray(
 					[
-						A2(
-						$elm$html$Html$div,
 						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('options')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$h2,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Options')
-									])),
-								A2(
-								$elm$html$Html$p,
-								_List_fromArray(
-									[
-										$elm$html$Html$Events$onClick(
-										$author$project$Main$ShowOptions(false))
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('(hide)')
-									])),
-								A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-								A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('flex-container'),
-										$elm$html$Html$Attributes$class('column'),
-										A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-										A2($elm$html$Html$Attributes$style, 'align-items', 'center')
-									]),
-								_List_fromArray(
-									[
-										A3(
-										$author$project$Main$viewButtonWithAttributes,
-										_List_fromArray(
-											[
-												A2($elm$html$Html$Attributes$style, 'width', '100%')
-											]),
-										'upload GPX',
-										$author$project$Main$OpenFileBrowser)
-									]))
-							]))
-					])
-				])));
-};
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('options')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$h2,
+									_List_Nil,
+									_List_fromArray(
+										[
+											$elm$html$Html$text('Options')
+										])),
+									A2(
+									$elm$html$Html$p,
+									_List_fromArray(
+										[
+											$elm$html$Html$Events$onClick(
+											$author$project$Main$ShowOptions(false))
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('(hide)')
+										])),
+									A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('flex-container'),
+											$elm$html$Html$Attributes$class('column'),
+											A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
+											A2($elm$html$Html$Attributes$style, 'align-items', 'center')
+										]),
+									_List_fromArray(
+										[
+											A3(
+											$author$project$Main$viewButtonWithAttributes,
+											_List_fromArray(
+												[
+													A2($elm$html$Html$Attributes$style, 'width', '100%')
+												]),
+											'upload GPX',
+											$author$project$Main$OpenFileBrowser)
+										])),
+									A2(
+									$elm$html$Html$div,
+									_List_Nil,
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$textarea,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$placeholder('Newline delimited waypoint distances'),
+													$elm$html$Html$Attributes$value(waypointText),
+													$elm$html$Html$Events$onInput($author$project$Main$WaypointsTextChange)
+												]),
+											_List_Nil)
+										]))
+								]))
+						])
+					])));
+	});
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$browser$Browser$Document,
@@ -6995,7 +7139,7 @@ var $author$project$Main$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						$author$project$Main$viewOptions(model.N),
+						A2($author$project$Main$viewOptions, model.N, model.R),
 						A2(
 						$elm$html$Html$div,
 						_List_fromArray(
@@ -7009,7 +7153,7 @@ var $author$project$Main$view = function (model) {
 						_List_fromArray(
 							[
 								function () {
-								var _v0 = model.t;
+								var _v0 = model.v;
 								switch (_v0.$) {
 									case 0:
 										return A2(
@@ -7033,7 +7177,7 @@ var $author$project$Main$view = function (model) {
 											'There was an error creating your profile. Please fix any error and try again 😇\n\nError: ' + (A2($elm$core$String$left, 1000, err) + '...'));
 									default:
 										var profileData = _v0.a;
-										return $author$project$Main$profile(profileData);
+										return A2($author$project$Main$profile, profileData, model.S);
 								}
 							}()
 							]))
@@ -7042,18 +7186,18 @@ var $author$project$Main$view = function (model) {
 };
 var $author$project$Main$main = $elm$browser$Browser$application(
 	{
-		aM: $author$project$Main$init,
-		aP: function (_v0) {
+		aO: $author$project$Main$init,
+		aR: function (_v0) {
 			return $author$project$Main$Ignore;
 		},
-		aQ: function (_v1) {
+		aS: function (_v1) {
 			return $author$project$Main$Ignore;
 		},
-		aX: function (_v2) {
+		aZ: function (_v2) {
 			return $elm$core$Platform$Sub$none;
 		},
-		a_: $author$project$Main$update,
-		a0: $author$project$Main$view
+		a0: $author$project$Main$update,
+		a2: $author$project$Main$view
 	});
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	$elm$json$Json$Decode$oneOf(
