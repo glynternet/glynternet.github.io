@@ -251,12 +251,14 @@ profile profileData =
             ((profileData
                 |> List.foldl
                     (accumulatePoints
-                        { svgHeight = toFloat svgHeight
-                        , svgWidth = toFloat svgWidth
-                        , maxDistance = maxDistance
-                        , minElevation = minElevation
-                        , maxElevation = maxElevation
-                        }
+                        (xyCalculator
+                            { svgHeight = toFloat svgHeight
+                            , svgWidth = toFloat svgWidth
+                            , maxDistance = maxDistance
+                            , minElevation = minElevation
+                            , maxElevation = maxElevation
+                            }
+                        )
                     )
                     ( Nothing, [] )
                 |> Tuple.second
@@ -283,23 +285,21 @@ profile profileData =
         ]
 
 
-
--- accumulatePoints takes in a config to form an accumulator.
--- The accumulator will take a point and form a tuple of (maybePrevPoint, currentLines), where each line in currentLines
--- is a formed Svg.Svg msg.
--- The maybePrevPoint is a Maybe (String, String) because the number values have been converted in a prior iteration of
--- the accumulation loop.
+type alias XYCalculator =
+    { x : Float -> String
+    , y : Float -> String
+    }
 
 
-accumulatePoints :
+xyCalculator :
     { svgWidth : Float
     , svgHeight : Float
     , maxDistance : Float
     , minElevation : Float
     , maxElevation : Float
     }
-    -> (ElevationPoint -> ( Maybe ( String, String ), List (Svg.Svg msg) ) -> ( Maybe ( String, String ), List (Svg.Svg msg) ))
-accumulatePoints cfg =
+    -> XYCalculator
+xyCalculator cfg =
     let
         elevationRange =
             cfg.maxElevation - cfg.minElevation
@@ -309,21 +309,33 @@ accumulatePoints cfg =
 
         svgWidthPerDistanceUnit =
             cfg.svgWidth / cfg.maxDistance
-
-        calculatePointX =
-            \distance ->
-                String.fromFloat (distance * svgWidthPerDistanceUnit)
-
-        calculatePointY =
-            \elevation -> String.fromFloat (cfg.svgHeight - cfg.svgHeight * normaliseElevation elevation)
     in
+    XYCalculator
+        (\distance ->
+            String.fromFloat (distance * svgWidthPerDistanceUnit)
+        )
+        (\elevation ->
+            String.fromFloat (cfg.svgHeight - cfg.svgHeight * normaliseElevation elevation)
+        )
+
+
+
+-- accumulatePoints takes in a config to form an accumulator.
+-- The accumulator will take a point and form a tuple of (maybePrevPoint, currentLines), where each line in currentLines
+-- is a formed Svg.Svg msg.
+-- The maybePrevPoint is a Maybe (String, String) because the number values have been converted in a prior iteration of
+-- the accumulation loop.
+
+
+accumulatePoints : XYCalculator -> (ElevationPoint -> ( Maybe ( String, String ), List (Svg.Svg msg) ) -> ( Maybe ( String, String ), List (Svg.Svg msg) ))
+accumulatePoints calc =
     \point ( maybePrevPoint, currLines ) ->
         let
             pointX =
-                calculatePointX point.distance
+                calc.x point.distance
 
             pointY =
-                calculatePointY point.elevation
+                calc.y point.elevation
         in
         case maybePrevPoint of
             Nothing ->
