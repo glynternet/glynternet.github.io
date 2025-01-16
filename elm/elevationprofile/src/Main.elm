@@ -38,6 +38,7 @@ main =
 type alias Model =
     { profileData : LoadableResource ProfileData
     , showOptions : Bool
+    , gpxServerURLOverride : Maybe String
     }
 
 
@@ -54,12 +55,13 @@ type alias Point =
 type alias StoredState =
     { file : Maybe String
     , profileData : Maybe ProfileData
+    , gpxServerURL : Maybe String
     }
 
 
 storedStateModel : StoredState -> Model
 storedStateModel state =
-    Model (loadableResourceFromMaybe state.profileData) True
+    Model (loadableResourceFromMaybe state.profileData) True state.gpxServerURL
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
@@ -68,10 +70,10 @@ init maybeState _ _ =
         |> Maybe.map
             (Json.Decode.decodeValue storedStateDecoder
                 -- TODO: handle error
-                >> Result.withDefault (StoredState Nothing Nothing)
+                >> Result.withDefault (StoredState Nothing Nothing Nothing)
                 >> storedStateModel
             )
-        |> Maybe.withDefault (Model NotLoaded True)
+        |> Maybe.withDefault (Model NotLoaded True Nothing)
     , Cmd.none
     )
 
@@ -100,7 +102,7 @@ update msg model =
                         Cmd.batch
                             [ cmd
                             , Http.post
-                                { url = "https://gpx.fly.dev"
+                                { url = Maybe.withDefault "https://gpx.fly.dev" model.gpxServerURLOverride
                                 , body = Http.fileBody file
                                 , expect =
                                     Http.expectJson
@@ -334,28 +336,31 @@ decodeElevationProfile =
 
 
 -- STATE
--- The field names in these encoded JSON objects must match exactly the field names
--- in the records of the Model to ensure that deserialising works as expected.
 
 
 encodeSavedState : Model -> String
 encodeSavedState model =
     Json.Encode.object
-        (case model.profileData of
-            Loaded data ->
-                [ ( "profileData", encodeElevationProfile data.points ) ]
+        (List.filterMap
+            (\maybz -> maybz)
+            [ case model.profileData of
+                Loaded data ->
+                    Just ( "profileData", encodeElevationProfile data.points )
 
-            _ ->
-                []
+                _ ->
+                    Nothing
+            , Maybe.map (\url -> ( "gpxServerURL", Json.Encode.string url )) model.gpxServerURLOverride
+            ]
         )
         |> Json.Encode.encode 0
 
 
 storedStateDecoder : Json.Decode.Decoder StoredState
 storedStateDecoder =
-    Json.Decode.map2 StoredState
+    Json.Decode.map3 StoredState
         (Json.Decode.maybe (Json.Decode.field "file" Json.Decode.string))
         (Json.Decode.maybe (Json.Decode.field "profileData" (Json.Decode.map ProfileData decodeElevationProfile)))
+        (Json.Decode.maybe (Json.Decode.field "gpxServerURL" Json.Decode.string))
 
 
 port storeState : String -> Cmd msg
