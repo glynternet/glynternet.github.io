@@ -36,17 +36,17 @@ main =
 
 
 type alias Model =
-    { profileData : LoadableResource ProfileData
+    { profileData : LoadableResource ElevationProfileData
     , showOptions : Bool
     , gpxServerURLOverride : Maybe String
     }
 
 
-type alias ProfileData =
-    { points : List Point }
+type alias ElevationProfileData =
+    List ElevationPoint
 
 
-type alias Point =
+type alias ElevationPoint =
     { distance : Float
     , elevation : Float
     }
@@ -54,7 +54,7 @@ type alias Point =
 
 type alias StoredState =
     { file : Maybe String
-    , profileData : Maybe ProfileData
+    , profileData : Maybe ElevationProfileData
     , gpxServerURL : Maybe String
     }
 
@@ -83,7 +83,7 @@ type Msg
     | ShowOptions Bool
     | OpenFileBrowser
     | FileUploaded File.File
-    | ProfileDataResponse (Result String ProfileData)
+    | ElevationProfileDataResponse (Result String ElevationProfileData)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -106,13 +106,13 @@ update msg model =
                                 , body = Http.fileBody file
                                 , expect =
                                     Http.expectJson
-                                        (Result.mapError httpErrorString >> Result.map ProfileData >> ProfileDataResponse)
+                                        (Result.mapError httpErrorString >> ElevationProfileDataResponse)
                                         decodeElevationProfile
                                 }
                             ]
                     )
 
-        ProfileDataResponse resp ->
+        ElevationProfileDataResponse resp ->
             updateModel { model | profileData = (loadableResourceFromResult << Result.mapError ((++) "getting profile data from GPX: ")) resp }
 
         Ignore ->
@@ -217,20 +217,20 @@ viewButtonWithAttributes attrs text msg =
         [ Html.text text ]
 
 
-profile : ProfileData -> Html Msg
-profile data =
+profile : ElevationProfileData -> Html Msg
+profile profileData =
     let
         -- TODO(ghanmer): combine these max folds to not iterate through twice
         maxElevation =
             -- TODO(ghanmer): handle empty list etc better, although this is probably fine
-            Maybe.withDefault 1 <| List.maximum <| List.map .elevation data.points
+            Maybe.withDefault 1 <| List.maximum <| List.map .elevation profileData
 
         minElevation =
             -- TODO(ghanmer): handle empty list etc better, although this is probably fine
-            Maybe.withDefault 1 <| List.minimum <| List.map .elevation data.points
+            Maybe.withDefault 1 <| List.minimum <| List.map .elevation profileData
 
         maxDistance =
-            Maybe.withDefault 1 <| List.maximum <| List.map .distance data.points
+            Maybe.withDefault 1 <| List.maximum <| List.map .distance profileData
 
         svgHeight =
             200
@@ -248,7 +248,7 @@ profile data =
             --                          min-x min-y width height
             , Svg.Attributes.viewBox <| "0 0 " ++ String.fromInt svgWidth ++ " " ++ String.fromInt svgHeight
             ]
-            ((data.points
+            ((profileData
                 |> List.foldl
                     (accumulatePoints
                         { svgHeight = toFloat svgHeight
@@ -298,7 +298,7 @@ accumulatePoints :
     , minElevation : Float
     , maxElevation : Float
     }
-    -> (Point -> ( Maybe ( String, String ), List (Svg.Svg msg) ) -> ( Maybe ( String, String ), List (Svg.Svg msg) ))
+    -> (ElevationPoint -> ( Maybe ( String, String ), List (Svg.Svg msg) ) -> ( Maybe ( String, String ), List (Svg.Svg msg) ))
 accumulatePoints cfg =
     let
         elevationRange =
@@ -344,7 +344,7 @@ accumulatePoints cfg =
                 )
 
 
-encodeElevationProfile : List Point -> Json.Encode.Value
+encodeElevationProfile : List ElevationPoint -> Json.Encode.Value
 encodeElevationProfile points =
     Json.Encode.list
         (\point ->
@@ -356,10 +356,10 @@ encodeElevationProfile points =
         points
 
 
-decodeElevationProfile : Json.Decode.Decoder (List Point)
+decodeElevationProfile : Json.Decode.Decoder ElevationProfileData
 decodeElevationProfile =
     Json.Decode.list
-        (Json.Decode.map2 Point
+        (Json.Decode.map2 ElevationPoint
             (Json.Decode.field "dist" Json.Decode.float)
             (Json.Decode.field "ele" Json.Decode.float)
         )
@@ -376,7 +376,7 @@ encodeSavedState model =
             (\maybz -> maybz)
             [ case model.profileData of
                 Loaded data ->
-                    Just ( "profileData", encodeElevationProfile data.points )
+                    Just ( "profileData", encodeElevationProfile data )
 
                 _ ->
                     Nothing
@@ -390,7 +390,7 @@ storedStateDecoder : Json.Decode.Decoder StoredState
 storedStateDecoder =
     Json.Decode.map3 StoredState
         (Json.Decode.maybe (Json.Decode.field "file" Json.Decode.string))
-        (Json.Decode.maybe (Json.Decode.field "profileData" (Json.Decode.map ProfileData decodeElevationProfile)))
+        (Json.Decode.maybe (Json.Decode.field "profileData" decodeElevationProfile))
         (Json.Decode.maybe (Json.Decode.field "gpxServerURL" Json.Decode.string))
 
 
