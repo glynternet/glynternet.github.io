@@ -300,16 +300,30 @@ accumulatePoints :
     }
     -> (Point -> ( Maybe ( String, String ), List (Svg.Svg msg) ) -> ( Maybe ( String, String ), List (Svg.Svg msg) ))
 accumulatePoints cfg =
+    let
+        elevationRange =
+            cfg.maxElevation - cfg.minElevation
+
+        normaliseElevation =
+            \elevation -> (elevation - cfg.minElevation) / elevationRange
+
+        svgWidthPerDistanceUnit =
+            cfg.svgWidth / cfg.maxDistance
+
+        calculatePointX =
+            \distance ->
+                String.fromFloat (distance * svgWidthPerDistanceUnit)
+
+        calculatePointY =
+            \elevation -> String.fromFloat (cfg.svgHeight - cfg.svgHeight * normaliseElevation elevation)
+    in
     \point ( maybePrevPoint, currLines ) ->
         let
             pointX =
-                String.fromFloat (cfg.svgWidth * point.distance / cfg.maxDistance)
-
-            pointElevationNormalised =
-                (point.elevation - cfg.minElevation) / (cfg.maxElevation - cfg.minElevation)
+                calculatePointX point.distance
 
             pointY =
-                String.fromFloat (cfg.svgHeight - cfg.svgHeight * pointElevationNormalised)
+                calculatePointY point.elevation
         in
         case maybePrevPoint of
             Nothing ->
