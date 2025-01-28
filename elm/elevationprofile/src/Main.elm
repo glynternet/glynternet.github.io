@@ -36,19 +36,18 @@ main =
 
 
 type alias Model =
-    { profileData : LoadableResource ElevationProfileData
+    { track : LoadableResource TrackData
     , waypoints : List Waypoint
-    , waypointText : String
     , showOptions : Bool
     , gpxServerURLOverride : Maybe String
     }
 
 
-type alias ElevationProfileData =
-    List ElevationPoint
+type alias TrackData =
+    List TrackPoint
 
 
-type alias ElevationPoint =
+type alias TrackPoint =
     { distance : Float
     , elevation : Float
     }
@@ -61,14 +60,15 @@ type alias Waypoint =
 
 type alias StoredState =
     { file : Maybe String
-    , profileData : Maybe ElevationProfileData
+    , track : Maybe TrackData
+    , waypoints : Maybe (List Waypoint)
     , gpxServerURL : Maybe String
     }
 
 
 storedStateModel : StoredState -> Model
 storedStateModel state =
-    Model (loadableResourceFromMaybe state.profileData) [] "" True state.gpxServerURL
+    Model (loadableResourceFromMaybe state.track) (state.waypoints |> Maybe.withDefault []) True state.gpxServerURL
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
@@ -77,10 +77,10 @@ init maybeState _ _ =
         |> Maybe.map
             (Json.Decode.decodeValue storedStateDecoder
                 -- TODO: handle error
-                >> Result.withDefault (StoredState Nothing Nothing Nothing)
+                >> Result.withDefault (StoredState Nothing Nothing Nothing Nothing)
                 >> storedStateModel
             )
-        |> Maybe.withDefault (Model NotLoaded [] "" True Nothing)
+        |> Maybe.withDefault (Model NotLoaded [] True Nothing)
     , Cmd.none
     )
 
@@ -90,7 +90,7 @@ type Msg
     | ShowOptions Bool
     | OpenFileBrowser
     | FileUploaded File.File
-    | ElevationProfileDataResponse (Result String ElevationProfileData)
+    | ElevationProfileDataResponseReceived (Result String ElevationProfileDataResponse)
     | WaypointsTextChange String
 
 
@@ -104,24 +104,27 @@ update msg model =
             ( model, File.Select.file [ "application/gpx+xml" ] FileUploaded )
 
         FileUploaded file ->
-            updateModel { model | profileData = Loading }
+            updateModel { model | track = Loading }
                 |> Tuple.mapSecond
                     (\cmd ->
                         Cmd.batch
                             [ cmd
-                            , Http.post
-                                { url = Maybe.withDefault "https://gpx.fly.dev" model.gpxServerURLOverride
-                                , body = Http.fileBody file
-                                , expect =
-                                    Http.expectJson
-                                        (Result.mapError httpErrorString >> ElevationProfileDataResponse)
-                                        decodeElevationProfile
-                                }
+                            , getElevationProfileDataResponse (Maybe.withDefault "https://gpx.fly.dev" model.gpxServerURLOverride) file
                             ]
                     )
 
-        ElevationProfileDataResponse resp ->
-            updateModel { model | profileData = (loadableResourceFromResult << Result.mapError ((++) "getting profile data from GPX: ")) resp }
+        ElevationProfileDataResponseReceived resp ->
+            case resp of
+                Err errMsg ->
+                    updateModel
+                        { model | track = Error ("getting profile data from GPX: " ++ errMsg) }
+
+                Ok data ->
+                    updateModel
+                        { model
+                            | track = Loaded data.track
+                            , waypoints = data.waypoints
+                        }
 
         Ignore ->
             ( model, Cmd.none )
@@ -130,7 +133,6 @@ update msg model =
             updateModel
                 { model
                     | waypoints = String.lines text |> List.filterMap String.toFloat |> List.map Waypoint
-                    , waypointText = text
                 }
 
 
@@ -156,7 +158,7 @@ view model =
             , Html.Attributes.class "page"
             , Html.Attributes.style "height" "100%"
             ]
-            [ viewOptions model.showOptions model.waypointText
+            [ viewOptions model.showOptions model.waypoints
             , Html.div
                 [ Html.Attributes.class "flex-container"
                 , Html.Attributes.class "column"
@@ -164,7 +166,7 @@ view model =
                 , Html.Attributes.style "height" "100%"
                 , Html.Attributes.style "justify-content" "center"
                 ]
-                [ case model.profileData of
+                [ case model.track of
                     NotLoaded ->
                         Html.p [] [ Html.text "Load your profile!" ]
 
@@ -174,15 +176,15 @@ view model =
                     Error err ->
                         viewErrorPanel <| ("There was an error creating your profile. Please fix any error and try again 😇\n\nError: " ++ String.left 1000 err ++ "...")
 
-                    Loaded profileData ->
-                        profile profileData model.waypoints
+                    Loaded track ->
+                        profile track model.waypoints
                 ]
             ]
         ]
 
 
-viewOptions : Bool -> String -> Html Msg
-viewOptions show waypointText =
+viewOptions : Bool -> List Waypoint -> Html Msg
+viewOptions show waypoints =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "column"
@@ -217,7 +219,7 @@ viewOptions show waypointText =
                         , Html.div []
                             [ Html.textarea
                                 [ Html.Attributes.placeholder "Newline delimited waypoint distances"
-                                , Html.Attributes.value waypointText
+                                , Html.Attributes.value ((waypoints |> List.map (.distance >> String.fromFloat)) |> String.join "\n")
                                 , Html.Events.onInput WaypointsTextChange
                                 ]
                                 []
@@ -240,20 +242,20 @@ viewButtonWithAttributes attrs text msg =
         [ Html.text text ]
 
 
-profile : ElevationProfileData -> List Waypoint -> Html Msg
-profile profileData waypoints =
+profile : TrackData -> List Waypoint -> Html Msg
+profile track waypoints =
     let
         -- TODO(ghanmer): combine these max folds to not iterate through twice
         maxElevation =
             -- TODO(ghanmer): handle empty list etc better, although this is probably fine
-            Maybe.withDefault 1 <| List.maximum <| List.map .elevation profileData
+            Maybe.withDefault 1 <| List.maximum <| List.map .elevation track
 
         minElevation =
             -- TODO(ghanmer): handle empty list etc better, although this is probably fine
-            Maybe.withDefault 1 <| List.minimum <| List.map .elevation profileData
+            Maybe.withDefault 1 <| List.minimum <| List.map .elevation track
 
         maxDistance =
-            Maybe.withDefault 1 <| List.maximum <| List.map .distance profileData
+            Maybe.withDefault 1 <| List.maximum <| List.map .distance track
 
         svgHeight =
             200
@@ -281,28 +283,27 @@ profile profileData waypoints =
             , Svg.Attributes.viewBox <| "0 0 " ++ String.fromInt svgWidth ++ " " ++ String.fromInt svgHeight
             ]
             (List.concat
-                [ resolveElevationProfileSVGLine calc profileData
-                , List.map
-                    (\waypoint ->
-                        let
-                            x =
-                                --calc.x waypoint.distance
-                                calc.x waypoint.distance
+                [ resolveElevationProfileSVGLine calc track
+                , waypoints
+                    |> List.map
+                        (\waypoint ->
+                            let
+                                x =
+                                    calc.x waypoint.distance
 
-                            y =
-                                calc.y <| interpolateWaypointElevation profileData waypoint - 5
-                        in
-                        Svg.line
-                            [ Svg.Attributes.x1 <| x
-                            , Svg.Attributes.y1 <| String.fromInt svgHeight
-                            , Svg.Attributes.x2 <| x
-                            , Svg.Attributes.y2 <| y
-                            , Svg.Attributes.stroke "grey"
-                            , Svg.Attributes.strokeWidth "1"
-                            ]
-                            []
-                    )
-                    waypoints
+                                y =
+                                    calc.y <| interpolateWaypointElevation track waypoint - 5
+                            in
+                            Svg.line
+                                [ Svg.Attributes.x1 <| x
+                                , Svg.Attributes.y1 <| String.fromInt svgHeight
+                                , Svg.Attributes.x2 <| x
+                                , Svg.Attributes.y2 <| y
+                                , Svg.Attributes.stroke "grey"
+                                , Svg.Attributes.strokeWidth "1"
+                                ]
+                                []
+                        )
                 , [ ( ( 0, 0 ), ( svgHeight, 0 ) )
                   , ( ( 0, 0 ), ( 0, svgWidth ) )
                   , ( ( svgHeight, svgWidth ), ( svgHeight, 0 ) )
@@ -325,9 +326,9 @@ profile profileData waypoints =
         ]
 
 
-interpolateWaypointElevation : List ElevationPoint -> Waypoint -> Float
-interpolateWaypointElevation elevationsPoints waypoint =
-    case elevationsPoints of
+interpolateWaypointElevation : TrackData -> Waypoint -> Float
+interpolateWaypointElevation trackPoints waypoint =
+    case trackPoints of
         [] ->
             0
 
@@ -349,7 +350,7 @@ interpolateWaypointElevation elevationsPoints waypoint =
                             interpolateWaypointElevation others waypoint
 
 
-resolveElevationProfileSVGLine : XYCalculator -> ElevationProfileData -> List (Svg.Svg msg)
+resolveElevationProfileSVGLine : XYCalculator -> TrackData -> List (Svg.Svg msg)
 resolveElevationProfileSVGLine calc profileData =
     profileData
         |> List.foldl
@@ -400,7 +401,7 @@ xyCalculator cfg =
 -- the accumulation loop.
 
 
-accumulatePoints : XYCalculator -> (ElevationPoint -> ( Maybe ( String, String ), List (Svg.Svg msg) ) -> ( Maybe ( String, String ), List (Svg.Svg msg) ))
+accumulatePoints : XYCalculator -> (TrackPoint -> ( Maybe ( String, String ), List (Svg.Svg msg) ) -> ( Maybe ( String, String ), List (Svg.Svg msg) ))
 accumulatePoints calc =
     \point ( maybePrevPoint, currLines ) ->
         let
@@ -429,8 +430,41 @@ accumulatePoints calc =
                 )
 
 
-encodeElevationProfile : List ElevationPoint -> Json.Encode.Value
-encodeElevationProfile points =
+
+-- GPX API
+
+
+type alias ElevationProfileDataResponse =
+    { track : TrackData
+    , waypoints : List Waypoint
+    }
+
+
+decodeElevationProfileDataResponse : Json.Decode.Decoder ElevationProfileDataResponse
+decodeElevationProfileDataResponse =
+    Json.Decode.map2 ElevationProfileDataResponse
+        (Json.Decode.field "track" decodeTrack)
+        (Json.Decode.field "waypoints" decodeWaypoints)
+
+
+getElevationProfileDataResponse : String -> File.File -> Cmd Msg
+getElevationProfileDataResponse url file =
+    Http.post
+        { url = url
+        , body = Http.fileBody file
+        , expect =
+            Http.expectJson
+                (Result.mapError httpErrorString >> ElevationProfileDataResponseReceived)
+                decodeElevationProfileDataResponse
+        }
+
+
+
+-- ENCODE/DECODE MODEL
+
+
+encodeTrack : TrackData -> Json.Encode.Value
+encodeTrack =
     Json.Encode.list
         (\point ->
             Json.Encode.object
@@ -438,15 +472,29 @@ encodeElevationProfile points =
                 , ( "ele", Json.Encode.float point.elevation )
                 ]
         )
-        points
 
 
-decodeElevationProfile : Json.Decode.Decoder ElevationProfileData
-decodeElevationProfile =
+decodeTrack : Json.Decode.Decoder TrackData
+decodeTrack =
     Json.Decode.list
-        (Json.Decode.map2 ElevationPoint
+        (Json.Decode.map2 TrackPoint
             (Json.Decode.field "dist" Json.Decode.float)
             (Json.Decode.field "ele" Json.Decode.float)
+        )
+
+
+encodeWaypoints : List Waypoint -> Json.Encode.Value
+encodeWaypoints =
+    Json.Encode.list
+        (\waypoint -> Json.Encode.object [ ( "dist", Json.Encode.float waypoint.distance ) ])
+
+
+decodeWaypoints : Json.Decode.Decoder (List Waypoint)
+decodeWaypoints =
+    Json.Decode.list
+        (Json.Decode.map Waypoint
+            (Json.Decode.field "dist" Json.Decode.float)
+         --(Json.Decode.field "ele" Json.Decode.float)
         )
 
 
@@ -458,13 +506,14 @@ encodeSavedState : Model -> String
 encodeSavedState model =
     Json.Encode.object
         (List.filterMap
-            (\maybz -> maybz)
-            [ case model.profileData of
+            identity
+            [ case model.track of
                 Loaded data ->
-                    Just ( "profileData", encodeElevationProfile data )
+                    Just ( "track", encodeTrack data )
 
                 _ ->
                     Nothing
+            , Just ( "waypoints", encodeWaypoints model.waypoints )
             , Maybe.map (\url -> ( "gpxServerURL", Json.Encode.string url )) model.gpxServerURLOverride
             ]
         )
@@ -473,9 +522,10 @@ encodeSavedState model =
 
 storedStateDecoder : Json.Decode.Decoder StoredState
 storedStateDecoder =
-    Json.Decode.map3 StoredState
+    Json.Decode.map4 StoredState
         (Json.Decode.maybe (Json.Decode.field "file" Json.Decode.string))
-        (Json.Decode.maybe (Json.Decode.field "profileData" decodeElevationProfile))
+        (Json.Decode.maybe (Json.Decode.field "track" decodeTrack))
+        (Json.Decode.maybe (Json.Decode.field "waypoints" decodeWaypoints))
         (Json.Decode.maybe (Json.Decode.field "gpxServerURL" Json.Decode.string))
 
 
@@ -498,11 +548,6 @@ loadableResourceFromMaybe =
     Maybe.map Loaded >> Maybe.withDefault NotLoaded
 
 
-loadableResourceFromResult : Result String a -> LoadableResource a
-loadableResourceFromResult =
-    Result.map Loaded >> Result.mapError Error >> resultCollect
-
-
 httpErrorString : Http.Error -> String
 httpErrorString err =
     case err of
@@ -521,13 +566,3 @@ httpErrorString err =
 
         Http.BadBody msg ->
             "bad body: " ++ msg
-
-
-resultCollect : Result a a -> a
-resultCollect res =
-    case res of
-        Ok a ->
-            a
-
-        Err a ->
-            a
