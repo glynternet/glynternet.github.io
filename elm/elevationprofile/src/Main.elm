@@ -55,6 +55,7 @@ type alias TrackPoint =
 
 type alias Waypoint =
     { distance : Float
+    , name : String
     }
 
 
@@ -132,7 +133,21 @@ update msg model =
         WaypointsTextChange text ->
             updateModel
                 { model
-                    | waypoints = String.lines text |> List.filterMap String.toFloat |> List.map Waypoint
+                    | waypoints =
+                        String.lines text
+                            |> List.map String.words
+                            |> List.filterMap
+                                (\fields ->
+                                    case fields of
+                                        [] ->
+                                            Nothing
+
+                                        [ dist ] ->
+                                            String.toFloat dist |> Maybe.map (\d -> Waypoint d "")
+
+                                        dist :: others ->
+                                            String.toFloat dist |> Maybe.map (\d -> Waypoint d (String.join " " others))
+                                )
                 }
 
 
@@ -219,7 +234,7 @@ viewOptions show waypoints =
                         , Html.div []
                             [ Html.textarea
                                 [ Html.Attributes.placeholder "Newline delimited waypoint distances"
-                                , Html.Attributes.value ((waypoints |> List.map (.distance >> String.fromFloat)) |> String.join "\n")
+                                , Html.Attributes.value ((waypoints |> List.map (\waypoint -> String.fromFloat waypoint.distance ++ " " ++ waypoint.name)) |> String.join "\n")
                                 , Html.Events.onInput WaypointsTextChange
                                 ]
                                 []
@@ -486,15 +501,20 @@ decodeTrack =
 encodeWaypoints : List Waypoint -> Json.Encode.Value
 encodeWaypoints =
     Json.Encode.list
-        (\waypoint -> Json.Encode.object [ ( "dist", Json.Encode.float waypoint.distance ) ])
+        (\waypoint ->
+            Json.Encode.object
+                [ ( "dist", Json.Encode.float waypoint.distance )
+                , ( "name", Json.Encode.string waypoint.name )
+                ]
+        )
 
 
 decodeWaypoints : Json.Decode.Decoder (List Waypoint)
 decodeWaypoints =
     Json.Decode.list
-        (Json.Decode.map Waypoint
+        (Json.Decode.map2 Waypoint
             (Json.Decode.field "dist" Json.Decode.float)
-         --(Json.Decode.field "ele" Json.Decode.float)
+            (Json.Decode.field "name" Json.Decode.string)
         )
 
 
