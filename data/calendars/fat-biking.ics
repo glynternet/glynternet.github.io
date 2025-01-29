@@ -5,82 +5,82 @@ BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250405
 DTEND;VALUE=DATE:20250406
 SUMMARY:East Side Epic (Leadville Winter Series)
-UID:0d9c053d-5ef3-42e1-83db-57b5319a055e@0d9c.org
+UID:b0e60e96-2993-4135-857e-b0148f4fc15d@b0e6.org
 DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
  series
 LOCATION:Leadville
-DTSTAMP:20250128T041042Z
+DTSTAMP:20250129T013937Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250315
 DTEND;VALUE=DATE:20250316
 SUMMARY:Fatty Patty 50K (Leadville Winter Series)
-UID:dfa3c063-4548-432c-9024-090652765027@dfa3.org
+UID:a1f7cb36-1dce-453e-ab09-26aa44d17197@a1f7.org
 DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
  series
 LOCATION:Leadville
-DTSTAMP:20250128T041042Z
+DTSTAMP:20250129T013937Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250301
 DTEND;VALUE=DATE:20250302
 SUMMARY:Mineral Belt Mayhem (Leadville Winter Series)
-UID:f4f97204-05b8-4474-843c-4ed9d578d62e@f4f9.org
+UID:9db071f4-5169-4eba-a37b-0bf071775543@9db0.org
 DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
  series
 LOCATION:Leadville
-DTSTAMP:20250128T041042Z
+DTSTAMP:20250129T013937Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250212
 DTEND;VALUE=DATE:20250213
 SUMMARY:Frisco Freeze
-UID:3894b05f-e09b-41d4-91c7-ac8afdd15f8a@3894.org
+UID:124c08d5-2658-449a-bc8f-07b98a8ac710@124c.org
 DESCRIPTION:urls:\n  - https://www.townoffrisco.com/event/nordic-center-
  events/frisco-freeze-winter-bike-race/
 LOCATION:Frisco Nordic Center\n616 Recreation Way\nFrisco\, CO 80443
-DTSTAMP:20250128T041042Z
+DTSTAMP:20250129T013937Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250208
 DTEND;VALUE=DATE:20250209
 SUMMARY:Tennessee Pass Night Jam (Leadville Winter Series)
-UID:441b39be-4c99-409c-8f57-3ecb99884db6@441b.org
+UID:8641489c-2d39-427e-9de5-1a00ba1321e7@8641.org
 DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
  series
 LOCATION:Leadville
-DTSTAMP:20250128T041042Z
+DTSTAMP:20250129T013937Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250201
 DTEND;VALUE=DATE:20250202
 SUMMARY:Cottonwood Crusher
-UID:3cd7c73d-15c3-4602-b86b-5454397f2d2f@3cd7.org
+UID:b63b93e3-4ed0-46be-bb11-434083411c97@b63b.org
 DESCRIPTION:urls:\n  - https://www.instagram.com/CottonwoodCrusher/\n  - 
  https://www.facebook.com/groups/cottonwoodcrusher/info/?_rdr\n  - 
  https://www.facebook.com/groups/cottonwoodcrusher/\n  - 
  https://coloradoes.wordpress.com/swes-event-list/cottonwood-crusher/
 LOCATION:https://goo.gl/maps/PSgGf2qwJfsK9jhL7
-DTSTAMP:20250128T041042Z
+DTSTAMP:20250129T013937Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART:20250124T000000
 DTEND:20250126T000000
 SUMMARY:Fat Bike Worlds
-UID:36178df0-5bcb-40fd-9725-a8e6241c635e@3617.org
+UID:6cb167a1-d664-4b4f-8855-8ea67d0c2353@6cb1.org
 DESCRIPTION:urls:\n  - https://fatbikeworlds.org/
 LOCATION:Crested Butte
-DTSTAMP:20250128T041042Z
+DTSTAMP:20250129T013937Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250118
 DTEND;VALUE=DATE:20250119
 SUMMARY:Colorado Cup ITT (Leadville Winter Series)
-UID:85cf1f48-7f20-41a1-a887-57dca19b9162@85cf.org
+UID:d3450346-3683-43f9-b6a2-e13a547095c5@d345.org
 DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
  series
 LOCATION:Leadville
-DTSTAMP:20250128T041042Z
+DTSTAMP:20250129T013937Z
 END:VEVENT
 NAME:Fat biking events
 X-WR-CALNAME:Fat biking events

@@ -10,6 +10,7 @@ import Html.Events
 import Http
 import Json.Decode
 import Json.Encode
+import List.Extra
 import String
 import Svg
 import Svg.Attributes
@@ -92,7 +93,8 @@ type Msg
     | OpenFileBrowser
     | FileUploaded File.File
     | ElevationProfileDataResponseReceived (Result String ElevationProfileDataResponse)
-    | WaypointsTextChange String
+    | WaypointDistanceChange Int Float
+    | WaypointNameChange Int String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -130,25 +132,17 @@ update msg model =
         Ignore ->
             ( model, Cmd.none )
 
-        WaypointsTextChange text ->
-            updateModel
-                { model
-                    | waypoints =
-                        String.lines text
-                            |> List.map String.words
-                            |> List.filterMap
-                                (\fields ->
-                                    case fields of
-                                        [] ->
-                                            Nothing
+        WaypointNameChange i name ->
+            List.Extra.getAt i model.waypoints
+                |> Maybe.map
+                    (\waypoint -> updateModel { model | waypoints = List.Extra.setAt i { waypoint | name = name } model.waypoints })
+                |> Maybe.withDefault ( model, Cmd.none )
 
-                                        [ dist ] ->
-                                            String.toFloat dist |> Maybe.map (\d -> Waypoint d "")
-
-                                        dist :: others ->
-                                            String.toFloat dist |> Maybe.map (\d -> Waypoint d (String.join " " others))
-                                )
-                }
+        WaypointDistanceChange i dist ->
+            List.Extra.getAt i model.waypoints
+                |> Maybe.map
+                    (\waypoint -> updateModel { model | waypoints = List.Extra.setAt i { waypoint | distance = dist } model.waypoints })
+                |> Maybe.withDefault ( model, Cmd.none )
 
 
 updateModel : Model -> ( Model, Cmd Msg )
@@ -173,7 +167,7 @@ view model =
             , Html.Attributes.class "page"
             , Html.Attributes.style "height" "100%"
             ]
-            [ viewOptions model.showOptions model.waypoints
+            [ viewOptions model.showOptions
             , Html.div
                 [ Html.Attributes.class "flex-container"
                 , Html.Attributes.class "column"
@@ -181,25 +175,54 @@ view model =
                 , Html.Attributes.style "height" "100%"
                 , Html.Attributes.style "justify-content" "center"
                 ]
-                [ case model.track of
+                (case model.track of
                     NotLoaded ->
-                        Html.p [] [ Html.text "Load your profile!" ]
+                        [ Html.p [] [ Html.text "Load your profile!" ] ]
 
                     Loading ->
-                        Html.p [] [ Html.text "Loading profile..." ]
+                        [ Html.p [] [ Html.text "Loading profile..." ] ]
 
                     Error err ->
-                        viewErrorPanel <| ("There was an error creating your profile. Please fix any error and try again 😇\n\nError: " ++ String.left 1000 err ++ "...")
+                        [ viewErrorPanel <| ("There was an error creating your profile. Please fix any error and try again 😇\n\nError: " ++ String.left 1000 err ++ "...") ]
 
                     Loaded track ->
-                        profile track model.waypoints
-                ]
+                        let
+                            maxDistance =
+                                Maybe.withDefault 1 <| List.maximum <| List.map .distance track
+                        in
+                        [ profile track model.waypoints maxDistance
+                        , Html.div []
+                            (model.waypoints
+                                |> List.indexedMap
+                                    (\i waypoint ->
+                                        Html.div []
+                                            [ Html.input
+                                                [ Html.Attributes.type_ "number"
+                                                , Html.Attributes.min "0"
+                                                , maxDistance |> (String.fromFloat >> Html.Attributes.max)
+                                                , Html.Attributes.value <| String.fromFloat waypoint.distance
+
+                                                -- handle toFloat error
+                                                , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1000 >> WaypointDistanceChange i)
+                                                ]
+                                                []
+                                            , Html.textarea
+                                                [ Html.Attributes.placeholder "Newline delimited waypoint distances"
+                                                , Html.Attributes.value waypoint.name
+                                                , Html.Events.onInput <| WaypointNameChange i
+                                                ]
+                                                []
+                                            ]
+                                    )
+                            )
+                        ]
+                )
             ]
         ]
 
 
-viewOptions : Bool -> List Waypoint -> Html Msg
-viewOptions show waypoints =
+viewOptions : Bool -> Html Msg
+viewOptions show =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "column"
@@ -231,14 +254,6 @@ viewOptions show waypoints =
                             ]
                             [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "upload GPX" OpenFileBrowser
                             ]
-                        , Html.div []
-                            [ Html.textarea
-                                [ Html.Attributes.placeholder "Newline delimited waypoint distances"
-                                , Html.Attributes.value ((waypoints |> List.map (\waypoint -> String.fromFloat waypoint.distance ++ " " ++ waypoint.name)) |> String.join "\n")
-                                , Html.Events.onInput WaypointsTextChange
-                                ]
-                                []
-                            ]
                         ]
                   ]
                 ]
@@ -257,8 +272,8 @@ viewButtonWithAttributes attrs text msg =
         [ Html.text text ]
 
 
-profile : TrackData -> List Waypoint -> Html Msg
-profile track waypoints =
+profile : TrackData -> List Waypoint -> Float -> Html Msg
+profile track waypoints maxDistance =
     let
         -- TODO(ghanmer): combine these max folds to not iterate through twice
         maxElevation =
@@ -268,9 +283,6 @@ profile track waypoints =
         minElevation =
             -- TODO(ghanmer): handle empty list etc better, although this is probably fine
             Maybe.withDefault 1 <| List.minimum <| List.map .elevation track
-
-        maxDistance =
-            Maybe.withDefault 1 <| List.maximum <| List.map .distance track
 
         trackHeight =
             200

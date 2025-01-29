@@ -784,11 +784,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.P.D === region.X.D)
+	if (region.R.D === region._.D)
 	{
-		return 'on line ' + region.P.D;
+		return 'on line ' + region.R.D;
 	}
-	return 'on lines ' + region.P.D + ' through ' + region.X.D;
+	return 'on lines ' + region.R.D + ' through ' + region._.D;
 }
 
 
@@ -1857,9 +1857,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aN,
-		impl.a$,
-		impl.aY,
+		impl.aQ,
+		impl.a1,
+		impl.a_,
 		function() { return function() {} }
 	);
 });
@@ -2720,8 +2720,8 @@ var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
 		s: func(record.s),
-		Q: record.Q,
-		M: record.M
+		S: record.S,
+		O: record.O
 	}
 });
 
@@ -2990,10 +2990,10 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 
 		var value = result.a;
 		var message = !tag ? value : tag < 3 ? value.a : value.s;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.Q;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.S;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.M) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.O) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -3943,11 +3943,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aN,
-		impl.a$,
-		impl.aY,
+		impl.aQ,
+		impl.a1,
+		impl.a_,
 		function(sendToApp, initialModel) {
-			var view = impl.a1;
+			var view = impl.a3;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -3979,12 +3979,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aN,
-		impl.a$,
-		impl.aY,
+		impl.aQ,
+		impl.a1,
+		impl.a_,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.N && impl.N(sendToApp)
-			var view = impl.a1;
+			var divertHrefToApp = impl.P && impl.P(sendToApp)
+			var view = impl.a3;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -3992,12 +3992,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.aE);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.aH);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.a_) && (_VirtualDom_doc.title = title = doc.a_);
+				(title !== doc.a0) && (_VirtualDom_doc.title = title = doc.a0);
 			});
 		}
 	);
@@ -4053,12 +4053,12 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.aQ;
-	var onUrlRequest = impl.aR;
+	var onUrlChange = impl.aS;
+	var onUrlRequest = impl.aT;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		N: function(sendToApp)
+		P: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4074,9 +4074,9 @@ function _Browser_application(impl)
 					var next = $elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.an === next.an
-							&& curr.ac === next.ac
-							&& curr.ak.a === next.ak.a
+							&& curr.aq === next.aq
+							&& curr.af === next.af
+							&& curr.an.a === next.an.a
 						)
 							? $elm$browser$Browser$Internal(next)
 							: $elm$browser$Browser$External(href)
@@ -4084,13 +4084,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		aN: function(flags)
+		aQ: function(flags)
 		{
-			return A3(impl.aN, flags, _Browser_getUrl(), key);
+			return A3(impl.aQ, flags, _Browser_getUrl(), key);
 		},
+		a3: impl.a3,
 		a1: impl.a1,
-		a$: impl.a$,
-		aY: impl.aY
+		a_: impl.a_
 	});
 }
 
@@ -4156,17 +4156,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { aL: 'hidden', aF: 'visibilitychange' }
+		? { aO: 'hidden', aI: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { aL: 'mozHidden', aF: 'mozvisibilitychange' }
+		? { aO: 'mozHidden', aI: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { aL: 'msHidden', aF: 'msvisibilitychange' }
+		? { aO: 'msHidden', aI: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { aL: 'webkitHidden', aF: 'webkitvisibilitychange' }
-		: { aL: 'hidden', aF: 'visibilitychange' };
+		? { aO: 'webkitHidden', aI: 'webkitvisibilitychange' }
+		: { aO: 'hidden', aI: 'visibilitychange' };
 }
 
 
@@ -4247,12 +4247,12 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		at: _Browser_getScene(),
-		az: {
-			S: _Browser_window.pageXOffset,
-			T: _Browser_window.pageYOffset,
-			aA: _Browser_doc.documentElement.clientWidth,
-			ab: _Browser_doc.documentElement.clientHeight
+		aw: _Browser_getScene(),
+		aC: {
+			V: _Browser_window.pageXOffset,
+			W: _Browser_window.pageYOffset,
+			aD: _Browser_doc.documentElement.clientWidth,
+			ae: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4262,8 +4262,8 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		aA: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		ab: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		aD: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		ae: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4286,15 +4286,15 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			at: {
-				aA: node.scrollWidth,
-				ab: node.scrollHeight
+			aw: {
+				aD: node.scrollWidth,
+				ae: node.scrollHeight
 			},
-			az: {
-				S: node.scrollLeft,
-				T: node.scrollTop,
-				aA: node.clientWidth,
-				ab: node.clientHeight
+			aC: {
+				V: node.scrollLeft,
+				W: node.scrollTop,
+				aD: node.clientWidth,
+				ae: node.clientHeight
 			}
 		};
 	});
@@ -4324,18 +4324,18 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			at: _Browser_getScene(),
-			az: {
-				S: x,
-				T: y,
-				aA: _Browser_doc.documentElement.clientWidth,
-				ab: _Browser_doc.documentElement.clientHeight
+			aw: _Browser_getScene(),
+			aC: {
+				V: x,
+				W: y,
+				aD: _Browser_doc.documentElement.clientWidth,
+				ae: _Browser_doc.documentElement.clientHeight
 			},
-			aH: {
-				S: x + rect.left,
-				T: y + rect.top,
-				aA: rect.width,
-				ab: rect.height
+			aK: {
+				V: x + rect.left,
+				W: y + rect.top,
+				aD: rect.width,
+				ae: rect.height
 			}
 		};
 	});
@@ -4558,25 +4558,25 @@ var _Http_toTask = F3(function(router, toTask, request)
 	return _Scheduler_binding(function(callback)
 	{
 		function done(response) {
-			callback(toTask(request.aI.a(response)));
+			callback(toTask(request.aL.a(response)));
 		}
 
 		var xhr = new XMLHttpRequest();
 		xhr.addEventListener('error', function() { done($elm$http$Http$NetworkError_); });
 		xhr.addEventListener('timeout', function() { done($elm$http$Http$Timeout_); });
-		xhr.addEventListener('load', function() { done(_Http_toResponse(request.aI.b, xhr)); });
-		$elm$core$Maybe$isJust(request.ay) && _Http_track(router, xhr, request.ay.a);
+		xhr.addEventListener('load', function() { done(_Http_toResponse(request.aL.b, xhr)); });
+		$elm$core$Maybe$isJust(request.aB) && _Http_track(router, xhr, request.aB.a);
 
 		try {
-			xhr.open(request.aO, request.a0, true);
+			xhr.open(request.aR, request.a2, true);
 		} catch (e) {
-			return done($elm$http$Http$BadUrl_(request.a0));
+			return done($elm$http$Http$BadUrl_(request.a2));
 		}
 
 		_Http_configureRequest(xhr, request);
 
-		request.aE.a && xhr.setRequestHeader('Content-Type', request.aE.a);
-		xhr.send(request.aE.b);
+		request.aH.a && xhr.setRequestHeader('Content-Type', request.aH.a);
+		xhr.send(request.aH.b);
 
 		return function() { xhr.c = true; xhr.abort(); };
 	});
@@ -4587,13 +4587,13 @@ var _Http_toTask = F3(function(router, toTask, request)
 
 function _Http_configureRequest(xhr, request)
 {
-	for (var headers = request.aa; headers.b; headers = headers.b) // WHILE_CONS
+	for (var headers = request.ad; headers.b; headers = headers.b) // WHILE_CONS
 	{
 		xhr.setRequestHeader(headers.a.a, headers.a.b);
 	}
-	xhr.timeout = request.aZ.a || 0;
-	xhr.responseType = request.aI.d;
-	xhr.withCredentials = request.aC;
+	xhr.timeout = request.a$.a || 0;
+	xhr.responseType = request.aL.d;
+	xhr.withCredentials = request.aF;
 }
 
 
@@ -4614,10 +4614,10 @@ function _Http_toResponse(toBody, xhr)
 function _Http_toMetadata(xhr)
 {
 	return {
-		a0: xhr.responseURL,
-		aW: xhr.status,
-		aX: xhr.statusText,
-		aa: _Http_parseHeaders(xhr.getAllResponseHeaders())
+		a2: xhr.responseURL,
+		aY: xhr.status,
+		aZ: xhr.statusText,
+		ad: _Http_parseHeaders(xhr.getAllResponseHeaders())
 	};
 }
 
@@ -4712,15 +4712,15 @@ function _Http_track(router, xhr, tracker)
 	xhr.upload.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Sending({
-			aV: event.loaded,
-			au: event.total
+			aX: event.loaded,
+			ax: event.total
 		}))));
 	});
 	xhr.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Receiving({
-			aT: event.loaded,
-			au: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
+			aV: event.loaded,
+			ax: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
 		}))));
 	});
 }var $author$project$Main$Ignore = {$: 0};
@@ -5228,7 +5228,7 @@ var $elm$url$Url$Http = 0;
 var $elm$url$Url$Https = 1;
 var $elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {Z: fragment, ac: host, ai: path, ak: port_, an: protocol, ao: query};
+		return {ab: fragment, af: host, al: path, an: port_, aq: protocol, ar: query};
 	});
 var $elm$core$String$contains = _String_contains;
 var $elm$core$String$length = _String_length;
@@ -5509,12 +5509,12 @@ var $elm$core$Task$perform = F2(
 var $elm$browser$Browser$application = _Browser_application;
 var $author$project$Main$Model = F4(
 	function (track, waypoints, showOptions, gpxServerURLOverride) {
-		return {I: gpxServerURLOverride, O: showOptions, m: track, n: waypoints};
+		return {K: gpxServerURLOverride, Q: showOptions, n: track, f: waypoints};
 	});
 var $author$project$Main$NotLoaded = {$: 0};
 var $author$project$Main$StoredState = F4(
 	function (file, track, waypoints, gpxServerURL) {
-		return {aK: file, _: gpxServerURL, m: track, n: waypoints};
+		return {aN: file, ac: gpxServerURL, n: track, f: waypoints};
 	});
 var $elm$core$Basics$composeR = F3(
 	function (f, g, x) {
@@ -5547,14 +5547,17 @@ var $author$project$Main$decodeTrack = $elm$json$Json$Decode$list(
 		$author$project$Main$TrackPoint,
 		A2($elm$json$Json$Decode$field, 'dist', $elm$json$Json$Decode$float),
 		A2($elm$json$Json$Decode$field, 'ele', $elm$json$Json$Decode$float)));
-var $author$project$Main$Waypoint = function (distance) {
-	return {g: distance};
-};
+var $author$project$Main$Waypoint = F2(
+	function (distance, name) {
+		return {g: distance, E: name};
+	});
+var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Main$decodeWaypoints = $elm$json$Json$Decode$list(
-	A2(
-		$elm$json$Json$Decode$map,
+	A3(
+		$elm$json$Json$Decode$map2,
 		$author$project$Main$Waypoint,
-		A2($elm$json$Json$Decode$field, 'dist', $elm$json$Json$Decode$float)));
+		A2($elm$json$Json$Decode$field, 'dist', $elm$json$Json$Decode$float),
+		A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string)));
 var $elm$json$Json$Decode$map4 = _Json_map4;
 var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $elm$json$Json$Decode$maybe = function (decoder) {
@@ -5565,7 +5568,6 @@ var $elm$json$Json$Decode$maybe = function (decoder) {
 				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
 			]));
 };
-var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Main$storedStateDecoder = A5(
 	$elm$json$Json$Decode$map4,
 	$author$project$Main$StoredState,
@@ -5596,10 +5598,10 @@ var $author$project$Main$loadableResourceFromMaybe = A2(
 var $author$project$Main$storedStateModel = function (state) {
 	return A4(
 		$author$project$Main$Model,
-		$author$project$Main$loadableResourceFromMaybe(state.m),
-		A2($elm$core$Maybe$withDefault, _List_Nil, state.n),
+		$author$project$Main$loadableResourceFromMaybe(state.n),
+		A2($elm$core$Maybe$withDefault, _List_Nil, state.f),
 		true,
-		state._);
+		state.ac);
 };
 var $elm$core$Result$withDefault = F2(
 	function (def, result) {
@@ -5648,30 +5650,47 @@ var $elm$file$File$Select$file = F2(
 			toMsg,
 			_File_uploadOne(mimes));
 	});
-var $elm$core$List$maybeCons = F3(
-	function (f, mx, xs) {
-		var _v0 = f(mx);
-		if (!_v0.$) {
-			var x = _v0.a;
-			return A2($elm$core$List$cons, x, xs);
-		} else {
-			return xs;
+var $elm$core$List$drop = F2(
+	function (n, list) {
+		drop:
+		while (true) {
+			if (n <= 0) {
+				return list;
+			} else {
+				if (!list.b) {
+					return list;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs;
+					n = $temp$n;
+					list = $temp$list;
+					continue drop;
+				}
+			}
 		}
 	});
-var $elm$core$List$filterMap = F2(
-	function (f, xs) {
-		return A3(
-			$elm$core$List$foldr,
-			$elm$core$List$maybeCons(f),
-			_List_Nil,
-			xs);
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm_community$list_extra$List$Extra$getAt = F2(
+	function (idx, xs) {
+		return (idx < 0) ? $elm$core$Maybe$Nothing : $elm$core$List$head(
+			A2($elm$core$List$drop, idx, xs));
 	});
 var $author$project$Main$ElevationProfileDataResponseReceived = function (a) {
 	return {$: 4, a: a};
 };
 var $author$project$Main$ElevationProfileDataResponse = F2(
 	function (track, waypoints) {
-		return {m: track, n: waypoints};
+		return {n: track, f: waypoints};
 	});
 var $author$project$Main$decodeElevationProfileDataResponse = A3(
 	$elm$json$Json$Decode$map2,
@@ -6265,7 +6284,7 @@ var $elm$http$Http$resolve = F2(
 			case 3:
 				var metadata = response.a;
 				return $elm$core$Result$Err(
-					$elm$http$Http$BadStatus(metadata.aW));
+					$elm$http$Http$BadStatus(metadata.aY));
 			default:
 				var body = response.b;
 				return A2(
@@ -6310,7 +6329,7 @@ var $elm$http$Http$Request = function (a) {
 };
 var $elm$http$Http$State = F2(
 	function (reqs, subs) {
-		return {aq: reqs, av: subs};
+		return {at: reqs, ay: subs};
 	});
 var $elm$http$Http$init = $elm$core$Task$succeed(
 	A2($elm$http$Http$State, $elm$core$Dict$empty, _List_Nil));
@@ -6354,7 +6373,7 @@ var $elm$http$Http$updateReqs = F3(
 					return A2(
 						$elm$core$Task$andThen,
 						function (pid) {
-							var _v4 = req.ay;
+							var _v4 = req.aB;
 							if (_v4.$ === 1) {
 								return A3($elm$http$Http$updateReqs, router, otherCmds, reqs);
 							} else {
@@ -6384,7 +6403,25 @@ var $elm$http$Http$onEffects = F4(
 				return $elm$core$Task$succeed(
 					A2($elm$http$Http$State, reqs, subs));
 			},
-			A3($elm$http$Http$updateReqs, router, cmds, state.aq));
+			A3($elm$http$Http$updateReqs, router, cmds, state.at));
+	});
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (!_v0.$) {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
 	});
 var $elm$http$Http$maybeSend = F4(
 	function (router, desiredTracker, progress, _v0) {
@@ -6409,7 +6446,7 @@ var $elm$http$Http$onSelfMsg = F3(
 				A2(
 					$elm$core$List$filterMap,
 					A3($elm$http$Http$maybeSend, router, tracker, progress),
-					state.av)));
+					state.ay)));
 	});
 var $elm$http$Http$Cancel = function (a) {
 	return {$: 0, a: a};
@@ -6423,14 +6460,14 @@ var $elm$http$Http$cmdMap = F2(
 			var r = cmd.a;
 			return $elm$http$Http$Request(
 				{
-					aC: r.aC,
-					aE: r.aE,
-					aI: A2(_Http_mapExpect, func, r.aI),
-					aa: r.aa,
-					aO: r.aO,
-					aZ: r.aZ,
-					ay: r.ay,
-					a0: r.a0
+					aF: r.aF,
+					aH: r.aH,
+					aL: A2(_Http_mapExpect, func, r.aL),
+					ad: r.ad,
+					aR: r.aR,
+					a$: r.a$,
+					aB: r.aB,
+					a2: r.a2
 				});
 		}
 	});
@@ -6453,28 +6490,27 @@ var $elm$http$Http$subscription = _Platform_leaf('Http');
 var $elm$http$Http$request = function (r) {
 	return $elm$http$Http$command(
 		$elm$http$Http$Request(
-			{aC: false, aE: r.aE, aI: r.aI, aa: r.aa, aO: r.aO, aZ: r.aZ, ay: r.ay, a0: r.a0}));
+			{aF: false, aH: r.aH, aL: r.aL, ad: r.ad, aR: r.aR, a$: r.a$, aB: r.aB, a2: r.a2}));
 };
 var $elm$http$Http$post = function (r) {
 	return $elm$http$Http$request(
-		{aE: r.aE, aI: r.aI, aa: _List_Nil, aO: 'POST', aZ: $elm$core$Maybe$Nothing, ay: $elm$core$Maybe$Nothing, a0: r.a0});
+		{aH: r.aH, aL: r.aL, ad: _List_Nil, aR: 'POST', a$: $elm$core$Maybe$Nothing, aB: $elm$core$Maybe$Nothing, a2: r.a2});
 };
 var $author$project$Main$getElevationProfileDataResponse = F2(
 	function (url, file) {
 		return $elm$http$Http$post(
 			{
-				aE: $elm$http$Http$fileBody(file),
-				aI: A2(
+				aH: $elm$http$Http$fileBody(file),
+				aL: A2(
 					$elm$http$Http$expectJson,
 					A2(
 						$elm$core$Basics$composeR,
 						$elm$core$Result$mapError($author$project$Main$httpErrorString),
 						$author$project$Main$ElevationProfileDataResponseReceived),
 					$author$project$Main$decodeElevationProfileDataResponse),
-				a0: url
+				a2: url
 			});
 	});
-var $elm$core$String$lines = _String_lines;
 var $elm$core$Tuple$mapSecond = F2(
 	function (func, _v0) {
 		var x = _v0.a;
@@ -6483,7 +6519,163 @@ var $elm$core$Tuple$mapSecond = F2(
 			x,
 			func(y));
 	});
-var $elm$core$String$toFloat = _String_toFloat;
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
+var $elm$core$List$takeReverse = F3(
+	function (n, list, kept) {
+		takeReverse:
+		while (true) {
+			if (n <= 0) {
+				return kept;
+			} else {
+				if (!list.b) {
+					return kept;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs,
+						$temp$kept = A2($elm$core$List$cons, x, kept);
+					n = $temp$n;
+					list = $temp$list;
+					kept = $temp$kept;
+					continue takeReverse;
+				}
+			}
+		}
+	});
+var $elm$core$List$takeTailRec = F2(
+	function (n, list) {
+		return $elm$core$List$reverse(
+			A3($elm$core$List$takeReverse, n, list, _List_Nil));
+	});
+var $elm$core$List$takeFast = F3(
+	function (ctr, n, list) {
+		if (n <= 0) {
+			return _List_Nil;
+		} else {
+			var _v0 = _Utils_Tuple2(n, list);
+			_v0$1:
+			while (true) {
+				_v0$5:
+				while (true) {
+					if (!_v0.b.b) {
+						return list;
+					} else {
+						if (_v0.b.b.b) {
+							switch (_v0.a) {
+								case 1:
+									break _v0$1;
+								case 2:
+									var _v2 = _v0.b;
+									var x = _v2.a;
+									var _v3 = _v2.b;
+									var y = _v3.a;
+									return _List_fromArray(
+										[x, y]);
+								case 3:
+									if (_v0.b.b.b.b) {
+										var _v4 = _v0.b;
+										var x = _v4.a;
+										var _v5 = _v4.b;
+										var y = _v5.a;
+										var _v6 = _v5.b;
+										var z = _v6.a;
+										return _List_fromArray(
+											[x, y, z]);
+									} else {
+										break _v0$5;
+									}
+								default:
+									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
+										var _v7 = _v0.b;
+										var x = _v7.a;
+										var _v8 = _v7.b;
+										var y = _v8.a;
+										var _v9 = _v8.b;
+										var z = _v9.a;
+										var _v10 = _v9.b;
+										var w = _v10.a;
+										var tl = _v10.b;
+										return (ctr > 1000) ? A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
+									} else {
+										break _v0$5;
+									}
+							}
+						} else {
+							if (_v0.a === 1) {
+								break _v0$1;
+							} else {
+								break _v0$5;
+							}
+						}
+					}
+				}
+				return list;
+			}
+			var _v1 = _v0.b;
+			var x = _v1.a;
+			return _List_fromArray(
+				[x]);
+		}
+	});
+var $elm$core$List$take = F2(
+	function (n, list) {
+		return A3($elm$core$List$takeFast, 0, n, list);
+	});
+var $elm_community$list_extra$List$Extra$updateAt = F3(
+	function (index, fn, list) {
+		if (index < 0) {
+			return list;
+		} else {
+			var tail = A2($elm$core$List$drop, index, list);
+			if (tail.b) {
+				var x = tail.a;
+				var xs = tail.b;
+				return _Utils_ap(
+					A2($elm$core$List$take, index, list),
+					A2(
+						$elm$core$List$cons,
+						fn(x),
+						xs));
+			} else {
+				return list;
+			}
+		}
+	});
+var $elm_community$list_extra$List$Extra$setAt = F2(
+	function (index, value) {
+		return A2(
+			$elm_community$list_extra$List$Extra$updateAt,
+			index,
+			$elm$core$Basics$always(value));
+	});
 var $elm$json$Json$Encode$float = _Json_wrap;
 var $elm$json$Json$Encode$list = F2(
 	function (func, entries) {
@@ -6520,6 +6712,7 @@ var $author$project$Main$encodeTrack = $elm$json$Json$Encode$list(
 					$elm$json$Json$Encode$float(point.r))
 				]));
 	});
+var $elm$json$Json$Encode$string = _Json_wrap;
 var $author$project$Main$encodeWaypoints = $elm$json$Json$Encode$list(
 	function (waypoint) {
 		return $elm$json$Json$Encode$object(
@@ -6527,10 +6720,12 @@ var $author$project$Main$encodeWaypoints = $elm$json$Json$Encode$list(
 				[
 					_Utils_Tuple2(
 					'dist',
-					$elm$json$Json$Encode$float(waypoint.g))
+					$elm$json$Json$Encode$float(waypoint.g)),
+					_Utils_Tuple2(
+					'name',
+					$elm$json$Json$Encode$string(waypoint.E))
 				]));
 	});
-var $elm$json$Json$Encode$string = _Json_wrap;
 var $author$project$Main$encodeSavedState = function (model) {
 	return A2(
 		$elm$json$Json$Encode$encode,
@@ -6542,7 +6737,7 @@ var $author$project$Main$encodeSavedState = function (model) {
 				_List_fromArray(
 					[
 						function () {
-						var _v0 = model.m;
+						var _v0 = model.n;
 						if (_v0.$ === 3) {
 							var data = _v0.a;
 							return $elm$core$Maybe$Just(
@@ -6556,7 +6751,7 @@ var $author$project$Main$encodeSavedState = function (model) {
 						$elm$core$Maybe$Just(
 						_Utils_Tuple2(
 							'waypoints',
-							$author$project$Main$encodeWaypoints(model.n))),
+							$author$project$Main$encodeWaypoints(model.f))),
 						A2(
 						$elm$core$Maybe$map,
 						function (url) {
@@ -6564,7 +6759,7 @@ var $author$project$Main$encodeSavedState = function (model) {
 								'gpxServerURL',
 								$elm$json$Json$Encode$string(url));
 						},
-						model.I)
+						model.K)
 					]))));
 };
 var $author$project$Main$storeState = _Platform_outgoingPort('storeState', $elm$json$Json$Encode$string);
@@ -6582,7 +6777,7 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{O: show}),
+						{Q: show}),
 					$elm$core$Platform$Cmd$none);
 			case 2:
 				return _Utils_Tuple2(
@@ -6603,14 +6798,14 @@ var $author$project$Main$update = F2(
 									cmd,
 									A2(
 									$author$project$Main$getElevationProfileDataResponse,
-									A2($elm$core$Maybe$withDefault, 'https://gpx.fly.dev', model.I),
+									A2($elm$core$Maybe$withDefault, 'https://gpx.fly.dev', model.K),
 									file)
 								]));
 					},
 					$author$project$Main$updateModel(
 						_Utils_update(
 							model,
-							{m: $author$project$Main$Loading})));
+							{n: $author$project$Main$Loading})));
 			case 4:
 				var resp = msg.a;
 				if (resp.$ === 1) {
@@ -6619,7 +6814,7 @@ var $author$project$Main$update = F2(
 						_Utils_update(
 							model,
 							{
-								m: $author$project$Main$Error('getting profile data from GPX: ' + errMsg)
+								n: $author$project$Main$Error('getting profile data from GPX: ' + errMsg)
 							}));
 				} else {
 					var data = resp.a;
@@ -6627,32 +6822,72 @@ var $author$project$Main$update = F2(
 						_Utils_update(
 							model,
 							{
-								m: $author$project$Main$Loaded(data.m),
-								n: data.n
+								n: $author$project$Main$Loaded(data.n),
+								f: data.f
 							}));
 				}
 			case 0:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 6:
+				var i = msg.a;
+				var name = msg.b;
+				return A2(
+					$elm$core$Maybe$withDefault,
+					_Utils_Tuple2(model, $elm$core$Platform$Cmd$none),
+					A2(
+						$elm$core$Maybe$map,
+						function (waypoint) {
+							return $author$project$Main$updateModel(
+								_Utils_update(
+									model,
+									{
+										f: A3(
+											$elm_community$list_extra$List$Extra$setAt,
+											i,
+											_Utils_update(
+												waypoint,
+												{E: name}),
+											model.f)
+									}));
+						},
+						A2($elm_community$list_extra$List$Extra$getAt, i, model.f)));
 			default:
-				var text = msg.a;
-				return $author$project$Main$updateModel(
-					_Utils_update(
-						model,
-						{
-							n: A2(
-								$elm$core$List$map,
-								$author$project$Main$Waypoint,
-								A2(
-									$elm$core$List$filterMap,
-									$elm$core$String$toFloat,
-									$elm$core$String$lines(text)))
-						}));
+				var i = msg.a;
+				var dist = msg.b;
+				return A2(
+					$elm$core$Maybe$withDefault,
+					_Utils_Tuple2(model, $elm$core$Platform$Cmd$none),
+					A2(
+						$elm$core$Maybe$map,
+						function (waypoint) {
+							return $author$project$Main$updateModel(
+								_Utils_update(
+									model,
+									{
+										f: A3(
+											$elm_community$list_extra$List$Extra$setAt,
+											i,
+											_Utils_update(
+												waypoint,
+												{g: dist}),
+											model.f)
+									}));
+						},
+						A2($elm_community$list_extra$List$Extra$getAt, i, model.f)));
 		}
 	});
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $elm$browser$Browser$Document = F2(
 	function (title, body) {
-		return {aE: body, a_: title};
+		return {aH: body, a0: title};
+	});
+var $author$project$Main$WaypointDistanceChange = F2(
+	function (a, b) {
+		return {$: 5, a: a, b: b};
+	});
+var $author$project$Main$WaypointNameChange = F2(
+	function (a, b) {
+		return {$: 6, a: a, b: b};
 	});
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -6663,7 +6898,54 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $elm$html$Html$input = _VirtualDom_node('input');
+var $elm$html$Html$Attributes$max = $elm$html$Html$Attributes$stringProperty('max');
+var $elm$core$List$maximum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$html$Html$Attributes$min = $elm$html$Html$Attributes$stringProperty('min');
+var $elm$html$Html$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 1, a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $elm$html$Html$Events$targetValue = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	$elm$json$Json$Decode$string);
+var $elm$html$Html$Events$onInput = function (tagger) {
+	return A2(
+		$elm$html$Html$Events$stopPropagationOn,
+		'input',
+		A2(
+			$elm$json$Json$Decode$map,
+			$elm$html$Html$Events$alwaysStop,
+			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
+};
 var $elm$html$Html$p = _VirtualDom_node('p');
+var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
 var $elm$core$List$append = F2(
 	function (xs, ys) {
 		if (!ys.b) {
@@ -6675,7 +6957,14 @@ var $elm$core$List$append = F2(
 var $elm$core$List$concat = function (lists) {
 	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
 };
-var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$core$List$concatMap = F2(
+	function (f, list) {
+		return $elm$core$List$concat(
+			A2($elm$core$List$map, f, list));
+	});
+var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
 var $elm$core$Basics$ge = _Utils_ge;
 var $author$project$Main$interpolateWaypointElevation = F2(
 	function (trackPoints, waypoint) {
@@ -6707,18 +6996,7 @@ var $author$project$Main$interpolateWaypointElevation = F2(
 			}
 		}
 	});
-var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
-var $elm$core$List$maximum = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(
-			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
 var $elm$core$Basics$min = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) < 0) ? x : y;
@@ -6748,8 +7026,8 @@ var $author$project$Main$accumulatePoints = function (calc) {
 		function (point, _v0) {
 			var maybePrevPoint = _v0.a;
 			var currLines = _v0.b;
-			var pointY = calc.T(point.r);
-			var pointX = calc.S(point.g);
+			var pointY = calc.W(point.r);
+			var pointX = calc.V(point.g);
 			if (maybePrevPoint.$ === 1) {
 				return _Utils_Tuple2(
 					$elm$core$Maybe$Just(
@@ -6787,18 +7065,20 @@ var $author$project$Main$resolveElevationProfileSVGLine = F2(
 			profileData).b;
 	});
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
+var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
 var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
-var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var $author$project$Main$XYCalculator = F2(
 	function (x, y) {
-		return {S: x, T: y};
+		return {V: x, W: y};
 	});
-var $elm$core$String$fromFloat = _String_fromNumber;
 var $author$project$Main$xyCalculator = function (cfg) {
-	var svgWidthPerDistanceUnit = cfg.aw / cfg.ae;
-	var elevationRange = cfg.af - cfg.K;
+	var svgWidthPerDistanceUnit = cfg.az / cfg.ah;
+	var elevationRange = cfg.ai - cfg.M;
 	var normaliseElevation = function (elevation) {
-		return (elevation - cfg.K) / elevationRange;
+		return (elevation - cfg.M) / elevationRange;
 	};
 	return A2(
 		$author$project$Main$XYCalculator,
@@ -6807,13 +7087,15 @@ var $author$project$Main$xyCalculator = function (cfg) {
 		},
 		function (elevation) {
 			return $elm$core$String$fromFloat(
-				cfg.R - (cfg.R * normaliseElevation(elevation)));
+				cfg.T - (cfg.T * normaliseElevation(elevation)));
 		});
 };
-var $author$project$Main$profile = F2(
-	function (track, waypoints) {
+var $author$project$Main$profile = F3(
+	function (track, waypoints, maxDistance) {
+		var waypointTextHeight = 100;
+		var trackHeight = 200;
 		var svgWidth = 500;
-		var svgHeight = 200;
+		var svgHeight = trackHeight + waypointTextHeight;
 		var minElevation = A2(
 			$elm$core$Maybe$withDefault,
 			1,
@@ -6834,18 +7116,8 @@ var $author$project$Main$profile = F2(
 						return $.r;
 					},
 					track)));
-		var maxDistance = A2(
-			$elm$core$Maybe$withDefault,
-			1,
-			$elm$core$List$maximum(
-				A2(
-					$elm$core$List$map,
-					function ($) {
-						return $.g;
-					},
-					track)));
 		var calc = $author$project$Main$xyCalculator(
-			{ae: maxDistance, af: maxElevation, K: minElevation, R: svgHeight, aw: svgWidth});
+			{ah: maxDistance, ai: maxElevation, M: minElevation, T: trackHeight, az: svgWidth});
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -6858,38 +7130,60 @@ var $author$project$Main$profile = F2(
 					$elm$svg$Svg$svg,
 					_List_fromArray(
 						[
-							$elm$svg$Svg$Attributes$width('100%'),
-							$elm$svg$Svg$Attributes$height(
-							$elm$core$String$fromInt(svgHeight)),
 							$elm$svg$Svg$Attributes$viewBox(
-							'0 0 ' + ($elm$core$String$fromInt(svgWidth) + (' ' + $elm$core$String$fromInt(svgHeight))))
+							'-5 -5 ' + ($elm$core$String$fromInt(svgWidth + 10) + (' ' + $elm$core$String$fromInt(svgHeight + 10))))
 						]),
-					$elm$core$List$concat(
-						_List_fromArray(
-							[
-								A2($author$project$Main$resolveElevationProfileSVGLine, calc, track),
-								A2(
-								$elm$core$List$map,
-								function (waypoint) {
-									var y = calc.T(
-										A2($author$project$Main$interpolateWaypointElevation, track, waypoint) - 5);
-									var x = calc.S(waypoint.g);
-									return A2(
-										$elm$svg$Svg$line,
-										_List_fromArray(
+					_List_fromArray(
+						[
+							A2(
+							$elm$svg$Svg$g,
+							_List_Nil,
+							A2($author$project$Main$resolveElevationProfileSVGLine, calc, track)),
+							A2(
+							$elm$svg$Svg$g,
+							_List_Nil,
+							function () {
+								var svgBottom = $elm$core$String$fromInt(svgHeight);
+								var paddedWaypointTextY = $elm$core$String$fromInt(trackHeight + 5);
+								return A2(
+									$elm$core$List$concatMap,
+									function (waypoint) {
+										var y = calc.W(
+											A2($author$project$Main$interpolateWaypointElevation, track, waypoint) - 5);
+										var x = calc.V(waypoint.g);
+										return _List_fromArray(
 											[
-												$elm$svg$Svg$Attributes$x1(x),
-												$elm$svg$Svg$Attributes$y1(
-												$elm$core$String$fromInt(svgHeight)),
-												$elm$svg$Svg$Attributes$x2(x),
-												$elm$svg$Svg$Attributes$y2(y),
-												$elm$svg$Svg$Attributes$stroke('grey'),
-												$elm$svg$Svg$Attributes$strokeWidth('1')
-											]),
-										_List_Nil);
-								},
-								waypoints),
-								A2(
+												A2(
+												$elm$svg$Svg$line,
+												_List_fromArray(
+													[
+														$elm$svg$Svg$Attributes$x1(x),
+														$elm$svg$Svg$Attributes$y1(svgBottom),
+														$elm$svg$Svg$Attributes$x2(x),
+														$elm$svg$Svg$Attributes$y2(y),
+														$elm$svg$Svg$Attributes$stroke('grey'),
+														$elm$svg$Svg$Attributes$strokeWidth('1')
+													]),
+												_List_Nil),
+												A2(
+												$elm$svg$Svg$text_,
+												_List_fromArray(
+													[
+														$elm$svg$Svg$Attributes$dominantBaseline('text-top'),
+														$elm$svg$Svg$Attributes$transform('translate(' + (x + (', ' + (paddedWaypointTextY + ') rotate(90)'))))
+													]),
+												_List_fromArray(
+													[
+														$elm$svg$Svg$text(waypoint.E)
+													]))
+											]);
+									},
+									waypoints);
+							}()),
+							A2(
+							$elm$svg$Svg$g,
+							_List_Nil,
+							A2(
 								$elm$core$List$map,
 								function (_v0) {
 									var _v1 = _v0.a;
@@ -6919,24 +7213,27 @@ var $author$project$Main$profile = F2(
 									[
 										_Utils_Tuple2(
 										_Utils_Tuple2(0, 0),
-										_Utils_Tuple2(svgHeight, 0)),
+										_Utils_Tuple2(trackHeight, 0)),
 										_Utils_Tuple2(
 										_Utils_Tuple2(0, 0),
 										_Utils_Tuple2(0, svgWidth)),
 										_Utils_Tuple2(
-										_Utils_Tuple2(svgHeight, svgWidth),
-										_Utils_Tuple2(svgHeight, 0)),
+										_Utils_Tuple2(trackHeight, svgWidth),
+										_Utils_Tuple2(trackHeight, 0)),
 										_Utils_Tuple2(
-										_Utils_Tuple2(svgHeight, svgWidth),
+										_Utils_Tuple2(trackHeight, svgWidth),
 										_Utils_Tuple2(0, svgWidth))
-									]))
-							])))
+									])))
+						]))
 				]));
 	});
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$html$Html$textarea = _VirtualDom_node('textarea');
+var $elm$core$String$toFloat = _String_toFloat;
+var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
+var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $author$project$Main$viewErrorPanel = function (error) {
 	return A2(
 		$elm$html$Html$div,
@@ -6953,16 +7250,12 @@ var $author$project$Main$OpenFileBrowser = {$: 2};
 var $author$project$Main$ShowOptions = function (a) {
 	return {$: 1, a: a};
 };
-var $author$project$Main$WaypointsTextChange = function (a) {
-	return {$: 5, a: a};
-};
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$html$Html$hr = _VirtualDom_node('hr');
 var $elm$core$Basics$not = _Basics_not;
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 0, a: a};
 };
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
 var $elm$html$Html$Events$on = F2(
 	function (event, decoder) {
 		return A2(
@@ -6976,40 +7269,6 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $elm$html$Html$Events$alwaysStop = function (x) {
-	return _Utils_Tuple2(x, true);
-};
-var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 1, a: a};
-};
-var $elm$html$Html$Events$stopPropagationOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
-var $elm$html$Html$Events$targetValue = A2(
-	$elm$json$Json$Decode$at,
-	_List_fromArray(
-		['target', 'value']),
-	$elm$json$Json$Decode$string);
-var $elm$html$Html$Events$onInput = function (tagger) {
-	return A2(
-		$elm$html$Html$Events$stopPropagationOn,
-		'input',
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$html$Html$Events$alwaysStop,
-			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
-};
-var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
-var $elm$html$Html$textarea = _VirtualDom_node('textarea');
-var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $author$project$Main$viewButtonWithAttributes = F3(
 	function (attrs, text, msg) {
@@ -7028,117 +7287,89 @@ var $author$project$Main$viewButtonWithAttributes = F3(
 					$elm$html$Html$text(text)
 				]));
 	});
-var $author$project$Main$viewOptions = F2(
-	function (show, waypoints) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('flex-container'),
-					$elm$html$Html$Attributes$class('column'),
-					A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-					A2($elm$html$Html$Attributes$style, 'overflow', 'auto'),
-					$elm$html$Html$Attributes$class('narrow')
-				]),
-			(!show) ? _List_fromArray(
-				[
-					A2(
-					$elm$html$Html$p,
-					_List_fromArray(
-						[
-							$elm$html$Html$Events$onClick(
-							$author$project$Main$ShowOptions(true)),
-							A2($elm$html$Html$Attributes$style, 'transform', 'rotate(90deg)'),
-							A2($elm$html$Html$Attributes$style, 'white-space', 'nowrap'),
-							A2($elm$html$Html$Attributes$style, 'width', '1em')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('(show options)')
-						]))
-				]) : $elm$core$List$concat(
+var $author$project$Main$viewOptions = function (show) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('flex-container'),
+				$elm$html$Html$Attributes$class('column'),
+				A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
+				A2($elm$html$Html$Attributes$style, 'overflow', 'auto'),
+				$elm$html$Html$Attributes$class('narrow')
+			]),
+		(!show) ? _List_fromArray(
+			[
+				A2(
+				$elm$html$Html$p,
 				_List_fromArray(
 					[
+						$elm$html$Html$Events$onClick(
+						$author$project$Main$ShowOptions(true)),
+						A2($elm$html$Html$Attributes$style, 'transform', 'rotate(90deg)'),
+						A2($elm$html$Html$Attributes$style, 'white-space', 'nowrap'),
+						A2($elm$html$Html$Attributes$style, 'width', '1em')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('(show options)')
+					]))
+			]) : $elm$core$List$concat(
+			_List_fromArray(
+				[
+					_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
 						_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('options')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$h2,
-									_List_Nil,
-									_List_fromArray(
-										[
-											$elm$html$Html$text('Options')
-										])),
-									A2(
-									$elm$html$Html$p,
-									_List_fromArray(
-										[
-											$elm$html$Html$Events$onClick(
-											$author$project$Main$ShowOptions(false))
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text('(hide)')
-										])),
-									A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-									A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('flex-container'),
-											$elm$html$Html$Attributes$class('column'),
-											A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-											A2($elm$html$Html$Attributes$style, 'align-items', 'center')
-										]),
-									_List_fromArray(
-										[
-											A3(
-											$author$project$Main$viewButtonWithAttributes,
-											_List_fromArray(
-												[
-													A2($elm$html$Html$Attributes$style, 'width', '100%')
-												]),
-											'upload GPX',
-											$author$project$Main$OpenFileBrowser)
-										])),
-									A2(
-									$elm$html$Html$div,
-									_List_Nil,
-									_List_fromArray(
-										[
-											A2(
-											$elm$html$Html$textarea,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$placeholder('Newline delimited waypoint distances'),
-													$elm$html$Html$Attributes$value(
-													A2(
-														$elm$core$String$join,
-														'\n',
-														A2(
-															$elm$core$List$map,
-															A2(
-																$elm$core$Basics$composeR,
-																function ($) {
-																	return $.g;
-																},
-																$elm$core$String$fromFloat),
-															waypoints))),
-													$elm$html$Html$Events$onInput($author$project$Main$WaypointsTextChange)
-												]),
-											_List_Nil)
-										]))
-								]))
-						])
-					])));
-	});
+							[
+								$elm$html$Html$Attributes$class('options')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$h2,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Options')
+									])),
+								A2(
+								$elm$html$Html$p,
+								_List_fromArray(
+									[
+										$elm$html$Html$Events$onClick(
+										$author$project$Main$ShowOptions(false))
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('(hide)')
+									])),
+								A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('flex-container'),
+										$elm$html$Html$Attributes$class('column'),
+										A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
+										A2($elm$html$Html$Attributes$style, 'align-items', 'center')
+									]),
+								_List_fromArray(
+									[
+										A3(
+										$author$project$Main$viewButtonWithAttributes,
+										_List_fromArray(
+											[
+												A2($elm$html$Html$Attributes$style, 'width', '100%')
+											]),
+										'upload GPX',
+										$author$project$Main$OpenFileBrowser)
+									]))
+							]))
+					])
+				])));
+};
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$browser$Browser$Document,
@@ -7156,7 +7387,7 @@ var $author$project$Main$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						A2($author$project$Main$viewOptions, model.O, model.n),
+						$author$project$Main$viewOptions(model.Q),
 						A2(
 						$elm$html$Html$div,
 						_List_fromArray(
@@ -7167,54 +7398,117 @@ var $author$project$Main$view = function (model) {
 								A2($elm$html$Html$Attributes$style, 'height', '100%'),
 								A2($elm$html$Html$Attributes$style, 'justify-content', 'center')
 							]),
-						_List_fromArray(
-							[
-								function () {
-								var _v0 = model.m;
-								switch (_v0.$) {
-									case 0:
-										return A2(
+						function () {
+							var _v0 = model.n;
+							switch (_v0.$) {
+								case 0:
+									return _List_fromArray(
+										[
+											A2(
 											$elm$html$Html$p,
 											_List_Nil,
 											_List_fromArray(
 												[
 													$elm$html$Html$text('Load your profile!')
-												]));
-									case 1:
-										return A2(
+												]))
+										]);
+								case 1:
+									return _List_fromArray(
+										[
+											A2(
 											$elm$html$Html$p,
 											_List_Nil,
 											_List_fromArray(
 												[
 													$elm$html$Html$text('Loading profile...')
-												]));
-									case 2:
-										var err = _v0.a;
-										return $author$project$Main$viewErrorPanel(
-											'There was an error creating your profile. Please fix any error and try again 😇\n\nError: ' + (A2($elm$core$String$left, 1000, err) + '...'));
-									default:
-										var track = _v0.a;
-										return A2($author$project$Main$profile, track, model.n);
-								}
-							}()
-							]))
+												]))
+										]);
+								case 2:
+									var err = _v0.a;
+									return _List_fromArray(
+										[
+											$author$project$Main$viewErrorPanel(
+											'There was an error creating your profile. Please fix any error and try again 😇\n\nError: ' + (A2($elm$core$String$left, 1000, err) + '...'))
+										]);
+								default:
+									var track = _v0.a;
+									var maxDistance = A2(
+										$elm$core$Maybe$withDefault,
+										1,
+										$elm$core$List$maximum(
+											A2(
+												$elm$core$List$map,
+												function ($) {
+													return $.g;
+												},
+												track)));
+									return _List_fromArray(
+										[
+											A3($author$project$Main$profile, track, model.f, maxDistance),
+											A2(
+											$elm$html$Html$div,
+											_List_Nil,
+											A2(
+												$elm$core$List$indexedMap,
+												F2(
+													function (i, waypoint) {
+														return A2(
+															$elm$html$Html$div,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$input,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$type_('number'),
+																			$elm$html$Html$Attributes$min('0'),
+																			A3($elm$core$Basics$composeR, $elm$core$String$fromFloat, $elm$html$Html$Attributes$max, maxDistance),
+																			$elm$html$Html$Attributes$value(
+																			$elm$core$String$fromFloat(waypoint.g)),
+																			$elm$html$Html$Events$onInput(
+																			A2(
+																				$elm$core$Basics$composeR,
+																				$elm$core$String$toFloat,
+																				A2(
+																					$elm$core$Basics$composeR,
+																					$elm$core$Maybe$withDefault(1000),
+																					$author$project$Main$WaypointDistanceChange(i))))
+																		]),
+																	_List_Nil),
+																	A2(
+																	$elm$html$Html$textarea,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$placeholder('Newline delimited waypoint distances'),
+																			$elm$html$Html$Attributes$value(waypoint.E),
+																			$elm$html$Html$Events$onInput(
+																			$author$project$Main$WaypointNameChange(i))
+																		]),
+																	_List_Nil)
+																]));
+													}),
+												model.f))
+										]);
+							}
+						}())
 					]))
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$application(
 	{
-		aN: $author$project$Main$init,
-		aQ: function (_v0) {
+		aQ: $author$project$Main$init,
+		aS: function (_v0) {
 			return $author$project$Main$Ignore;
 		},
-		aR: function (_v1) {
+		aT: function (_v1) {
 			return $author$project$Main$Ignore;
 		},
-		aY: function (_v2) {
+		a_: function (_v2) {
 			return $elm$core$Platform$Sub$none;
 		},
-		a$: $author$project$Main$update,
-		a1: $author$project$Main$view
+		a1: $author$project$Main$update,
+		a3: $author$project$Main$view
 	});
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	$elm$json$Json$Decode$oneOf(
