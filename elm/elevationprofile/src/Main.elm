@@ -43,6 +43,7 @@ type alias Model =
     , gpxServerURLOverride : Maybe String
     , fontSize : Float
     , trackHeight : Int
+    , waypointStrokeColor : String
     }
 
 
@@ -68,6 +69,7 @@ type alias StoredState =
     , gpxServerURL : Maybe String
     , fontSize : Maybe Float
     , trackHeight : Maybe Int
+    , waypointStrokeColor : Maybe String
     }
 
 
@@ -79,6 +81,7 @@ storedStateModel state =
         state.gpxServerURL
         (Maybe.withDefault 15 state.fontSize)
         (Maybe.withDefault 200 state.trackHeight)
+        (Maybe.withDefault "lightgray" state.waypointStrokeColor)
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
@@ -87,10 +90,10 @@ init maybeState _ _ =
         |> Maybe.map
             (Json.Decode.decodeValue storedStateDecoder
                 -- TODO: handle error
-                >> Result.withDefault (StoredState Nothing Nothing Nothing Nothing Nothing)
+                >> Result.withDefault (StoredState Nothing Nothing Nothing Nothing Nothing Nothing)
                 >> storedStateModel
             )
-        |> Maybe.withDefault (Model NotLoaded [] True Nothing 15 200)
+        |> Maybe.withDefault (Model NotLoaded [] True Nothing 15 200 "lightgray")
     , Cmd.none
     )
 
@@ -106,6 +109,7 @@ type Msg
     | DeleteWaypoint Int
     | UpdateFontSize Float
     | UpdateTrackHeight Int
+    | WaypointStrokeColourChange String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -164,6 +168,9 @@ update msg model =
         UpdateTrackHeight height ->
             updateModel { model | trackHeight = height }
 
+        WaypointStrokeColourChange colour ->
+            updateModel { model | waypointStrokeColor = colour }
+
 
 updateModel : Model -> ( Model, Cmd Msg )
 updateModel model =
@@ -183,7 +190,7 @@ view model =
             , Html.Attributes.class "page"
             , Html.Attributes.style "height" "100%"
             ]
-            [ viewOptions model.showOptions model.fontSize model.trackHeight
+            [ viewOptions model.showOptions model.fontSize model.trackHeight model.waypointStrokeColor
             , Html.div
                 [ Html.Attributes.class "flex-container"
                 , Html.Attributes.class "column"
@@ -206,7 +213,7 @@ view model =
                             maxDistance =
                                 Maybe.withDefault 1 <| List.maximum <| List.map .distance track
                         in
-                        [ profile track model.waypoints maxDistance model.fontSize model.trackHeight
+                        [ profile track model.waypoints maxDistance model.fontSize model.trackHeight model.waypointStrokeColor
                         , Html.div []
                             (model.waypoints
                                 |> List.indexedMap
@@ -238,8 +245,8 @@ view model =
         ]
 
 
-viewOptions : Bool -> Float -> Int -> Html Msg
-viewOptions show fontSize trackHeight =
+viewOptions : Bool -> Float -> Int -> String -> Html Msg
+viewOptions show fontSize trackHeight waypointStrokeColor =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "column"
@@ -290,6 +297,14 @@ viewOptions show fontSize trackHeight =
                                     ]
                                     []
                                 ]
+                            , optionGroup "Waypoint stroke colour"
+                                [ Html.textarea
+                                    [ Html.Attributes.placeholder "Waypoint stroke colour..."
+                                    , Html.Attributes.value waypointStrokeColor
+                                    , Html.Events.onInput <| WaypointStrokeColourChange
+                                    ]
+                                    []
+                                ]
                             ]
                         ]
                   ]
@@ -315,8 +330,8 @@ optionGroup title elements =
         (Html.legend [] [ Html.text title ] :: elements)
 
 
-profile : TrackData -> List Waypoint -> Float -> Float -> Int -> Html Msg
-profile track waypoints maxDistance fontSize trackHeight =
+profile : TrackData -> List Waypoint -> Float -> Float -> Int -> String -> Html Msg
+profile track waypoints maxDistance fontSize trackHeight waypointStrokeColor =
     let
         -- TODO(ghanmer): combine these max folds to not iterate through twice
         maxElevation =
@@ -353,9 +368,7 @@ profile track waypoints maxDistance fontSize trackHeight =
               --                          min-x min-y width height
               Svg.Attributes.viewBox <| "-5 -5 " ++ String.fromInt (svgWidth + 10) ++ " " ++ (String.fromInt <| svgHeight + 10)
             ]
-            [ -- track line
-              Svg.g [] <| resolveElevationProfileSVGLine calc track
-            , -- waypoints
+            [ -- waypoints
               Svg.g []
                 (let
                     svgBottom =
@@ -379,7 +392,7 @@ profile track waypoints maxDistance fontSize trackHeight =
                                 , Svg.Attributes.y1 <| svgBottom
                                 , Svg.Attributes.x2 <| x
                                 , Svg.Attributes.y2 <| y
-                                , Svg.Attributes.stroke "grey"
+                                , Svg.Attributes.stroke waypointStrokeColor
                                 , Svg.Attributes.strokeWidth "1"
                                 ]
                                 []
@@ -392,6 +405,8 @@ profile track waypoints maxDistance fontSize trackHeight =
                             ]
                         )
                 )
+            , -- track line
+              Svg.g [] <| resolveElevationProfileSVGLine calc track
             , -- track border
               Svg.g []
                 ([ ( ( 0, 0 ), ( trackHeight, 0 ) )
@@ -610,6 +625,7 @@ storedStateFromModel model =
         model.gpxServerURLOverride
         (Just model.fontSize)
         (Just model.trackHeight)
+        (Just model.waypointStrokeColor)
 
 
 encodeSavedState : StoredState -> String
@@ -622,6 +638,7 @@ encodeSavedState state =
             , state.gpxServerURL |> Maybe.map (\url -> ( "gpxServerURL", Json.Encode.string url ))
             , state.fontSize |> Maybe.map (\size -> ( "fontSize", Json.Encode.float size ))
             , state.trackHeight |> Maybe.map (\height -> ( "trackHeight", Json.Encode.int height ))
+            , state.waypointStrokeColor |> Maybe.map (\colour -> ( "waypointStrokeColor", Json.Encode.string colour ))
             ]
         )
         |> Json.Encode.encode 0
@@ -629,12 +646,13 @@ encodeSavedState state =
 
 storedStateDecoder : Json.Decode.Decoder StoredState
 storedStateDecoder =
-    Json.Decode.map5 StoredState
+    Json.Decode.map6 StoredState
         (Json.Decode.maybe (Json.Decode.field "track" decodeTrack))
         (Json.Decode.maybe (Json.Decode.field "waypoints" decodeWaypoints))
         (Json.Decode.maybe (Json.Decode.field "gpxServerURL" Json.Decode.string))
         (Json.Decode.maybe (Json.Decode.field "fontSize" Json.Decode.float))
         (Json.Decode.maybe (Json.Decode.field "trackHeight" Json.Decode.int))
+        (Json.Decode.maybe (Json.Decode.field "waypointStrokeColor" Json.Decode.string))
 
 
 port storeState : String -> Cmd msg
