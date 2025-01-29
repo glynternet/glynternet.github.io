@@ -41,6 +41,8 @@ type alias Model =
     , waypoints : List Waypoint
     , showOptions : Bool
     , gpxServerURLOverride : Maybe String
+    , fontSize : Float
+    , trackHeight : Int
     }
 
 
@@ -61,16 +63,22 @@ type alias Waypoint =
 
 
 type alias StoredState =
-    { file : Maybe String
-    , track : Maybe TrackData
+    { track : Maybe TrackData
     , waypoints : Maybe (List Waypoint)
     , gpxServerURL : Maybe String
+    , fontSize : Maybe Float
+    , trackHeight : Maybe Int
     }
 
 
 storedStateModel : StoredState -> Model
 storedStateModel state =
-    Model (loadableResourceFromMaybe state.track) (state.waypoints |> Maybe.withDefault []) True state.gpxServerURL
+    Model (loadableResourceFromMaybe state.track)
+        (state.waypoints |> Maybe.withDefault [])
+        True
+        state.gpxServerURL
+        (Maybe.withDefault 15 state.fontSize)
+        (Maybe.withDefault 200 state.trackHeight)
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
@@ -79,10 +87,10 @@ init maybeState _ _ =
         |> Maybe.map
             (Json.Decode.decodeValue storedStateDecoder
                 -- TODO: handle error
-                >> Result.withDefault (StoredState Nothing Nothing Nothing Nothing)
+                >> Result.withDefault (StoredState Nothing Nothing Nothing Nothing Nothing)
                 >> storedStateModel
             )
-        |> Maybe.withDefault (Model NotLoaded [] True Nothing)
+        |> Maybe.withDefault (Model NotLoaded [] True Nothing 15 200)
     , Cmd.none
     )
 
@@ -95,6 +103,9 @@ type Msg
     | ElevationProfileDataResponseReceived (Result String ElevationProfileDataResponse)
     | WaypointDistanceChange Int Float
     | WaypointNameChange Int String
+    | DeleteWaypoint Int
+    | UpdateFontSize Float
+    | UpdateTrackHeight Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -144,14 +155,19 @@ update msg model =
                     (\waypoint -> updateModel { model | waypoints = List.Extra.setAt i { waypoint | distance = dist } model.waypoints })
                 |> Maybe.withDefault ( model, Cmd.none )
 
+        DeleteWaypoint i ->
+            updateModel { model | waypoints = List.Extra.removeAt i model.waypoints }
+
+        UpdateFontSize size ->
+            updateModel { model | fontSize = size }
+
+        UpdateTrackHeight height ->
+            updateModel { model | trackHeight = height }
+
 
 updateModel : Model -> ( Model, Cmd Msg )
 updateModel model =
-    let
-        localStoredState =
-            encodeSavedState model
-    in
-    ( model, storeState localStoredState )
+    ( model, storeState (storedStateFromModel model |> encodeSavedState) )
 
 
 
@@ -167,13 +183,13 @@ view model =
             , Html.Attributes.class "page"
             , Html.Attributes.style "height" "100%"
             ]
-            [ viewOptions model.showOptions
+            [ viewOptions model.showOptions model.fontSize model.trackHeight
             , Html.div
                 [ Html.Attributes.class "flex-container"
                 , Html.Attributes.class "column"
                 , Html.Attributes.class "wide"
                 , Html.Attributes.style "height" "100%"
-                , Html.Attributes.style "justify-content" "center"
+                , Html.Attributes.style "overflow" "auto"
                 ]
                 (case model.track of
                     NotLoaded ->
@@ -190,7 +206,7 @@ view model =
                             maxDistance =
                                 Maybe.withDefault 1 <| List.maximum <| List.map .distance track
                         in
-                        [ profile track model.waypoints maxDistance
+                        [ profile track model.waypoints maxDistance model.fontSize model.trackHeight
                         , Html.div []
                             (model.waypoints
                                 |> List.indexedMap
@@ -207,11 +223,12 @@ view model =
                                                 ]
                                                 []
                                             , Html.textarea
-                                                [ Html.Attributes.placeholder "Newline delimited waypoint distances"
+                                                [ Html.Attributes.placeholder "Waypoint name..."
                                                 , Html.Attributes.value waypoint.name
                                                 , Html.Events.onInput <| WaypointNameChange i
                                                 ]
                                                 []
+                                            , viewButtonWithAttributes [] "X" (DeleteWaypoint i)
                                             ]
                                     )
                             )
@@ -221,8 +238,8 @@ view model =
         ]
 
 
-viewOptions : Bool -> Html Msg
-viewOptions show =
+viewOptions : Bool -> Float -> Int -> Html Msg
+viewOptions show fontSize trackHeight =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "column"
@@ -253,6 +270,26 @@ viewOptions show =
                             , Html.Attributes.style "align-items" "center"
                             ]
                             [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "upload GPX" OpenFileBrowser
+                            , optionGroup "Font size"
+                                [ Html.input
+                                    [ Html.Attributes.type_ "range"
+                                    , Html.Attributes.min "1"
+                                    , Html.Attributes.max "50"
+                                    , Html.Attributes.value <| String.fromFloat fontSize
+                                    , Html.Events.onInput (String.toFloat >> Maybe.withDefault 15 >> UpdateFontSize)
+                                    ]
+                                    []
+                                ]
+                            , optionGroup "Track height"
+                                [ Html.input
+                                    [ Html.Attributes.type_ "range"
+                                    , Html.Attributes.min "1"
+                                    , Html.Attributes.max "400"
+                                    , Html.Attributes.value <| String.fromInt trackHeight
+                                    , Html.Events.onInput (String.toInt >> Maybe.withDefault 200 >> UpdateTrackHeight)
+                                    ]
+                                    []
+                                ]
                             ]
                         ]
                   ]
@@ -266,14 +303,20 @@ viewErrorPanel error =
 
 
 viewButtonWithAttributes : List (Html.Attribute Msg) -> String -> Msg -> Html Msg
-viewButtonWithAttributes attrs text msg =
+viewButtonWithAttributes attrs text onClickMsg =
     Html.button
-        ([ Html.Events.onClick msg, Html.Attributes.class "button-4", Html.Attributes.style "max-width" "20em" ] ++ attrs)
+        ([ Html.Events.onClick onClickMsg, Html.Attributes.class "button-4", Html.Attributes.style "max-width" "20em" ] ++ attrs)
         [ Html.text text ]
 
 
-profile : TrackData -> List Waypoint -> Float -> Html Msg
-profile track waypoints maxDistance =
+optionGroup : String -> List (Html Msg) -> Html Msg
+optionGroup title elements =
+    Html.div [ Html.Attributes.class "flex-container", Html.Attributes.class "column" ]
+        (Html.legend [] [ Html.text title ] :: elements)
+
+
+profile : TrackData -> List Waypoint -> Float -> Float -> Int -> Html Msg
+profile track waypoints maxDistance fontSize trackHeight =
     let
         -- TODO(ghanmer): combine these max folds to not iterate through twice
         maxElevation =
@@ -283,9 +326,6 @@ profile track waypoints maxDistance =
         minElevation =
             -- TODO(ghanmer): handle empty list etc better, although this is probably fine
             Maybe.withDefault 1 <| List.minimum <| List.map .elevation track
-
-        trackHeight =
-            200
 
         waypointTextHeight =
             100
@@ -344,7 +384,8 @@ profile track waypoints maxDistance =
                                 ]
                                 []
                             , Svg.text_
-                                [ Svg.Attributes.dominantBaseline "text-top"
+                                [ Svg.Attributes.fontSize <| String.fromFloat fontSize
+                                , Svg.Attributes.dominantBaseline "text-top"
                                 , Svg.Attributes.transform <| "translate(" ++ x ++ ", " ++ paddedWaypointTextY ++ ") rotate(90)"
                                 ]
                                 [ Svg.text waypoint.name ]
@@ -556,19 +597,31 @@ decodeWaypoints =
 -- STATE
 
 
-encodeSavedState : Model -> String
-encodeSavedState model =
+storedStateFromModel : Model -> StoredState
+storedStateFromModel model =
+    StoredState
+        (maybeFromloadableResource model.track)
+        (if List.length model.waypoints > 0 then
+            Just model.waypoints
+
+         else
+            Nothing
+        )
+        model.gpxServerURLOverride
+        (Just model.fontSize)
+        (Just model.trackHeight)
+
+
+encodeSavedState : StoredState -> String
+encodeSavedState state =
     Json.Encode.object
         (List.filterMap
             identity
-            [ case model.track of
-                Loaded data ->
-                    Just ( "track", encodeTrack data )
-
-                _ ->
-                    Nothing
-            , Just ( "waypoints", encodeWaypoints model.waypoints )
-            , Maybe.map (\url -> ( "gpxServerURL", Json.Encode.string url )) model.gpxServerURLOverride
+            [ state.track |> Maybe.map (\track -> ( "track", encodeTrack track ))
+            , state.waypoints |> Maybe.map (\waypoints -> ( "waypoints", encodeWaypoints waypoints ))
+            , state.gpxServerURL |> Maybe.map (\url -> ( "gpxServerURL", Json.Encode.string url ))
+            , state.fontSize |> Maybe.map (\size -> ( "fontSize", Json.Encode.float size ))
+            , state.trackHeight |> Maybe.map (\height -> ( "trackHeight", Json.Encode.int height ))
             ]
         )
         |> Json.Encode.encode 0
@@ -576,11 +629,12 @@ encodeSavedState model =
 
 storedStateDecoder : Json.Decode.Decoder StoredState
 storedStateDecoder =
-    Json.Decode.map4 StoredState
-        (Json.Decode.maybe (Json.Decode.field "file" Json.Decode.string))
+    Json.Decode.map5 StoredState
         (Json.Decode.maybe (Json.Decode.field "track" decodeTrack))
         (Json.Decode.maybe (Json.Decode.field "waypoints" decodeWaypoints))
         (Json.Decode.maybe (Json.Decode.field "gpxServerURL" Json.Decode.string))
+        (Json.Decode.maybe (Json.Decode.field "fontSize" Json.Decode.float))
+        (Json.Decode.maybe (Json.Decode.field "trackHeight" Json.Decode.int))
 
 
 port storeState : String -> Cmd msg
@@ -600,6 +654,16 @@ type LoadableResource a
 loadableResourceFromMaybe : Maybe a -> LoadableResource a
 loadableResourceFromMaybe =
     Maybe.map Loaded >> Maybe.withDefault NotLoaded
+
+
+maybeFromloadableResource : LoadableResource a -> Maybe a
+maybeFromloadableResource resource =
+    case resource of
+        Loaded a ->
+            Just a
+
+        _ ->
+            Nothing
 
 
 httpErrorString : Http.Error -> String
