@@ -272,15 +272,21 @@ profile track waypoints =
         maxDistance =
             Maybe.withDefault 1 <| List.maximum <| List.map .distance track
 
-        svgHeight =
+        trackHeight =
             200
+
+        waypointTextHeight =
+            100
+
+        svgHeight =
+            trackHeight + waypointTextHeight
 
         svgWidth =
             500
 
         calc =
             xyCalculator
-                { svgHeight = toFloat svgHeight
+                { svgHeight = toFloat trackHeight
                 , svgWidth = toFloat svgWidth
                 , maxDistance = maxDistance
                 , minElevation = minElevation
@@ -291,16 +297,23 @@ profile track waypoints =
         [ Html.Attributes.class "TODO"
         ]
         [ Svg.svg
-            [ Svg.Attributes.width "100%"
-            , Svg.Attributes.height <| String.fromInt svgHeight
-
-            --                          min-x min-y width height
-            , Svg.Attributes.viewBox <| "0 0 " ++ String.fromInt svgWidth ++ " " ++ String.fromInt svgHeight
+            [ -- add 5 onto each side to ensure nothing cutoff when items are placed right at edges
+              --                          min-x min-y width height
+              Svg.Attributes.viewBox <| "-5 -5 " ++ String.fromInt (svgWidth + 10) ++ " " ++ (String.fromInt <| svgHeight + 10)
             ]
-            (List.concat
-                [ resolveElevationProfileSVGLine calc track
-                , waypoints
-                    |> List.map
+            [ -- track line
+              Svg.g [] <| resolveElevationProfileSVGLine calc track
+            , -- waypoints
+              Svg.g []
+                (let
+                    svgBottom =
+                        String.fromInt svgHeight
+
+                    paddedWaypointTextY =
+                        String.fromInt <| trackHeight + 5
+                 in
+                 waypoints
+                    |> List.concatMap
                         (\waypoint ->
                             let
                                 x =
@@ -309,21 +322,30 @@ profile track waypoints =
                                 y =
                                     calc.y <| interpolateWaypointElevation track waypoint - 5
                             in
-                            Svg.line
+                            [ Svg.line
                                 [ Svg.Attributes.x1 <| x
-                                , Svg.Attributes.y1 <| String.fromInt svgHeight
+                                , Svg.Attributes.y1 <| svgBottom
                                 , Svg.Attributes.x2 <| x
                                 , Svg.Attributes.y2 <| y
                                 , Svg.Attributes.stroke "grey"
                                 , Svg.Attributes.strokeWidth "1"
                                 ]
                                 []
+                            , Svg.text_
+                                [ Svg.Attributes.dominantBaseline "text-top"
+                                , Svg.Attributes.transform <| "translate(" ++ x ++ ", " ++ paddedWaypointTextY ++ ") rotate(90)"
+                                ]
+                                [ Svg.text waypoint.name ]
+                            ]
                         )
-                , [ ( ( 0, 0 ), ( svgHeight, 0 ) )
-                  , ( ( 0, 0 ), ( 0, svgWidth ) )
-                  , ( ( svgHeight, svgWidth ), ( svgHeight, 0 ) )
-                  , ( ( svgHeight, svgWidth ), ( 0, svgWidth ) )
-                  ]
+                )
+            , -- track border
+              Svg.g []
+                ([ ( ( 0, 0 ), ( trackHeight, 0 ) )
+                 , ( ( 0, 0 ), ( 0, svgWidth ) )
+                 , ( ( trackHeight, svgWidth ), ( trackHeight, 0 ) )
+                 , ( ( trackHeight, svgWidth ), ( 0, svgWidth ) )
+                 ]
                     |> List.map
                         (\( ( y1, x1 ), ( y2, x2 ) ) ->
                             Svg.line
@@ -336,8 +358,8 @@ profile track waypoints =
                                 ]
                                 []
                         )
-                ]
-            )
+                )
+            ]
         ]
 
 
