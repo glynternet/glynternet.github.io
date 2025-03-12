@@ -43,6 +43,7 @@ type alias Model =
     , gpxServerURLOverride : Maybe String
     , fontSize : Float
     , trackHeight : Int
+    , trackThickness : Float
     , waypointStrokeColor : String
     }
 
@@ -69,6 +70,7 @@ type alias StoredState =
     , gpxServerURL : Maybe String
     , fontSize : Maybe Float
     , trackHeight : Maybe Int
+    , trackThickness : Maybe Float
     , waypointStrokeColor : Maybe String
     }
 
@@ -81,6 +83,7 @@ storedStateModel state =
         state.gpxServerURL
         (Maybe.withDefault 15 state.fontSize)
         (Maybe.withDefault 200 state.trackHeight)
+        (Maybe.withDefault 1 state.trackThickness)
         (Maybe.withDefault "lightgray" state.waypointStrokeColor)
 
 
@@ -90,10 +93,10 @@ init maybeState _ _ =
         |> Maybe.map
             (Json.Decode.decodeValue storedStateDecoder
                 -- TODO: handle error
-                >> Result.withDefault (StoredState Nothing Nothing Nothing Nothing Nothing Nothing)
+                >> Result.withDefault (StoredState Nothing Nothing Nothing Nothing Nothing Nothing Nothing)
                 >> storedStateModel
             )
-        |> Maybe.withDefault (Model NotLoaded [] True Nothing 15 200 "lightgray")
+        |> Maybe.withDefault (Model NotLoaded [] True Nothing 15 200 1 "lightgray")
     , Cmd.none
     )
 
@@ -109,6 +112,7 @@ type Msg
     | DeleteWaypoint Int
     | UpdateFontSize Float
     | UpdateTrackHeight Int
+    | UpdateTrackThickness Float
     | WaypointStrokeColourChange String
 
 
@@ -168,6 +172,9 @@ update msg model =
         UpdateTrackHeight height ->
             updateModel { model | trackHeight = height }
 
+        UpdateTrackThickness thickness ->
+            updateModel { model | trackThickness = thickness }
+
         WaypointStrokeColourChange colour ->
             updateModel { model | waypointStrokeColor = colour }
 
@@ -190,7 +197,7 @@ view model =
             , Html.Attributes.class "page"
             , Html.Attributes.style "height" "100%"
             ]
-            [ viewOptions model.showOptions model.fontSize model.trackHeight model.waypointStrokeColor
+            [ viewOptions model.showOptions model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor
             , Html.div
                 [ Html.Attributes.class "flex-container"
                 , Html.Attributes.class "column"
@@ -213,7 +220,7 @@ view model =
                             maxDistance =
                                 Maybe.withDefault 1 <| List.maximum <| List.map .distance track
                         in
-                        [ profile track model.waypoints maxDistance model.fontSize model.trackHeight model.waypointStrokeColor
+                        [ profile track model.waypoints maxDistance model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor
                         , Html.div []
                             (model.waypoints
                                 |> List.indexedMap
@@ -245,8 +252,8 @@ view model =
         ]
 
 
-viewOptions : Bool -> Float -> Int -> String -> Html Msg
-viewOptions show fontSize trackHeight waypointStrokeColor =
+viewOptions : Bool -> Float -> Int -> Float -> String -> Html Msg
+viewOptions show fontSize trackHeight trackThickness waypointStrokeColor =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "column"
@@ -297,6 +304,17 @@ viewOptions show fontSize trackHeight waypointStrokeColor =
                                     ]
                                     []
                                 ]
+                            , optionGroup "Track thickness"
+                                [ Html.input
+                                    [ Html.Attributes.type_ "range"
+                                    , Html.Attributes.min "0.1"
+                                    , Html.Attributes.max "10"
+                                    , Html.Attributes.step "0.1"
+                                    , Html.Attributes.value <| String.fromFloat trackThickness
+                                    , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1 >> UpdateTrackThickness)
+                                    ]
+                                    []
+                                ]
                             , optionGroup "Waypoint stroke colour"
                                 [ Html.textarea
                                     [ Html.Attributes.placeholder "Waypoint stroke colour..."
@@ -330,8 +348,8 @@ optionGroup title elements =
         (Html.legend [] [ Html.text title ] :: elements)
 
 
-profile : TrackData -> List Waypoint -> Float -> Float -> Int -> String -> Html Msg
-profile track waypoints maxDistance fontSize trackHeight waypointStrokeColor =
+profile : TrackData -> List Waypoint -> Float -> Float -> Int -> Float -> String -> Html Msg
+profile track waypoints maxDistance fontSize trackHeight trackThickness waypointStrokeColor =
     let
         -- TODO(ghanmer): combine these max folds to not iterate through twice
         maxElevation =
@@ -406,7 +424,7 @@ profile track waypoints maxDistance fontSize trackHeight waypointStrokeColor =
                         )
                 )
             , -- track line
-              Svg.g [] <| resolveElevationProfileSVGLine calc track
+              Svg.g [] <| resolveElevationProfileSVGLine calc track (String.fromFloat trackThickness)
             , -- track border
               Svg.g []
                 ([ ( ( 0, 0 ), ( trackHeight, 0 ) )
@@ -455,11 +473,11 @@ interpolateWaypointElevation trackPoints waypoint =
                             interpolateWaypointElevation others waypoint
 
 
-resolveElevationProfileSVGLine : XYCalculator -> TrackData -> List (Svg.Svg msg)
-resolveElevationProfileSVGLine calc profileData =
+resolveElevationProfileSVGLine : XYCalculator -> TrackData -> String -> List (Svg.Svg msg)
+resolveElevationProfileSVGLine calc profileData trackThicknessAttrValue =
     profileData
         |> List.foldl
-            (accumulatePoints calc)
+            (accumulatePoints calc trackThicknessAttrValue)
             ( Nothing, [] )
         |> Tuple.second
 
@@ -506,8 +524,8 @@ xyCalculator cfg =
 -- the accumulation loop.
 
 
-accumulatePoints : XYCalculator -> (TrackPoint -> ( Maybe ( String, String ), List (Svg.Svg msg) ) -> ( Maybe ( String, String ), List (Svg.Svg msg) ))
-accumulatePoints calc =
+accumulatePoints : XYCalculator -> String -> (TrackPoint -> ( Maybe ( String, String ), List (Svg.Svg msg) ) -> ( Maybe ( String, String ), List (Svg.Svg msg) ))
+accumulatePoints calc trackThicknessAttrValue =
     \point ( maybePrevPoint, currLines ) ->
         let
             pointX =
@@ -528,7 +546,7 @@ accumulatePoints calc =
                     , Svg.Attributes.x2 <| pointX
                     , Svg.Attributes.y2 <| pointY
                     , Svg.Attributes.stroke "grey"
-                    , Svg.Attributes.strokeWidth "1"
+                    , Svg.Attributes.strokeWidth trackThicknessAttrValue
                     ]
                     []
                     :: currLines
@@ -549,7 +567,9 @@ decodeElevationProfileDataResponse : Json.Decode.Decoder ElevationProfileDataRes
 decodeElevationProfileDataResponse =
     Json.Decode.map2 ElevationProfileDataResponse
         (Json.Decode.field "track" decodeTrack)
-        (Json.Decode.field "waypoints" decodeWaypoints)
+        (Json.Decode.maybe (Json.Decode.field "waypoints" decodeWaypoints)
+            |> Json.Decode.map (Maybe.withDefault [])
+        )
 
 
 getElevationProfileDataResponse : String -> File.File -> Cmd Msg
@@ -625,6 +645,7 @@ storedStateFromModel model =
         model.gpxServerURLOverride
         (Just model.fontSize)
         (Just model.trackHeight)
+        (Just model.trackThickness)
         (Just model.waypointStrokeColor)
 
 
@@ -633,12 +654,13 @@ encodeSavedState state =
     Json.Encode.object
         (List.filterMap
             identity
-            [ state.track |> Maybe.map (\track -> ( "track", encodeTrack track ))
-            , state.waypoints |> Maybe.map (\waypoints -> ( "waypoints", encodeWaypoints waypoints ))
+            [ state.waypoints |> Maybe.map (\waypoints -> ( "waypoints", encodeWaypoints waypoints ))
             , state.gpxServerURL |> Maybe.map (\url -> ( "gpxServerURL", Json.Encode.string url ))
             , state.fontSize |> Maybe.map (\size -> ( "fontSize", Json.Encode.float size ))
             , state.trackHeight |> Maybe.map (\height -> ( "trackHeight", Json.Encode.int height ))
+            , state.trackThickness |> Maybe.map (\thickness -> ( "trackThickness", Json.Encode.float thickness ))
             , state.waypointStrokeColor |> Maybe.map (\colour -> ( "waypointStrokeColor", Json.Encode.string colour ))
+            , state.track |> Maybe.map (\track -> ( "track", encodeTrack track ))
             ]
         )
         |> Json.Encode.encode 0
@@ -646,12 +668,13 @@ encodeSavedState state =
 
 storedStateDecoder : Json.Decode.Decoder StoredState
 storedStateDecoder =
-    Json.Decode.map6 StoredState
+    Json.Decode.map7 StoredState
         (Json.Decode.maybe (Json.Decode.field "track" decodeTrack))
         (Json.Decode.maybe (Json.Decode.field "waypoints" decodeWaypoints))
         (Json.Decode.maybe (Json.Decode.field "gpxServerURL" Json.Decode.string))
         (Json.Decode.maybe (Json.Decode.field "fontSize" Json.Decode.float))
         (Json.Decode.maybe (Json.Decode.field "trackHeight" Json.Decode.int))
+        (Json.Decode.maybe (Json.Decode.field "trackThickness" Json.Decode.float))
         (Json.Decode.maybe (Json.Decode.field "waypointStrokeColor" Json.Decode.string))
 
 
