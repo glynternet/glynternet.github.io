@@ -424,7 +424,7 @@ profile track waypoints maxDistance fontSize trackHeight trackThickness waypoint
                         )
                 )
             , -- track line
-              Svg.g [] <| resolveElevationProfileSVGLine calc track (String.fromFloat trackThickness)
+              resolveElevationProfileSVGLine calc track (String.fromFloat trackThickness)
             , -- track border
               Svg.g []
                 ([ ( ( 0, 0 ), ( trackHeight, 0 ) )
@@ -473,13 +473,19 @@ interpolateWaypointElevation trackPoints waypoint =
                             interpolateWaypointElevation others waypoint
 
 
-resolveElevationProfileSVGLine : XYCalculator -> TrackData -> String -> List (Svg.Svg msg)
+resolveElevationProfileSVGLine : XYCalculator -> TrackData -> String -> Svg.Svg msg
 resolveElevationProfileSVGLine calc profileData trackThicknessAttrValue =
-    profileData
-        |> List.foldl
-            (accumulatePoints calc trackThicknessAttrValue)
-            ( Nothing, [] )
-        |> Tuple.second
+    Svg.polyline
+        [ Svg.Attributes.points
+            (profileData
+                |> List.map (\point -> calc.x point.distance ++ " " ++ calc.y point.elevation)
+                |> String.join ", "
+            )
+        , Svg.Attributes.stroke "grey"
+        , Svg.Attributes.strokeWidth trackThicknessAttrValue
+        , Svg.Attributes.fill "none"
+        ]
+        []
 
 
 type alias XYCalculator =
@@ -514,43 +520,6 @@ xyCalculator cfg =
         (\elevation ->
             String.fromFloat (cfg.svgHeight - cfg.svgHeight * normaliseElevation elevation)
         )
-
-
-
--- accumulatePoints takes in a config to form an accumulator.
--- The accumulator will take a point and form a tuple of (maybePrevPoint, currentLines), where each line in currentLines
--- is a formed Svg.Svg msg.
--- The maybePrevPoint is a Maybe (String, String) because the number values have been converted in a prior iteration of
--- the accumulation loop.
-
-
-accumulatePoints : XYCalculator -> String -> (TrackPoint -> ( Maybe ( String, String ), List (Svg.Svg msg) ) -> ( Maybe ( String, String ), List (Svg.Svg msg) ))
-accumulatePoints calc trackThicknessAttrValue =
-    \point ( maybePrevPoint, currLines ) ->
-        let
-            pointX =
-                calc.x point.distance
-
-            pointY =
-                calc.y point.elevation
-        in
-        case maybePrevPoint of
-            Nothing ->
-                ( Just ( pointX, pointY ), [] )
-
-            Just prev ->
-                ( Just ( pointX, pointY )
-                , Svg.line
-                    [ Svg.Attributes.x1 <| Tuple.first prev
-                    , Svg.Attributes.y1 <| Tuple.second prev
-                    , Svg.Attributes.x2 <| pointX
-                    , Svg.Attributes.y2 <| pointY
-                    , Svg.Attributes.stroke "grey"
-                    , Svg.Attributes.strokeWidth trackThicknessAttrValue
-                    ]
-                    []
-                    :: currLines
-                )
 
 
 

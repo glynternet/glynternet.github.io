@@ -5509,12 +5509,12 @@ var $elm$core$Task$perform = F2(
 var $elm$browser$Browser$application = _Browser_application;
 var $author$project$Main$Model = F8(
 	function (track, waypoints, showOptions, gpxServerURLOverride, fontSize, trackHeight, trackThickness, waypointStrokeColor) {
-		return {s: fontSize, P: gpxServerURLOverride, V: showOptions, l: track, v: trackHeight, B: trackThickness, x: waypointStrokeColor, c: waypoints};
+		return {s: fontSize, P: gpxServerURLOverride, V: showOptions, l: track, v: trackHeight, w: trackThickness, y: waypointStrokeColor, c: waypoints};
 	});
 var $author$project$Main$NotLoaded = {$: 0};
 var $author$project$Main$StoredState = F7(
 	function (track, waypoints, gpxServerURL, fontSize, trackHeight, trackThickness, waypointStrokeColor) {
-		return {s: fontSize, O: gpxServerURL, l: track, v: trackHeight, B: trackThickness, x: waypointStrokeColor, c: waypoints};
+		return {s: fontSize, O: gpxServerURL, l: track, v: trackHeight, w: trackThickness, y: waypointStrokeColor, c: waypoints};
 	});
 var $elm$core$Basics$composeR = F3(
 	function (f, g, x) {
@@ -5611,8 +5611,8 @@ var $author$project$Main$storedStateModel = function (state) {
 		state.O,
 		A2($elm$core$Maybe$withDefault, 15, state.s),
 		A2($elm$core$Maybe$withDefault, 200, state.v),
-		A2($elm$core$Maybe$withDefault, 1, state.B),
-		A2($elm$core$Maybe$withDefault, 'lightgray', state.x));
+		A2($elm$core$Maybe$withDefault, 1, state.w),
+		A2($elm$core$Maybe$withDefault, 'lightgray', state.y));
 };
 var $elm$core$Result$withDefault = F2(
 	function (def, result) {
@@ -6770,14 +6770,6 @@ var $author$project$Main$encodeSavedState = function (state) {
 					[
 						A2(
 						$elm$core$Maybe$map,
-						function (track) {
-							return _Utils_Tuple2(
-								'track',
-								$author$project$Main$encodeTrack(track));
-						},
-						state.l),
-						A2(
-						$elm$core$Maybe$map,
 						function (waypoints) {
 							return _Utils_Tuple2(
 								'waypoints',
@@ -6810,12 +6802,28 @@ var $author$project$Main$encodeSavedState = function (state) {
 						state.v),
 						A2(
 						$elm$core$Maybe$map,
+						function (thickness) {
+							return _Utils_Tuple2(
+								'trackThickness',
+								$elm$json$Json$Encode$float(thickness));
+						},
+						state.w),
+						A2(
+						$elm$core$Maybe$map,
 						function (colour) {
 							return _Utils_Tuple2(
 								'waypointStrokeColor',
 								$elm$json$Json$Encode$string(colour));
 						},
-						state.x)
+						state.y),
+						A2(
+						$elm$core$Maybe$map,
+						function (track) {
+							return _Utils_Tuple2(
+								'track',
+								$author$project$Main$encodeTrack(track));
+						},
+						state.l)
 					]))));
 };
 var $author$project$Main$storeState = _Platform_outgoingPort('storeState', $elm$json$Json$Encode$string);
@@ -6835,8 +6843,8 @@ var $author$project$Main$storedStateFromModel = function (model) {
 		model.P,
 		$elm$core$Maybe$Just(model.s),
 		$elm$core$Maybe$Just(model.v),
-		$elm$core$Maybe$Just(model.B),
-		$elm$core$Maybe$Just(model.x));
+		$elm$core$Maybe$Just(model.w),
+		$elm$core$Maybe$Just(model.y));
 };
 var $author$project$Main$updateModel = function (model) {
 	return _Utils_Tuple2(
@@ -6975,13 +6983,13 @@ var $author$project$Main$update = F2(
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
-						{B: thickness}));
+						{w: thickness}));
 			default:
 				var colour = msg.a;
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
-						{x: colour}));
+						{y: colour}));
 		}
 	});
 var $elm$json$Json$Decode$value = _Json_decodeValue;
@@ -7123,59 +7131,32 @@ var $elm$core$List$minimum = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
-};
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$Attributes$points = _VirtualDom_attribute('points');
+var $elm$svg$Svg$polyline = $elm$svg$Svg$trustedNode('polyline');
 var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
-var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
-var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
-var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
-var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
-var $author$project$Main$accumulatePoints = F2(
-	function (calc, trackThicknessAttrValue) {
-		return F2(
-			function (point, _v0) {
-				var maybePrevPoint = _v0.a;
-				var currLines = _v0.b;
-				var pointY = calc.aa(point.r);
-				var pointX = calc._(point.g);
-				if (maybePrevPoint.$ === 1) {
-					return _Utils_Tuple2(
-						$elm$core$Maybe$Just(
-							_Utils_Tuple2(pointX, pointY)),
-						_List_Nil);
-				} else {
-					var prev = maybePrevPoint.a;
-					return _Utils_Tuple2(
-						$elm$core$Maybe$Just(
-							_Utils_Tuple2(pointX, pointY)),
-						A2(
-							$elm$core$List$cons,
-							A2(
-								$elm$svg$Svg$line,
-								_List_fromArray(
-									[
-										$elm$svg$Svg$Attributes$x1(prev.a),
-										$elm$svg$Svg$Attributes$y1(prev.b),
-										$elm$svg$Svg$Attributes$x2(pointX),
-										$elm$svg$Svg$Attributes$y2(pointY),
-										$elm$svg$Svg$Attributes$stroke('grey'),
-										$elm$svg$Svg$Attributes$strokeWidth(trackThicknessAttrValue)
-									]),
-								_List_Nil),
-							currLines));
-				}
-			});
-	});
 var $author$project$Main$resolveElevationProfileSVGLine = F3(
 	function (calc, profileData, trackThicknessAttrValue) {
-		return A3(
-			$elm$core$List$foldl,
-			A2($author$project$Main$accumulatePoints, calc, trackThicknessAttrValue),
-			_Utils_Tuple2($elm$core$Maybe$Nothing, _List_Nil),
-			profileData).b;
+		return A2(
+			$elm$svg$Svg$polyline,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$points(
+					A2(
+						$elm$core$String$join,
+						', ',
+						A2(
+							$elm$core$List$map,
+							function (point) {
+								return calc._(point.g) + (' ' + calc.aa(point.r));
+							},
+							profileData))),
+					$elm$svg$Svg$Attributes$stroke('grey'),
+					$elm$svg$Svg$Attributes$strokeWidth(trackThicknessAttrValue),
+					$elm$svg$Svg$Attributes$fill('none')
+				]),
+			_List_Nil);
 	});
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -7183,6 +7164,8 @@ var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
 var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
 var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
+var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
+var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
 var $author$project$Main$XYCalculator = F2(
 	function (x, y) {
 		return {_: x, aa: y};
@@ -7203,6 +7186,8 @@ var $author$project$Main$xyCalculator = function (cfg) {
 				cfg.Y - (cfg.Y * normaliseElevation(elevation)));
 		});
 };
+var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
+var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
 var $author$project$Main$profile = F7(
 	function (track, waypoints, maxDistance, fontSize, trackHeight, trackThickness, waypointStrokeColor) {
 		var waypointTextHeight = 100;
@@ -7290,14 +7275,11 @@ var $author$project$Main$profile = F7(
 									},
 									waypoints);
 							}()),
-							A2(
-							$elm$svg$Svg$g,
-							_List_Nil,
 							A3(
-								$author$project$Main$resolveElevationProfileSVGLine,
-								calc,
-								track,
-								$elm$core$String$fromFloat(trackThickness))),
+							$author$project$Main$resolveElevationProfileSVGLine,
+							calc,
+							track,
+							$elm$core$String$fromFloat(trackThickness)),
 							A2(
 							$elm$svg$Svg$g,
 							_List_Nil,
@@ -7633,7 +7615,7 @@ var $author$project$Main$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						A5($author$project$Main$viewOptions, model.V, model.s, model.v, model.B, model.x),
+						A5($author$project$Main$viewOptions, model.V, model.s, model.v, model.w, model.y),
 						A2(
 						$elm$html$Html$div,
 						_List_fromArray(
@@ -7690,7 +7672,7 @@ var $author$project$Main$view = function (model) {
 												track)));
 									return _List_fromArray(
 										[
-											A7($author$project$Main$profile, track, model.c, maxDistance, model.s, model.v, model.B, model.x),
+											A7($author$project$Main$profile, track, model.c, maxDistance, model.s, model.v, model.w, model.y),
 											A2(
 											$elm$html$Html$div,
 											_List_Nil,
