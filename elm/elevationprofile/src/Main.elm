@@ -37,8 +37,7 @@ main =
 
 
 type alias Model =
-    { track : LoadableResource TrackData
-    , waypoints : List Waypoint
+    { track : LoadableResource Track
     , showOptions : Bool
     , gpxServerURLOverride : Maybe String
     , fontSize : Float
@@ -48,8 +47,15 @@ type alias Model =
     }
 
 
-type alias TrackData =
-    List TrackPoint
+type alias Track =
+    { trackpoints : List TrackPoint
+    , waypoints : List Waypoint
+    }
+
+
+trackWithWaypoints : Track -> List Waypoint -> Track
+trackWithWaypoints track waypoints =
+    { track | waypoints = waypoints }
 
 
 type alias TrackPoint =
@@ -65,8 +71,7 @@ type alias Waypoint =
 
 
 type alias StoredState =
-    { track : Maybe TrackData
-    , waypoints : Maybe (List Waypoint)
+    { track : Maybe Track
     , gpxServerURL : Maybe String
     , fontSize : Maybe Float
     , trackHeight : Maybe Int
@@ -78,7 +83,6 @@ type alias StoredState =
 storedStateModel : StoredState -> Model
 storedStateModel state =
     Model (loadableResourceFromMaybe state.track)
-        (state.waypoints |> Maybe.withDefault [])
         True
         state.gpxServerURL
         (Maybe.withDefault 15 state.fontSize)
@@ -93,10 +97,10 @@ init maybeState _ _ =
         |> Maybe.map
             (Json.Decode.decodeValue storedStateDecoder
                 -- TODO: handle error
-                >> Result.withDefault (StoredState Nothing Nothing Nothing Nothing Nothing Nothing Nothing)
+                >> Result.withDefault (StoredState Nothing Nothing Nothing Nothing Nothing Nothing)
                 >> storedStateModel
             )
-        |> Maybe.withDefault (Model NotLoaded [] True Nothing 15 200 1 "lightgray")
+        |> Maybe.withDefault (Model NotLoaded True Nothing 15 200 1 "lightgray")
     , Cmd.none
     )
 
@@ -143,28 +147,40 @@ update msg model =
 
                 Ok data ->
                     updateModel
-                        { model
-                            | track = Loaded data.track
-                            , waypoints = data.waypoints
-                        }
+                        { model | track = Loaded (Track data.track data.waypoints) }
 
         Ignore ->
             ( model, Cmd.none )
 
         WaypointNameChange i name ->
-            List.Extra.getAt i model.waypoints
-                |> Maybe.map
-                    (\waypoint -> updateModel { model | waypoints = List.Extra.setAt i { waypoint | name = name } model.waypoints })
-                |> Maybe.withDefault ( model, Cmd.none )
+            case model.track of
+                Loaded track ->
+                    List.Extra.getAt i track.waypoints
+                        |> Maybe.map
+                            (\waypoints -> updateModel { model | track = Loaded <| trackWithWaypoints track (List.Extra.setAt i { waypoints | name = name } track.waypoints) })
+                        |> Maybe.withDefault ( model, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
         WaypointDistanceChange i dist ->
-            List.Extra.getAt i model.waypoints
-                |> Maybe.map
-                    (\waypoint -> updateModel { model | waypoints = List.Extra.setAt i { waypoint | distance = dist } model.waypoints })
-                |> Maybe.withDefault ( model, Cmd.none )
+            case model.track of
+                Loaded track ->
+                    List.Extra.getAt i track.waypoints
+                        |> Maybe.map
+                            (\waypoints -> updateModel { model | track = Loaded <| trackWithWaypoints track (List.Extra.setAt i { waypoints | distance = dist } track.waypoints) })
+                        |> Maybe.withDefault ( model, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
         DeleteWaypoint i ->
-            updateModel { model | waypoints = List.Extra.removeAt i model.waypoints }
+            case model.track of
+                Loaded track ->
+                    updateModel { model | track = Loaded <| trackWithWaypoints track (List.Extra.removeAt i track.waypoints) }
+
+                _ ->
+                    ( model, Cmd.none )
 
         UpdateFontSize size ->
             updateModel { model | fontSize = size }
@@ -218,11 +234,11 @@ view model =
                     Loaded track ->
                         let
                             maxDistance =
-                                Maybe.withDefault 1 <| List.maximum <| List.map .distance track
+                                Maybe.withDefault 1 <| List.maximum <| List.map .distance track.trackpoints
                         in
-                        [ profile track model.waypoints maxDistance model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor
+                        [ profile track maxDistance model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor
                         , Html.div []
-                            (model.waypoints
+                            (track.waypoints
                                 |> List.indexedMap
                                     (\i waypoint ->
                                         Html.div []
@@ -348,17 +364,17 @@ optionGroup title elements =
         (Html.legend [] [ Html.text title ] :: elements)
 
 
-profile : TrackData -> List Waypoint -> Float -> Float -> Int -> Float -> String -> Html Msg
-profile track waypoints maxDistance fontSize trackHeight trackThickness waypointStrokeColor =
+profile : Track -> Float -> Float -> Int -> Float -> String -> Html Msg
+profile track maxDistance fontSize trackHeight trackThickness waypointStrokeColor =
     let
         -- TODO(ghanmer): combine these max folds to not iterate through twice
         maxElevation =
             -- TODO(ghanmer): handle empty list etc better, although this is probably fine
-            Maybe.withDefault 1 <| List.maximum <| List.map .elevation track
+            Maybe.withDefault 1 <| List.maximum <| List.map .elevation track.trackpoints
 
         minElevation =
             -- TODO(ghanmer): handle empty list etc better, although this is probably fine
-            Maybe.withDefault 1 <| List.minimum <| List.map .elevation track
+            Maybe.withDefault 1 <| List.minimum <| List.map .elevation track.trackpoints
 
         waypointTextHeight =
             100
@@ -395,7 +411,7 @@ profile track waypoints maxDistance fontSize trackHeight trackThickness waypoint
                     paddedWaypointTextY =
                         String.fromInt <| trackHeight + 5
                  in
-                 waypoints
+                 track.waypoints
                     |> List.concatMap
                         (\waypoint ->
                             let
@@ -403,7 +419,7 @@ profile track waypoints maxDistance fontSize trackHeight trackThickness waypoint
                                     calc.x waypoint.distance
 
                                 y =
-                                    calc.y <| interpolateWaypointElevation track waypoint - 5
+                                    calc.y <| interpolateWaypointElevation track.trackpoints waypoint - 5
                             in
                             [ Svg.line
                                 [ Svg.Attributes.x1 <| x
@@ -424,7 +440,7 @@ profile track waypoints maxDistance fontSize trackHeight trackThickness waypoint
                         )
                 )
             , -- track line
-              resolveElevationProfileSVGLine calc track (String.fromFloat trackThickness)
+              resolveElevationProfileSVGLine calc track.trackpoints (String.fromFloat trackThickness)
             , -- track border
               Svg.g []
                 ([ ( ( 0, 0 ), ( trackHeight, 0 ) )
@@ -449,7 +465,7 @@ profile track waypoints maxDistance fontSize trackHeight trackThickness waypoint
         ]
 
 
-interpolateWaypointElevation : TrackData -> Waypoint -> Float
+interpolateWaypointElevation : List TrackPoint -> Waypoint -> Float
 interpolateWaypointElevation trackPoints waypoint =
     case trackPoints of
         [] ->
@@ -473,7 +489,7 @@ interpolateWaypointElevation trackPoints waypoint =
                             interpolateWaypointElevation others waypoint
 
 
-resolveElevationProfileSVGLine : XYCalculator -> TrackData -> String -> Svg.Svg msg
+resolveElevationProfileSVGLine : XYCalculator -> List TrackPoint -> String -> Svg.Svg msg
 resolveElevationProfileSVGLine calc profileData trackThicknessAttrValue =
     Svg.polyline
         [ Svg.Attributes.points
@@ -527,7 +543,7 @@ xyCalculator cfg =
 
 
 type alias ElevationProfileDataResponse =
-    { track : TrackData
+    { track : List TrackPoint
     , waypoints : List Waypoint
     }
 
@@ -535,7 +551,7 @@ type alias ElevationProfileDataResponse =
 decodeElevationProfileDataResponse : Json.Decode.Decoder ElevationProfileDataResponse
 decodeElevationProfileDataResponse =
     Json.Decode.map2 ElevationProfileDataResponse
-        (Json.Decode.field "track" decodeTrack)
+        (Json.Decode.field "track" decodeTrackpoints)
         (Json.Decode.maybe (Json.Decode.field "waypoints" decodeWaypoints)
             |> Json.Decode.map (Maybe.withDefault [])
         )
@@ -557,8 +573,23 @@ getElevationProfileDataResponse url file =
 -- ENCODE/DECODE MODEL
 
 
-encodeTrack : TrackData -> Json.Encode.Value
-encodeTrack =
+encodeTrack : Track -> Json.Encode.Value
+encodeTrack track =
+    Json.Encode.object
+        [ ( "trackpoints", encodeTrackpoints track.trackpoints )
+        , ( "waypoints", encodeWaypoints track.waypoints )
+        ]
+
+
+decodeTrack : Json.Decode.Decoder Track
+decodeTrack =
+    Json.Decode.map2 Track
+        (Json.Decode.field "trackpoints" decodeTrackpoints)
+        (Json.Decode.field "waypoints" decodeWaypoints)
+
+
+encodeTrackpoints : List TrackPoint -> Json.Encode.Value
+encodeTrackpoints =
     Json.Encode.list
         (\point ->
             Json.Encode.object
@@ -568,8 +599,8 @@ encodeTrack =
         )
 
 
-decodeTrack : Json.Decode.Decoder TrackData
-decodeTrack =
+decodeTrackpoints : Json.Decode.Decoder (List TrackPoint)
+decodeTrackpoints =
     Json.Decode.list
         (Json.Decode.map2 TrackPoint
             (Json.Decode.field "dist" Json.Decode.float)
@@ -605,12 +636,6 @@ storedStateFromModel : Model -> StoredState
 storedStateFromModel model =
     StoredState
         (maybeFromloadableResource model.track)
-        (if List.length model.waypoints > 0 then
-            Just model.waypoints
-
-         else
-            Nothing
-        )
         model.gpxServerURLOverride
         (Just model.fontSize)
         (Just model.trackHeight)
@@ -623,8 +648,7 @@ encodeSavedState state =
     Json.Encode.object
         (List.filterMap
             identity
-            [ state.waypoints |> Maybe.map (\waypoints -> ( "waypoints", encodeWaypoints waypoints ))
-            , state.gpxServerURL |> Maybe.map (\url -> ( "gpxServerURL", Json.Encode.string url ))
+            [ state.gpxServerURL |> Maybe.map (\url -> ( "gpxServerURL", Json.Encode.string url ))
             , state.fontSize |> Maybe.map (\size -> ( "fontSize", Json.Encode.float size ))
             , state.trackHeight |> Maybe.map (\height -> ( "trackHeight", Json.Encode.int height ))
             , state.trackThickness |> Maybe.map (\thickness -> ( "trackThickness", Json.Encode.float thickness ))
@@ -637,9 +661,8 @@ encodeSavedState state =
 
 storedStateDecoder : Json.Decode.Decoder StoredState
 storedStateDecoder =
-    Json.Decode.map7 StoredState
+    Json.Decode.map6 StoredState
         (Json.Decode.maybe (Json.Decode.field "track" decodeTrack))
-        (Json.Decode.maybe (Json.Decode.field "waypoints" decodeWaypoints))
         (Json.Decode.maybe (Json.Decode.field "gpxServerURL" Json.Decode.string))
         (Json.Decode.maybe (Json.Decode.field "fontSize" Json.Decode.float))
         (Json.Decode.maybe (Json.Decode.field "trackHeight" Json.Decode.int))
