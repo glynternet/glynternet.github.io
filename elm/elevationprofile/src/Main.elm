@@ -37,7 +37,7 @@ main =
 
 
 type alias Model =
-    { track : LoadableResource Track
+    { tracks : LoadableResource Tracks
     , showOptions : Bool
     , gpxServerURLOverride : Maybe String
     , fontSize : Float
@@ -45,6 +45,18 @@ type alias Model =
     , trackThickness : Float
     , waypointStrokeColor : String
     }
+
+
+type alias Tracks =
+    { prev : List Track
+    , current : Track
+    , next : List Track
+    }
+
+
+tracksUpdateCurrent : (Track -> Track) -> Tracks -> Tracks
+tracksUpdateCurrent updateTrack tracks =
+    Tracks tracks.prev (updateTrack tracks.current) tracks.next
 
 
 type alias Track =
@@ -56,6 +68,11 @@ type alias Track =
 trackWithWaypoints : Track -> List Waypoint -> Track
 trackWithWaypoints track waypoints =
     { track | waypoints = waypoints }
+
+
+trackUpdateWaypoint : Track -> Int -> (Waypoint -> Waypoint) -> Track
+trackUpdateWaypoint track i updateWaypoint =
+    trackWithWaypoints track <| List.Extra.updateAt i updateWaypoint track.waypoints
 
 
 type alias TrackPoint =
@@ -71,7 +88,7 @@ type alias Waypoint =
 
 
 type alias StoredState =
-    { track : Maybe Track
+    { tracks : Maybe Tracks
     , gpxServerURL : Maybe String
     , fontSize : Maybe Float
     , trackHeight : Maybe Int
@@ -82,7 +99,7 @@ type alias StoredState =
 
 storedStateModel : StoredState -> Model
 storedStateModel state =
-    Model (loadableResourceFromMaybe state.track)
+    Model (loadableResourceFromMaybe state.tracks)
         True
         state.gpxServerURL
         (Maybe.withDefault 15 state.fontSize)
@@ -130,7 +147,7 @@ update msg model =
             ( model, File.Select.file [ "application/gpx+xml" ] FileUploaded )
 
         FileUploaded file ->
-            updateModel { model | track = Loading }
+            updateModel { model | tracks = Loading }
                 |> Tuple.mapSecond
                     (\cmd ->
                         Cmd.batch
@@ -143,41 +160,51 @@ update msg model =
             case resp of
                 Err errMsg ->
                     updateModel
-                        { model | track = Error ("getting profile data from GPX: " ++ errMsg) }
+                        { model | tracks = Error ("getting profile data from GPX: " ++ errMsg) }
 
                 Ok data ->
                     updateModel
-                        { model | track = Loaded (Track data.track data.waypoints) }
+                        { model | tracks = Loaded <| Tracks [] (Track data.track data.waypoints) [] }
 
         Ignore ->
             ( model, Cmd.none )
 
         WaypointNameChange i name ->
-            case model.track of
-                Loaded track ->
-                    List.Extra.getAt i track.waypoints
-                        |> Maybe.map
-                            (\waypoints -> updateModel { model | track = Loaded <| trackWithWaypoints track (List.Extra.setAt i { waypoints | name = name } track.waypoints) })
-                        |> Maybe.withDefault ( model, Cmd.none )
+            case model.tracks of
+                Loaded tracks ->
+                    updateModel
+                        { model
+                            | tracks =
+                                Loaded <|
+                                    Tracks
+                                        tracks.prev
+                                        (trackUpdateWaypoint tracks.current i (\w -> { w | name = name }))
+                                        tracks.next
+                        }
 
                 _ ->
                     ( model, Cmd.none )
 
         WaypointDistanceChange i dist ->
-            case model.track of
-                Loaded track ->
-                    List.Extra.getAt i track.waypoints
-                        |> Maybe.map
-                            (\waypoints -> updateModel { model | track = Loaded <| trackWithWaypoints track (List.Extra.setAt i { waypoints | distance = dist } track.waypoints) })
-                        |> Maybe.withDefault ( model, Cmd.none )
+            case model.tracks of
+                Loaded tracks ->
+                    updateModel
+                        { model
+                            | tracks =
+                                Loaded <|
+                                    Tracks
+                                        tracks.prev
+                                        (trackUpdateWaypoint tracks.current i (\w -> { w | distance = dist }))
+                                        tracks.next
+                        }
 
                 _ ->
                     ( model, Cmd.none )
 
         DeleteWaypoint i ->
-            case model.track of
-                Loaded track ->
-                    updateModel { model | track = Loaded <| trackWithWaypoints track (List.Extra.removeAt i track.waypoints) }
+            case model.tracks of
+                Loaded tracks ->
+                    updateModel { model | tracks = Loaded <| tracksUpdateCurrent (\current -> trackWithWaypoints current (List.Extra.removeAt i current.waypoints)) tracks }
 
                 _ ->
                     ( model, Cmd.none )
@@ -221,7 +248,7 @@ view model =
                 , Html.Attributes.style "height" "100%"
                 , Html.Attributes.style "overflow" "auto"
                 ]
-                (case model.track of
+                (case model.tracks of
                     NotLoaded ->
                         [ Html.p [] [ Html.text "Load your profile!" ] ]
 
@@ -231,14 +258,14 @@ view model =
                     Error err ->
                         [ viewErrorPanel <| ("There was an error creating your profile. Please fix any error and try again 😇\n\nError: " ++ String.left 1000 err ++ "...") ]
 
-                    Loaded track ->
+                    Loaded tracks ->
                         let
                             maxDistance =
-                                Maybe.withDefault 1 <| List.maximum <| List.map .distance track.trackpoints
+                                Maybe.withDefault 1 <| List.maximum <| List.map .distance tracks.current.trackpoints
                         in
-                        [ profile track maxDistance model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor
+                        [ profile tracks.current maxDistance model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor
                         , Html.div []
-                            (track.waypoints
+                            (tracks.current.waypoints
                                 |> List.indexedMap
                                     (\i waypoint ->
                                         Html.div []
@@ -573,6 +600,23 @@ getElevationProfileDataResponse url file =
 -- ENCODE/DECODE MODEL
 
 
+encodeTracks : Tracks -> Json.Encode.Value
+encodeTracks tracks =
+    Json.Encode.object
+        [ ( "previous", Json.Encode.list encodeTrack tracks.prev )
+        , ( "current", encodeTrack tracks.current )
+        , ( "next", Json.Encode.list encodeTrack tracks.prev )
+        ]
+
+
+decodeTracks : Json.Decode.Decoder Tracks
+decodeTracks =
+    Json.Decode.map3 Tracks
+        (Json.Decode.field "previous" (Json.Decode.list decodeTrack))
+        (Json.Decode.field "current" decodeTrack)
+        (Json.Decode.field "next" (Json.Decode.list decodeTrack))
+
+
 encodeTrack : Track -> Json.Encode.Value
 encodeTrack track =
     Json.Encode.object
@@ -635,7 +679,7 @@ decodeWaypoints =
 storedStateFromModel : Model -> StoredState
 storedStateFromModel model =
     StoredState
-        (maybeFromloadableResource model.track)
+        (maybeFromloadableResource model.tracks)
         model.gpxServerURLOverride
         (Just model.fontSize)
         (Just model.trackHeight)
@@ -653,7 +697,7 @@ encodeSavedState state =
             , state.trackHeight |> Maybe.map (\height -> ( "trackHeight", Json.Encode.int height ))
             , state.trackThickness |> Maybe.map (\thickness -> ( "trackThickness", Json.Encode.float thickness ))
             , state.waypointStrokeColor |> Maybe.map (\colour -> ( "waypointStrokeColor", Json.Encode.string colour ))
-            , state.track |> Maybe.map (\track -> ( "track", encodeTrack track ))
+            , state.tracks |> Maybe.map (\tracks -> ( "tracks", encodeTracks tracks ))
             ]
         )
         |> Json.Encode.encode 0
@@ -662,7 +706,7 @@ encodeSavedState state =
 storedStateDecoder : Json.Decode.Decoder StoredState
 storedStateDecoder =
     Json.Decode.map6 StoredState
-        (Json.Decode.maybe (Json.Decode.field "track" decodeTrack))
+        (Json.Decode.maybe (Json.Decode.field "tracks" decodeTracks))
         (Json.Decode.maybe (Json.Decode.field "gpxServerURL" Json.Decode.string))
         (Json.Decode.maybe (Json.Decode.field "fontSize" Json.Decode.float))
         (Json.Decode.maybe (Json.Decode.field "trackHeight" Json.Decode.int))
