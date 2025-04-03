@@ -784,11 +784,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.X.I === region.af.I)
+	if (region._.L === region.ai.L)
 	{
-		return 'on line ' + region.X.I;
+		return 'on line ' + region._.L;
 	}
-	return 'on lines ' + region.X.I + ' through ' + region.af.I;
+	return 'on lines ' + region._.L + ' through ' + region.ai.L;
 }
 
 
@@ -1857,9 +1857,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aU,
+		impl.aX,
+		impl.a8,
 		impl.a5,
-		impl.a2,
 		function() { return function() {} }
 	);
 });
@@ -2720,8 +2720,8 @@ var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
 		t: func(record.t),
-		Y: record.Y,
-		U: record.U
+		aa: record.aa,
+		X: record.X
 	}
 });
 
@@ -2990,10 +2990,10 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 
 		var value = result.a;
 		var message = !tag ? value : tag < 3 ? value.a : value.t;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.Y;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.aa;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.U) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.X) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -3943,11 +3943,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aU,
+		impl.aX,
+		impl.a8,
 		impl.a5,
-		impl.a2,
 		function(sendToApp, initialModel) {
-			var view = impl.a7;
+			var view = impl.ba;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -3979,12 +3979,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aU,
+		impl.aX,
+		impl.a8,
 		impl.a5,
-		impl.a2,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.V && impl.V(sendToApp)
-			var view = impl.a7;
+			var divertHrefToApp = impl.Y && impl.Y(sendToApp)
+			var view = impl.ba;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -3992,12 +3992,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.aM);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.aP);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.a4) && (_VirtualDom_doc.title = title = doc.a4);
+				(title !== doc.a7) && (_VirtualDom_doc.title = title = doc.a7);
 			});
 		}
 	);
@@ -4053,12 +4053,12 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.aW;
-	var onUrlRequest = impl.aX;
+	var onUrlChange = impl.aZ;
+	var onUrlRequest = impl.a_;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		V: function(sendToApp)
+		Y: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4074,9 +4074,9 @@ function _Browser_application(impl)
 					var next = $elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.av === next.av
-							&& curr.ak === next.ak
-							&& curr.as.a === next.as.a
+							&& curr.ay === next.ay
+							&& curr.an === next.an
+							&& curr.av.a === next.av.a
 						)
 							? $elm$browser$Browser$Internal(next)
 							: $elm$browser$Browser$External(href)
@@ -4084,13 +4084,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		aU: function(flags)
+		aX: function(flags)
 		{
-			return A3(impl.aU, flags, _Browser_getUrl(), key);
+			return A3(impl.aX, flags, _Browser_getUrl(), key);
 		},
-		a7: impl.a7,
-		a5: impl.a5,
-		a2: impl.a2
+		ba: impl.ba,
+		a8: impl.a8,
+		a5: impl.a5
 	});
 }
 
@@ -4156,17 +4156,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { aS: 'hidden', aN: 'visibilitychange' }
+		? { aV: 'hidden', aQ: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { aS: 'mozHidden', aN: 'mozvisibilitychange' }
+		? { aV: 'mozHidden', aQ: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { aS: 'msHidden', aN: 'msvisibilitychange' }
+		? { aV: 'msHidden', aQ: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { aS: 'webkitHidden', aN: 'webkitvisibilitychange' }
-		: { aS: 'hidden', aN: 'visibilitychange' };
+		? { aV: 'webkitHidden', aQ: 'webkitvisibilitychange' }
+		: { aV: 'hidden', aQ: 'visibilitychange' };
 }
 
 
@@ -4247,12 +4247,12 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		aB: _Browser_getScene(),
-		aH: {
-			aa: _Browser_window.pageXOffset,
-			ab: _Browser_window.pageYOffset,
-			aI: _Browser_doc.documentElement.clientWidth,
-			aj: _Browser_doc.documentElement.clientHeight
+		aE: _Browser_getScene(),
+		aK: {
+			ad: _Browser_window.pageXOffset,
+			ae: _Browser_window.pageYOffset,
+			aL: _Browser_doc.documentElement.clientWidth,
+			am: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4262,8 +4262,8 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		aI: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		aj: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		aL: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		am: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4286,15 +4286,15 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			aB: {
-				aI: node.scrollWidth,
-				aj: node.scrollHeight
+			aE: {
+				aL: node.scrollWidth,
+				am: node.scrollHeight
 			},
-			aH: {
-				aa: node.scrollLeft,
-				ab: node.scrollTop,
-				aI: node.clientWidth,
-				aj: node.clientHeight
+			aK: {
+				ad: node.scrollLeft,
+				ae: node.scrollTop,
+				aL: node.clientWidth,
+				am: node.clientHeight
 			}
 		};
 	});
@@ -4324,18 +4324,18 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			aB: _Browser_getScene(),
-			aH: {
-				aa: x,
-				ab: y,
-				aI: _Browser_doc.documentElement.clientWidth,
-				aj: _Browser_doc.documentElement.clientHeight
+			aE: _Browser_getScene(),
+			aK: {
+				ad: x,
+				ae: y,
+				aL: _Browser_doc.documentElement.clientWidth,
+				am: _Browser_doc.documentElement.clientHeight
 			},
-			aP: {
-				aa: x + rect.left,
-				ab: y + rect.top,
-				aI: rect.width,
-				aj: rect.height
+			aS: {
+				ad: x + rect.left,
+				ae: y + rect.top,
+				aL: rect.width,
+				am: rect.height
 			}
 		};
 	});
@@ -4558,25 +4558,25 @@ var _Http_toTask = F3(function(router, toTask, request)
 	return _Scheduler_binding(function(callback)
 	{
 		function done(response) {
-			callback(toTask(request.aQ.a(response)));
+			callback(toTask(request.aT.a(response)));
 		}
 
 		var xhr = new XMLHttpRequest();
 		xhr.addEventListener('error', function() { done($elm$http$Http$NetworkError_); });
 		xhr.addEventListener('timeout', function() { done($elm$http$Http$Timeout_); });
-		xhr.addEventListener('load', function() { done(_Http_toResponse(request.aQ.b, xhr)); });
-		$elm$core$Maybe$isJust(request.aG) && _Http_track(router, xhr, request.aG.a);
+		xhr.addEventListener('load', function() { done(_Http_toResponse(request.aT.b, xhr)); });
+		$elm$core$Maybe$isJust(request.aJ) && _Http_track(router, xhr, request.aJ.a);
 
 		try {
-			xhr.open(request.aV, request.a6, true);
+			xhr.open(request.aY, request.a9, true);
 		} catch (e) {
-			return done($elm$http$Http$BadUrl_(request.a6));
+			return done($elm$http$Http$BadUrl_(request.a9));
 		}
 
 		_Http_configureRequest(xhr, request);
 
-		request.aM.a && xhr.setRequestHeader('Content-Type', request.aM.a);
-		xhr.send(request.aM.b);
+		request.aP.a && xhr.setRequestHeader('Content-Type', request.aP.a);
+		xhr.send(request.aP.b);
 
 		return function() { xhr.c = true; xhr.abort(); };
 	});
@@ -4587,13 +4587,13 @@ var _Http_toTask = F3(function(router, toTask, request)
 
 function _Http_configureRequest(xhr, request)
 {
-	for (var headers = request.ai; headers.b; headers = headers.b) // WHILE_CONS
+	for (var headers = request.al; headers.b; headers = headers.b) // WHILE_CONS
 	{
 		xhr.setRequestHeader(headers.a.a, headers.a.b);
 	}
-	xhr.timeout = request.a3.a || 0;
-	xhr.responseType = request.aQ.d;
-	xhr.withCredentials = request.aK;
+	xhr.timeout = request.a6.a || 0;
+	xhr.responseType = request.aT.d;
+	xhr.withCredentials = request.aN;
 }
 
 
@@ -4614,10 +4614,10 @@ function _Http_toResponse(toBody, xhr)
 function _Http_toMetadata(xhr)
 {
 	return {
-		a6: xhr.responseURL,
-		a0: xhr.status,
-		a1: xhr.statusText,
-		ai: _Http_parseHeaders(xhr.getAllResponseHeaders())
+		a9: xhr.responseURL,
+		a3: xhr.status,
+		a4: xhr.statusText,
+		al: _Http_parseHeaders(xhr.getAllResponseHeaders())
 	};
 }
 
@@ -4712,15 +4712,15 @@ function _Http_track(router, xhr, tracker)
 	xhr.upload.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Sending({
-			a$: event.loaded,
-			aC: event.total
+			a2: event.loaded,
+			aF: event.total
 		}))));
 	});
 	xhr.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Receiving({
-			aZ: event.loaded,
-			aC: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
+			a0: event.loaded,
+			aF: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
 		}))));
 	});
 }var $author$project$Main$Ignore = {$: 0};
@@ -5130,25 +5130,25 @@ var $elm$core$Array$treeFromBuilder = F2(
 	});
 var $elm$core$Array$builderToArray = F2(
 	function (reverseNodeList, builder) {
-		if (!builder.a) {
+		if (!builder.b) {
 			return A4(
 				$elm$core$Array$Array_elm_builtin,
-				$elm$core$Elm$JsArray$length(builder.c),
+				$elm$core$Elm$JsArray$length(builder.d),
 				$elm$core$Array$shiftStep,
 				$elm$core$Elm$JsArray$empty,
-				builder.c);
+				builder.d);
 		} else {
-			var treeLen = builder.a * $elm$core$Array$branchFactor;
+			var treeLen = builder.b * $elm$core$Array$branchFactor;
 			var depth = $elm$core$Basics$floor(
 				A2($elm$core$Basics$logBase, $elm$core$Array$branchFactor, treeLen - 1));
-			var correctNodeList = reverseNodeList ? $elm$core$List$reverse(builder.d) : builder.d;
-			var tree = A2($elm$core$Array$treeFromBuilder, correctNodeList, builder.a);
+			var correctNodeList = reverseNodeList ? $elm$core$List$reverse(builder.e) : builder.e;
+			var tree = A2($elm$core$Array$treeFromBuilder, correctNodeList, builder.b);
 			return A4(
 				$elm$core$Array$Array_elm_builtin,
-				$elm$core$Elm$JsArray$length(builder.c) + treeLen,
+				$elm$core$Elm$JsArray$length(builder.d) + treeLen,
 				A2($elm$core$Basics$max, 5, depth * $elm$core$Array$shiftStep),
 				tree,
-				builder.c);
+				builder.d);
 		}
 	});
 var $elm$core$Basics$idiv = _Basics_idiv;
@@ -5161,7 +5161,7 @@ var $elm$core$Array$initializeHelp = F5(
 				return A2(
 					$elm$core$Array$builderToArray,
 					false,
-					{d: nodeList, a: (len / $elm$core$Array$branchFactor) | 0, c: tail});
+					{e: nodeList, b: (len / $elm$core$Array$branchFactor) | 0, d: tail});
 			} else {
 				var leaf = $elm$core$Array$Leaf(
 					A3($elm$core$Elm$JsArray$initialize, $elm$core$Array$branchFactor, fromIndex, fn));
@@ -5228,7 +5228,7 @@ var $elm$url$Url$Http = 0;
 var $elm$url$Url$Https = 1;
 var $elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {ah: fragment, ak: host, aq: path, as: port_, av: protocol, aw: query};
+		return {ak: fragment, an: host, at: path, av: port_, ay: protocol, az: query};
 	});
 var $elm$core$String$contains = _String_contains;
 var $elm$core$String$length = _String_length;
@@ -5508,13 +5508,13 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$application = _Browser_application;
 var $author$project$Main$Model = F7(
-	function (track, showOptions, gpxServerURLOverride, fontSize, trackHeight, trackThickness, waypointStrokeColor) {
-		return {s: fontSize, Q: gpxServerURLOverride, W: showOptions, e: track, v: trackHeight, w: trackThickness, y: waypointStrokeColor};
+	function (tracks, showOptions, gpxServerURLOverride, fontSize, trackHeight, trackThickness, waypointStrokeColor) {
+		return {s: fontSize, T: gpxServerURLOverride, Z: showOptions, x: trackHeight, y: trackThickness, a: tracks, A: waypointStrokeColor};
 	});
 var $author$project$Main$NotLoaded = {$: 0};
 var $author$project$Main$StoredState = F6(
-	function (track, gpxServerURL, fontSize, trackHeight, trackThickness, waypointStrokeColor) {
-		return {s: fontSize, P: gpxServerURL, e: track, v: trackHeight, w: trackThickness, y: waypointStrokeColor};
+	function (tracks, gpxServerURL, fontSize, trackHeight, trackThickness, waypointStrokeColor) {
+		return {s: fontSize, S: gpxServerURL, x: trackHeight, y: trackThickness, a: tracks, A: waypointStrokeColor};
 	});
 var $elm$core$Basics$composeR = F3(
 	function (f, g, x) {
@@ -5534,9 +5534,13 @@ var $elm$core$Maybe$map = F2(
 	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $author$project$Main$Tracks = F3(
+	function (prev, current, next) {
+		return {l: current, u: next, w: prev};
+	});
 var $author$project$Main$Track = F2(
 	function (trackpoints, waypoints) {
-		return {C: trackpoints, k: waypoints};
+		return {E: trackpoints, G: waypoints};
 	});
 var $author$project$Main$TrackPoint = F2(
 	function (distance, elevation) {
@@ -5553,7 +5557,7 @@ var $author$project$Main$decodeTrackpoints = $elm$json$Json$Decode$list(
 		A2($elm$json$Json$Decode$field, 'ele', $elm$json$Json$Decode$float)));
 var $author$project$Main$Waypoint = F2(
 	function (distance, name) {
-		return {g: distance, J: name};
+		return {g: distance, M: name};
 	});
 var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Main$decodeWaypoints = $elm$json$Json$Decode$list(
@@ -5567,6 +5571,19 @@ var $author$project$Main$decodeTrack = A3(
 	$author$project$Main$Track,
 	A2($elm$json$Json$Decode$field, 'trackpoints', $author$project$Main$decodeTrackpoints),
 	A2($elm$json$Json$Decode$field, 'waypoints', $author$project$Main$decodeWaypoints));
+var $elm$json$Json$Decode$map3 = _Json_map3;
+var $author$project$Main$decodeTracks = A4(
+	$elm$json$Json$Decode$map3,
+	$author$project$Main$Tracks,
+	A2(
+		$elm$json$Json$Decode$field,
+		'previous',
+		$elm$json$Json$Decode$list($author$project$Main$decodeTrack)),
+	A2($elm$json$Json$Decode$field, 'current', $author$project$Main$decodeTrack),
+	A2(
+		$elm$json$Json$Decode$field,
+		'next',
+		$elm$json$Json$Decode$list($author$project$Main$decodeTrack)));
 var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$json$Json$Decode$map6 = _Json_map6;
 var $elm$json$Json$Decode$oneOf = _Json_oneOf;
@@ -5582,7 +5599,7 @@ var $author$project$Main$storedStateDecoder = A7(
 	$elm$json$Json$Decode$map6,
 	$author$project$Main$StoredState,
 	$elm$json$Json$Decode$maybe(
-		A2($elm$json$Json$Decode$field, 'track', $author$project$Main$decodeTrack)),
+		A2($elm$json$Json$Decode$field, 'tracks', $author$project$Main$decodeTracks)),
 	$elm$json$Json$Decode$maybe(
 		A2($elm$json$Json$Decode$field, 'gpxServerURL', $elm$json$Json$Decode$string)),
 	$elm$json$Json$Decode$maybe(
@@ -5612,13 +5629,13 @@ var $author$project$Main$loadableResourceFromMaybe = A2(
 var $author$project$Main$storedStateModel = function (state) {
 	return A7(
 		$author$project$Main$Model,
-		$author$project$Main$loadableResourceFromMaybe(state.e),
+		$author$project$Main$loadableResourceFromMaybe(state.a),
 		true,
-		state.P,
+		state.S,
 		A2($elm$core$Maybe$withDefault, 15, state.s),
-		A2($elm$core$Maybe$withDefault, 200, state.v),
-		A2($elm$core$Maybe$withDefault, 1, state.w),
-		A2($elm$core$Maybe$withDefault, 'lightgray', state.y));
+		A2($elm$core$Maybe$withDefault, 200, state.x),
+		A2($elm$core$Maybe$withDefault, 1, state.y),
+		A2($elm$core$Maybe$withDefault, 'lightgray', state.A));
 };
 var $elm$core$Result$withDefault = F2(
 	function (def, result) {
@@ -5667,57 +5684,19 @@ var $elm$file$File$Select$file = F2(
 			toMsg,
 			_File_uploadOne(mimes));
 	});
-var $elm$core$List$drop = F2(
-	function (n, list) {
-		drop:
-		while (true) {
-			if (n <= 0) {
-				return list;
-			} else {
-				if (!list.b) {
-					return list;
-				} else {
-					var x = list.a;
-					var xs = list.b;
-					var $temp$n = n - 1,
-						$temp$list = xs;
-					n = $temp$n;
-					list = $temp$list;
-					continue drop;
-				}
-			}
-		}
-	});
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm_community$list_extra$List$Extra$getAt = F2(
-	function (idx, xs) {
-		return (idx < 0) ? $elm$core$Maybe$Nothing : $elm$core$List$head(
-			A2($elm$core$List$drop, idx, xs));
-	});
 var $author$project$Main$ElevationProfileDataResponseReceived = function (a) {
 	return {$: 4, a: a};
 };
-var $author$project$Main$ElevationProfileDataResponse = F2(
-	function (track, waypoints) {
-		return {e: track, k: waypoints};
-	});
-var $author$project$Main$decodeElevationProfileDataResponse = A3(
-	$elm$json$Json$Decode$map2,
-	$author$project$Main$ElevationProfileDataResponse,
-	A2($elm$json$Json$Decode$field, 'track', $author$project$Main$decodeTrackpoints),
-	A2(
-		$elm$json$Json$Decode$map,
-		$elm$core$Maybe$withDefault(_List_Nil),
-		$elm$json$Json$Decode$maybe(
-			A2($elm$json$Json$Decode$field, 'waypoints', $author$project$Main$decodeWaypoints))));
+var $author$project$Main$decodeElevationProfileDataResponse = $elm$json$Json$Decode$list(
+	A3(
+		$elm$json$Json$Decode$map2,
+		$author$project$Main$Track,
+		A2($elm$json$Json$Decode$field, 'track', $author$project$Main$decodeTrackpoints),
+		A2(
+			$elm$json$Json$Decode$map,
+			$elm$core$Maybe$withDefault(_List_Nil),
+			$elm$json$Json$Decode$maybe(
+				A2($elm$json$Json$Decode$field, 'waypoints', $author$project$Main$decodeWaypoints)))));
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
@@ -6305,7 +6284,7 @@ var $elm$http$Http$resolve = F2(
 			case 3:
 				var metadata = response.a;
 				return $elm$core$Result$Err(
-					$elm$http$Http$BadStatus(metadata.a0));
+					$elm$http$Http$BadStatus(metadata.a3));
 			default:
 				var body = response.b;
 				return A2(
@@ -6350,7 +6329,7 @@ var $elm$http$Http$Request = function (a) {
 };
 var $elm$http$Http$State = F2(
 	function (reqs, subs) {
-		return {ay: reqs, aD: subs};
+		return {aB: reqs, aG: subs};
 	});
 var $elm$http$Http$init = $elm$core$Task$succeed(
 	A2($elm$http$Http$State, $elm$core$Dict$empty, _List_Nil));
@@ -6394,7 +6373,7 @@ var $elm$http$Http$updateReqs = F3(
 					return A2(
 						$elm$core$Task$andThen,
 						function (pid) {
-							var _v4 = req.aG;
+							var _v4 = req.aJ;
 							if (_v4.$ === 1) {
 								return A3($elm$http$Http$updateReqs, router, otherCmds, reqs);
 							} else {
@@ -6424,7 +6403,7 @@ var $elm$http$Http$onEffects = F4(
 				return $elm$core$Task$succeed(
 					A2($elm$http$Http$State, reqs, subs));
 			},
-			A3($elm$http$Http$updateReqs, router, cmds, state.ay));
+			A3($elm$http$Http$updateReqs, router, cmds, state.aB));
 	});
 var $elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
@@ -6467,7 +6446,7 @@ var $elm$http$Http$onSelfMsg = F3(
 				A2(
 					$elm$core$List$filterMap,
 					A3($elm$http$Http$maybeSend, router, tracker, progress),
-					state.aD)));
+					state.aG)));
 	});
 var $elm$http$Http$Cancel = function (a) {
 	return {$: 0, a: a};
@@ -6481,14 +6460,14 @@ var $elm$http$Http$cmdMap = F2(
 			var r = cmd.a;
 			return $elm$http$Http$Request(
 				{
-					aK: r.aK,
-					aM: r.aM,
-					aQ: A2(_Http_mapExpect, func, r.aQ),
-					ai: r.ai,
-					aV: r.aV,
-					a3: r.a3,
-					aG: r.aG,
-					a6: r.a6
+					aN: r.aN,
+					aP: r.aP,
+					aT: A2(_Http_mapExpect, func, r.aT),
+					al: r.al,
+					aY: r.aY,
+					a6: r.a6,
+					aJ: r.aJ,
+					a9: r.a9
 				});
 		}
 	});
@@ -6511,25 +6490,25 @@ var $elm$http$Http$subscription = _Platform_leaf('Http');
 var $elm$http$Http$request = function (r) {
 	return $elm$http$Http$command(
 		$elm$http$Http$Request(
-			{aK: false, aM: r.aM, aQ: r.aQ, ai: r.ai, aV: r.aV, a3: r.a3, aG: r.aG, a6: r.a6}));
+			{aN: false, aP: r.aP, aT: r.aT, al: r.al, aY: r.aY, a6: r.a6, aJ: r.aJ, a9: r.a9}));
 };
 var $elm$http$Http$post = function (r) {
 	return $elm$http$Http$request(
-		{aM: r.aM, aQ: r.aQ, ai: _List_Nil, aV: 'POST', a3: $elm$core$Maybe$Nothing, aG: $elm$core$Maybe$Nothing, a6: r.a6});
+		{aP: r.aP, aT: r.aT, al: _List_Nil, aY: 'POST', a6: $elm$core$Maybe$Nothing, aJ: $elm$core$Maybe$Nothing, a9: r.a9});
 };
 var $author$project$Main$getElevationProfileDataResponse = F2(
 	function (url, file) {
 		return $elm$http$Http$post(
 			{
-				aM: $elm$http$Http$fileBody(file),
-				aQ: A2(
+				aP: $elm$http$Http$fileBody(file),
+				aT: A2(
 					$elm$http$Http$expectJson,
 					A2(
 						$elm$core$Basics$composeR,
 						$elm$core$Result$mapError($author$project$Main$httpErrorString),
 						$author$project$Main$ElevationProfileDataResponseReceived),
 					$author$project$Main$decodeElevationProfileDataResponse),
-				a6: url
+				a9: url
 			});
 	});
 var $elm$core$Tuple$mapSecond = F2(
@@ -6539,6 +6518,27 @@ var $elm$core$Tuple$mapSecond = F2(
 		return _Utils_Tuple2(
 			x,
 			func(y));
+	});
+var $elm$core$List$drop = F2(
+	function (n, list) {
+		drop:
+		while (true) {
+			if (n <= 0) {
+				return list;
+			} else {
+				if (!list.b) {
+					return list;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs;
+					n = $temp$n;
+					list = $temp$list;
+					continue drop;
+				}
+			}
+		}
 	});
 var $elm$core$List$takeReverse = F3(
 	function (n, list, kept) {
@@ -6682,9 +6682,11 @@ var $elm_community$list_extra$List$Extra$removeAt = F2(
 			}
 		}
 	});
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
+var $author$project$Main$trackWithWaypoints = F2(
+	function (track, waypoints) {
+		return _Utils_update(
+			track,
+			{G: waypoints});
 	});
 var $elm_community$list_extra$List$Extra$updateAt = F3(
 	function (index, fn, list) {
@@ -6706,18 +6708,20 @@ var $elm_community$list_extra$List$Extra$updateAt = F3(
 			}
 		}
 	});
-var $elm_community$list_extra$List$Extra$setAt = F2(
-	function (index, value) {
+var $author$project$Main$trackUpdateWaypoint = F3(
+	function (track, i, updateWaypoint) {
 		return A2(
-			$elm_community$list_extra$List$Extra$updateAt,
-			index,
-			$elm$core$Basics$always(value));
-	});
-var $author$project$Main$trackWithWaypoints = F2(
-	function (track, waypoints) {
-		return _Utils_update(
+			$author$project$Main$trackWithWaypoints,
 			track,
-			{k: waypoints});
+			A3($elm_community$list_extra$List$Extra$updateAt, i, updateWaypoint, track.G));
+	});
+var $author$project$Main$tracksUpdateCurrent = F2(
+	function (updateTrack, tracks) {
+		return A3(
+			$author$project$Main$Tracks,
+			tracks.w,
+			updateTrack(tracks.l),
+			tracks.u);
 	});
 var $elm$json$Json$Encode$float = _Json_wrap;
 var $elm$json$Json$Encode$list = F2(
@@ -6766,7 +6770,7 @@ var $author$project$Main$encodeWaypoints = $elm$json$Json$Encode$list(
 					$elm$json$Json$Encode$float(waypoint.g)),
 					_Utils_Tuple2(
 					'name',
-					$elm$json$Json$Encode$string(waypoint.J))
+					$elm$json$Json$Encode$string(waypoint.M))
 				]));
 	});
 var $author$project$Main$encodeTrack = function (track) {
@@ -6775,10 +6779,25 @@ var $author$project$Main$encodeTrack = function (track) {
 			[
 				_Utils_Tuple2(
 				'trackpoints',
-				$author$project$Main$encodeTrackpoints(track.C)),
+				$author$project$Main$encodeTrackpoints(track.E)),
 				_Utils_Tuple2(
 				'waypoints',
-				$author$project$Main$encodeWaypoints(track.k))
+				$author$project$Main$encodeWaypoints(track.G))
+			]));
+};
+var $author$project$Main$encodeTracks = function (tracks) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'previous',
+				A2($elm$json$Json$Encode$list, $author$project$Main$encodeTrack, tracks.w)),
+				_Utils_Tuple2(
+				'current',
+				$author$project$Main$encodeTrack(tracks.l)),
+				_Utils_Tuple2(
+				'next',
+				A2($elm$json$Json$Encode$list, $author$project$Main$encodeTrack, tracks.u))
 			]));
 };
 var $elm$json$Json$Encode$int = _Json_wrap;
@@ -6799,7 +6818,7 @@ var $author$project$Main$encodeSavedState = function (state) {
 								'gpxServerURL',
 								$elm$json$Json$Encode$string(url));
 						},
-						state.P),
+						state.S),
 						A2(
 						$elm$core$Maybe$map,
 						function (size) {
@@ -6815,7 +6834,7 @@ var $author$project$Main$encodeSavedState = function (state) {
 								'trackHeight',
 								$elm$json$Json$Encode$int(height));
 						},
-						state.v),
+						state.x),
 						A2(
 						$elm$core$Maybe$map,
 						function (thickness) {
@@ -6823,7 +6842,7 @@ var $author$project$Main$encodeSavedState = function (state) {
 								'trackThickness',
 								$elm$json$Json$Encode$float(thickness));
 						},
-						state.w),
+						state.y),
 						A2(
 						$elm$core$Maybe$map,
 						function (colour) {
@@ -6831,15 +6850,15 @@ var $author$project$Main$encodeSavedState = function (state) {
 								'waypointStrokeColor',
 								$elm$json$Json$Encode$string(colour));
 						},
-						state.y),
+						state.A),
 						A2(
 						$elm$core$Maybe$map,
-						function (track) {
+						function (tracks) {
 							return _Utils_Tuple2(
-								'track',
-								$author$project$Main$encodeTrack(track));
+								'tracks',
+								$author$project$Main$encodeTracks(tracks));
 						},
-						state.e)
+						state.a)
 					]))));
 };
 var $author$project$Main$storeState = _Platform_outgoingPort('storeState', $elm$json$Json$Encode$string);
@@ -6854,12 +6873,12 @@ var $author$project$Main$maybeFromloadableResource = function (resource) {
 var $author$project$Main$storedStateFromModel = function (model) {
 	return A6(
 		$author$project$Main$StoredState,
-		$author$project$Main$maybeFromloadableResource(model.e),
-		model.Q,
+		$author$project$Main$maybeFromloadableResource(model.a),
+		model.T,
 		$elm$core$Maybe$Just(model.s),
-		$elm$core$Maybe$Just(model.v),
-		$elm$core$Maybe$Just(model.w),
-		$elm$core$Maybe$Just(model.y));
+		$elm$core$Maybe$Just(model.x),
+		$elm$core$Maybe$Just(model.y),
+		$elm$core$Maybe$Just(model.A));
 };
 var $author$project$Main$updateModel = function (model) {
 	return _Utils_Tuple2(
@@ -6876,7 +6895,7 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{W: show}),
+						{Z: show}),
 					$elm$core$Platform$Cmd$none);
 			case 2:
 				return _Utils_Tuple2(
@@ -6897,14 +6916,14 @@ var $author$project$Main$update = F2(
 									cmd,
 									A2(
 									$author$project$Main$getElevationProfileDataResponse,
-									A2($elm$core$Maybe$withDefault, 'https://gpx.fly.dev', model.Q),
+									A2($elm$core$Maybe$withDefault, 'https://gpx.fly.dev', model.T),
 									file)
 								]));
 					},
 					$author$project$Main$updateModel(
 						_Utils_update(
 							model,
-							{e: $author$project$Main$Loading})));
+							{a: $author$project$Main$Loading})));
 			case 4:
 				var resp = msg.a;
 				if (resp.$ === 1) {
@@ -6913,145 +6932,202 @@ var $author$project$Main$update = F2(
 						_Utils_update(
 							model,
 							{
-								e: $author$project$Main$Error('getting profile data from GPX: ' + errMsg)
+								a: $author$project$Main$Error('getting profile data from GPX: ' + errMsg)
 							}));
 				} else {
-					var data = resp.a;
+					var tracks = resp.a;
 					return $author$project$Main$updateModel(
 						_Utils_update(
 							model,
 							{
-								e: $author$project$Main$Loaded(
-									A2($author$project$Main$Track, data.e, data.k))
+								a: function () {
+									if (!tracks.b) {
+										return $author$project$Main$Error('No tracks available in uploaded GPX 😢');
+									} else {
+										var first = tracks.a;
+										var rest = tracks.b;
+										return $author$project$Main$Loaded(
+											A3($author$project$Main$Tracks, _List_Nil, first, rest));
+									}
+								}()
 							}));
 				}
 			case 0:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			case 6:
-				var i = msg.a;
-				var name = msg.b;
-				var _v2 = model.e;
-				if (_v2.$ === 3) {
-					var track = _v2.a;
-					return A2(
-						$elm$core$Maybe$withDefault,
-						_Utils_Tuple2(model, $elm$core$Platform$Cmd$none),
-						A2(
-							$elm$core$Maybe$map,
-							function (waypoints) {
-								return $author$project$Main$updateModel(
-									_Utils_update(
-										model,
-										{
-											e: $author$project$Main$Loaded(
-												A2(
-													$author$project$Main$trackWithWaypoints,
-													track,
-													A3(
-														$elm_community$list_extra$List$Extra$setAt,
-														i,
-														_Utils_update(
-															waypoints,
-															{J: name}),
-														track.k)))
-										}));
-							},
-							A2($elm_community$list_extra$List$Extra$getAt, i, track.k)));
-				} else {
-					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-				}
 			case 5:
-				var i = msg.a;
-				var dist = msg.b;
-				var _v3 = model.e;
+				var _v3 = model.a;
 				if (_v3.$ === 3) {
-					var track = _v3.a;
-					return A2(
-						$elm$core$Maybe$withDefault,
-						_Utils_Tuple2(model, $elm$core$Platform$Cmd$none),
-						A2(
-							$elm$core$Maybe$map,
-							function (waypoints) {
-								return $author$project$Main$updateModel(
-									_Utils_update(
-										model,
-										{
-											e: $author$project$Main$Loaded(
-												A2(
-													$author$project$Main$trackWithWaypoints,
-													track,
-													A3(
-														$elm_community$list_extra$List$Extra$setAt,
-														i,
-														_Utils_update(
-															waypoints,
-															{g: dist}),
-														track.k)))
-										}));
-							},
-							A2($elm_community$list_extra$List$Extra$getAt, i, track.k)));
-				} else {
-					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-				}
-			case 7:
-				var i = msg.a;
-				var _v4 = model.e;
-				if (_v4.$ === 3) {
-					var track = _v4.a;
+					var tracks = _v3.a;
 					return $author$project$Main$updateModel(
 						_Utils_update(
 							model,
 							{
-								e: $author$project$Main$Loaded(
-									A2(
-										$author$project$Main$trackWithWaypoints,
-										track,
-										A2($elm_community$list_extra$List$Extra$removeAt, i, track.k)))
+								a: $author$project$Main$Loaded(
+									function () {
+										var _v4 = tracks.w;
+										if (!_v4.b) {
+											return tracks;
+										} else {
+											var first = _v4.a;
+											var rest = _v4.b;
+											return A3(
+												$author$project$Main$Tracks,
+												rest,
+												first,
+												A2($elm$core$List$cons, tracks.l, tracks.u));
+										}
+									}())
+							}));
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
+			case 6:
+				var _v5 = model.a;
+				if (_v5.$ === 3) {
+					var tracks = _v5.a;
+					return $author$project$Main$updateModel(
+						_Utils_update(
+							model,
+							{
+								a: $author$project$Main$Loaded(
+									function () {
+										var _v6 = tracks.u;
+										if (!_v6.b) {
+											return tracks;
+										} else {
+											var first = _v6.a;
+											var rest = _v6.b;
+											return A3(
+												$author$project$Main$Tracks,
+												A2($elm$core$List$cons, tracks.l, tracks.w),
+												first,
+												rest);
+										}
+									}())
 							}));
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
 			case 8:
+				var i = msg.a;
+				var name = msg.b;
+				var _v7 = model.a;
+				if (_v7.$ === 3) {
+					var tracks = _v7.a;
+					return $author$project$Main$updateModel(
+						_Utils_update(
+							model,
+							{
+								a: $author$project$Main$Loaded(
+									A3(
+										$author$project$Main$Tracks,
+										tracks.w,
+										A3(
+											$author$project$Main$trackUpdateWaypoint,
+											tracks.l,
+											i,
+											function (w) {
+												return _Utils_update(
+													w,
+													{M: name});
+											}),
+										tracks.u))
+							}));
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
+			case 7:
+				var i = msg.a;
+				var dist = msg.b;
+				var _v8 = model.a;
+				if (_v8.$ === 3) {
+					var tracks = _v8.a;
+					return $author$project$Main$updateModel(
+						_Utils_update(
+							model,
+							{
+								a: $author$project$Main$Loaded(
+									A3(
+										$author$project$Main$Tracks,
+										tracks.w,
+										A3(
+											$author$project$Main$trackUpdateWaypoint,
+											tracks.l,
+											i,
+											function (w) {
+												return _Utils_update(
+													w,
+													{g: dist});
+											}),
+										tracks.u))
+							}));
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
+			case 9:
+				var i = msg.a;
+				var _v9 = model.a;
+				if (_v9.$ === 3) {
+					var tracks = _v9.a;
+					return $author$project$Main$updateModel(
+						_Utils_update(
+							model,
+							{
+								a: $author$project$Main$Loaded(
+									A2(
+										$author$project$Main$tracksUpdateCurrent,
+										function (current) {
+											return A2(
+												$author$project$Main$trackWithWaypoints,
+												current,
+												A2($elm_community$list_extra$List$Extra$removeAt, i, current.G));
+										},
+										tracks))
+							}));
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
+			case 10:
 				var size = msg.a;
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
 						{s: size}));
-			case 9:
+			case 11:
 				var height = msg.a;
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
-						{v: height}));
-			case 10:
+						{x: height}));
+			case 12:
 				var thickness = msg.a;
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
-						{w: thickness}));
+						{y: thickness}));
 			default:
 				var colour = msg.a;
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
-						{y: colour}));
+						{A: colour}));
 		}
 	});
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$DeleteWaypoint = function (a) {
-	return {$: 7, a: a};
+	return {$: 9, a: a};
 };
 var $elm$browser$Browser$Document = F2(
 	function (title, body) {
-		return {aM: body, a4: title};
+		return {aP: body, a7: title};
 	});
 var $author$project$Main$WaypointDistanceChange = F2(
 	function (a, b) {
-		return {$: 5, a: a, b: b};
+		return {$: 7, a: a, b: b};
 	});
 var $author$project$Main$WaypointNameChange = F2(
 	function (a, b) {
-		return {$: 6, a: a, b: b};
+		return {$: 8, a: a, b: b};
 	});
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -7194,7 +7270,7 @@ var $author$project$Main$resolveElevationProfileSVGLine = F3(
 						A2(
 							$elm$core$List$map,
 							function (point) {
-								return calc.aa(point.g) + (' ' + calc.ab(point.r));
+								return calc.ad(point.g) + (' ' + calc.ae(point.r));
 							},
 							profileData))),
 					$elm$svg$Svg$Attributes$stroke('grey'),
@@ -7213,13 +7289,13 @@ var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
 var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
 var $author$project$Main$XYCalculator = F2(
 	function (x, y) {
-		return {aa: x, ab: y};
+		return {ad: x, ae: y};
 	});
 var $author$project$Main$xyCalculator = function (cfg) {
-	var svgWidthPerDistanceUnit = cfg.aE / cfg.am;
-	var elevationRange = cfg.an - cfg.S;
+	var svgWidthPerDistanceUnit = cfg.aH / cfg.ap;
+	var elevationRange = cfg.aq - cfg.V;
 	var normaliseElevation = function (elevation) {
-		return (elevation - cfg.S) / elevationRange;
+		return (elevation - cfg.V) / elevationRange;
 	};
 	return A2(
 		$author$project$Main$XYCalculator,
@@ -7228,7 +7304,7 @@ var $author$project$Main$xyCalculator = function (cfg) {
 		},
 		function (elevation) {
 			return $elm$core$String$fromFloat(
-				cfg.Z - (cfg.Z * normaliseElevation(elevation)));
+				cfg.ab - (cfg.ab * normaliseElevation(elevation)));
 		});
 };
 var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
@@ -7247,7 +7323,7 @@ var $author$project$Main$profile = F6(
 					function ($) {
 						return $.r;
 					},
-					track.C)));
+					track.E)));
 		var maxElevation = A2(
 			$elm$core$Maybe$withDefault,
 			1,
@@ -7257,9 +7333,9 @@ var $author$project$Main$profile = F6(
 					function ($) {
 						return $.r;
 					},
-					track.C)));
+					track.E)));
 		var calc = $author$project$Main$xyCalculator(
-			{am: maxDistance, an: maxElevation, S: minElevation, Z: trackHeight, aE: svgWidth});
+			{ap: maxDistance, aq: maxElevation, V: minElevation, ab: trackHeight, aH: svgWidth});
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -7286,9 +7362,9 @@ var $author$project$Main$profile = F6(
 								return A2(
 									$elm$core$List$concatMap,
 									function (waypoint) {
-										var y = calc.ab(
-											A2($author$project$Main$interpolateWaypointElevation, track.C, waypoint) - 5);
-										var x = calc.aa(waypoint.g);
+										var y = calc.ae(
+											A2($author$project$Main$interpolateWaypointElevation, track.E, waypoint) - 5);
+										var x = calc.ad(waypoint.g);
 										return _List_fromArray(
 											[
 												A2(
@@ -7314,16 +7390,16 @@ var $author$project$Main$profile = F6(
 													]),
 												_List_fromArray(
 													[
-														$elm$svg$Svg$text(waypoint.J)
+														$elm$svg$Svg$text(waypoint.M)
 													]))
 											]);
 									},
-									track.k);
+									track.G);
 							}()),
 							A3(
 							$author$project$Main$resolveElevationProfileSVGLine,
 							calc,
-							track.C,
+							track.E,
 							$elm$core$String$fromFloat(trackThickness)),
 							A2(
 							$elm$svg$Svg$g,
@@ -7425,21 +7501,23 @@ var $author$project$Main$viewErrorPanel = function (error) {
 				$elm$html$Html$text(error)
 			]));
 };
+var $author$project$Main$NavigateToNext = {$: 6};
+var $author$project$Main$NavigateToPrevious = {$: 5};
 var $author$project$Main$OpenFileBrowser = {$: 2};
 var $author$project$Main$ShowOptions = function (a) {
 	return {$: 1, a: a};
 };
 var $author$project$Main$UpdateFontSize = function (a) {
-	return {$: 8, a: a};
-};
-var $author$project$Main$UpdateTrackHeight = function (a) {
-	return {$: 9, a: a};
-};
-var $author$project$Main$UpdateTrackThickness = function (a) {
 	return {$: 10, a: a};
 };
-var $author$project$Main$WaypointStrokeColourChange = function (a) {
+var $author$project$Main$UpdateTrackHeight = function (a) {
 	return {$: 11, a: a};
+};
+var $author$project$Main$UpdateTrackThickness = function (a) {
+	return {$: 12, a: a};
+};
+var $author$project$Main$WaypointStrokeColourChange = function (a) {
+	return {$: 13, a: a};
 };
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$html$Html$hr = _VirtualDom_node('hr');
@@ -7468,8 +7546,8 @@ var $author$project$Main$optionGroup = F2(
 var $elm$html$Html$Attributes$step = function (n) {
 	return A2($elm$html$Html$Attributes$stringProperty, 'step', n);
 };
-var $author$project$Main$viewOptions = F5(
-	function (show, fontSize, trackHeight, trackThickness, waypointStrokeColor) {
+var $author$project$Main$viewOptions = F6(
+	function (show, tracks, fontSize, trackHeight, trackThickness, waypointStrokeColor) {
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -7537,108 +7615,153 @@ var $author$project$Main$viewOptions = F5(
 											A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
 											A2($elm$html$Html$Attributes$style, 'align-items', 'center')
 										]),
-									_List_fromArray(
-										[
-											A3(
-											$author$project$Main$viewButtonWithAttributes,
-											_List_fromArray(
+									$elm$core$List$concat(
+										_List_fromArray(
+											[
+												_List_fromArray(
 												[
-													A2($elm$html$Html$Attributes$style, 'width', '100%')
+													A3(
+													$author$project$Main$viewButtonWithAttributes,
+													_List_fromArray(
+														[
+															A2($elm$html$Html$Attributes$style, 'width', '100%')
+														]),
+													'upload GPX',
+													$author$project$Main$OpenFileBrowser)
 												]),
-											'upload GPX',
-											$author$project$Main$OpenFileBrowser),
-											A2(
-											$author$project$Main$optionGroup,
-											'Font size',
-											_List_fromArray(
+												A2(
+												$elm$core$Maybe$withDefault,
+												false,
+												A2(
+													$elm$core$Maybe$map,
+													function (ts) {
+														return $elm$core$List$length(ts.w) > 0;
+													},
+													tracks)) ? _List_fromArray(
 												[
-													A2(
-													$elm$html$Html$input,
+													A3(
+													$author$project$Main$viewButtonWithAttributes,
 													_List_fromArray(
 														[
-															$elm$html$Html$Attributes$type_('range'),
-															$elm$html$Html$Attributes$min('1'),
-															$elm$html$Html$Attributes$max('50'),
-															$elm$html$Html$Attributes$value(
-															$elm$core$String$fromFloat(fontSize)),
-															$elm$html$Html$Events$onInput(
+															A2($elm$html$Html$Attributes$style, 'width', '100%')
+														]),
+													'PREV',
+													$author$project$Main$NavigateToPrevious)
+												]) : _List_Nil,
+												A2(
+												$elm$core$Maybe$withDefault,
+												false,
+												A2(
+													$elm$core$Maybe$map,
+													function (ts) {
+														return $elm$core$List$length(ts.u) > 0;
+													},
+													tracks)) ? _List_fromArray(
+												[
+													A3(
+													$author$project$Main$viewButtonWithAttributes,
+													_List_fromArray(
+														[
+															A2($elm$html$Html$Attributes$style, 'width', '100%')
+														]),
+													'NEXT',
+													$author$project$Main$NavigateToNext)
+												]) : _List_Nil,
+												_List_fromArray(
+												[
+													A2(
+													$author$project$Main$optionGroup,
+													'Font size',
+													_List_fromArray(
+														[
 															A2(
-																$elm$core$Basics$composeR,
-																$elm$core$String$toFloat,
-																A2(
-																	$elm$core$Basics$composeR,
-																	$elm$core$Maybe$withDefault(15),
-																	$author$project$Main$UpdateFontSize)))
-														]),
-													_List_Nil)
-												])),
-											A2(
-											$author$project$Main$optionGroup,
-											'Track height',
-											_List_fromArray(
-												[
+															$elm$html$Html$input,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('range'),
+																	$elm$html$Html$Attributes$min('1'),
+																	$elm$html$Html$Attributes$max('50'),
+																	$elm$html$Html$Attributes$value(
+																	$elm$core$String$fromFloat(fontSize)),
+																	$elm$html$Html$Events$onInput(
+																	A2(
+																		$elm$core$Basics$composeR,
+																		$elm$core$String$toFloat,
+																		A2(
+																			$elm$core$Basics$composeR,
+																			$elm$core$Maybe$withDefault(15),
+																			$author$project$Main$UpdateFontSize)))
+																]),
+															_List_Nil)
+														])),
 													A2(
-													$elm$html$Html$input,
+													$author$project$Main$optionGroup,
+													'Track height',
 													_List_fromArray(
 														[
-															$elm$html$Html$Attributes$type_('range'),
-															$elm$html$Html$Attributes$min('1'),
-															$elm$html$Html$Attributes$max('400'),
-															$elm$html$Html$Attributes$value(
-															$elm$core$String$fromInt(trackHeight)),
-															$elm$html$Html$Events$onInput(
 															A2(
-																$elm$core$Basics$composeR,
-																$elm$core$String$toInt,
-																A2(
-																	$elm$core$Basics$composeR,
-																	$elm$core$Maybe$withDefault(200),
-																	$author$project$Main$UpdateTrackHeight)))
-														]),
-													_List_Nil)
-												])),
-											A2(
-											$author$project$Main$optionGroup,
-											'Track thickness',
-											_List_fromArray(
-												[
+															$elm$html$Html$input,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('range'),
+																	$elm$html$Html$Attributes$min('1'),
+																	$elm$html$Html$Attributes$max('400'),
+																	$elm$html$Html$Attributes$value(
+																	$elm$core$String$fromInt(trackHeight)),
+																	$elm$html$Html$Events$onInput(
+																	A2(
+																		$elm$core$Basics$composeR,
+																		$elm$core$String$toInt,
+																		A2(
+																			$elm$core$Basics$composeR,
+																			$elm$core$Maybe$withDefault(200),
+																			$author$project$Main$UpdateTrackHeight)))
+																]),
+															_List_Nil)
+														])),
 													A2(
-													$elm$html$Html$input,
+													$author$project$Main$optionGroup,
+													'Track thickness',
 													_List_fromArray(
 														[
-															$elm$html$Html$Attributes$type_('range'),
-															$elm$html$Html$Attributes$min('0.1'),
-															$elm$html$Html$Attributes$max('10'),
-															$elm$html$Html$Attributes$step('0.1'),
-															$elm$html$Html$Attributes$value(
-															$elm$core$String$fromFloat(trackThickness)),
-															$elm$html$Html$Events$onInput(
 															A2(
-																$elm$core$Basics$composeR,
-																$elm$core$String$toFloat,
-																A2(
-																	$elm$core$Basics$composeR,
-																	$elm$core$Maybe$withDefault(1),
-																	$author$project$Main$UpdateTrackThickness)))
-														]),
-													_List_Nil)
-												])),
-											A2(
-											$author$project$Main$optionGroup,
-											'Waypoint stroke colour',
-											_List_fromArray(
-												[
+															$elm$html$Html$input,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('range'),
+																	$elm$html$Html$Attributes$min('0.1'),
+																	$elm$html$Html$Attributes$max('10'),
+																	$elm$html$Html$Attributes$step('0.1'),
+																	$elm$html$Html$Attributes$value(
+																	$elm$core$String$fromFloat(trackThickness)),
+																	$elm$html$Html$Events$onInput(
+																	A2(
+																		$elm$core$Basics$composeR,
+																		$elm$core$String$toFloat,
+																		A2(
+																			$elm$core$Basics$composeR,
+																			$elm$core$Maybe$withDefault(1),
+																			$author$project$Main$UpdateTrackThickness)))
+																]),
+															_List_Nil)
+														])),
 													A2(
-													$elm$html$Html$textarea,
+													$author$project$Main$optionGroup,
+													'Waypoint stroke colour',
 													_List_fromArray(
 														[
-															$elm$html$Html$Attributes$placeholder('Waypoint stroke colour...'),
-															$elm$html$Html$Attributes$value(waypointStrokeColor),
-															$elm$html$Html$Events$onInput($author$project$Main$WaypointStrokeColourChange)
-														]),
-													_List_Nil)
-												]))
-										]))
+															A2(
+															$elm$html$Html$textarea,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$placeholder('Waypoint stroke colour...'),
+																	$elm$html$Html$Attributes$value(waypointStrokeColor),
+																	$elm$html$Html$Events$onInput($author$project$Main$WaypointStrokeColourChange)
+																]),
+															_List_Nil)
+														]))
+												])
+											])))
 								]))
 						])
 					])));
@@ -7660,7 +7783,14 @@ var $author$project$Main$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						A5($author$project$Main$viewOptions, model.W, model.s, model.v, model.w, model.y),
+						A6(
+						$author$project$Main$viewOptions,
+						model.Z,
+						$author$project$Main$maybeFromloadableResource(model.a),
+						model.s,
+						model.x,
+						model.y,
+						model.A),
 						A2(
 						$elm$html$Html$div,
 						_List_fromArray(
@@ -7672,7 +7802,7 @@ var $author$project$Main$view = function (model) {
 								A2($elm$html$Html$Attributes$style, 'overflow', 'auto')
 							]),
 						function () {
-							var _v0 = model.e;
+							var _v0 = model.a;
 							switch (_v0.$) {
 								case 0:
 									return _List_fromArray(
@@ -7704,7 +7834,7 @@ var $author$project$Main$view = function (model) {
 											'There was an error creating your profile. Please fix any error and try again 😇\n\nError: ' + (A2($elm$core$String$left, 1000, err) + '...'))
 										]);
 								default:
-									var track = _v0.a;
+									var tracks = _v0.a;
 									var maxDistance = A2(
 										$elm$core$Maybe$withDefault,
 										1,
@@ -7714,10 +7844,10 @@ var $author$project$Main$view = function (model) {
 												function ($) {
 													return $.g;
 												},
-												track.C)));
+												tracks.l.E)));
 									return _List_fromArray(
 										[
-											A6($author$project$Main$profile, track, maxDistance, model.s, model.v, model.w, model.y),
+											A6($author$project$Main$profile, tracks.l, maxDistance, model.s, model.x, model.y, model.A),
 											A2(
 											$elm$html$Html$div,
 											_List_Nil,
@@ -7754,7 +7884,7 @@ var $author$project$Main$view = function (model) {
 																	_List_fromArray(
 																		[
 																			$elm$html$Html$Attributes$placeholder('Waypoint name...'),
-																			$elm$html$Html$Attributes$value(waypoint.J),
+																			$elm$html$Html$Attributes$value(waypoint.M),
 																			$elm$html$Html$Events$onInput(
 																			$author$project$Main$WaypointNameChange(i))
 																		]),
@@ -7766,7 +7896,7 @@ var $author$project$Main$view = function (model) {
 																	$author$project$Main$DeleteWaypoint(i))
 																]));
 													}),
-												track.k))
+												tracks.l.G))
 										]);
 							}
 						}())
@@ -7775,18 +7905,18 @@ var $author$project$Main$view = function (model) {
 };
 var $author$project$Main$main = $elm$browser$Browser$application(
 	{
-		aU: $author$project$Main$init,
-		aW: function (_v0) {
+		aX: $author$project$Main$init,
+		aZ: function (_v0) {
 			return $author$project$Main$Ignore;
 		},
-		aX: function (_v1) {
+		a_: function (_v1) {
 			return $author$project$Main$Ignore;
 		},
-		a2: function (_v2) {
+		a5: function (_v2) {
 			return $elm$core$Platform$Sub$none;
 		},
-		a5: $author$project$Main$update,
-		a7: $author$project$Main$view
+		a8: $author$project$Main$update,
+		ba: $author$project$Main$view
 	});
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	$elm$json$Json$Decode$oneOf(

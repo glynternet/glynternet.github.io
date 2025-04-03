@@ -128,6 +128,8 @@ type Msg
     | OpenFileBrowser
     | FileUploaded File.File
     | ElevationProfileDataResponseReceived (Result String ElevationProfileDataResponse)
+    | NavigateToPrevious
+    | NavigateToNext
     | WaypointDistanceChange Int Float
     | WaypointNameChange Int String
     | DeleteWaypoint Int
@@ -162,12 +164,56 @@ update msg model =
                     updateModel
                         { model | tracks = Error ("getting profile data from GPX: " ++ errMsg) }
 
-                Ok data ->
+                Ok tracks ->
                     updateModel
-                        { model | tracks = Loaded <| Tracks [] (Track data.track data.waypoints) [] }
+                        { model
+                            | tracks =
+                                case tracks of
+                                    [] ->
+                                        Error "No tracks available in uploaded GPX 😢"
+
+                                    first :: rest ->
+                                        Loaded <| Tracks [] first rest
+                        }
 
         Ignore ->
             ( model, Cmd.none )
+
+        NavigateToPrevious ->
+            case model.tracks of
+                Loaded tracks ->
+                    updateModel
+                        { model
+                            | tracks =
+                                Loaded <|
+                                    case tracks.prev of
+                                        [] ->
+                                            tracks
+
+                                        first :: rest ->
+                                            Tracks rest first (tracks.current :: tracks.next)
+                        }
+
+                _ ->
+                    ( model, Cmd.none )
+
+        NavigateToNext ->
+            case model.tracks of
+                Loaded tracks ->
+                    updateModel
+                        { model
+                            | tracks =
+                                Loaded <|
+                                    case tracks.next of
+                                        [] ->
+                                            tracks
+
+                                        first :: rest ->
+                                            Tracks (tracks.current :: tracks.prev) first rest
+                        }
+
+                _ ->
+                    ( model, Cmd.none )
 
         WaypointNameChange i name ->
             case model.tracks of
@@ -240,7 +286,7 @@ view model =
             , Html.Attributes.class "page"
             , Html.Attributes.style "height" "100%"
             ]
-            [ viewOptions model.showOptions model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor
+            [ viewOptions model.showOptions (maybeFromloadableResource model.tracks) model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor
             , Html.div
                 [ Html.Attributes.class "flex-container"
                 , Html.Attributes.class "column"
@@ -295,8 +341,8 @@ view model =
         ]
 
 
-viewOptions : Bool -> Float -> Int -> Float -> String -> Html Msg
-viewOptions show fontSize trackHeight trackThickness waypointStrokeColor =
+viewOptions : Bool -> Maybe Tracks -> Float -> Int -> Float -> String -> Html Msg
+viewOptions show tracks fontSize trackHeight trackThickness waypointStrokeColor =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "column"
@@ -326,47 +372,60 @@ viewOptions show fontSize trackHeight trackThickness waypointStrokeColor =
                             , Html.Attributes.style "justify-content" "center"
                             , Html.Attributes.style "align-items" "center"
                             ]
-                            [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "upload GPX" OpenFileBrowser
-                            , optionGroup "Font size"
-                                [ Html.input
-                                    [ Html.Attributes.type_ "range"
-                                    , Html.Attributes.min "1"
-                                    , Html.Attributes.max "50"
-                                    , Html.Attributes.value <| String.fromFloat fontSize
-                                    , Html.Events.onInput (String.toFloat >> Maybe.withDefault 15 >> UpdateFontSize)
-                                    ]
+                            (List.concat
+                                [ [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "upload GPX" OpenFileBrowser ]
+                                , if tracks |> Maybe.map (\ts -> List.length ts.prev > 0) |> Maybe.withDefault False then
+                                    [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "PREV" NavigateToPrevious ]
+
+                                  else
                                     []
-                                ]
-                            , optionGroup "Track height"
-                                [ Html.input
-                                    [ Html.Attributes.type_ "range"
-                                    , Html.Attributes.min "1"
-                                    , Html.Attributes.max "400"
-                                    , Html.Attributes.value <| String.fromInt trackHeight
-                                    , Html.Events.onInput (String.toInt >> Maybe.withDefault 200 >> UpdateTrackHeight)
-                                    ]
+                                , if tracks |> Maybe.map (\ts -> List.length ts.next > 0) |> Maybe.withDefault False then
+                                    [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "NEXT" NavigateToNext ]
+
+                                  else
                                     []
+                                , [ optionGroup "Font size"
+                                        [ Html.input
+                                            [ Html.Attributes.type_ "range"
+                                            , Html.Attributes.min "1"
+                                            , Html.Attributes.max "50"
+                                            , Html.Attributes.value <| String.fromFloat fontSize
+                                            , Html.Events.onInput (String.toFloat >> Maybe.withDefault 15 >> UpdateFontSize)
+                                            ]
+                                            []
+                                        ]
+                                  , optionGroup "Track height"
+                                        [ Html.input
+                                            [ Html.Attributes.type_ "range"
+                                            , Html.Attributes.min "1"
+                                            , Html.Attributes.max "400"
+                                            , Html.Attributes.value <| String.fromInt trackHeight
+                                            , Html.Events.onInput (String.toInt >> Maybe.withDefault 200 >> UpdateTrackHeight)
+                                            ]
+                                            []
+                                        ]
+                                  , optionGroup "Track thickness"
+                                        [ Html.input
+                                            [ Html.Attributes.type_ "range"
+                                            , Html.Attributes.min "0.1"
+                                            , Html.Attributes.max "10"
+                                            , Html.Attributes.step "0.1"
+                                            , Html.Attributes.value <| String.fromFloat trackThickness
+                                            , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1 >> UpdateTrackThickness)
+                                            ]
+                                            []
+                                        ]
+                                  , optionGroup "Waypoint stroke colour"
+                                        [ Html.textarea
+                                            [ Html.Attributes.placeholder "Waypoint stroke colour..."
+                                            , Html.Attributes.value waypointStrokeColor
+                                            , Html.Events.onInput <| WaypointStrokeColourChange
+                                            ]
+                                            []
+                                        ]
+                                  ]
                                 ]
-                            , optionGroup "Track thickness"
-                                [ Html.input
-                                    [ Html.Attributes.type_ "range"
-                                    , Html.Attributes.min "0.1"
-                                    , Html.Attributes.max "10"
-                                    , Html.Attributes.step "0.1"
-                                    , Html.Attributes.value <| String.fromFloat trackThickness
-                                    , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1 >> UpdateTrackThickness)
-                                    ]
-                                    []
-                                ]
-                            , optionGroup "Waypoint stroke colour"
-                                [ Html.textarea
-                                    [ Html.Attributes.placeholder "Waypoint stroke colour..."
-                                    , Html.Attributes.value waypointStrokeColor
-                                    , Html.Events.onInput <| WaypointStrokeColourChange
-                                    ]
-                                    []
-                                ]
-                            ]
+                            )
                         ]
                   ]
                 ]
@@ -570,17 +629,17 @@ xyCalculator cfg =
 
 
 type alias ElevationProfileDataResponse =
-    { track : List TrackPoint
-    , waypoints : List Waypoint
-    }
+    List Track
 
 
 decodeElevationProfileDataResponse : Json.Decode.Decoder ElevationProfileDataResponse
 decodeElevationProfileDataResponse =
-    Json.Decode.map2 ElevationProfileDataResponse
-        (Json.Decode.field "track" decodeTrackpoints)
-        (Json.Decode.maybe (Json.Decode.field "waypoints" decodeWaypoints)
-            |> Json.Decode.map (Maybe.withDefault [])
+    Json.Decode.list
+        (Json.Decode.map2 Track
+            (Json.Decode.field "track" decodeTrackpoints)
+            (Json.Decode.maybe (Json.Decode.field "waypoints" decodeWaypoints)
+                |> Json.Decode.map (Maybe.withDefault [])
+            )
         )
 
 
@@ -605,7 +664,7 @@ encodeTracks tracks =
     Json.Encode.object
         [ ( "previous", Json.Encode.list encodeTrack tracks.prev )
         , ( "current", encodeTrack tracks.current )
-        , ( "next", Json.Encode.list encodeTrack tracks.prev )
+        , ( "next", Json.Encode.list encodeTrack tracks.next )
         ]
 
 
