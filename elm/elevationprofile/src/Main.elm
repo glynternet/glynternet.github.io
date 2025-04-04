@@ -39,6 +39,7 @@ main =
 type alias Model =
     { tracks : LoadableResource Tracks
     , showOptions : Bool
+    , showWaypointEditor : Bool
     , gpxServerURLOverride : Maybe String
     , fontSize : Float
     , trackHeight : Int
@@ -101,6 +102,7 @@ storedStateModel : StoredState -> Model
 storedStateModel state =
     Model (loadableResourceFromMaybe state.tracks)
         True
+        False
         state.gpxServerURL
         (Maybe.withDefault 15 state.fontSize)
         (Maybe.withDefault 200 state.trackHeight)
@@ -117,7 +119,7 @@ init maybeState _ _ =
                 >> Result.withDefault (StoredState Nothing Nothing Nothing Nothing Nothing Nothing)
                 >> storedStateModel
             )
-        |> Maybe.withDefault (Model NotLoaded True Nothing 15 200 1 "lightgray")
+        |> Maybe.withDefault (Model NotLoaded True False Nothing 15 200 1 "lightgray")
     , Cmd.none
     )
 
@@ -125,6 +127,7 @@ init maybeState _ _ =
 type Msg
     = Ignore
     | ShowOptions Bool
+    | ShowWaypointEditor Bool
     | OpenFileBrowser
     | FileUploaded File.File
     | ElevationProfileDataResponseReceived (Result String ElevationProfileDataResponse)
@@ -144,6 +147,9 @@ update msg model =
     case msg of
         ShowOptions show ->
             ( { model | showOptions = show }, Cmd.none )
+
+        ShowWaypointEditor show ->
+            updateModel { model | showWaypointEditor = show }
 
         OpenFileBrowser ->
             ( model, File.Select.file [ "application/gpx+xml" ] FileUploaded )
@@ -286,7 +292,15 @@ view model =
             , Html.Attributes.class "page"
             , Html.Attributes.style "height" "100%"
             ]
-            [ viewOptions model.showOptions (maybeFromloadableResource model.tracks) model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor
+            [ viewOptions
+                { show = model.showOptions
+                , showWaypointEditor = model.showWaypointEditor
+                , tracks = maybeFromloadableResource model.tracks
+                , fontSize = model.fontSize
+                , trackHeight = model.trackHeight
+                , trackThickness = model.trackThickness
+                , waypointStrokeColor = model.waypointStrokeColor
+                }
             , Html.div
                 [ Html.Attributes.class "flex-container"
                 , Html.Attributes.class "column"
@@ -309,40 +323,54 @@ view model =
                             maxDistance =
                                 Maybe.withDefault 1 <| List.maximum <| List.map .distance tracks.current.trackpoints
                         in
-                        [ profile tracks.current maxDistance model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor
-                        , Html.div []
-                            (tracks.current.waypoints
-                                |> List.indexedMap
-                                    (\i waypoint ->
-                                        Html.div []
-                                            [ Html.input
-                                                [ Html.Attributes.type_ "number"
-                                                , Html.Attributes.min "0"
-                                                , maxDistance |> (String.fromFloat >> Html.Attributes.max)
-                                                , Html.Attributes.value <| String.fromFloat waypoint.distance
+                        profile tracks.current maxDistance model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor
+                            :: (if model.showWaypointEditor then
+                                    [ Html.div []
+                                        (tracks.current.waypoints
+                                            |> List.indexedMap
+                                                (\i waypoint ->
+                                                    Html.div []
+                                                        [ Html.input
+                                                            [ Html.Attributes.type_ "number"
+                                                            , Html.Attributes.min "0"
+                                                            , maxDistance |> (String.fromFloat >> Html.Attributes.max)
+                                                            , Html.Attributes.value <| String.fromFloat waypoint.distance
 
-                                                -- handle toFloat error
-                                                , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1000 >> WaypointDistanceChange i)
-                                                ]
-                                                []
-                                            , Html.textarea
-                                                [ Html.Attributes.placeholder "Waypoint name..."
-                                                , Html.Attributes.value waypoint.name
-                                                , Html.Events.onInput <| WaypointNameChange i
-                                                ]
-                                                []
-                                            , viewButtonWithAttributes [] "X" (DeleteWaypoint i)
-                                            ]
-                                    )
-                            )
-                        ]
+                                                            -- handle toFloat error
+                                                            , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1000 >> WaypointDistanceChange i)
+                                                            ]
+                                                            []
+                                                        , Html.textarea
+                                                            [ Html.Attributes.placeholder "Waypoint name..."
+                                                            , Html.Attributes.value waypoint.name
+                                                            , Html.Events.onInput <| WaypointNameChange i
+                                                            ]
+                                                            []
+                                                        , viewButtonWithAttributes [] "X" (DeleteWaypoint i)
+                                                        ]
+                                                )
+                                        )
+                                    ]
+
+                                else
+                                    []
+                               )
                 )
             ]
         ]
 
 
-viewOptions : Bool -> Maybe Tracks -> Float -> Int -> Float -> String -> Html Msg
-viewOptions show tracks fontSize trackHeight trackThickness waypointStrokeColor =
+viewOptions :
+    { show : Bool
+    , showWaypointEditor : Bool
+    , tracks : Maybe Tracks
+    , fontSize : Float
+    , trackHeight : Int
+    , trackThickness : Float
+    , waypointStrokeColor : String
+    }
+    -> Html Msg
+viewOptions options =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "column"
@@ -350,7 +378,7 @@ viewOptions show tracks fontSize trackHeight trackThickness waypointStrokeColor 
         , Html.Attributes.style "overflow" "auto"
         , Html.Attributes.class "narrow"
         ]
-        (if not show then
+        (if not options.show then
             [ Html.p
                 [ Html.Events.onClick <| ShowOptions True
                 , Html.Attributes.style "transform" "rotate(90deg)"
@@ -374,12 +402,21 @@ viewOptions show tracks fontSize trackHeight trackThickness waypointStrokeColor 
                             ]
                             (List.concat
                                 [ [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "upload GPX" OpenFileBrowser ]
-                                , if tracks |> Maybe.map (\ts -> List.length ts.prev > 0) |> Maybe.withDefault False then
+                                , if options.tracks |> Maybe.map (\ts -> listPopulated ts.current.waypoints) |> Maybe.withDefault False then
+                                    if options.showWaypointEditor then
+                                        [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "HIDE EDITOR" (ShowWaypointEditor False) ]
+
+                                    else
+                                        [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "SHOW EDITOR" (ShowWaypointEditor True) ]
+
+                                  else
+                                    []
+                                , if options.tracks |> Maybe.map (\ts -> listPopulated ts.prev) |> Maybe.withDefault False then
                                     [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "PREV" NavigateToPrevious ]
 
                                   else
                                     []
-                                , if tracks |> Maybe.map (\ts -> List.length ts.next > 0) |> Maybe.withDefault False then
+                                , if options.tracks |> Maybe.map (\ts -> listPopulated ts.next) |> Maybe.withDefault False then
                                     [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "NEXT" NavigateToNext ]
 
                                   else
@@ -389,7 +426,7 @@ viewOptions show tracks fontSize trackHeight trackThickness waypointStrokeColor 
                                             [ Html.Attributes.type_ "range"
                                             , Html.Attributes.min "1"
                                             , Html.Attributes.max "50"
-                                            , Html.Attributes.value <| String.fromFloat fontSize
+                                            , Html.Attributes.value <| String.fromFloat options.fontSize
                                             , Html.Events.onInput (String.toFloat >> Maybe.withDefault 15 >> UpdateFontSize)
                                             ]
                                             []
@@ -399,7 +436,7 @@ viewOptions show tracks fontSize trackHeight trackThickness waypointStrokeColor 
                                             [ Html.Attributes.type_ "range"
                                             , Html.Attributes.min "1"
                                             , Html.Attributes.max "400"
-                                            , Html.Attributes.value <| String.fromInt trackHeight
+                                            , Html.Attributes.value <| String.fromInt options.trackHeight
                                             , Html.Events.onInput (String.toInt >> Maybe.withDefault 200 >> UpdateTrackHeight)
                                             ]
                                             []
@@ -410,7 +447,7 @@ viewOptions show tracks fontSize trackHeight trackThickness waypointStrokeColor 
                                             , Html.Attributes.min "0.1"
                                             , Html.Attributes.max "10"
                                             , Html.Attributes.step "0.1"
-                                            , Html.Attributes.value <| String.fromFloat trackThickness
+                                            , Html.Attributes.value <| String.fromFloat options.trackThickness
                                             , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1 >> UpdateTrackThickness)
                                             ]
                                             []
@@ -418,7 +455,7 @@ viewOptions show tracks fontSize trackHeight trackThickness waypointStrokeColor 
                                   , optionGroup "Waypoint stroke colour"
                                         [ Html.textarea
                                             [ Html.Attributes.placeholder "Waypoint stroke colour..."
-                                            , Html.Attributes.value waypointStrokeColor
+                                            , Html.Attributes.value options.waypointStrokeColor
                                             , Html.Events.onInput <| WaypointStrokeColourChange
                                             ]
                                             []
@@ -820,3 +857,8 @@ httpErrorString err =
 
         Http.BadBody msg ->
             "bad body: " ++ msg
+
+
+listPopulated : List a -> Bool
+listPopulated list =
+    List.length list > 0
