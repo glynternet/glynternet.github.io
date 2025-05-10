@@ -16,6 +16,7 @@ incremental: true
 include: [_pages]
 exclude:
     - elm/
+    - wasm/
 markdown: kramdown
 permalink: /:year/:month/:title
 sass:

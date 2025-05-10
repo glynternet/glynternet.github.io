@@ -1,7 +1,5 @@
-module GpxApi exposing (Track, TrackPoint, Waypoint, decodeTrackpoints, decodeWaypoints, getElevationProfileDataResponse, httpErrorString)
+module GpxApi exposing (Track, TrackPoint, Waypoint, decodeElevationProfileDataResponse, decodeResult, decodeTrackpoints, decodeWaypoints)
 
-import File exposing (File)
-import Http
 import Json.Decode
 
 
@@ -24,18 +22,6 @@ type alias Waypoint =
     , name : String
     , categories : List String
     }
-
-
-getElevationProfileDataResponse : (Result String (List Track) -> msg) -> String -> File -> Cmd msg
-getElevationProfileDataResponse toMsg url file =
-    Http.post
-        { url = url
-        , body = Http.fileBody file
-        , expect =
-            Http.expectJson
-                (Result.mapError httpErrorString >> toMsg)
-                decodeElevationProfileDataResponse
-        }
 
 
 decodeElevationProfileDataResponse : Json.Decode.Decoder (List Track)
@@ -68,23 +54,12 @@ decodeWaypoints =
         )
 
 
-httpErrorString : Http.Error -> String
-httpErrorString err =
-    case err of
-        Http.BadUrl msg ->
-            "bad url: " ++ msg
-
-        Http.Timeout ->
-            "timeout"
-
-        Http.NetworkError ->
-            "network error"
-
-        Http.BadStatus code ->
-            "bad status: " ++ String.fromInt code
-
-        Http.BadBody msg ->
-            "bad body: " ++ msg
+decodeResult : Json.Decode.Decoder a -> Json.Decode.Decoder (Result String a)
+decodeResult decoder =
+    Json.Decode.oneOf
+        [ Json.Decode.field "error" Json.Decode.string |> Json.Decode.map Result.Err
+        , decoder |> Json.Decode.map Result.Ok
+        ]
 
 
 jsonDecodeNullableList : Json.Decode.Decoder a -> Json.Decode.Decoder (List a)

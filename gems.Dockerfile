@@ -1,5 +1,4 @@
-# this is just to cache the deps defined in the Gemfile so that it doesn't have to be done everytime serve is called.
-# TDBM: DOES THIS ACTUALLY DEPLOY AS V4?
+# this image is just to cache the deps defined in the Gemfile so that it doesn't have to be done everytime serve is called.
 FROM jvconseil/jekyll-docker:4.3.3
 #FROM jekyll/jekyll:4.2.2
 

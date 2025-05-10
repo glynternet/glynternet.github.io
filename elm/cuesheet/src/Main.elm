@@ -22,6 +22,7 @@ import Round
 import String
 import Svg
 import Svg.Attributes
+import Task
 import Time
 import Url exposing (Protocol(..))
 import Url.Builder
@@ -38,10 +39,18 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = always <| Time.every 1500 (always Tick)
+        , subscriptions = subscriptions
         , onUrlRequest = \_ -> Never
         , onUrlChange = \_ -> Never
         }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Sub.batch
+        [ Time.every 1500 (always Tick)
+        , receiveElevationProfileData WasmResponseReceived
+        ]
 
 
 
@@ -65,7 +74,6 @@ type alias StoredState =
 type alias Model =
     { page : Page
     , gpxError : Maybe String
-    , gpxServerURLOverride : Maybe String
     , showOptions : Bool
     , cuesViewOptions : CuesViewOptions
     , showQR : Bool
@@ -157,7 +165,7 @@ init maybeState url key =
                         >> storedStateModel url
                     )
                 -- TODO(glynternet): best default value for last reference point/?
-                |> Maybe.withDefault (Model (WelcomePage False) Maybe.Nothing Maybe.Nothing True (CuesViewOptions FromZero 1000 0 defaultSpacing defaultDistanceDetail) False url)
+                |> Maybe.withDefault (Model (WelcomePage False) Maybe.Nothing True (CuesViewOptions FromZero 1000 0 defaultSpacing defaultDistanceDetail) False url)
     )
         |> updateModel
         |> Tuple.mapSecond
@@ -189,7 +197,6 @@ storedStateModel url state =
             |> Maybe.withDefault (WelcomePage False)
         )
         Maybe.Nothing
-        Maybe.Nothing
         (state.showOptions |> Maybe.withDefault True)
         (CuesViewOptions
             -- TODO(glynternet): store "to point" state
@@ -217,12 +224,13 @@ type Msg
     | UpdateDistanceDetail Int
     | OpenFileBrowser
     | FileUploaded File.File
-    | GpxResponseReceived (Result String (List GpxApi.Track))
     | UpdateShowStartFinish Bool
     | SetAllTypesEnabled Bool
     | ShowQR
     | CloseQR
     | Tick
+    | GPXStringed String
+    | WasmResponseReceived String
 
 
 initialWaypointOptions : List Waypoint -> WaypointsOptions
@@ -363,36 +371,8 @@ update msg model =
 
         FileUploaded file ->
             ( { model | gpxError = Maybe.Nothing }
-            , GpxApi.getElevationProfileDataResponse GpxResponseReceived (Maybe.withDefault "https://gpx.fly.dev" model.gpxServerURLOverride) file
+            , Task.perform GPXStringed (File.toString file)
             )
-
-        GpxResponseReceived result ->
-            case result of
-                Err errMsg ->
-                    ( { model | gpxError = Maybe.Just errMsg }, Cmd.none )
-
-                Ok tracks ->
-                    case tracks of
-                        [ track ] ->
-                            let
-                                waypoints =
-                                    track.waypoints
-                                        |> List.map (\w -> Waypoint w.name w.distance w.categories)
-                                        |> List.sortBy .distance
-
-                                trackEndDistance =
-                                    List.head (List.reverse track.trackpoints) |> Maybe.map .distance |> Maybe.withDefault 0
-
-                                cuesModel =
-                                    initialCuesModel waypoints trackEndDistance
-                            in
-                            { model | page = CuesheetPage cuesModel, gpxError = Maybe.Nothing } |> updateModel
-
-                        [] ->
-                            ( { model | gpxError = Maybe.Just "No tracks found in GPX file" }, Cmd.none )
-
-                        _ ->
-                            ( { model | gpxError = Maybe.Just "Multiple tracks found in GPX file; only single-track GPX files are supported" }, Cmd.none )
 
         ShowQR ->
             updateModel { model | showQR = True }
@@ -410,6 +390,42 @@ update msg model =
 
                 _ ->
                     ( model, Cmd.none )
+
+        GPXStringed gpxContent ->
+            ( model, calculateElevationProfileData gpxContent )
+
+        WasmResponseReceived string ->
+            case Json.Decode.decodeString (GpxApi.decodeResult GpxApi.decodeElevationProfileDataResponse) string of
+                Err errMsg ->
+                    ( { model | gpxError = Maybe.Just ("parsing result from GPX response: " ++ Json.Decode.errorToString errMsg) }, Cmd.none )
+
+                Ok typedResult ->
+                    case typedResult of
+                        Err errMsg ->
+                            ( { model | gpxError = Maybe.Just errMsg }, Cmd.none )
+
+                        Ok tracks ->
+                            case tracks of
+                                [ track ] ->
+                                    let
+                                        waypoints =
+                                            track.waypoints
+                                                |> List.map (\w -> Waypoint w.name w.distance w.categories)
+                                                |> List.sortBy .distance
+
+                                        trackEndDistance =
+                                            List.head (List.reverse track.trackpoints) |> Maybe.map .distance |> Maybe.withDefault 0
+
+                                        cuesModel =
+                                            initialCuesModel waypoints trackEndDistance
+                                    in
+                                    { model | page = CuesheetPage cuesModel, gpxError = Maybe.Nothing } |> updateModel
+
+                                [] ->
+                                    ( { model | gpxError = Maybe.Just "No tracks found in GPX file" }, Cmd.none )
+
+                                _ ->
+                                    ( { model | gpxError = Maybe.Just "Multiple tracks found in GPX file; only single-track GPX files are supported" }, Cmd.none )
 
 
 updateCuesModel : Model -> CuesModel -> ( Model, Cmd Msg )
@@ -1312,3 +1328,9 @@ encodeWaypoints fieldNames waypoints =
 
 
 port storeState : String -> Cmd msg
+
+
+port calculateElevationProfileData : String -> Cmd msg
+
+
+port receiveElevationProfileData : (String -> msg) -> Sub msg

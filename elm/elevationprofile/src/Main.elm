@@ -14,6 +14,7 @@ import List.Extra
 import String
 import Svg
 import Svg.Attributes
+import Task
 import Time
 import Url exposing (Protocol(..))
 
@@ -42,6 +43,7 @@ subscriptions model =
 
           else
             Sub.none
+        , receiveElevationProfileData ElevationProfileResponseStringReceived
         ]
 
 
@@ -53,7 +55,6 @@ type alias Model =
     { tracks : LoadableResource PositionalTracks
     , showOptions : Bool
     , showWaypointEditor : Bool
-    , gpxServerURLOverride : Maybe String
     , fontSize : Float
     , trackHeight : Int
     , trackThickness : Float
@@ -122,7 +123,6 @@ type LocationError
 
 type alias StoredState =
     { tracks : Maybe PositionalTracks
-    , gpxServerURL : Maybe String
     , fontSize : Maybe Float
     , trackHeight : Maybe Int
     , trackThickness : Maybe Float
@@ -138,7 +138,6 @@ storedStateModel state =
     { tracks = loadableResourceFromMaybe state.tracks
     , showOptions = True
     , showWaypointEditor = False
-    , gpxServerURLOverride = state.gpxServerURL
     , fontSize = Maybe.withDefault 15 state.fontSize
     , trackHeight = Maybe.withDefault 200 state.trackHeight
     , trackThickness = Maybe.withDefault 1 state.trackThickness
@@ -154,7 +153,7 @@ storedStateModel state =
 
 defaultStoredState : StoredState
 defaultStoredState =
-    StoredState Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
+    StoredState Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
@@ -177,7 +176,6 @@ type Msg
     | ShowWaypointEditor Bool
     | OpenFileBrowser
     | FileUploaded File.File
-    | ElevationProfileDataResponseReceived (Result String (List Track))
     | NavigateToPrevious
     | NavigateToNext
     | WaypointDistanceChange Int Float
@@ -194,6 +192,8 @@ type Msg
     | ShowIntensity Bool
     | UpdateIntensityTau Float
     | Tick Time.Posix
+    | GPXStringed String
+    | ElevationProfileResponseStringReceived String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -214,27 +214,9 @@ update msg model =
                     (\cmd ->
                         Cmd.batch
                             [ cmd
-                            , GpxApi.getElevationProfileDataResponse ElevationProfileDataResponseReceived (Maybe.withDefault "https://gpx.fly.dev" model.gpxServerURLOverride) file
+                            , Task.perform GPXStringed (File.toString file)
                             ]
                     )
-
-        ElevationProfileDataResponseReceived resp ->
-            case resp of
-                Err errMsg ->
-                    updateModel
-                        { model | tracks = Error ("getting profile data from GPX: " ++ errMsg) }
-
-                Ok tracks ->
-                    updateModel
-                        { model
-                            | tracks =
-                                case tracks of
-                                    [] ->
-                                        Error "No tracks available in uploaded GPX 😢"
-
-                                    first :: rest ->
-                                        Loaded <| PositionalTracks [] first rest
-                        }
 
         Ignore ->
             ( model, Cmd.none )
@@ -385,6 +367,33 @@ update msg model =
                 Err _ ->
                     ( { model | locationError = Just PositionUnavailable }, Cmd.none )
 
+        GPXStringed gpxContent ->
+            ( model, calculateElevationProfileData gpxContent )
+
+        ElevationProfileResponseStringReceived string ->
+            case Json.Decode.decodeString (GpxApi.decodeResult GpxApi.decodeElevationProfileDataResponse) string of
+                Err errMsg ->
+                    updateModel
+                        { model | tracks = Error ("parsing result from GPX response: " ++ Json.Decode.errorToString errMsg) }
+
+                Ok typedResult ->
+                    case typedResult of
+                        Err errMsg ->
+                            updateModel
+                                { model | tracks = Error ("getting profile data from GPX: " ++ errMsg) }
+
+                        Ok tracks ->
+                            updateModel
+                                { model
+                                    | tracks =
+                                        case tracks of
+                                            [] ->
+                                                Error "No tracks available in uploaded GPX 😢"
+
+                                            first :: rest ->
+                                                Loaded <| PositionalTracks [] first rest
+                                }
+
 
 updateModel : Model -> ( Model, Cmd Msg )
 updateModel model =
@@ -434,7 +443,16 @@ view model =
                         [ Html.p [] [ Html.text "Loading profile..." ] ]
 
                     Error err ->
-                        [ viewErrorPanel <| ("There was an error creating your profile. Please fix any error and try again 😇\n\nError: " ++ String.left 1000 err ++ "...") ]
+                        [ viewErrorPanel <|
+                            ("There was an error creating your profile. Please fix any error and try again 😇\n\nError: "
+                                ++ (if String.length err > 1000 then
+                                        String.left 500 err ++ "...\n\n..." ++ String.right 500 err
+
+                                    else
+                                        err
+                                   )
+                            )
+                        ]
 
                     Loaded tracks ->
                         let
@@ -1150,7 +1168,6 @@ storedStateFromModel : Model -> StoredState
 storedStateFromModel model =
     StoredState
         (maybeFromloadableResource model.tracks)
-        model.gpxServerURLOverride
         (Just model.fontSize)
         (Just model.trackHeight)
         (Just model.trackThickness)
@@ -1165,8 +1182,7 @@ encodeSavedState state =
     Json.Encode.object
         (List.filterMap
             identity
-            [ state.gpxServerURL |> Maybe.map (\url -> ( "gpxServerURL", Json.Encode.string url ))
-            , state.fontSize |> Maybe.map (\size -> ( "fontSize", Json.Encode.float size ))
+            [ state.fontSize |> Maybe.map (\size -> ( "fontSize", Json.Encode.float size ))
             , state.trackHeight |> Maybe.map (\height -> ( "trackHeight", Json.Encode.int height ))
             , state.trackThickness |> Maybe.map (\thickness -> ( "trackThickness", Json.Encode.float thickness ))
             , state.waypointStrokeColor |> Maybe.map (\colour -> ( "waypointStrokeColor", Json.Encode.string colour ))
@@ -1181,9 +1197,8 @@ encodeSavedState state =
 
 storedStateDecoder : Json.Decode.Decoder StoredState
 storedStateDecoder =
-    Json.Decode.map6 StoredState
+    Json.Decode.map5 StoredState
         (Json.Decode.maybe (Json.Decode.field "tracks" decodePositionalTracks))
-        (Json.Decode.maybe (Json.Decode.field "gpxServerURL" Json.Decode.string))
         (Json.Decode.maybe (Json.Decode.field "fontSize" Json.Decode.float))
         (Json.Decode.maybe (Json.Decode.field "trackHeight" Json.Decode.int))
         (Json.Decode.maybe (Json.Decode.field "trackThickness" Json.Decode.float))
@@ -1283,6 +1298,16 @@ locationErrorToString err =
 
         GeoTimeout ->
             "Location request timed out"
+
+
+
+-- TODO: can this be bytes or jaon.Value (ish) types to have less indirection?!
+
+
+port calculateElevationProfileData : String -> Cmd msg
+
+
+port receiveElevationProfileData : (String -> msg) -> Sub msg
 
 
 
