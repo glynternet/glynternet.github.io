@@ -5747,6 +5747,9 @@ var $author$project$Main$init = F3(
 var $author$project$Main$LocationReceived = function (a) {
 	return {$: 15, a: a};
 };
+var $author$project$Main$SomeStringRecvd = function (a) {
+	return {$: 23, a: a};
+};
 var $author$project$Main$Tick = function (a) {
 	return {$: 21, a: a};
 };
@@ -6165,6 +6168,7 @@ var $elm$time$Time$every = F2(
 			A2($elm$time$Time$Every, interval, tagger));
 	});
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $author$project$Main$receiveElevationProfileData = _Platform_incomingPort('receiveElevationProfileData', $elm$json$Json$Decode$string);
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$receiveLocation = _Platform_incomingPort('receiveLocation', $elm$json$Json$Decode$value);
 var $author$project$Main$subscriptions = function (model) {
@@ -6172,7 +6176,8 @@ var $author$project$Main$subscriptions = function (model) {
 		_List_fromArray(
 			[
 				$author$project$Main$receiveLocation($author$project$Main$LocationReceived),
-				model.u ? A2($elm$time$Time$every, model.m * 1000, $author$project$Main$Tick) : $elm$core$Platform$Sub$none
+				model.u ? A2($elm$time$Time$every, model.m * 1000, $author$project$Main$Tick) : $elm$core$Platform$Sub$none,
+				$author$project$Main$receiveElevationProfileData($author$project$Main$SomeStringRecvd)
 			]));
 };
 var $author$project$Main$ElevationProfileDataResponseReceived = function (a) {
@@ -6184,6 +6189,9 @@ var $author$project$Main$Error = function (a) {
 var $author$project$Main$FileUploaded = function (a) {
 	return {$: 4, a: a};
 };
+var $author$project$Main$GPXStringed = function (a) {
+	return {$: 22, a: a};
+};
 var $author$project$Main$LatLon = F2(
 	function (lat, lon) {
 		return {a5: lat, a6: lon};
@@ -6194,6 +6202,19 @@ var $author$project$Main$LocationState = F3(
 		return {T: accuracy, aa: matchedDistance, bc: position};
 	});
 var $author$project$Main$PositionUnavailable = 1;
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$Main$calculateElevationProfileData = _Platform_outgoingPort('calculateElevationProfileData', $elm$json$Json$Encode$string);
+var $author$project$GpxApi$decodeElevationProfileDataResponse = $elm$json$Json$Decode$list(
+	A3(
+		$elm$json$Json$Decode$map2,
+		$author$project$GpxApi$Track,
+		A2($elm$json$Json$Decode$field, 'track', $author$project$GpxApi$decodeTrackpoints),
+		$elm$json$Json$Decode$oneOf(
+			_List_fromArray(
+				[
+					A2($elm$json$Json$Decode$field, 'waypoints', $author$project$GpxApi$decodeWaypoints),
+					$elm$json$Json$Decode$null(_List_Nil)
+				]))));
 var $author$project$Main$GeoTimeout = 2;
 var $author$project$Main$PermissionDenied = 0;
 var $author$project$Main$decodeLocationResult = $elm$json$Json$Decode$oneOf(
@@ -6226,6 +6247,18 @@ var $author$project$Main$decodeLocationResult = $elm$json$Json$Decode$oneOf(
 			A2($elm$json$Json$Decode$field, 'lon', $elm$json$Json$Decode$float),
 			A2($elm$json$Json$Decode$field, 'accuracy', $elm$json$Json$Decode$float))
 		]));
+var $author$project$GpxApi$decodeResult = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2(
+				$elm$json$Json$Decode$map,
+				$elm$core$Result$Err,
+				A2($elm$json$Json$Decode$field, 'error', $elm$json$Json$Decode$string)),
+				A2($elm$json$Json$Decode$map, $elm$core$Result$Ok, decoder)
+			]));
+};
+var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $elm$file$File$Select$file = F2(
 	function (mimes, toMsg) {
 		return A2(
@@ -6289,18 +6322,6 @@ var $author$project$Main$findNearestTrackPoint = F2(
 						},
 						trackpoints))));
 	});
-var $author$project$GpxApi$decodeElevationProfileDataResponse = $elm$json$Json$Decode$list(
-	A3(
-		$elm$json$Json$Decode$map2,
-		$author$project$GpxApi$Track,
-		A2($elm$json$Json$Decode$field, 'track', $author$project$GpxApi$decodeTrackpoints),
-		$elm$json$Json$Decode$oneOf(
-			_List_fromArray(
-				[
-					A2($elm$json$Json$Decode$field, 'waypoints', $author$project$GpxApi$decodeWaypoints),
-					$elm$json$Json$Decode$null(_List_Nil)
-				]))));
-var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
 		return {$: 3, a: a, b: b};
@@ -7147,6 +7168,7 @@ var $author$project$Main$requestLocation = _Platform_outgoingPort(
 	function ($) {
 		return $elm$json$Json$Encode$null;
 	});
+var $elm$file$File$toString = _File_toString;
 var $author$project$Main$trackWithWaypoints = F2(
 	function (track, waypoints) {
 		return _Utils_update(
@@ -7231,7 +7253,6 @@ var $author$project$Main$encodeTrackpoints = $elm$json$Json$Encode$list(
 					$elm$json$Json$Encode$float(point.a6))
 				]));
 	});
-var $elm$json$Json$Encode$string = _Json_wrap;
 var $author$project$Main$encodeWaypoints = $elm$json$Json$Encode$list(
 	function (waypoint) {
 		return $elm$json$Json$Encode$object(
@@ -7423,7 +7444,11 @@ var $author$project$Main$update = F2(
 									$author$project$GpxApi$getElevationProfileDataResponse,
 									$author$project$Main$ElevationProfileDataResponseReceived,
 									A2($elm$core$Maybe$withDefault, 'https://gpx.fly.dev', model.U),
-									file)
+									file),
+									A2(
+									$elm$core$Task$perform,
+									$author$project$Main$GPXStringed,
+									$elm$file$File$toString(file))
 								]));
 					},
 					$author$project$Main$updateModel(
@@ -7662,7 +7687,7 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					model,
 					$author$project$Main$requestLocation(0));
-			default:
+			case 15:
 				var value = msg.a;
 				var _v10 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$decodeLocationResult, value);
 				if (!_v10.$) {
@@ -7715,6 +7740,55 @@ var $author$project$Main$update = F2(
 								v: $elm$core$Maybe$Just(1)
 							}),
 						$elm$core$Platform$Cmd$none);
+				}
+			case 22:
+				var gpxContent = msg.a;
+				return _Utils_Tuple2(
+					model,
+					$author$project$Main$calculateElevationProfileData(gpxContent));
+			default:
+				var string = msg.a;
+				var _v12 = A2(
+					$elm$json$Json$Decode$decodeString,
+					$author$project$GpxApi$decodeResult($author$project$GpxApi$decodeElevationProfileDataResponse),
+					string);
+				if (_v12.$ === 1) {
+					var errMsg = _v12.a;
+					return $author$project$Main$updateModel(
+						_Utils_update(
+							model,
+							{
+								a: $author$project$Main$Error(
+									'parsing result from GPX response: ' + $elm$json$Json$Decode$errorToString(errMsg))
+							}));
+				} else {
+					var typedResult = _v12.a;
+					if (typedResult.$ === 1) {
+						var errMsg = typedResult.a;
+						return $author$project$Main$updateModel(
+							_Utils_update(
+								model,
+								{
+									a: $author$project$Main$Error('getting profile data from GPX: ' + errMsg)
+								}));
+					} else {
+						var tracks = typedResult.a;
+						return $author$project$Main$updateModel(
+							_Utils_update(
+								model,
+								{
+									a: function () {
+										if (!tracks.b) {
+											return $author$project$Main$Error('No tracks available in uploaded GPX 😢');
+										} else {
+											var first = tracks.a;
+											var rest = tracks.b;
+											return $author$project$Main$Loaded(
+												A3($author$project$Main$PositionalTracks, _List_Nil, first, rest));
+										}
+									}()
+								}));
+					}
 				}
 		}
 	});
@@ -8214,6 +8288,14 @@ var $author$project$Main$profile = F9(
 									])))
 						]))
 				]));
+	});
+var $elm$core$String$right = F2(
+	function (n, string) {
+		return (n < 1) ? '' : A3(
+			$elm$core$String$slice,
+			-n,
+			$elm$core$String$length(string),
+			string);
 	});
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
@@ -8787,7 +8869,7 @@ var $author$project$Main$view = function (model) {
 									return _List_fromArray(
 										[
 											$author$project$Main$viewErrorPanel(
-											'There was an error creating your profile. Please fix any error and try again 😇\n\nError: ' + (A2($elm$core$String$left, 1000, err) + '...'))
+											'There was an error creating your profile. Please fix any error and try again 😇\n\nError: ' + (($elm$core$String$length(err) > 1000) ? (A2($elm$core$String$left, 500, err) + ('...\n\n...' + A2($elm$core$String$right, 500, err))) : err))
 										]);
 								default:
 									var tracks = _v0.a;

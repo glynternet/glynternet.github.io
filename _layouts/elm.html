@@ -21,6 +21,11 @@ layout: default
 					localStorage.setItem("appState", state);
 					console.log("Stored state");
 				});
+					if (app.ports.calculateElevationProfileData) {
+					app.ports.calculateElevationProfileData.subscribe(gpxData => {
+						app.ports.receiveElevationProfileData.send(elevationProfileData(gpxData));
+					});
+				}
 				if (app.ports.requestLocation) {
 					app.ports.requestLocation.subscribe(function() {
 						if (!navigator.geolocation) {

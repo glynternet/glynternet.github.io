@@ -14,6 +14,7 @@ import List.Extra
 import String
 import Svg
 import Svg.Attributes
+import Task
 import Time
 import Url exposing (Protocol(..))
 
@@ -42,6 +43,7 @@ subscriptions model =
 
           else
             Sub.none
+        , receiveElevationProfileData SomeStringRecvd
         ]
 
 
@@ -194,6 +196,8 @@ type Msg
     | ShowIntensity Bool
     | UpdateIntensityTau Float
     | Tick Time.Posix
+    | GPXStringed String
+    | SomeStringRecvd String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -215,9 +219,11 @@ update msg model =
                         Cmd.batch
                             [ cmd
                             , GpxApi.getElevationProfileDataResponse ElevationProfileDataResponseReceived (Maybe.withDefault "https://gpx.fly.dev" model.gpxServerURLOverride) file
+                            , Task.perform GPXStringed (File.toString file)
                             ]
                     )
 
+        -- delete
         ElevationProfileDataResponseReceived resp ->
             case resp of
                 Err errMsg ->
@@ -385,6 +391,33 @@ update msg model =
                 Err _ ->
                     ( { model | locationError = Just PositionUnavailable }, Cmd.none )
 
+        GPXStringed gpxContent ->
+            ( model, calculateElevationProfileData gpxContent )
+
+        SomeStringRecvd string ->
+            case Json.Decode.decodeString (GpxApi.decodeResult GpxApi.decodeElevationProfileDataResponse) string of
+                Err errMsg ->
+                    updateModel
+                        { model | tracks = Error ("parsing result from GPX response: " ++ Json.Decode.errorToString errMsg) }
+
+                Ok typedResult ->
+                    case typedResult of
+                        Err errMsg ->
+                            updateModel
+                                { model | tracks = Error ("getting profile data from GPX: " ++ errMsg) }
+
+                        Ok tracks ->
+                            updateModel
+                                { model
+                                    | tracks =
+                                        case tracks of
+                                            [] ->
+                                                Error "No tracks available in uploaded GPX 😢"
+
+                                            first :: rest ->
+                                                Loaded <| PositionalTracks [] first rest
+                                }
+
 
 updateModel : Model -> ( Model, Cmd Msg )
 updateModel model =
@@ -434,7 +467,16 @@ view model =
                         [ Html.p [] [ Html.text "Loading profile..." ] ]
 
                     Error err ->
-                        [ viewErrorPanel <| ("There was an error creating your profile. Please fix any error and try again 😇\n\nError: " ++ String.left 1000 err ++ "...") ]
+                        [ viewErrorPanel <|
+                            ("There was an error creating your profile. Please fix any error and try again 😇\n\nError: "
+                                ++ (if String.length err > 1000 then
+                                        String.left 500 err ++ "...\n\n..." ++ String.right 500 err
+
+                                    else
+                                        err
+                                   )
+                            )
+                        ]
 
                     Loaded tracks ->
                         let
@@ -1286,6 +1328,16 @@ locationErrorToString err =
 
 
 
+-- TDBM: can this be bytes?!
+
+
+port calculateElevationProfileData : String -> Cmd msg
+
+
+port receiveElevationProfileData : (String -> msg) -> Sub msg
+
+
+
 -- PKG
 
 
@@ -1314,3 +1366,5 @@ maybeFromloadableResource resource =
 listPopulated : List a -> Bool
 listPopulated list =
     List.length list > 0
+
+

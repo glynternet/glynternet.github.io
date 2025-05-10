@@ -1,4 +1,4 @@
-module GpxApi exposing (Track, TrackPoint, Waypoint, decodeTrackpoints, decodeWaypoints, getElevationProfileDataResponse, httpErrorString)
+module GpxApi exposing (Track, TrackPoint, Waypoint, decodeElevationProfileDataResponse, decodeResult, decodeTrackpoints, decodeWaypoints, getElevationProfileDataResponse, httpErrorString)
 
 import File exposing (File)
 import Http
@@ -85,6 +85,14 @@ httpErrorString err =
 
         Http.BadBody msg ->
             "bad body: " ++ msg
+
+
+decodeResult : Json.Decode.Decoder a -> Json.Decode.Decoder (Result String a)
+decodeResult decoder =
+    Json.Decode.oneOf
+        [ Json.Decode.field "error" Json.Decode.string |> Json.Decode.map Result.Err
+        , decoder |> Json.Decode.map Result.Ok
+        ]
 
 
 jsonDecodeNullableList : Json.Decode.Decoder a -> Json.Decode.Decoder (List a)

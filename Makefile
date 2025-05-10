@@ -1,20 +1,27 @@
 ELM_OPTIMIZE ?= --optimize
 
-image: calendars cuesheet.js elevationprofile.js
+image: gems calendars wasm cuesheet.js elevationprofile.js
 	docker build -t glynternet/glynternet:latest .
+
+gems:
+	docker build -f gems.Dockerfile -t glynternet/glynternet-gems:latest .
 
 serve: image
 	docker run --rm \
 		--volume="${PWD}:/srv/jekyll:Z" \
 		--publish [::1]:4000:4000 \
 		-it glynternet/glynternet:latest \
-		jekyll serve
+		jekyll serve --trace --livereload
 
 sh:
 	docker run --rm \
 		--volume="${PWD}:/srv/jekyll:Z" \
 		-it glynternet/glynternet:latest \
 		bash
+
+.PHONY: wasm
+wasm:
+	${MAKE} -C wasm
 
 # phony because elm-live produces this and I can't work out how to produce to another path and still work in dev mode.
 .PHONY: cuesheet.js
