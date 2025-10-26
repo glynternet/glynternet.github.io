@@ -1,6 +1,78 @@
 name: Fat biking events
 events:
 
+### 2026
+
+# TODO:
+# - Cottonwood Crusher
+# - Silverton Whiteout
+
+  - summary: East Side Epic (Leadville Winter Series)
+    begin: 2026-04-04
+    location: |
+      Leadville
+    description: |
+      urls:
+        - https://www.cloudcitywheelers.com/the-winter-bike-series
+
+  - summary: Fatty Patty (Leadville Winter Series)
+    begin: 2026-03-21
+    location: |
+      Leadville
+    description: |
+      urls:
+        - https://www.cloudcitywheelers.com/the-winter-bike-series
+
+  - summary: Mineral Belt Trail Mayhem (Leadville Winter Series)
+    begin: 2026-03-07
+    location: |
+      Leadville
+    description: |
+      urls:
+        - https://www.cloudcitywheelers.com/the-winter-bike-series
+
+  - summary: Frico Freeze
+    begin: 2026-02-14
+    location: |
+      Frisco Nordic Center
+    description: |
+      urls:
+        - https://www.townoffrisco.com/event/nordic-center-events/frisco-freeze-winter-bike-race/
+
+  - summary: Tennessee Pass Night Jam (Leadville Winter Series)
+    begin: 2026-02-07
+    location: |
+      Leadville
+    description: |
+      urls:
+        - https://www.cloudcitywheelers.com/the-winter-bike-series
+
+  - summary: Fat Bike Worlds (Day 3)
+    begin: 2026-01-25
+    location: |
+      Leadville
+    description: |
+      urls:
+        - https://www.cloudcitywheelers.com/the-winter-bike-series
+
+  - summary: Fat Bike Worlds (Day 2)
+    begin: 2026-01-24
+    location: |
+      Leadville
+    description: |
+      urls:
+        - https://www.cloudcitywheelers.com/the-winter-bike-series
+
+  - summary: Fat Bike Worlds (Day 1)
+    begin: 2026-01-23
+    location: |
+      Leadville
+    description: |
+      urls:
+        - https://www.cloudcitywheelers.com/the-winter-bike-series
+
+### 2025
+
   - summary: East Side Epic (Leadville Winter Series)
     begin: 2025-04-05
     location: |
