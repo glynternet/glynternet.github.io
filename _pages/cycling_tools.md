@@ -7,6 +7,12 @@ tags: cycling
 
 # 🛠️ Ride toolkit
 
+These articles are super detailed and enough to guide anyone through building a toolkit for themselves:
+- [Bikepacking.com Repair Kit & Tools: Essential and Auxiliary](https://bikepacking.com/gear/bikepacking-repair-kit/)
+- [Huli "tools map"](https://www.huli.life/post/the-tools-map)
+
+## My reference list
+
 ### Essentials
 - Pump
 - Tyre levers
@@ -15,9 +21,11 @@ tags: cycling
 - Screwdriver
 - Quick link(s)
 - Chain tool/breaker
-- Gear cable end (for this)
+- Chain link tool
+- Gear cable end ([for snapped gear cable fix](https://youtu.be/fhdz0rWnScQ?si=w8CUE7le-gfVN3Iu&t=83))
+- Spoke wrench
 - Lint-free cloth / blue roll
-- Spoke tool
+- Wet wipe in single packet
 
 ### Tubed
 - Spare inner tube(s)
@@ -26,11 +34,10 @@ tags: cycling
 ### Tubeless
 - Presta valve core
 - Presta valve core tool
-- Tubeless plug kit w/ blade for excess
+- Tubeless plug kit
 - Tubeless sealant
 
 ### Extended / Comprehensive
-- Power meter battery
 - Chain lube
 - Dust cap
 - Super glue
@@ -46,11 +53,7 @@ tags: cycling
 ### Touring / bikepacking
 - Spare brake pads
 - Spare cleats
-- Chain link removal tool
 - Emergency phone holder setup
 - Derailleur hanger
+- Inner tube (for when tubeless goes really wrong)
 - Extra tubes or tubeless plugs
-
-### Other people's lists and guidance
-- [Huli "tools map"](https://www.huli.life/post/the-tools-map)
-- [Example Transcontinental Race Kit List](https://www.apidura.com/journal/chris-herberts-transcontinental-race-kit-list/)
