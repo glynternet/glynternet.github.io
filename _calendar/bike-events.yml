@@ -9,6 +9,76 @@ events:
 # - Cottonwood Crusher
 # - Silverton Whiteout
 
+  - summary: Colorado Trail Race (Day 8 - TBC)
+    begin: 2026-08-09
+    location: &ctr_location |
+      Denver, CO to Durango, CO
+    description: &ctr_description |
+      urls:
+        - https://bikepacking.com/event/2026-colorado-trail-race-ctr/
+        - https://jwookieone.com/colorado-trail-race/the-colorado-trail/
+
+  - summary: Colorado Trail Race (Day 7 - TBC)
+    begin: 2026-08-08
+    location: *ctr_location
+    description: *ctr_description
+
+  - summary: Colorado Trail Race (Day 6 - TBC)
+    begin: 2026-08-07
+    location: *ctr_location
+    description: *ctr_description
+
+  - summary: Colorado Trail Race (Day 5 - TBC)
+    begin: 2026-08-06
+    location: *ctr_location
+    description: *ctr_description
+
+  - summary: Colorado Trail Race (Day 4 - TBC)
+    begin: 2026-08-05
+    location: *ctr_location
+    description: *ctr_description
+
+  - summary: Colorado Trail Race (Day 3 - TBC)
+    begin: 2026-08-04
+    location: *ctr_location
+    description: *ctr_description
+
+  - summary: Colorado Trail Race (Day 2 - TBC)
+    begin: 2026-08-03
+    location: *ctr_location
+    description: *ctr_description
+
+  - summary: Colorado Trail Race (Day 1 - TBC)
+    begin: 2026-08-02
+    location: *ctr_location
+    description: *ctr_description
+
+  - summary: Doom (Day 4)
+    begin: 2026-03-16
+    location: |
+      Arkansas
+    description: &doom_description |
+      urls:
+        - https://www.ozarkgravelcyclists.com/doombikepacking
+
+  - summary: Doom (Day 3)
+    begin: 2026-03-15
+    location: |
+      Arkansas
+    description: *doom_description
+
+  - summary: Doom (Day 2)
+    begin: 2026-03-14
+    location: |
+      Arkansas
+    description: *doom_description
+
+  - summary: Doom (Day 1)
+    begin: 2026-03-13
+    location: |
+      Arkansas
+    description: *doom_description
+
   - summary: East Side Epic (Leadville Winter Series)
     begin: 2026-04-04
     location: |

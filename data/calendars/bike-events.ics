@@ -1,0 +1,291 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:ics.py 0.8.0-dev0 - http://git.io/lLljaA
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260809
+DTEND;VALUE=DATE:20260810
+SUMMARY:Colorado Trail Race (Day 8 - TBC)
+UID:57561f4e-f219-49d0-94ce-6d5ac4b42b1a@5756.org
+DESCRIPTION:urls:\n  - https://bikepacking.com/event/2026-colorado-trail-
+ race-ctr/\n  - https://jwookieone.com/colorado-trail-race/the-colorado-
+ trail/
+LOCATION:Denver\, CO to Durango\, CO
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260808
+DTEND;VALUE=DATE:20260809
+SUMMARY:Colorado Trail Race (Day 7 - TBC)
+UID:37ab4cdc-927a-4496-bf70-3d5279060c5f@37ab.org
+DESCRIPTION:urls:\n  - https://bikepacking.com/event/2026-colorado-trail-
+ race-ctr/\n  - https://jwookieone.com/colorado-trail-race/the-colorado-
+ trail/
+LOCATION:Denver\, CO to Durango\, CO
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260807
+DTEND;VALUE=DATE:20260808
+SUMMARY:Colorado Trail Race (Day 6 - TBC)
+UID:f32813de-0b7d-42f3-9fdb-4de347b3b9a1@f328.org
+DESCRIPTION:urls:\n  - https://bikepacking.com/event/2026-colorado-trail-
+ race-ctr/\n  - https://jwookieone.com/colorado-trail-race/the-colorado-
+ trail/
+LOCATION:Denver\, CO to Durango\, CO
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260806
+DTEND;VALUE=DATE:20260807
+SUMMARY:Colorado Trail Race (Day 5 - TBC)
+UID:91f683c2-3e6f-432a-b48a-f6c88eb852a9@91f6.org
+DESCRIPTION:urls:\n  - https://bikepacking.com/event/2026-colorado-trail-
+ race-ctr/\n  - https://jwookieone.com/colorado-trail-race/the-colorado-
+ trail/
+LOCATION:Denver\, CO to Durango\, CO
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260805
+DTEND;VALUE=DATE:20260806
+SUMMARY:Colorado Trail Race (Day 4 - TBC)
+UID:023a55d1-cb48-41f2-8113-e78c567fe4a6@023a.org
+DESCRIPTION:urls:\n  - https://bikepacking.com/event/2026-colorado-trail-
+ race-ctr/\n  - https://jwookieone.com/colorado-trail-race/the-colorado-
+ trail/
+LOCATION:Denver\, CO to Durango\, CO
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260804
+DTEND;VALUE=DATE:20260805
+SUMMARY:Colorado Trail Race (Day 3 - TBC)
+UID:615c33bf-8f3d-4f70-a310-494466695f4c@615c.org
+DESCRIPTION:urls:\n  - https://bikepacking.com/event/2026-colorado-trail-
+ race-ctr/\n  - https://jwookieone.com/colorado-trail-race/the-colorado-
+ trail/
+LOCATION:Denver\, CO to Durango\, CO
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260803
+DTEND;VALUE=DATE:20260804
+SUMMARY:Colorado Trail Race (Day 2 - TBC)
+UID:b051261c-14de-4b7b-990e-75d4700f1012@b051.org
+DESCRIPTION:urls:\n  - https://bikepacking.com/event/2026-colorado-trail-
+ race-ctr/\n  - https://jwookieone.com/colorado-trail-race/the-colorado-
+ trail/
+LOCATION:Denver\, CO to Durango\, CO
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260802
+DTEND;VALUE=DATE:20260803
+SUMMARY:Colorado Trail Race (Day 1 - TBC)
+UID:9966dce1-7320-48aa-9fc2-d4f5390c33dc@9966.org
+DESCRIPTION:urls:\n  - https://bikepacking.com/event/2026-colorado-trail-
+ race-ctr/\n  - https://jwookieone.com/colorado-trail-race/the-colorado-
+ trail/
+LOCATION:Denver\, CO to Durango\, CO
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260316
+DTEND;VALUE=DATE:20260317
+SUMMARY:Doom (Day 4)
+UID:7a08b02d-5add-4196-9140-5589fceb6780@7a08.org
+DESCRIPTION:urls:\n  - https://www.ozarkgravelcyclists.com/doombikepacking
+LOCATION:Arkansas
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260315
+DTEND;VALUE=DATE:20260316
+SUMMARY:Doom (Day 3)
+UID:44772d7e-54bc-4b4d-8010-0d4b7ba2e9d3@4477.org
+DESCRIPTION:urls:\n  - https://www.ozarkgravelcyclists.com/doombikepacking
+LOCATION:Arkansas
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260314
+DTEND;VALUE=DATE:20260315
+SUMMARY:Doom (Day 2)
+UID:8cea48d2-90c5-47c5-93d8-6af50ec8fe96@8cea.org
+DESCRIPTION:urls:\n  - https://www.ozarkgravelcyclists.com/doombikepacking
+LOCATION:Arkansas
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260313
+DTEND;VALUE=DATE:20260314
+SUMMARY:Doom (Day 1)
+UID:3bdec609-56fe-4664-b0f1-1a99dd0af797@3bde.org
+DESCRIPTION:urls:\n  - https://www.ozarkgravelcyclists.com/doombikepacking
+LOCATION:Arkansas
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260404
+DTEND;VALUE=DATE:20260405
+SUMMARY:East Side Epic (Leadville Winter Series)
+UID:efdad0aa-f75e-46d0-83a1-244e64aa4923@efda.org
+DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
+ series
+LOCATION:Leadville
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260321
+DTEND;VALUE=DATE:20260322
+SUMMARY:Fatty Patty (Leadville Winter Series)
+UID:57e4dca3-38d8-4210-93f2-b9f8cb483eb7@57e4.org
+DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
+ series
+LOCATION:Leadville
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260307
+DTEND;VALUE=DATE:20260308
+SUMMARY:Mineral Belt Trail Mayhem (Leadville Winter Series)
+UID:b3f1d6db-2410-45d7-9abf-d30b9aa21134@b3f1.org
+DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
+ series
+LOCATION:Leadville
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260214
+DTEND;VALUE=DATE:20260215
+SUMMARY:Frico Freeze
+UID:aa55edb3-6ea2-4bc0-a82e-9857f734c7bb@aa55.org
+DESCRIPTION:urls:\n  - https://www.townoffrisco.com/event/nordic-center-
+ events/frisco-freeze-winter-bike-race/
+LOCATION:Frisco Nordic Center
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260207
+DTEND;VALUE=DATE:20260208
+SUMMARY:Tennessee Pass Night Jam (Leadville Winter Series)
+UID:36de25de-9c93-4007-b005-ac1e38cafeeb@36de.org
+DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
+ series
+LOCATION:Leadville
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260125
+DTEND;VALUE=DATE:20260126
+SUMMARY:Fat Bike Worlds (Day 3)
+UID:b923e3e9-1ffd-406a-bb55-cead44810598@b923.org
+DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
+ series
+LOCATION:Leadville
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260124
+DTEND;VALUE=DATE:20260125
+SUMMARY:Fat Bike Worlds (Day 2)
+UID:616e61d8-2813-4d53-945f-8bb9b03f041d@616e.org
+DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
+ series
+LOCATION:Leadville
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260123
+DTEND;VALUE=DATE:20260124
+SUMMARY:Fat Bike Worlds (Day 1)
+UID:65dbaf31-3a53-43a1-b9c7-babc3bbc7836@65db.org
+DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
+ series
+LOCATION:Leadville
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20250405
+DTEND;VALUE=DATE:20250406
+SUMMARY:East Side Epic (Leadville Winter Series)
+UID:ad957629-803f-496e-a8de-8bc0080fe35e@ad95.org
+DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
+ series
+LOCATION:Leadville
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20250315
+DTEND;VALUE=DATE:20250316
+SUMMARY:Fatty Patty 50K (Leadville Winter Series)
+UID:1d2b071b-a7ed-49b0-ad51-faa0e04edf61@1d2b.org
+DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
+ series
+LOCATION:Leadville
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20250301
+DTEND;VALUE=DATE:20250302
+SUMMARY:Mineral Belt Mayhem (Leadville Winter Series)
+UID:1b3cdf3e-44ef-4324-b656-e7096c1bcb6c@1b3c.org
+DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
+ series
+LOCATION:Leadville
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20250212
+DTEND;VALUE=DATE:20250213
+SUMMARY:Frisco Freeze
+UID:efa7e6d8-a92e-4b8f-b371-a020bf914dad@efa7.org
+DESCRIPTION:urls:\n  - https://www.townoffrisco.com/event/nordic-center-
+ events/frisco-freeze-winter-bike-race/
+LOCATION:Frisco Nordic Center\n616 Recreation Way\nFrisco\, CO 80443
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20250208
+DTEND;VALUE=DATE:20250209
+SUMMARY:Tennessee Pass Night Jam (Leadville Winter Series)
+UID:3eafdd5a-2bd3-46b9-9158-7d3fa5a42dfa@3eaf.org
+DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
+ series
+LOCATION:Leadville
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20250201
+DTEND;VALUE=DATE:20250202
+SUMMARY:Cottonwood Crusher
+UID:c275f092-eca2-40d8-ac84-d73535bcf0ad@c275.org
+DESCRIPTION:urls:\n  - https://www.instagram.com/CottonwoodCrusher/\n  - 
+ https://www.facebook.com/groups/cottonwoodcrusher/info/?_rdr\n  - 
+ https://www.facebook.com/groups/cottonwoodcrusher/\n  - 
+ https://coloradoes.wordpress.com/swes-event-list/cottonwood-crusher/
+LOCATION:https://goo.gl/maps/PSgGf2qwJfsK9jhL7
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20250124T000000
+DTEND:20250126T000000
+SUMMARY:Fat Bike Worlds
+UID:05792917-ec4c-463e-8940-80e3e6267a4e@0579.org
+DESCRIPTION:urls:\n  - https://fatbikeworlds.org/
+LOCATION:Crested Butte
+DTSTAMP:20251216T041903Z
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20250118
+DTEND;VALUE=DATE:20250119
+SUMMARY:Colorado Cup ITT (Leadville Winter Series)
+UID:a11d94af-f512-4561-a8dd-5aa7923e1598@a11d.org
+DESCRIPTION:urls:\n  - https://www.cloudcitywheelers.com/the-winter-bike-
+ series
+LOCATION:Leadville
+DTSTAMP:20251216T041903Z
+END:VEVENT
+NAME:Fat biking events
+X-WR-CALNAME:Fat biking events
+END:VCALENDAR
