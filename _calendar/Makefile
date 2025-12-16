@@ -1,11 +1,15 @@
 BUILD_DIR = ../data/calendars
+DATA_DIR = ../_data
 
-all: fat-biking bike-events
+all: fat-biking cycling-events
 
-.PHONY: ${BUILD_DIR}/fat-biking.ics ${BUILD_DIR}/bike-events.ics
+.PHONY: ${BUILD_DIR}/fat-biking.ics ${BUILD_DIR}/cycling-events.ics
 
 fat-biking:
 	yaml2ics ./fat-biking.yml > "${BUILD_DIR}/fat-biking.ics"
 
-bike-events:
-	yaml2ics ./bike-events.yml > "${BUILD_DIR}/bike-events.ics"
+cycling-events: ${DATA_DIR}/cycling_events.yml
+	yaml2ics ./cycling-events.yml > "${BUILD_DIR}/cycling-events.ics"
+
+${DATA_DIR}/cycling_events.yml: ./cycling-events.yml
+	cp ./cycling-events.yml "${DATA_DIR}/cycling_events.yml"

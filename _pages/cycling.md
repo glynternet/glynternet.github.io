@@ -11,5 +11,6 @@ tags: cycling
 [🗺️](/cycling/maps)
 [🍌](/cycling/nutrition)
 [☕](/data/halfway-coffee.gpx)
+[📅](/cycling/calendar)
 [🛠️](/cycling/tools)
 [👍](/cycling/event_readiness)
