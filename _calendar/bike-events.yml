@@ -5,9 +5,363 @@ events:
 
 ### 2026
 
-# TODO:
-# - Cottonwood Crusher
-# - Silverton Whiteout
+  - summary: Pleasantville
+    begin: 2026-12-05
+    location: |
+      Arizona
+    description: |
+      Part of Arizona Endurance Series
+      urls:
+        - https://rockyroad5050.wordpress.com/
+        - https://rockyroad5050.wordpress.com/pleasantville/
+
+  - summary: Picketpost Punisher
+    begin: 2026-11-14
+    location: |
+      Arizona
+    description: |
+      Part of Arizona Endurance Series
+      urls:
+        - https://rockyroad5050.wordpress.com/
+        - https://rockyroad5050.wordpress.com/8-picketpost-punisher/
+
+  - summary: Kentucky Camp Charity Ride
+    begin: 2026-10-24
+    location: |
+      Arizona
+    description: |
+      Part of Arizona Endurance Series
+      urls:
+        - https://rockyroad5050.wordpress.com/
+        - https://rockyroad5050.wordpress.com/kc/
+
+  - summary: Coconino Stage Bikepack (Day 4)
+    begin: 2026-10-12
+    location: |
+      Arizona
+    description: &coconino_description |
+      Part of Arizona Endurance Series
+      urls:
+        - https://rockyroad5050.wordpress.com/
+        - https://rockyroad5050.wordpress.com/5-coconino-250-and-350/
+
+  - summary: Coconino Stage Bikepack (Day 3)
+    begin: 2026-10-11
+    location: |
+      Arizona
+    description: *coconino_description
+
+  - summary: Coconino Stage Bikepack (Day 2)
+    begin: 2026-10-10
+    location: |
+      Arizona
+    description: *coconino_description
+
+  - summary: Coconino Stage Bikepack (Day 1)
+    begin: 2026-10-09
+    location: |
+      Arizona
+    description: *coconino_description
+
+  - summary: "DATE TBD: Zuni Mountains 100 (MTB)"
+    begin: 2026-10-18
+    location: |
+      New Mexico
+    description: |
+      Part of NM Endurance Series
+      Date taken from 2025 schedule for time of year approximation
+      urls:
+        - https://nm-es.weebly.com/rides.html
+        - https://nm-es.weebly.com/zuni-mountains.html
+
+  - summary: Mogollon Mayhem
+    begin: 2026-09-26
+    location: |
+      Arizona
+    description: |
+      Part of Arizona Endurance Series
+      urls:
+        - https://rockyroad5050.wordpress.com/
+        - https://rockyroad5050.wordpress.com/mogollon-mayhem/
+
+  - summary: "DATE TBD: Santa Fe Big Friggin Loop (MTB)"
+    begin: 2026-09-06
+    location: |
+      Santa Fe, NM
+    description: |
+      Part of NM Endurance Series
+      Date taken from 2025 schedule for time of year approximation
+      urls:
+        - https://nm-es.weebly.com/rides.html
+        - https://nm-es.weebly.com/santa-fe-big-friggin-loop.html
+
+  - summary: Tusayan Tussle
+    begin: 2026-08-22
+    location: |
+      Arizona
+    description: |
+      Part of Arizona Endurance Series
+      urls:
+        - https://rockyroad5050.wordpress.com/
+        - https://rockyroad5050.wordpress.com/the-tusayan-tussle/
+
+  - summary: "DATE TBD: Watermelon Beat Down (MTB)"
+    begin: 2026-07-12
+    location: |
+      New Mexico
+    description: |
+      Part of NM Endurance Series
+      Date taken from 2025 schedule for time of year approximation
+      urls:
+        - https://nm-es.weebly.com/rides.html
+        - https://nm-es.weebly.com/watermelon-beat-down.html
+
+  - summary: Kaibab 160 & 230 Stage Bikepack (Day 5)
+    begin: 2026-06-08
+    location: |
+      Arizona
+    description: &kaibab_description |
+      Part of Arizona Endurance Series
+      urls:
+        - https://rockyroad5050.wordpress.com/
+        - https://rockyroad5050.wordpress.com/kaibab-130-and-200/
+
+  - summary: Kaibab 160 & 230 Stage Bikepack (Day 4)
+    begin: 2026-06-07
+    location: |
+      Arizona
+    description: *kaibab_description
+
+  - summary: Aspen Asphyxiation
+    begin: 2026-06-06
+    location: |
+      Flagstaff, AZ
+    description: |
+      Part of Arizona Endurance Series
+      urls:
+        - https://rockyroad5050.wordpress.com/
+        - https://rockyroad5050.wordpress.com/5-aspen-asphyxiation/
+
+  - summary: Kaibab 160 & 230 Stage Bikepack (Day 3)
+    begin: 2026-06-06
+    location: |
+      Arizona
+    description: *kaibab_description
+
+  - summary: Kaibab 160 & 230 Stage Bikepack (Day 2)
+    begin: 2026-06-05
+    location: |
+      Arizona
+    description: *kaibab_description
+
+  - summary: Kaibab 160 & 230 Stage Bikepack (Day 1)
+    begin: 2026-06-04
+    location: |
+      Arizona
+    description: *kaibab_description
+
+  - summary: "DATE TBD: Manzanita Mountain Epic (MTB)"
+    begin: 2026-05-17
+    location: |
+      New Mexico
+    description: |
+      Part of NM Endurance Series
+      Date taken from 2025 schedule for time of year approximation
+      urls:
+        - https://nm-es.weebly.com/rides.html
+        - https://nm-es.weebly.com/manzanita-mountain-epic.html
+
+  - summary: Pinyons & Pines
+    begin: 2026-05-14
+    location: |
+      Arizona
+    description: |
+      Part of Arizona Endurance Series
+      Multi-day ride through Flagstaff, Sedona and beyond
+      urls:
+        - https://rockyroad5050.wordpress.com/
+        - https://rockyroad5050.wordpress.com/pinyons-pines-bikepack/
+        - https://danaernst.com/PinyonsPines/
+
+  - summary: Prescott Monstercross
+    begin: 2026-04-18
+    location: |
+      Prescott, AZ
+    description: |
+      Part of Arizona Endurance Series
+      urls:
+        - https://rockyroad5050.wordpress.com/
+        - https://rockyroad5050.wordpress.com/pm/
+
+  - summary: "DATE TBD: San Ysidro Dirty Century (MTB/CX Gravel Grinder)"
+    begin: 2026-04-05
+    location: |
+      San Ysidro, NM
+    description: |
+      Part of NM Endurance Series
+      Date taken from 2025 schedule for time of year approximation
+      urls:
+        - https://nm-es.weebly.com/rides.html
+        - https://nm-es.weebly.com/san-ysidro-dirty-century.html
+
+  - summary: Coronado Gold
+    begin: 2026-04-04
+    location: |
+      Patagonia, AZ
+    description: |
+      Part of Arizona Endurance Series
+      urls:
+        - https://rockyroad5050.wordpress.com/
+        - https://rockyroad5050.wordpress.com/coronado-gold/
+
+  - summary: "DATE TBD: ABQ Mix Media Big Friggin Loop (CX/MTB)"
+    begin: 2026-03-29
+    location: |
+      Albuquerque, NM
+    description: |
+      Part of NM Endurance Series
+      Date taken from 2025 schedule for time of year approximation
+      urls:
+        - https://nm-es.weebly.com/rides.html
+        - https://nm-es.weebly.com/abq-mixed-media-big-friggin-loop.html
+
+  - summary: Sedona Big Friggin' Loop
+    begin: 2026-03-28
+    location: |
+      Sedona, AZ
+    description: |
+      Part of Arizona Endurance Series
+      Individual Time Trial format
+      urls:
+        - https://rockyroad5050.wordpress.com/
+        - https://rockyroad5050.wordpress.com/3-sedona-big-friggin-loop/
+
+  - summary: Ripsey
+    begin: 2026-03-21
+    location: |
+      Arizona
+    description: |
+      Part of Arizona Endurance Series
+      Features the famed Ripsey ridgeline on the Arizona Trail
+      urls:
+        - https://rockyroad5050.wordpress.com/
+        - https://rockyroad5050.wordpress.com/ripsey/
+
+  - summary: Tortolita 50
+    begin: 2026-02-21
+    location: |
+      Tucson, AZ
+    description: |
+      Part of Arizona Endurance Series
+      urls:
+        - https://rockyroad5050.wordpress.com/
+        - https://rockyroad5050.wordpress.com/tucson/
+
+  - summary: Gila 100 Bikepacking Stage Race (Day 2)
+    begin: 2026-02-15
+    location: |
+      Arizona
+    description: &gila_description |
+      Part of Arizona Endurance Series
+      2-day bikepacking event
+      urls:
+        - https://rockyroad5050.wordpress.com/
+        - https://rockyroad5050.wordpress.com/the-gila-100/
+
+  - summary: Gila 100 Bikepacking Stage Race (Day 1)
+    begin: 2026-02-14
+    location: |
+      Arizona
+    description: *gila_description
+
+  - summary: Cottonwood Crusher (fat bike)
+    begin: 2026-01-31
+    location: |
+      Colorado
+    description: |
+      Part of Colorado Endurance Series
+      urls:
+        - https://coloradoes.wordpress.com/
+        - https://coloradoes.wordpress.com/swes-event-list/cottonwood-crusher/
+
+  - summary: Antelope Peak Challenge
+    begin: 2026-01-17
+    location: |
+      Oracle, AZ
+    description: |
+      Part of Arizona Endurance Series
+      Little known singletrack near Oracle
+      urls:
+        - https://rockyroad5050.wordpress.com/
+        - https://rockyroad5050.wordpress.com/apc/
+
+  - summary: "DATE TBD: Leadville Big Friggin' Loop (LBFL)"
+    begin: 2026-01-01
+    location: |
+      Leadville, CO
+    description: |
+      Part of Colorado Endurance Series
+      urls:
+        - https://coloradoes.wordpress.com/
+        - https://coloradoes.wordpress.com/leadville-big-friggin-loop-2021/
+
+  - summary: "DATE TBD: Colorado Trail Classic (CTC)"
+    begin: 2026-01-01
+    location: |
+      Colorado
+    description: |
+      Part of Colorado Endurance Series
+      urls:
+        - https://coloradoes.wordpress.com/
+        - https://coloradoes.wordpress.com/swes-event-list/colorado-trail-classic/
+
+  - summary: "DATE TBD: Monarch Mind Bender"
+    begin: 2026-01-01
+    location: |
+      Colorado
+    description: |
+      Part of Colorado Endurance Series
+      urls:
+        - https://coloradoes.wordpress.com/
+        - https://coloradoes.wordpress.com/swes-event-list/monarch-mind-bender-mmb/
+
+  - summary: "DATE TBD: Pain In The Aspen (PIA)"
+    begin: 2026-01-01
+    location: |
+      Colorado
+    description: |
+      Part of Colorado Endurance Series
+      urls:
+        - https://coloradoes.wordpress.com/
+        - https://coloradoes.wordpress.com/swes-event-list/pain-in-the-aspen/
+
+  - summary: "DATE TBD: Salida Big Friggin Loop (SBFL)"
+    begin: 2026-01-01
+    location: |
+      Salida, CO
+    description: |
+      Part of Colorado Endurance Series
+      urls:
+        - https://coloradoes.wordpress.com/
+        - https://coloradoes.wordpress.com/swes-event-list/sbfl/
+
+  - summary: "DATE TBD: Guffey Huffer (Gravel)"
+    begin: 2026-01-01
+    location: |
+      Colorado
+    description: |
+      Part of Colorado Endurance Series
+      urls:
+        - https://coloradoes.wordpress.com/
+        - https://coloradoes.wordpress.com/swes-event-list/ddf200k/
+
+  - summary: "DATE TBD: Silverton Whiteout"
+    begin: 2026-01-01
+    location: |
+      Silverton, CO
+    description: |
+      urls:
+        - https://www.silvertonwhiteout.com/
 
   - summary: Colorado Trail Race (Day 8 - TBC)
     begin: 2026-08-09
