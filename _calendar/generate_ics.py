@@ -8,7 +8,7 @@ import ics
 import yaml
 
 
-def build_description(event: dict) -> str:
+def build_description(event: dict, series_map: dict) -> str:
     """Build ICS description from event fields."""
     parts = []
 
@@ -16,7 +16,11 @@ def build_description(event: dict) -> str:
         parts.append(desc)
 
     if series := event.get("series"):
-        parts.append(f"Series: {series}")
+        series_info = series_map.get(series, {})
+        if series_url := series_info.get("url"):
+            parts.append(f"Series: {series} ({series_url})")
+        else:
+            parts.append(f"Series: {series}")
 
     if urls := event.get("urls"):
         parts.append("Links:")
@@ -26,7 +30,7 @@ def build_description(event: dict) -> str:
     return "\n".join(parts) if parts else ""
 
 
-def create_event(event_data: dict) -> ics.Event:
+def create_event(event_data: dict, series_map: dict) -> ics.Event:
     """Create an ics.Event from event data."""
     e = ics.Event()
     e.summary = event_data["summary"]
@@ -50,7 +54,7 @@ def create_event(event_data: dict) -> ics.Event:
     if location := event_data.get("location"):
         e.location = location
 
-    if description := build_description(event_data):
+    if description := build_description(event_data, series_map):
         e.description = description
 
     return e
@@ -66,10 +70,11 @@ def main():
     with open(yaml_file, "r") as f:
         data = yaml.safe_load(f)
 
+    series_map = data["series"]
     calendar = ics.Calendar()
 
     for event_data in data.get("events", []):
-        calendar.events.append(create_event(event_data))
+        calendar.events.append(create_event(event_data, series_map))
 
     print(calendar.serialize())
 

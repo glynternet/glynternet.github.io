@@ -20,7 +20,12 @@ tags: cycling
 ### {{ event.begin }} - {{ event.summary }}
 **Location:** {{ event.location | strip }}
 {% if event.series %}
+{% assign series_info = site.data.cycling_events.series[event.series] %}
+{% if series_info.url %}
+**Series:** [{{ event.series }}]({{ series_info.url }})
+{% else %}
 **Series:** {{ event.series }}
+{% endif %}
 {% endif %}
 {% if event.description %}
 **Details:** {{ event.description }}

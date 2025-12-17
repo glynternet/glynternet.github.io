@@ -1,4 +1,17 @@
 name: Cycling events
+
+series:
+  Arizona Endurance Series:
+    url: https://rockyroad5050.wordpress.com/
+  Colorado Endurance Series:
+    url: https://coloradoes.wordpress.com/
+  Dark Timber MTB:
+    url: https://www.darktimbermtb.com/
+  Leadville Winter Series:
+    url: https://www.cloudcitywheelers.com/the-winter-bike-series
+  New Mexico Endurance Series:
+    url: https://nm-es.weebly.com/rides.html
+
 events:
 
 ### 2026
@@ -8,21 +21,18 @@ events:
   location: Arizona
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/pleasantville/
 - summary: Picketpost Punisher
   begin: 2026-11-14
   location: Arizona
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/8-picketpost-punisher/
 - summary: Kentucky Camp Charity Ride
   begin: 2026-10-24
   location: Arizona
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/kc/
 - summary: 'DATE TBD: Zuni Mountains 100 (MTB)'
   begin: 2026-10-18
@@ -30,49 +40,41 @@ events:
   description: Date taken from 2025 schedule for time of year approximation
   series: New Mexico Endurance Series
   urls:
-  - https://nm-es.weebly.com/rides.html
   - https://nm-es.weebly.com/zuni-mountains.html
 - summary: Coconino Stage Bikepack (Day 4)
   begin: 2026-10-12
   location: Arizona
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/5-coconino-250-and-350/
 - summary: Coconino Stage Bikepack (Day 3)
   begin: 2026-10-11
   location: Arizona
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/5-coconino-250-and-350/
 - summary: Coconino Stage Bikepack (Day 2)
   begin: 2026-10-10
   location: Arizona
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/5-coconino-250-and-350/
 - summary: Coconino Stage Bikepack (Day 1)
   begin: 2026-10-09
   location: Arizona
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/5-coconino-250-and-350/
 - summary: Head to Head
   begin: 2026-10-03
   location: Vail, Colorado
   description: 42 miles - 7,600ft
   series: Dark Timber MTB
-  urls:
-  - https://www.darktimbermtb.com/
 - summary: Mogollon Mayhem
   begin: 2026-09-26
   location: Arizona
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/mogollon-mayhem/
 - summary: 'DATE TBD: Santa Fe Big Friggin Loop (MTB)'
   begin: 2026-09-06
@@ -80,21 +82,17 @@ events:
   description: Date taken from 2025 schedule for time of year approximation
   series: New Mexico Endurance Series
   urls:
-  - https://nm-es.weebly.com/rides.html
   - https://nm-es.weebly.com/santa-fe-big-friggin-loop.html
 - summary: Elk Mountains Ultra
   begin: 2026-08-22
   location: Eagle, Colorado
   description: 240 miles - 36,800ft
   series: Dark Timber MTB
-  urls:
-  - https://www.darktimbermtb.com/
 - summary: Tusayan Tussle
   begin: 2026-08-22
   location: Arizona
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/the-tusayan-tussle/
 - summary: Colorado Trail Race (Day 8 - TBC)
   begin: 2026-08-09
@@ -149,64 +147,53 @@ events:
   location: Minturn, Colorado
   description: 84 miles - 14,500ft
   series: Dark Timber MTB
-  urls:
-  - https://www.darktimbermtb.com/
 - summary: 'DATE TBD: Watermelon Beat Down (MTB)'
   begin: 2026-07-12
   location: New Mexico
   description: Date taken from 2025 schedule for time of year approximation
   series: New Mexico Endurance Series
   urls:
-  - https://nm-es.weebly.com/rides.html
   - https://nm-es.weebly.com/watermelon-beat-down.html
 - summary: Alpine Alleycat
   begin: 2026-06-27
   location: Minturn, Colorado
   description: Choose Your Own Adventure format
   series: Dark Timber MTB
-  urls:
-  - https://www.darktimbermtb.com/
 - summary: Kaibab 160 & 230 Stage Bikepack (Day 5)
   begin: 2026-06-08
   location: Arizona
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/kaibab-130-and-200/
 - summary: Kaibab 160 & 230 Stage Bikepack (Day 4)
   begin: 2026-06-07
   location: Arizona
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/kaibab-130-and-200/
 - summary: Aspen Asphyxiation
   begin: 2026-06-06
   location: Flagstaff, AZ
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/5-aspen-asphyxiation/
 - summary: Kaibab 160 & 230 Stage Bikepack (Day 3)
   begin: 2026-06-06
   location: Arizona
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/kaibab-130-and-200/
 - summary: Kaibab 160 & 230 Stage Bikepack (Day 2)
   begin: 2026-06-05
   location: Arizona
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/kaibab-130-and-200/
 - summary: Kaibab 160 & 230 Stage Bikepack (Day 1)
   begin: 2026-06-04
   location: Arizona
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/kaibab-130-and-200/
 - summary: 'DATE TBD: Manzanita Mountain Epic (MTB)'
   begin: 2026-05-17
@@ -214,7 +201,6 @@ events:
   description: Date taken from 2025 schedule for time of year approximation
   series: New Mexico Endurance Series
   urls:
-  - https://nm-es.weebly.com/rides.html
   - https://nm-es.weebly.com/manzanita-mountain-epic.html
 - summary: Pinyons & Pines
   begin: 2026-05-14
@@ -222,7 +208,6 @@ events:
   description: Multi-day ride through Flagstaff, Sedona and beyond
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/pinyons-pines-bikepack/
   - https://danaernst.com/PinyonsPines/
 - summary: Westwater 160
@@ -230,14 +215,11 @@ events:
   location: Fruita, Colorado
   description: 160 miles - 13,500ft
   series: Dark Timber MTB
-  urls:
-  - https://www.darktimbermtb.com/
 - summary: Prescott Monstercross
   begin: 2026-04-18
   location: Prescott, AZ
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/pm/
 - summary: 'DATE TBD: San Ysidro Dirty Century (MTB/CX Gravel Grinder)'
   begin: 2026-04-05
@@ -245,28 +227,23 @@ events:
   description: Date taken from 2025 schedule for time of year approximation
   series: New Mexico Endurance Series
   urls:
-  - https://nm-es.weebly.com/rides.html
   - https://nm-es.weebly.com/san-ysidro-dirty-century.html
 - summary: Coronado Gold
   begin: 2026-04-04
   location: Patagonia, AZ
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/coronado-gold/
 - summary: East Side Epic (Leadville Winter Series)
   begin: 2026-04-04
   location: Leadville
   series: Leadville Winter Series
-  urls:
-  - https://www.cloudcitywheelers.com/the-winter-bike-series
 - summary: 'DATE TBD: ABQ Mix Media Big Friggin Loop (CX/MTB)'
   begin: 2026-03-29
   location: Albuquerque, NM
   description: Date taken from 2025 schedule for time of year approximation
   series: New Mexico Endurance Series
   urls:
-  - https://nm-es.weebly.com/rides.html
   - https://nm-es.weebly.com/abq-mixed-media-big-friggin-loop.html
 - summary: Sedona Big Friggin' Loop
   begin: 2026-03-28
@@ -274,7 +251,6 @@ events:
   description: Individual Time Trial format
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/3-sedona-big-friggin-loop/
 - summary: Ripsey
   begin: 2026-03-21
@@ -282,14 +258,11 @@ events:
   description: Features the famed Ripsey ridgeline on the Arizona Trail
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/ripsey/
-- summary: Fatty Patty (Leadville Winter Series)
+- summary: Fatty Patty
   begin: 2026-03-21
   location: Leadville
   series: Leadville Winter Series
-  urls:
-  - https://www.cloudcitywheelers.com/the-winter-bike-series
 - summary: Doom (Day 4)
   begin: 2026-03-16
   location: Arkansas
@@ -310,18 +283,15 @@ events:
   location: Arkansas
   urls:
   - https://www.ozarkgravelcyclists.com/doombikepacking
-- summary: Mineral Belt Trail Mayhem (Leadville Winter Series)
+- summary: Mineral Belt Trail Mayhem
   begin: 2026-03-07
   location: Leadville
   series: Leadville Winter Series
-  urls:
-  - https://www.cloudcitywheelers.com/the-winter-bike-series
 - summary: Tortolita 50
   begin: 2026-02-21
   location: Tucson, AZ
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/tucson/
 - summary: Gila 100 Bikepacking Stage Race (Day 2)
   begin: 2026-02-15
@@ -329,7 +299,6 @@ events:
   description: 2-day bikepacking event
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/the-gila-100/
 - summary: Gila 100 Bikepacking Stage Race (Day 1)
   begin: 2026-02-14
@@ -337,93 +306,76 @@ events:
   description: 2-day bikepacking event
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/the-gila-100/
 - summary: Frico Freeze
   begin: 2026-02-14
   location: Frisco Nordic Center
   urls:
   - https://www.townoffrisco.com/event/nordic-center-events/frisco-freeze-winter-bike-race/
-- summary: Tennessee Pass Night Jam (Leadville Winter Series)
+- summary: Tennessee Pass Night Jam
   begin: 2026-02-07
   location: Leadville
   series: Leadville Winter Series
-  urls:
-  - https://www.cloudcitywheelers.com/the-winter-bike-series
 - summary: Cottonwood Crusher (fat bike)
   begin: 2026-01-31
   location: Colorado
   series: Colorado Endurance Series
   urls:
-  - https://coloradoes.wordpress.com/
   - https://coloradoes.wordpress.com/swes-event-list/cottonwood-crusher/
 - summary: Fat Bike Worlds (Day 3)
   begin: 2026-01-25
   location: Leadville
   series: Leadville Winter Series
-  urls:
-  - https://www.cloudcitywheelers.com/the-winter-bike-series
 - summary: Fat Bike Worlds (Day 2)
   begin: 2026-01-24
   location: Leadville
   series: Leadville Winter Series
-  urls:
-  - https://www.cloudcitywheelers.com/the-winter-bike-series
 - summary: Fat Bike Worlds (Day 1)
   begin: 2026-01-23
   location: Leadville
   series: Leadville Winter Series
-  urls:
-  - https://www.cloudcitywheelers.com/the-winter-bike-series
 - summary: Antelope Peak Challenge
   begin: 2026-01-17
   location: Oracle, AZ
   description: Little known singletrack near Oracle
   series: Arizona Endurance Series
   urls:
-  - https://rockyroad5050.wordpress.com/
   - https://rockyroad5050.wordpress.com/apc/
 - summary: 'DATE TBD: Leadville Big Friggin'' Loop (LBFL)'
   begin: 2026-01-01
   location: Leadville, CO
   series: Colorado Endurance Series
   urls:
-  - https://coloradoes.wordpress.com/
   - https://coloradoes.wordpress.com/leadville-big-friggin-loop-2021/
 - summary: 'DATE TBD: Colorado Trail Classic (CTC)'
   begin: 2026-01-01
   location: Colorado
   series: Colorado Endurance Series
   urls:
-  - https://coloradoes.wordpress.com/
   - https://coloradoes.wordpress.com/swes-event-list/colorado-trail-classic/
 - summary: 'DATE TBD: Monarch Mind Bender'
   begin: 2026-01-01
   location: Colorado
   series: Colorado Endurance Series
   urls:
-  - https://coloradoes.wordpress.com/
   - https://coloradoes.wordpress.com/swes-event-list/monarch-mind-bender-mmb/
 - summary: 'DATE TBD: Pain In The Aspen (PIA)'
   begin: 2026-01-01
   location: Colorado
   series: Colorado Endurance Series
   urls:
-  - https://coloradoes.wordpress.com/
   - https://coloradoes.wordpress.com/swes-event-list/pain-in-the-aspen/
 - summary: 'DATE TBD: Salida Big Friggin Loop (SBFL)'
   begin: 2026-01-01
   location: Salida, CO
   series: Colorado Endurance Series
   urls:
-  - https://coloradoes.wordpress.com/
   - https://coloradoes.wordpress.com/swes-event-list/sbfl/
 - summary: 'DATE TBD: Guffey Huffer (Gravel)'
   begin: 2026-01-01
   location: Colorado
   series: Colorado Endurance Series
   urls:
-  - https://coloradoes.wordpress.com/
   - https://coloradoes.wordpress.com/swes-event-list/ddf200k/
 - summary: 'DATE TBD: Silverton Whiteout'
   begin: 2026-01-01
@@ -433,24 +385,18 @@ events:
 
 ### 2025
 
-- summary: East Side Epic (Leadville Winter Series)
+- summary: East Side Epic
   begin: 2025-04-05
   location: Leadville
   series: Leadville Winter Series
-  urls:
-  - https://www.cloudcitywheelers.com/the-winter-bike-series
-- summary: Fatty Patty 50K (Leadville Winter Series)
+- summary: Fatty Patty 50K
   begin: 2025-03-15
   location: Leadville
   series: Leadville Winter Series
-  urls:
-  - https://www.cloudcitywheelers.com/the-winter-bike-series
-- summary: Mineral Belt Mayhem (Leadville Winter Series)
+- summary: Mineral Belt Mayhem
   begin: 2025-03-01
   location: Leadville
   series: Leadville Winter Series
-  urls:
-  - https://www.cloudcitywheelers.com/the-winter-bike-series
 - summary: Frisco Freeze
   begin: 2025-02-12
   location: 'Frisco Nordic Center
@@ -460,12 +406,10 @@ events:
     Frisco, CO 80443'
   urls:
   - https://www.townoffrisco.com/event/nordic-center-events/frisco-freeze-winter-bike-race/
-- summary: Tennessee Pass Night Jam (Leadville Winter Series)
+- summary: Tennessee Pass Night Jam
   begin: 2025-02-08
   location: Leadville
   series: Leadville Winter Series
-  urls:
-  - https://www.cloudcitywheelers.com/the-winter-bike-series
 - summary: Cottonwood Crusher
   begin: 2025-02-01
   location: https://goo.gl/maps/PSgGf2qwJfsK9jhL7
@@ -480,10 +424,8 @@ events:
   location: Crested Butte
   urls:
   - https://fatbikeworlds.org/
-- summary: Colorado Cup ITT (Leadville Winter Series)
+- summary: Colorado Cup ITT
   begin: 2025-01-18
   location: Leadville
   series: Leadville Winter Series
-  urls:
-  - https://www.cloudcitywheelers.com/the-winter-bike-series
 
