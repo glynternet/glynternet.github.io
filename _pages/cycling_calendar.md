@@ -24,11 +24,14 @@ tags: cycling
 " %}
 {% assign in_urls = false %}
 {% assign event_text = "" %}
+{% assign event_series = "" %}
 {% assign event_urls = "" | split: "" %}
 {% for line in desc_lines %}
   {% assign trimmed = line | strip %}
   {% if trimmed contains "text:" %}
     {% assign event_text = trimmed | remove_first: "text:" | strip %}
+  {% elsif trimmed contains "series:" %}
+    {% assign event_series = trimmed | remove_first: "series:" | strip %}
   {% elsif trimmed == "urls:" %}
     {% assign in_urls = true %}
   {% elsif in_urls and trimmed != "" and trimmed contains "- " %}
@@ -36,6 +39,9 @@ tags: cycling
     {% assign event_urls = event_urls | push: url %}
   {% endif %}
 {% endfor %}
+{% if event_series != "" %}
+**Series:** {{ event_series }}
+{% endif %}
 {% if event_text != "" %}
 **Details:** {{ event_text }}
 {% endif %}

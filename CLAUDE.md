@@ -9,6 +9,11 @@ This is a Jekyll-based static website (glynternet.github.io) that includes cycli
 ## Build Commands
 
 ### Building Calendar Files
+From the root directory:
+```bash
+make calendars
+```
+
 From the `_calendar/` directory:
 ```bash
 # Build all calendars (generates .ics files in data/calendars/)
@@ -53,8 +58,9 @@ events:
     end: YYYY-MM-DD          # Optional
     location: |
       Location details
-    description:
+    description: |
       text: Event description text
+      series: Series Name    # Optional
       urls:
         - https://example.com
         - https://example2.com
@@ -62,13 +68,15 @@ events:
 
 **Description Field Schema:**
 The `description` field uses the `|` literal block indicator to contain YAML-formatted content as a string:
-- `text: <description>` (optional): Human-readable description of the event
+- `text:` (optional): Human-readable description of the event
+- `series:` (optional): Name of the series that the event is part of
 - `urls:` (optional): List of related URLs, each prefixed with `- `
 
 Example:
 ```yaml
 description: |
   text: Multi-day bikepacking event
+  series: Arizona Endurance Series
   urls:
     - https://example.com
     - https://example.com/details
