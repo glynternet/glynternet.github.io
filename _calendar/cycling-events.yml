@@ -80,6 +80,15 @@ events:
         - https://nm-es.weebly.com/rides.html
 
         - https://nm-es.weebly.com/zuni-mountains.html
+  - summary: Head to Head
+    begin: 2026-10-03
+    location: |
+      Vail, Colorado
+    description: &dark_timber_description |
+      text: 42 miles - 7,600ft. Part of Dark Timber MTB series.
+      urls:
+        - https://www.darktimbermtb.com/
+
   - summary: Mogollon Mayhem
     begin: 2026-09-26
     location: |
@@ -106,6 +115,15 @@ events:
         - https://nm-es.weebly.com/rides.html
 
         - https://nm-es.weebly.com/santa-fe-big-friggin-loop.html
+  - summary: Elk Mountains Ultra
+    begin: 2026-08-22
+    location: |
+      Eagle, Colorado
+    description: |
+      text: 240 miles - 36,800ft. Part of Dark Timber MTB series.
+      urls:
+        - https://www.darktimbermtb.com/
+
   - summary: Tusayan Tussle
     begin: 2026-08-22
     location: |
@@ -119,6 +137,15 @@ events:
         - https://rockyroad5050.wordpress.com/
 
         - https://rockyroad5050.wordpress.com/the-tusayan-tussle/
+  - summary: Vail 84
+    begin: 2026-07-25
+    location: |
+      Minturn, Colorado
+    description: |
+      text: 84 miles - 14,500ft. Part of Dark Timber MTB series.
+      urls:
+        - https://www.darktimbermtb.com/
+
   - summary: "DATE TBD: Watermelon Beat Down (MTB)"
     begin: 2026-07-12
     location: |
@@ -132,6 +159,15 @@ events:
         - https://nm-es.weebly.com/rides.html
 
         - https://nm-es.weebly.com/watermelon-beat-down.html
+  - summary: Alpine Alleycat
+    begin: 2026-06-27
+    location: |
+      Minturn, Colorado
+    description: |
+      text: Choose Your Own Adventure format. Part of Dark Timber MTB series.
+      urls:
+        - https://www.darktimbermtb.com/
+
   - summary: Kaibab 160 & 230 Stage Bikepack (Day 5)
     begin: 2026-06-08
     location: |
@@ -207,6 +243,15 @@ events:
         - https://rockyroad5050.wordpress.com/pinyons-pines-bikepack/
 
         - https://danaernst.com/PinyonsPines/
+  - summary: Westwater 160
+    begin: 2026-05-09
+    location: |
+      Fruita, Colorado
+    description: |
+      text: 160 miles - 13,500ft. Part of Dark Timber MTB series.
+      urls:
+        - https://www.darktimbermtb.com/
+
   - summary: Prescott Monstercross
     begin: 2026-04-18
     location: |
