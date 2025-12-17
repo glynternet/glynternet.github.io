@@ -47,7 +47,7 @@ make elm-sh    # Elm container
 
 ## Calendar Format
 
-Calendar events are defined in YAML files (`cycling-events.yml`, `fat-biking.yml`) and converted to iCalendar format using the `yaml2ics` tool.
+Calendar events are defined in YAML files (`cycling-events.yml`, `fat-biking.yml`) and converted to iCalendar format.
 
 ### YAML Event Structure
 ```yaml
@@ -56,42 +56,19 @@ events:
   - summary: Event Title
     begin: YYYY-MM-DD
     end: YYYY-MM-DD          # Optional
-    location: |
-      Location details
-    description: |
-      text: Event description text
-      series: Series Name    # Optional
-      urls:
-        - https://example.com
-        - https://example2.com
+    location: Location details
+    description: Event description text  # Optional
+    series: Series Name                  # Optional
+    urls:                                # Optional
+      - https://example.com
+      - https://example2.com
 ```
-
-**Description Field Schema:**
-The `description` field uses the `|` literal block indicator to contain YAML-formatted content as a string:
-- `text:` (optional): Human-readable description of the event
-- `series:` (optional): Name of the series that the event is part of
-- `urls:` (optional): List of related URLs, each prefixed with `- `
-
-Example:
-```yaml
-description: |
-  text: Multi-day bikepacking event
-  series: Arizona Endurance Series
-  urls:
-    - https://example.com
-    - https://example.com/details
-```
-
-This structure allows:
-- **yaml2ics**: Treats the description as a plain multi-line string for .ics file generation
-- **Jekyll**: Parses the YAML-formatted string content to display descriptions and URLs separately on the HTML calendar page
 
 ### Key Points
 - `fat-biking.yml` is DEPRECATED - use `cycling-events.yml` instead
-- YAML anchors and references are supported (e.g., `&anchor` and `*anchor`)
-- The `yaml2ics` tool requires a file path as input (not stdin flags like `--help`)
 - Generated `.ics` files are output to `data/calendars/`
 - `cycling-events.yml` is also copied to `_data/cycling_events.yml` for Jekyll's data files feature
+- `generate_ics.py` converts the YAML to .ics format using the `ics` Python library
 
 ## Project Architecture
 
@@ -127,10 +104,9 @@ These two directories serve different purposes and are **both necessary**:
 **Why both are needed for calendars:**
 ```
 _calendar/cycling-events.yml (source)
-    ↓ (Makefile copies)
-_data/cycling_events.yml ──→ Jekyll reads for HTML page generation
-    ↓ (yaml2ics converts)
-data/calendars/cycling-events.ics ──→ Available for download
+    ↓
+    ├── (Makefile copies) → _data/cycling_events.yml → Jekyll reads for HTML page
+    └── (generate_ics.py) → data/calendars/cycling-events.ics → Available for download
 ```
 
 ## Cycling Calendar Page
