@@ -7,34 +7,102 @@ tags: cycling
 
 # 📅
 
-{% assign sorted_events = site.data.cycling_events.events | sort: "begin" | reverse %}
-{% assign current_year = "" %}
+<style>
+.event { margin-bottom: 2em; }
+.year-heading { margin-bottom: 1em; }
+</style>
 
-{% for event in sorted_events %}
-  {% assign event_year = event.begin | slice: 0, 4 %}
-  {% if event_year != current_year %}
-    {% assign current_year = event_year %}
-## {{ current_year }}
-  {% endif %}
+<div id="future-events"></div>
+<div id="past-events"></div>
 
-### {{ event.begin }} - {{ event.summary }}
-**Location:** {{ event.location | strip }}
-{% if event.series %}
-{% assign series_info = site.data.cycling_events.series[event.series] %}
-{% if series_info.url %}
-**Series:** [{{ event.series }}]({{ series_info.url }})
-{% else %}
-**Series:** {{ event.series }}
-{% endif %}
-{% endif %}
-{% if event.description %}
-**Details:** {{ event.description }}
-{% endif %}
-{% if event.urls.size > 0 %}
-**Links:**
-{% for url in event.urls %}
-- [{{ url }}]({{ url }})
-{% endfor %}
-{% endif %}
+<script>
+const eventsData = {{ site.data.cycling_events.events | jsonify }};
+const seriesData = {{ site.data.cycling_events.series | jsonify }};
 
-{% endfor %}
+function formatEvent(event) {
+  let html = `<div class="event">\n`;
+  html += `<h3>${event.begin} - ${event.summary}</h3>\n`;
+  html += `<p><strong>Location:</strong> ${event.location.trim()}</p>\n`;
+
+  if (event.series) {
+    const seriesInfo = seriesData[event.series];
+    if (seriesInfo && seriesInfo.url) {
+      html += `<p><strong>Series:</strong> <a href="${seriesInfo.url}">${event.series}</a></p>\n`;
+    } else {
+      html += `<p><strong>Series:</strong> ${event.series}</p>\n`;
+    }
+  }
+
+  if (event.description) {
+    html += `<p><strong>Details:</strong> ${event.description}</p>\n`;
+  }
+
+  if (event.urls && event.urls.length > 0) {
+    html += `<p><strong>Links:</strong></p>\n<ul>\n`;
+    event.urls.forEach(url => {
+      html += `<li><a href="${url}">${url}</a></li>\n`;
+    });
+    html += `</ul>\n`;
+  }
+
+  html += `</div>\n`;
+  return html;
+}
+
+function renderEvents() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const futureEvents = [];
+  const pastEvents = [];
+
+  eventsData.forEach(event => {
+    const eventDate = new Date(event.begin + 'T00:00:00');
+    if (eventDate >= today) {
+      futureEvents.push(event);
+    } else {
+      pastEvents.push(event);
+    }
+  });
+
+  // Sort future events ascending (soonest first)
+  futureEvents.sort((a, b) => a.begin.localeCompare(b.begin));
+  // Sort past events descending (most recent first)
+  pastEvents.sort((a, b) => b.begin.localeCompare(a.begin));
+
+  let futureHtml = '';
+  let currentYear = '';
+
+  if (futureEvents.length > 0) {
+    futureHtml += '<h2>Upcoming Events</h2>\n';
+    futureEvents.forEach(event => {
+      const eventYear = event.begin.slice(0, 4);
+      if (eventYear !== currentYear) {
+        currentYear = eventYear;
+        futureHtml += `<h2 class="year-heading">${currentYear}</h2>\n`;
+      }
+      futureHtml += formatEvent(event);
+    });
+  }
+
+  let pastHtml = '';
+  currentYear = '';
+
+  if (pastEvents.length > 0) {
+    pastHtml += '<h2>Past Events</h2>\n';
+    pastEvents.forEach(event => {
+      const eventYear = event.begin.slice(0, 4);
+      if (eventYear !== currentYear) {
+        currentYear = eventYear;
+        pastHtml += `<h2 class="year-heading">${currentYear}</h2>\n`;
+      }
+      pastHtml += formatEvent(event);
+    });
+  }
+
+  document.getElementById('future-events').innerHTML = futureHtml;
+  document.getElementById('past-events').innerHTML = pastHtml;
+}
+
+document.addEventListener('DOMContentLoaded', renderEvents);
+</script>
