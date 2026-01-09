@@ -347,44 +347,51 @@ events:
 #   urls:
 #   - https://rockyroad5050.wordpress.com/apc/
 - summary: 'DATE TBD: Leadville Big Friggin'' Loop (LBFL)'
-  begin: 2026-01-01
+  begin: 2026-09-20
   location: Leadville, CO
+  description: Date taken from 2025 schedule for time of year approximation
   series: Colorado Endurance Series
   urls:
   - https://coloradoes.wordpress.com/leadville-big-friggin-loop-2021/
 - summary: 'DATE TBD: Colorado Trail Classic (CTC)'
-  begin: 2026-01-01
+  begin: 2026-09-06
   location: Colorado
+  description: Date taken from 2025 schedule for time of year approximation
   series: Colorado Endurance Series
   urls:
   - https://coloradoes.wordpress.com/swes-event-list/colorado-trail-classic/
 - summary: 'DATE TBD: Monarch Mind Bender'
-  begin: 2026-01-01
+  begin: 2026-08-24
   location: Colorado
+  description: Date taken from 2025 schedule for time of year approximation
   series: Colorado Endurance Series
   urls:
   - https://coloradoes.wordpress.com/swes-event-list/monarch-mind-bender-mmb/
 - summary: 'DATE TBD: Pain In The Aspen (PIA)'
-  begin: 2026-01-01
+  begin: 2026-07-12
   location: Colorado
+  description: Date taken from 2025 schedule for time of year approximation
   series: Colorado Endurance Series
   urls:
   - https://coloradoes.wordpress.com/swes-event-list/pain-in-the-aspen/
 - summary: 'DATE TBD: Salida Big Friggin Loop (SBFL)'
-  begin: 2026-01-01
+  begin: 2026-06-07
   location: Salida, CO
+  description: Date taken from 2025 schedule for time of year approximation
   series: Colorado Endurance Series
   urls:
   - https://coloradoes.wordpress.com/swes-event-list/sbfl/
 - summary: 'DATE TBD: Guffey Huffer (Gravel)'
-  begin: 2026-01-01
+  begin: 2026-05-10
   location: Colorado
+  description: Date taken from 2025 schedule for time of year approximation
   series: Colorado Endurance Series
   urls:
   - https://coloradoes.wordpress.com/swes-event-list/ddf200k/
 - summary: 'DATE TBD: Silverton Whiteout'
-  begin: 2026-01-01
+  begin: 2026-02-01
   location: Silverton, CO
+  description: Date taken from 2024 schedule for time of year approximation
   urls:
   - https://www.silvertonwhiteout.com/
 
