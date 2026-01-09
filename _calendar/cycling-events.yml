@@ -76,6 +76,13 @@ events:
   series: Arizona Endurance Series
   urls:
   - https://rockyroad5050.wordpress.com/mogollon-mayhem/
+- summary: 'DATE TBD: Leadville Big Friggin'' Loop (LBFL)'
+  begin: 2026-09-20
+  location: Leadville, CO
+  description: Date taken from 2025 schedule for time of year approximation
+  series: Colorado Endurance Series
+  urls:
+  - https://coloradoes.wordpress.com/leadville-big-friggin-loop-2021/
 - summary: 'DATE TBD: Santa Fe Big Friggin Loop (MTB)'
   begin: 2026-09-06
   location: Santa Fe, NM
@@ -83,6 +90,20 @@ events:
   series: New Mexico Endurance Series
   urls:
   - https://nm-es.weebly.com/santa-fe-big-friggin-loop.html
+- summary: 'DATE TBD: Colorado Trail Classic (CTC)'
+  begin: 2026-09-06
+  location: Colorado
+  description: Date taken from 2025 schedule for time of year approximation
+  series: Colorado Endurance Series
+  urls:
+  - https://coloradoes.wordpress.com/swes-event-list/colorado-trail-classic/
+- summary: 'DATE TBD: Monarch Mind Bender'
+  begin: 2026-08-24
+  location: Colorado
+  description: Date taken from 2025 schedule for time of year approximation
+  series: Colorado Endurance Series
+  urls:
+  - https://coloradoes.wordpress.com/swes-event-list/monarch-mind-bender-mmb/
 - summary: Elk Mountains Ultra
   begin: 2026-08-22
   location: Eagle, Colorado
@@ -154,6 +175,13 @@ events:
   series: New Mexico Endurance Series
   urls:
   - https://nm-es.weebly.com/watermelon-beat-down.html
+- summary: 'DATE TBD: Pain In The Aspen (PIA)'
+  begin: 2026-07-12
+  location: Colorado
+  description: Date taken from 2025 schedule for time of year approximation
+  series: Colorado Endurance Series
+  urls:
+  - https://coloradoes.wordpress.com/swes-event-list/pain-in-the-aspen/
 - summary: Alpine Alleycat
   begin: 2026-06-27
   location: Minturn, Colorado
@@ -164,6 +192,13 @@ events:
   location: Reno, Colorado
   urls:
   - https://tnca400.com/
+- summary: 'DATE TBD: Salida Big Friggin Loop (SBFL)'
+  begin: 2026-06-07
+  location: Salida, CO
+  description: Date taken from 2025 schedule for time of year approximation
+  series: Colorado Endurance Series
+  urls:
+  - https://coloradoes.wordpress.com/swes-event-list/sbfl/
 # - summary: Kaibab 160 & 230 Stage Bikepack (Day 5)
 #   begin: 2026-06-08
 #   location: Arizona
@@ -207,6 +242,13 @@ events:
   series: New Mexico Endurance Series
   urls:
   - https://nm-es.weebly.com/manzanita-mountain-epic.html
+- summary: 'DATE TBD: Guffey Huffer (Gravel)'
+  begin: 2026-05-10
+  location: Colorado
+  description: Date taken from 2025 schedule for time of year approximation
+  series: Colorado Endurance Series
+  urls:
+  - https://coloradoes.wordpress.com/swes-event-list/ddf200k/
 # - summary: Pinyons & Pines
 #   begin: 2026-05-14
 #   location: Arizona
@@ -321,6 +363,12 @@ events:
   begin: 2026-02-07
   location: Leadville
   series: Leadville Winter Series
+- summary: 'DATE TBD: Silverton Whiteout'
+  begin: 2026-02-01
+  location: Silverton, CO
+  description: Date taken from 2025 schedule for time of year approximation
+  urls:
+  - https://www.silvertonwhiteout.com/
 - summary: Cottonwood Crusher (fat bike)
   begin: 2026-01-31
   location: Colorado
@@ -346,54 +394,6 @@ events:
 #   series: Arizona Endurance Series
 #   urls:
 #   - https://rockyroad5050.wordpress.com/apc/
-- summary: 'DATE TBD: Leadville Big Friggin'' Loop (LBFL)'
-  begin: 2026-09-20
-  location: Leadville, CO
-  description: Date taken from 2025 schedule for time of year approximation
-  series: Colorado Endurance Series
-  urls:
-  - https://coloradoes.wordpress.com/leadville-big-friggin-loop-2021/
-- summary: 'DATE TBD: Colorado Trail Classic (CTC)'
-  begin: 2026-09-06
-  location: Colorado
-  description: Date taken from 2025 schedule for time of year approximation
-  series: Colorado Endurance Series
-  urls:
-  - https://coloradoes.wordpress.com/swes-event-list/colorado-trail-classic/
-- summary: 'DATE TBD: Monarch Mind Bender'
-  begin: 2026-08-24
-  location: Colorado
-  description: Date taken from 2025 schedule for time of year approximation
-  series: Colorado Endurance Series
-  urls:
-  - https://coloradoes.wordpress.com/swes-event-list/monarch-mind-bender-mmb/
-- summary: 'DATE TBD: Pain In The Aspen (PIA)'
-  begin: 2026-07-12
-  location: Colorado
-  description: Date taken from 2025 schedule for time of year approximation
-  series: Colorado Endurance Series
-  urls:
-  - https://coloradoes.wordpress.com/swes-event-list/pain-in-the-aspen/
-- summary: 'DATE TBD: Salida Big Friggin Loop (SBFL)'
-  begin: 2026-06-07
-  location: Salida, CO
-  description: Date taken from 2025 schedule for time of year approximation
-  series: Colorado Endurance Series
-  urls:
-  - https://coloradoes.wordpress.com/swes-event-list/sbfl/
-- summary: 'DATE TBD: Guffey Huffer (Gravel)'
-  begin: 2026-05-10
-  location: Colorado
-  description: Date taken from 2025 schedule for time of year approximation
-  series: Colorado Endurance Series
-  urls:
-  - https://coloradoes.wordpress.com/swes-event-list/ddf200k/
-- summary: 'DATE TBD: Silverton Whiteout'
-  begin: 2026-02-01
-  location: Silverton, CO
-  description: Date taken from 2025 schedule for time of year approximation
-  urls:
-  - https://www.silvertonwhiteout.com/
 
 ### 2025
 
