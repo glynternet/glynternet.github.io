@@ -159,6 +159,11 @@ events:
   location: Minturn, Colorado
   description: Choose Your Own Adventure format
   series: Dark Timber MTB
+- summary: Trans North California 400 (TNCA400)
+  begin: 2026-06-13
+  location: Reno, Colorado
+  urls:
+  - https://tnca400.com/
 - summary: Kaibab 160 & 230 Stage Bikepack (Day 5)
   begin: 2026-06-08
   location: Arizona
