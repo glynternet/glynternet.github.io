@@ -34,6 +34,8 @@ def create_event(event_data: dict, series_map: dict) -> ics.Event:
     """Create an ics.Event from event data."""
     e = ics.Event()
     e.summary = event_data["summary"]
+    if series := event_data.get("series"):
+        e.summary += f" ({series})"
 
     # Handle dates - ics library expects datetime for all-day events
     begin = event_data["begin"]
