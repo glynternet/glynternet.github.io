@@ -182,6 +182,11 @@ events:
   series: Colorado Endurance Series
   urls:
   - https://coloradoes.wordpress.com/swes-event-list/pain-in-the-aspen/
+- summary: Race in the Clouds
+  begin: 2026-06-27
+  location: Alma, Colorado
+  urls:
+  - https://www.almafoundation.com/race-in-the-clouds/
 - summary: Alpine Alleycat
   begin: 2026-06-27
   location: Minturn, Colorado
