@@ -21,7 +21,11 @@ const seriesData = {{ site.data.cycling_events.series | jsonify }};
 
 function formatEvent(event) {
   let html = `<div class="event">\n`;
-  html += `<h3>${event.begin} - ${event.summary}</h3>\n`;
+  html += `<h3>${event.summary}</h3>\n`;
+  html += `<p><strong>Begin:</strong> ${event.begin}</p>\n`;
+  if (event.end) {
+    html += `<p><strong>End:</strong> ${event.end}</p>\n`;
+  }
   html += `<p><strong>Location:</strong> ${event.location.trim()}</p>\n`;
 
   if (event.series) {

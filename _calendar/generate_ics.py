@@ -2,7 +2,7 @@
 """Generate .ics calendar file from cycling-events.yml."""
 
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 import ics
 import yaml
@@ -38,20 +38,19 @@ def create_event(event_data: dict, series_map: dict) -> ics.Event:
         e.summary += f" ({series})"
 
     # Handle dates - ics library expects datetime for all-day events
-    begin = event_data["begin"]
-    if isinstance(begin, str):
-        begin = datetime.strptime(begin, "%Y-%m-%d").date()
-
-    e.begin = begin
-    e.make_all_day()
+    if "begin" not in event_data or not isinstance(event_data["begin"], date):
+        print(f"'begin' key expected to be a date in event: {event_data}", file=sys.stderr)
+        sys.exit(1)
+    e.begin = event_data["begin"]
 
     # End date (optional, defaults to begin + 1 day for all-day events)
     if end := event_data.get("end"):
-        if isinstance(end, str):
-            end = datetime.strptime(end, "%Y-%m-%d").date()
+        if not isinstance(end, date):
+            print(f"optional 'end' key expected to be a date in event: {event_data}", file=sys.stderr)
         # ICS all-day events: end is exclusive, so add 1 day
         e.end = end + timedelta(days=1)
-        e.make_all_day()
+
+    e.make_all_day()
 
     if location := event_data.get("location"):
         e.location = location
