@@ -302,11 +302,14 @@ events:
   description: Date taken from 2025 schedule for time of year approximation
   urls:
   - https://www.silvertonwhiteout.com/
-- summary: Cottonwood Crusher (fat bike)
+- summary: "CANCELLED: Cottonwood Crusher"
   begin: 2026-01-31
   location: Colorado
   series: Colorado Endurance Series
   urls:
+  - https://www.instagram.com/CottonwoodCrusher/
+  - https://www.facebook.com/groups/cottonwoodcrusher/info/?_rdr
+  - https://www.facebook.com/groups/cottonwoodcrusher/
   - https://coloradoes.wordpress.com/swes-event-list/cottonwood-crusher/
 - summary: Fat Bike Worlds
   begin: 2026-01-23
