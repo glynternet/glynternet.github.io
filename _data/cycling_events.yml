@@ -58,6 +58,12 @@ events:
   series: Arizona Endurance Series
   urls:
   - https://rockyroad5050.wordpress.com/mogollon-mayhem/
+- summary: 'MRHI Poker Ride'
+  begin: 2026-09-20
+  location: Fairplay, CO
+  urls:
+  - https://www.mrhi.org/upcoming-events.html
+  - https://www.mrhi.org/poker-ride--glide.html
 - summary: 'DATE TBD: Leadville Big Friggin'' Loop (LBFL)'
   begin: 2026-09-20
   location: Leadville, CO
