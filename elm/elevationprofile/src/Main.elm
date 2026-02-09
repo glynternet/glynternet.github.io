@@ -1,4 +1,4 @@
-port module Main exposing (storeState)
+port module Main exposing (main)
 
 import Browser
 import Browser.Navigation
@@ -14,6 +14,7 @@ import List.Extra
 import String
 import Svg
 import Svg.Attributes
+import Time
 import Url exposing (Protocol(..))
 
 
@@ -26,10 +27,23 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         , onUrlRequest = \_ -> Ignore
         , onUrlChange = \_ -> Ignore
         }
+
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ receiveLocation LocationReceived
+        , if model.trackingEnabled then
+            Time.every (toFloat model.trackingIntervalSec * 1000) Tick
+
+          else
+            Sub.none
+        ]
 
 
 
@@ -45,6 +59,10 @@ type alias Model =
     , trackHeight : Int
     , trackThickness : Float
     , waypointStrokeColor : String
+    , location : Maybe LocationState
+    , locationError : Maybe LocationError
+    , trackingEnabled : Bool
+    , trackingIntervalSec : Int
     }
 
 
@@ -79,6 +97,8 @@ trackUpdateWaypoint track i updateWaypoint =
 type alias TrackPoint =
     { distance : Float
     , elevation : Float
+    , lat : Float
+    , lon : Float
     }
 
 
@@ -88,6 +108,25 @@ type alias Waypoint =
     }
 
 
+type alias LatLon =
+    { lat : Float
+    , lon : Float
+    }
+
+
+type alias LocationState =
+    { position : LatLon
+    , accuracy : Float
+    , matchedDistance : Float
+    }
+
+
+type LocationError
+    = PermissionDenied
+    | PositionUnavailable
+    | GeoTimeout
+
+
 type alias StoredState =
     { tracks : Maybe Tracks
     , gpxServerURL : Maybe String
@@ -95,19 +134,30 @@ type alias StoredState =
     , trackHeight : Maybe Int
     , trackThickness : Maybe Float
     , waypointStrokeColor : Maybe String
+    , trackingIntervalSec : Maybe Int
     }
 
 
 storedStateModel : StoredState -> Model
 storedStateModel state =
-    Model (loadableResourceFromMaybe state.tracks)
-        True
-        False
-        state.gpxServerURL
-        (Maybe.withDefault 15 state.fontSize)
-        (Maybe.withDefault 200 state.trackHeight)
-        (Maybe.withDefault 1 state.trackThickness)
-        (Maybe.withDefault "lightgray" state.waypointStrokeColor)
+    { tracks = loadableResourceFromMaybe state.tracks
+    , showOptions = True
+    , showWaypointEditor = False
+    , gpxServerURLOverride = state.gpxServerURL
+    , fontSize = Maybe.withDefault 15 state.fontSize
+    , trackHeight = Maybe.withDefault 200 state.trackHeight
+    , trackThickness = Maybe.withDefault 1 state.trackThickness
+    , waypointStrokeColor = Maybe.withDefault "lightgray" state.waypointStrokeColor
+    , location = Nothing
+    , locationError = Nothing
+    , trackingEnabled = False
+    , trackingIntervalSec = Maybe.withDefault 60 state.trackingIntervalSec
+    }
+
+
+defaultStoredState : StoredState
+defaultStoredState =
+    StoredState Nothing Nothing Nothing Nothing Nothing Nothing Nothing
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
@@ -116,10 +166,10 @@ init maybeState _ _ =
         |> Maybe.map
             (Json.Decode.decodeValue storedStateDecoder
                 -- TODO: handle error
-                >> Result.withDefault (StoredState Nothing Nothing Nothing Nothing Nothing Nothing)
+                >> Result.withDefault defaultStoredState
                 >> storedStateModel
             )
-        |> Maybe.withDefault (Model NotLoaded True False Nothing 15 200 1 "lightgray")
+        |> Maybe.withDefault (storedStateModel defaultStoredState)
     , Cmd.none
     )
 
@@ -140,6 +190,11 @@ type Msg
     | UpdateTrackHeight Int
     | UpdateTrackThickness Float
     | WaypointStrokeColourChange String
+    | LocationReceived Json.Decode.Value
+    | RequestLocation
+    | ToggleTracking
+    | SetTrackingInterval Int
+    | Tick Time.Posix
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -273,6 +328,58 @@ update msg model =
         WaypointStrokeColourChange colour ->
             updateModel { model | waypointStrokeColor = colour }
 
+        RequestLocation ->
+            ( model, requestLocation () )
+
+        ToggleTracking ->
+            let
+                nowEnabled =
+                    not model.trackingEnabled
+            in
+            if nowEnabled then
+                updateModel { model | trackingEnabled = True }
+                    |> Tuple.mapSecond (\cmd -> Cmd.batch [ cmd, requestLocation () ])
+
+            else
+                updateModel { model | trackingEnabled = False }
+
+        SetTrackingInterval interval ->
+            updateModel { model | trackingIntervalSec = interval }
+
+        Tick _ ->
+            ( model, requestLocation () )
+
+        LocationReceived value ->
+            case Json.Decode.decodeValue decodeLocationResult value of
+                Ok (Ok pos) ->
+                    case model.tracks of
+                        Loaded tracks ->
+                            let
+                                gpsPos =
+                                    LatLon pos.lat pos.lon
+
+                                matchedDist =
+                                    findNearestTrackPoint gpsPos tracks.current.trackpoints
+                                        |> Maybe.map .distance
+                                        |> Maybe.withDefault 0
+                            in
+                            ( { model
+                                | location = Just (LocationState gpsPos pos.accuracy matchedDist)
+                                , locationError = Nothing
+                              }
+                            , Cmd.none
+                            )
+
+                        _ ->
+                            ( { model | locationError = Nothing }, Cmd.none )
+
+                Ok (Err locErr) ->
+                    ( { model | locationError = Just locErr }, Cmd.none )
+
+                -- JSON decode failure; treat as unavailable
+                Err _ ->
+                    ( { model | locationError = Just PositionUnavailable }, Cmd.none )
+
 
 updateModel : Model -> ( Model, Cmd Msg )
 updateModel model =
@@ -300,6 +407,10 @@ view model =
                 , trackHeight = model.trackHeight
                 , trackThickness = model.trackThickness
                 , waypointStrokeColor = model.waypointStrokeColor
+                , location = model.location
+                , locationError = model.locationError
+                , trackingEnabled = model.trackingEnabled
+                , trackingIntervalSec = model.trackingIntervalSec
                 }
             , Html.div
                 [ Html.Attributes.class "flex-container"
@@ -323,7 +434,7 @@ view model =
                             maxDistance =
                                 Maybe.withDefault 1 <| List.maximum <| List.map .distance tracks.current.trackpoints
                         in
-                        profile tracks.current maxDistance model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor
+                        profile tracks.current maxDistance model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor model.location
                             :: (if model.showWaypointEditor then
                                     [ Html.div []
                                         (tracks.current.waypoints
@@ -368,6 +479,10 @@ viewOptions :
     , trackHeight : Int
     , trackThickness : Float
     , waypointStrokeColor : String
+    , location : Maybe LocationState
+    , locationError : Maybe LocationError
+    , trackingEnabled : Bool
+    , trackingIntervalSec : Int
     }
     -> Html Msg
 viewOptions options =
@@ -461,6 +576,58 @@ viewOptions options =
                                             []
                                         ]
                                   ]
+                                , if options.tracks /= Nothing then
+                                    List.concat
+                                        [ [ Html.hr [] []
+                                          , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "Refresh Location" RequestLocation
+                                          , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ]
+                                                (if options.trackingEnabled then
+                                                    "Stop Tracking"
+
+                                                 else
+                                                    "Start Tracking"
+                                                )
+                                                ToggleTracking
+                                          ]
+                                        , if options.trackingEnabled then
+                                            [ optionGroup ("Interval: " ++ String.fromInt options.trackingIntervalSec ++ "s")
+                                                [ Html.input
+                                                    [ Html.Attributes.type_ "range"
+                                                    , Html.Attributes.min "10"
+                                                    , Html.Attributes.max "300"
+                                                    , Html.Attributes.step "10"
+                                                    , Html.Attributes.value <| String.fromInt options.trackingIntervalSec
+                                                    , Html.Events.onInput (String.toInt >> Maybe.withDefault 60 >> SetTrackingInterval)
+                                                    ]
+                                                    []
+                                                ]
+                                            ]
+
+                                          else
+                                            []
+                                        , [ Html.p
+                                                [ Html.Attributes.style "font-size" "0.8em"
+                                                , Html.Attributes.style "margin" "0.5em 0"
+                                                ]
+                                                [ Html.text
+                                                    (case options.locationError of
+                                                        Just err ->
+                                                            locationErrorToString err
+
+                                                        Nothing ->
+                                                            case options.location of
+                                                                Just loc ->
+                                                                    "Accuracy: " ++ String.fromFloat (toFloat (round (loc.accuracy * 10)) / 10) ++ "m"
+
+                                                                Nothing ->
+                                                                    "No location fix"
+                                                    )
+                                                ]
+                                          ]
+                                        ]
+
+                                  else
+                                    []
                                 ]
                             )
                         ]
@@ -487,8 +654,8 @@ optionGroup title elements =
         (Html.legend [] [ Html.text title ] :: elements)
 
 
-profile : Track -> Float -> Float -> Int -> Float -> String -> Html Msg
-profile track maxDistance fontSize trackHeight trackThickness waypointStrokeColor =
+profile : Track -> Float -> Float -> Int -> Float -> String -> Maybe LocationState -> Html Msg
+profile track maxDistance fontSize trackHeight trackThickness waypointStrokeColor maybeLocation =
     let
         -- TODO(ghanmer): combine these max folds to not iterate through twice
         maxElevation =
@@ -564,6 +731,38 @@ profile track maxDistance fontSize trackHeight trackThickness waypointStrokeColo
                 )
             , -- track line
               resolveElevationProfileSVGLine calc track.trackpoints (String.fromFloat trackThickness)
+            , -- position marker
+              case maybeLocation of
+                Just loc ->
+                    let
+                        xPos =
+                            calc.x loc.matchedDistance
+
+                        yPos =
+                            calc.y (interpolateWaypointElevation track.trackpoints { distance = loc.matchedDistance, name = "" })
+                    in
+                    Svg.g []
+                        [ Svg.line
+                            [ Svg.Attributes.x1 xPos
+                            , Svg.Attributes.y1 "0"
+                            , Svg.Attributes.x2 xPos
+                            , Svg.Attributes.y2 (String.fromInt trackHeight)
+                            , Svg.Attributes.stroke "dodgerblue"
+                            , Svg.Attributes.strokeWidth "2"
+                            , Svg.Attributes.opacity "0.7"
+                            ]
+                            []
+                        , Svg.circle
+                            [ Svg.Attributes.cx xPos
+                            , Svg.Attributes.cy yPos
+                            , Svg.Attributes.r "3.5"
+                            , Svg.Attributes.fill "dodgerblue"
+                            ]
+                            []
+                        ]
+
+                Nothing ->
+                    Svg.g [] []
             , -- track border
               Svg.g []
                 ([ ( ( 0, 0 ), ( trackHeight, 0 ) )
@@ -735,6 +934,8 @@ encodeTrackpoints =
             Json.Encode.object
                 [ ( "dist", Json.Encode.float point.distance )
                 , ( "ele", Json.Encode.float point.elevation )
+                , ( "lat", Json.Encode.float point.lat )
+                , ( "lon", Json.Encode.float point.lon )
                 ]
         )
 
@@ -742,9 +943,11 @@ encodeTrackpoints =
 decodeTrackpoints : Json.Decode.Decoder (List TrackPoint)
 decodeTrackpoints =
     Json.Decode.list
-        (Json.Decode.map2 TrackPoint
+        (Json.Decode.map4 TrackPoint
             (Json.Decode.field "dist" Json.Decode.float)
             (Json.Decode.field "ele" Json.Decode.float)
+            (Json.Decode.field "lat" Json.Decode.float)
+            (Json.Decode.field "lon" Json.Decode.float)
         )
 
 
@@ -781,6 +984,7 @@ storedStateFromModel model =
         (Just model.trackHeight)
         (Just model.trackThickness)
         (Just model.waypointStrokeColor)
+        (Just model.trackingIntervalSec)
 
 
 encodeSavedState : StoredState -> String
@@ -794,6 +998,7 @@ encodeSavedState state =
             , state.trackThickness |> Maybe.map (\thickness -> ( "trackThickness", Json.Encode.float thickness ))
             , state.waypointStrokeColor |> Maybe.map (\colour -> ( "waypointStrokeColor", Json.Encode.string colour ))
             , state.tracks |> Maybe.map (\tracks -> ( "tracks", encodeTracks tracks ))
+            , state.trackingIntervalSec |> Maybe.map (\interval -> ( "trackingIntervalSec", Json.Encode.int interval ))
             ]
         )
         |> Json.Encode.encode 0
@@ -808,9 +1013,99 @@ storedStateDecoder =
         (Json.Decode.maybe (Json.Decode.field "trackHeight" Json.Decode.int))
         (Json.Decode.maybe (Json.Decode.field "trackThickness" Json.Decode.float))
         (Json.Decode.maybe (Json.Decode.field "waypointStrokeColor" Json.Decode.string))
+        |> andMap (Json.Decode.maybe (Json.Decode.field "trackingIntervalSec" Json.Decode.int))
+
+
+andMap : Json.Decode.Decoder a -> Json.Decode.Decoder (a -> b) -> Json.Decode.Decoder b
+andMap =
+    Json.Decode.map2 (|>)
 
 
 port storeState : String -> Cmd msg
+
+
+port requestLocation : () -> Cmd msg
+
+
+port receiveLocation : (Json.Decode.Value -> msg) -> Sub msg
+
+
+
+-- LOCATION
+
+
+haversineDistance : LatLon -> LatLon -> Float
+haversineDistance a b =
+    let
+        r =
+            6371000
+
+        toRad deg =
+            deg * pi / 180
+
+        dLat =
+            toRad (b.lat - a.lat)
+
+        dLon =
+            toRad (b.lon - a.lon)
+
+        sinDLat =
+            sin (dLat / 2)
+
+        sinDLon =
+            sin (dLon / 2)
+
+        h =
+            sinDLat * sinDLat + cos (toRad a.lat) * cos (toRad b.lat) * sinDLon * sinDLon
+    in
+    2 * r * asin (sqrt h)
+
+
+findNearestTrackPoint : LatLon -> List TrackPoint -> Maybe TrackPoint
+findNearestTrackPoint pos trackpoints =
+    trackpoints
+        |> List.map (\tp -> ( haversineDistance pos (LatLon tp.lat tp.lon), tp ))
+        |> List.sortBy Tuple.first
+        |> List.head
+        |> Maybe.map Tuple.second
+
+
+decodeLocationResult : Json.Decode.Decoder (Result LocationError { lat : Float, lon : Float, accuracy : Float })
+decodeLocationResult =
+    Json.Decode.oneOf
+        [ Json.Decode.field "error" Json.Decode.string
+            |> Json.Decode.map
+                (\code ->
+                    Err
+                        (case code of
+                            "permission_denied" ->
+                                PermissionDenied
+
+                            "timeout" ->
+                                GeoTimeout
+
+                            _ ->
+                                PositionUnavailable
+                        )
+                )
+        , Json.Decode.map3 (\lat lon acc -> Ok { lat = lat, lon = lon, accuracy = acc })
+            (Json.Decode.field "lat" Json.Decode.float)
+            (Json.Decode.field "lon" Json.Decode.float)
+            (Json.Decode.field "accuracy" Json.Decode.float)
+        ]
+
+
+locationErrorToString : LocationError -> String
+locationErrorToString err =
+    case err of
+        PermissionDenied ->
+            "Location permission denied"
+
+        PositionUnavailable ->
+            "Position unavailable"
+
+        GeoTimeout ->
+            "Location request timed out"
 
 
 

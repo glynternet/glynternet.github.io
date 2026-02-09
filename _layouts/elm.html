@@ -21,6 +21,30 @@ layout: default
 					localStorage.setItem("appState", state);
 					console.log("Stored state");
 				});
+				if (app.ports.requestLocation) {
+					app.ports.requestLocation.subscribe(function() {
+						if (!navigator.geolocation) {
+							app.ports.receiveLocation.send({ error: "position_unavailable" });
+							return;
+						}
+						navigator.geolocation.getCurrentPosition(
+							function(pos) {
+								app.ports.receiveLocation.send({
+									lat: pos.coords.latitude,
+									lon: pos.coords.longitude,
+									accuracy: pos.coords.accuracy
+								});
+							},
+							function(err) {
+								var code = "position_unavailable";
+								if (err.code === 1) code = "permission_denied";
+								if (err.code === 3) code = "timeout";
+								app.ports.receiveLocation.send({ error: code });
+							},
+							{ enableHighAccuracy: true, timeout: 10000 }
+						);
+					});
+				}
 			}
 			catch(err) {
 				console.error(err);
