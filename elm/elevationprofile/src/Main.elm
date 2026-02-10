@@ -59,6 +59,8 @@ type alias Model =
     , trackHeight : Int
     , trackThickness : Float
     , waypointStrokeColor : String
+    , showIntensity : Bool
+    , intensityTau : Float
     , location : Maybe LocationState
     , locationError : Maybe LocationError
     , trackingEnabled : Bool
@@ -135,6 +137,8 @@ type alias StoredState =
     , trackThickness : Maybe Float
     , waypointStrokeColor : Maybe String
     , trackingIntervalSec : Maybe Int
+    , showIntensity : Maybe Bool
+    , intensityTau : Maybe Float
     }
 
 
@@ -148,6 +152,8 @@ storedStateModel state =
     , trackHeight = Maybe.withDefault 200 state.trackHeight
     , trackThickness = Maybe.withDefault 1 state.trackThickness
     , waypointStrokeColor = Maybe.withDefault "lightgray" state.waypointStrokeColor
+    , showIntensity = Maybe.withDefault False state.showIntensity
+    , intensityTau = Maybe.withDefault 500 state.intensityTau
     , location = Nothing
     , locationError = Nothing
     , trackingEnabled = False
@@ -157,7 +163,7 @@ storedStateModel state =
 
 defaultStoredState : StoredState
 defaultStoredState =
-    StoredState Nothing Nothing Nothing Nothing Nothing Nothing Nothing
+    StoredState Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
@@ -194,6 +200,8 @@ type Msg
     | RequestLocation
     | ToggleTracking
     | SetTrackingInterval Int
+    | ShowIntensity Bool
+    | UpdateIntensityTau Float
     | Tick Time.Posix
 
 
@@ -328,6 +336,12 @@ update msg model =
         WaypointStrokeColourChange colour ->
             updateModel { model | waypointStrokeColor = colour }
 
+        ShowIntensity show ->
+            updateModel { model | showIntensity = show }
+
+        UpdateIntensityTau tau ->
+            updateModel { model | intensityTau = tau }
+
         RequestLocation ->
             ( model, requestLocation () )
 
@@ -411,6 +425,8 @@ view model =
                 , locationError = model.locationError
                 , trackingEnabled = model.trackingEnabled
                 , trackingIntervalSec = model.trackingIntervalSec
+                , showIntensity = model.showIntensity
+                , intensityTau = model.intensityTau
                 }
             , Html.div
                 [ Html.Attributes.class "flex-container"
@@ -434,7 +450,7 @@ view model =
                             maxDistance =
                                 Maybe.withDefault 1 <| List.maximum <| List.map .distance tracks.current.trackpoints
                         in
-                        profile tracks.current maxDistance model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor model.location
+                        profile tracks.current maxDistance model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor model.location model.showIntensity model.intensityTau
                             :: (if model.showWaypointEditor then
                                     [ Html.div []
                                         (tracks.current.waypoints
@@ -483,6 +499,8 @@ viewOptions :
     , locationError : Maybe LocationError
     , trackingEnabled : Bool
     , trackingIntervalSec : Int
+    , showIntensity : Bool
+    , intensityTau : Float
     }
     -> Html Msg
 viewOptions options =
@@ -575,6 +593,34 @@ viewOptions options =
                                             ]
                                             []
                                         ]
+                                  , optionGroup "Intensity"
+                                        (List.concat
+                                            [ [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ]
+                                                    (if options.showIntensity then
+                                                        "HIDE INTENSITY"
+
+                                                     else
+                                                        "SHOW INTENSITY"
+                                                    )
+                                                    (ShowIntensity (not options.showIntensity))
+                                              ]
+                                            , if options.showIntensity then
+                                                [ Html.input
+                                                    [ Html.Attributes.type_ "range"
+                                                    , Html.Attributes.min "100"
+                                                    , Html.Attributes.max "10000"
+                                                    , Html.Attributes.step "50"
+                                                    , Html.Attributes.value <| String.fromFloat options.intensityTau
+                                                    , Html.Events.onInput (String.toFloat >> Maybe.withDefault 500 >> UpdateIntensityTau)
+                                                    ]
+                                                    []
+                                                , Html.text ("\u{03C4} = " ++ String.fromFloat options.intensityTau ++ "m")
+                                                ]
+
+                                              else
+                                                []
+                                            ]
+                                        )
                                   ]
                                 , if options.tracks /= Nothing then
                                     List.concat
@@ -654,8 +700,8 @@ optionGroup title elements =
         (Html.legend [] [ Html.text title ] :: elements)
 
 
-profile : Track -> Float -> Float -> Int -> Float -> String -> Maybe LocationState -> Html Msg
-profile track maxDistance fontSize trackHeight trackThickness waypointStrokeColor maybeLocation =
+profile : Track -> Float -> Float -> Int -> Float -> String -> Maybe LocationState -> Bool -> Float -> Html Msg
+profile track maxDistance fontSize trackHeight trackThickness waypointStrokeColor maybeLocation showIntensity intensityTau =
     let
         -- TODO(ghanmer): combine these max folds to not iterate through twice
         maxElevation =
@@ -692,7 +738,13 @@ profile track maxDistance fontSize trackHeight trackThickness waypointStrokeColo
               --                          min-x min-y width height
               Svg.Attributes.viewBox <| "-5 -5 " ++ String.fromInt (svgWidth + 10) ++ " " ++ (String.fromInt <| svgHeight + 10)
             ]
-            [ -- waypoints
+            [ -- intensity shading
+              if showIntensity then
+                  renderIntensityShading (toFloat svgWidth) maxDistance (toFloat trackHeight) (computeIntensity intensityTau track.trackpoints)
+
+              else
+                  Svg.g [] []
+            , -- waypoints
               Svg.g []
                 (let
                     svgBottom =
@@ -824,6 +876,176 @@ resolveElevationProfileSVGLine calc profileData trackThicknessAttrValue =
         , Svg.Attributes.fill "none"
         ]
         []
+
+
+-- Compute trail intensity at each trackpoint using an Exponential Weighted
+-- Moving Average (EWMA) of the climbing-only grade signal.
+--
+-- The EWMA uses distance (not time) as its independent variable, with a
+-- characteristic distance τ (tau) controlling how far back the "memory"
+-- extends. At distance τ from a contribution, its weight has decayed to ~37%
+-- (1/e). No lookahead is used — intensity at each point depends only on
+-- current and historic data.
+--
+-- For each consecutive pair of trackpoints:
+--   Δd  = distance[i] - distance[i-1]
+--   grade = (elevation[i] - elevation[i-1]) / Δd
+--   signal = max(0, grade)          -- climbing-only: descents contribute 0
+--   decay = e^(-Δd / τ)             -- distance-weighted exponential decay
+--   intensity[i] = decay × intensity[i-1] + (1 - decay) × signal
+--
+-- Intensity is initialized at 0 (fresh legs). The τ parameter controls
+-- responsiveness: small τ tracks local steepness closely (spiky), large τ
+-- produces a smoother signal reflecting sustained climbing effort.
+computeIntensity : Float -> List TrackPoint -> List { distance : Float, intensity : Float }
+computeIntensity tau trackPoints =
+    case trackPoints of
+        [] ->
+            []
+
+        first :: rest ->
+            let
+                ( _, result ) =
+                    List.foldl
+                        (\current ( ( prev, prevIntensity ), acc ) ->
+                            let
+                                deltaD =
+                                    current.distance - prev.distance
+
+                                -- Grade as a ratio (e.g. 0.10 = 10% grade).
+                                -- Zero when points are co-located to avoid division by zero.
+                                grade =
+                                    if deltaD > 0 then
+                                        (current.elevation - prev.elevation) / deltaD
+
+                                    else
+                                        0
+
+                                -- Only uphill contributes to intensity; descents and
+                                -- flats produce a zero signal that lets intensity decay.
+                                climbingGrade =
+                                    max 0 grade
+
+                                -- Exponential decay factor: approaches 1 for closely-spaced
+                                -- points (preserving history) and 0 for large gaps (resetting).
+                                decay =
+                                    e ^ (-deltaD / tau)
+
+                                -- Standard EWMA update: blend previous intensity with the
+                                -- current observation, weighted by distance-based decay.
+                                newIntensity =
+                                    decay * prevIntensity + (1 - decay) * climbingGrade
+                            in
+                            ( ( current, newIntensity )
+                            , { distance = current.distance, intensity = newIntensity } :: acc
+                            )
+                        )
+                        ( ( first, 0 ), [ { distance = first.distance, intensity = 0 } ] )
+                        rest
+            in
+            List.reverse result
+
+
+-- Render intensity shading as a row of SVG rectangles spanning the full chart
+-- height. Each segment between consecutive points is filled with a green →
+-- yellow → red color at 30% opacity.
+--
+-- Min-max normalization maps the least intense point to green (0) and the most
+-- intense to red (1), always using the full color range regardless of τ or
+-- route characteristics. When intensity is constant across the entire profile
+-- (including the trivial case of an entirely flat route where all values are 0),
+-- the range is zero and all segments render as green.
+renderIntensityShading : Float -> Float -> Float -> List { distance : Float, intensity : Float } -> Svg.Svg msg
+renderIntensityShading svgWidth maxDistance trackHeightFloat intensityPoints =
+    let
+        intensities =
+            List.map .intensity intensityPoints
+
+        minIntensity =
+            List.minimum intensities |> Maybe.withDefault 0
+
+        maxIntensity =
+            List.maximum intensities |> Maybe.withDefault 0
+
+        -- When max == min the intensity is constant and there is nothing
+        -- meaningful to shade, so all segments map to 0 (green).
+        intensityRange =
+            maxIntensity - minIntensity
+
+        svgWidthPerDistanceUnit =
+            svgWidth / maxDistance
+
+        xFloat distance =
+            distance * svgWidthPerDistanceUnit
+    in
+    Svg.g []
+        (List.map2
+            (\a b ->
+                let
+                    normalized =
+                        if intensityRange > 0 then
+                            (b.intensity - minIntensity) / intensityRange
+
+                        else
+                            0
+
+                    x1 =
+                        xFloat a.distance
+
+                    x2 =
+                        xFloat b.distance
+                in
+                Svg.rect
+                    [ Svg.Attributes.x (String.fromFloat x1)
+                    , Svg.Attributes.y "0"
+                    , Svg.Attributes.width (String.fromFloat (x2 - x1))
+                    , Svg.Attributes.height (String.fromFloat trackHeightFloat)
+                    , Svg.Attributes.fill (intensityColor normalized)
+                    , Svg.Attributes.opacity "0.3"
+                    ]
+                    []
+            )
+            intensityPoints
+            (List.drop 1 intensityPoints)
+        )
+
+
+-- Map a normalized intensity value to a green → yellow → red color string.
+-- Input is clamped to [0, 1]:
+--   0.0 → pure green  (rgb 0,255,0)
+--   0.5 → pure yellow (rgb 255,255,0)
+--   1.0 → pure red    (rgb 255,0,0)
+-- Values above 1.0 (possible when a segment exceeds the normalization cap)
+-- are clamped to red.
+intensityColor : Float -> String
+intensityColor t =
+    let
+        clamped =
+            clamp 0 1 t
+
+        -- Red channel: ramps linearly from 0 to 255 over the first half,
+        -- then holds at 255 for the upper half.
+        r =
+            round
+                (if clamped < 0.5 then
+                    255 * clamped * 2
+
+                 else
+                    255
+                )
+
+        -- Green channel: holds at 255 for the lower half, then ramps
+        -- linearly down to 0 over the upper half.
+        g =
+            round
+                (if clamped < 0.5 then
+                    255
+
+                 else
+                    255 * (1 - (clamped - 0.5) * 2)
+                )
+    in
+    "rgb(" ++ String.fromInt r ++ "," ++ String.fromInt g ++ ",0)"
 
 
 type alias XYCalculator =
@@ -985,6 +1207,8 @@ storedStateFromModel model =
         (Just model.trackThickness)
         (Just model.waypointStrokeColor)
         (Just model.trackingIntervalSec)
+        (Just model.showIntensity)
+        (Just model.intensityTau)
 
 
 encodeSavedState : StoredState -> String
@@ -999,6 +1223,8 @@ encodeSavedState state =
             , state.waypointStrokeColor |> Maybe.map (\colour -> ( "waypointStrokeColor", Json.Encode.string colour ))
             , state.tracks |> Maybe.map (\tracks -> ( "tracks", encodeTracks tracks ))
             , state.trackingIntervalSec |> Maybe.map (\interval -> ( "trackingIntervalSec", Json.Encode.int interval ))
+            , state.showIntensity |> Maybe.map (\show -> ( "showIntensity", Json.Encode.bool show ))
+            , state.intensityTau |> Maybe.map (\tau -> ( "intensityTau", Json.Encode.float tau ))
             ]
         )
         |> Json.Encode.encode 0
@@ -1014,6 +1240,8 @@ storedStateDecoder =
         (Json.Decode.maybe (Json.Decode.field "trackThickness" Json.Decode.float))
         (Json.Decode.maybe (Json.Decode.field "waypointStrokeColor" Json.Decode.string))
         |> andMap (Json.Decode.maybe (Json.Decode.field "trackingIntervalSec" Json.Decode.int))
+        |> andMap (Json.Decode.maybe (Json.Decode.field "showIntensity" Json.Decode.bool))
+        |> andMap (Json.Decode.maybe (Json.Decode.field "intensityTau" Json.Decode.float))
 
 
 andMap : Json.Decode.Decoder a -> Json.Decode.Decoder (a -> b) -> Json.Decode.Decoder b
