@@ -71,10 +71,9 @@ events:
   series: Colorado Endurance Series
   urls:
   - https://coloradoes.wordpress.com/leadville-big-friggin-loop-2021/
-- summary: 'DATE TBD: Santa Fe Big Friggin Loop (MTB)'
-  begin: 2026-09-06
+- summary: 'Santa Fe Big Friggin Loop (MTB)'
+  begin: 2026-08-29
   location: Santa Fe, NM
-  description: Date taken from 2025 schedule for time of year approximation
   series: New Mexico Endurance Series
   urls:
   - https://nm-es.weebly.com/santa-fe-big-friggin-loop.html
@@ -207,11 +206,13 @@ events:
 #   urls:
 #   - https://rockyroad5050.wordpress.com/pinyons-pines-bikepack/
 #   - https://danaernst.com/PinyonsPines/
-- summary: Westwater 160
+- summary: Westwater 200
   begin: 2026-05-09
   location: Fruita, Colorado
-  description: 160 miles - 13,500ft
+  description: 322km - 5334m
   series: Dark Timber MTB
+  urls:
+    - https://www.darktimbermtb.com/westwater-200
 # - summary: Prescott Monstercross
 #   begin: 2026-04-18
 #   location: Prescott, AZ
