@@ -1,12 +1,12 @@
 {
     "type": "application",
     "source-directories": [
-        "src"
+        "src",
+        "../shared/src"
     ],
     "elm-version": "0.19.1",
     "dependencies": {
         "direct": {
-            "BrianHicks/elm-csv": "3.0.3",
             "abadi199/elm-input-extra": "5.2.6",
             "danfishgold/base64-bytes": "1.1.0",
             "elm/browser": "1.0.2",

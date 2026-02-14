@@ -6,13 +6,12 @@ import Browser.Navigation
 import Bytes
 import Bytes.Decode
 import Bytes.Encode
-import Csv.Decode
 import Dict
 import Dropdown
 import File
-import File.Download
 import File.Select
 import Flate
+import GpxApi
 import Html exposing (Attribute, Html)
 import Html.Attributes
 import Html.Events
@@ -23,7 +22,6 @@ import Round
 import String
 import Svg
 import Svg.Attributes
-import Task
 import Time
 import Url exposing (Protocol(..))
 import Url.Builder
@@ -64,7 +62,8 @@ type alias StoredState =
 
 type alias Model =
     { page : Page
-    , csvDecodeError : Maybe String
+    , gpxError : Maybe String
+    , gpxServerURLOverride : Maybe String
     , showOptions : Bool
     , cuesViewOptions : CuesViewOptions
     , showQR : Bool
@@ -150,7 +149,7 @@ init maybeState url key =
                         >> storedStateModel url
                     )
                 -- TODO(glynternet): best default value for last reference point/?
-                |> Maybe.withDefault (Model (WelcomePage False) Maybe.Nothing True (CuesViewOptions FromZero 1000 0 defaultSpacing defaultDistanceDetail) False url)
+                |> Maybe.withDefault (Model (WelcomePage False) Maybe.Nothing Maybe.Nothing True (CuesViewOptions FromZero 1000 0 defaultSpacing defaultDistanceDetail) False url)
     )
         |> updateModel
         |> Tuple.mapSecond
@@ -180,6 +179,7 @@ storedStateModel url state =
             |> Maybe.withDefault (WelcomePage False)
         )
         Maybe.Nothing
+        Maybe.Nothing
         (state.showOptions |> Maybe.withDefault True)
         (CuesViewOptions
             -- TODO(glynternet): store "to point" state
@@ -207,9 +207,7 @@ type Msg
     | UpdateDistanceDetail Int
     | OpenFileBrowser
     | FileUploaded File.File
-    | CsvDecoded (Result Csv.Decode.Error (List Waypoint))
-    | LoadDemoData
-    | DownloadDemoData
+    | GpxResponseReceived (Result String (List GpxApi.Track))
     | ShowQR
     | CloseQR
     | Tick
@@ -326,23 +324,34 @@ update msg model =
             updateModel { model | cuesViewOptions = { options | distanceDetail = detail } }
 
         OpenFileBrowser ->
-            ( model, File.Select.file [ "text/csv" ] FileUploaded )
+            ( model, File.Select.file [ "application/gpx+xml" ] FileUploaded )
 
         FileUploaded file ->
-            ( model
-            , File.toString file
-                |> Task.map decodeCSV
-                |> Task.perform CsvDecoded
+            ( { model | gpxError = Maybe.Nothing }
+            , GpxApi.getElevationProfileDataResponse GpxResponseReceived (Maybe.withDefault "https://gpx.fly.dev" model.gpxServerURLOverride) file
             )
 
-        CsvDecoded result ->
-            updateCSVDecodeModel model result
+        GpxResponseReceived result ->
+            case result of
+                Err errMsg ->
+                    ( { model | gpxError = Maybe.Just errMsg }, Cmd.none )
 
-        LoadDemoData ->
-            decodeCSV demoData |> updateCSVDecodeModel model
+                Ok tracks ->
+                    case tracks of
+                        [ track ] ->
+                            let
+                                waypoints =
+                                    track.waypoints
+                                        |> List.map (\w -> Waypoint w.name w.distance [])
+                                        |> List.sortBy .distance
+                            in
+                            { model | page = CuesheetPage <| initialCuesModel waypoints, gpxError = Maybe.Nothing } |> updateModel
 
-        DownloadDemoData ->
-            ( model, File.Download.string "demo-data.csv" "text/csv" demoData )
+                        [] ->
+                            ( { model | gpxError = Maybe.Just "No tracks found in GPX file" }, Cmd.none )
+
+                        _ ->
+                            ( { model | gpxError = Maybe.Just "Multiple tracks found in GPX file; only single-track GPX files are supported" }, Cmd.none )
 
         ShowQR ->
             updateModel { model | showQR = True }
@@ -367,19 +376,6 @@ updateCuesModel model cuesModel =
     updateModel <| { model | page = CuesheetPage cuesModel }
 
 
-decodeCSV : String -> Result Csv.Decode.Error (List Waypoint)
-decodeCSV =
-    Csv.Decode.decodeCsv Csv.Decode.FieldNamesFromFirstRow
-        (Csv.Decode.into Waypoint
-            |> Csv.Decode.pipeline (Csv.Decode.field "Name" Csv.Decode.string)
-            |> Csv.Decode.pipeline (Csv.Decode.field "Distance" Csv.Decode.float)
-            |> Csv.Decode.pipeline
-                (Csv.Decode.field "Type"
-                    (Csv.Decode.map (String.split "," >> List.map String.trim >> List.filter (not << String.isEmpty)) Csv.Decode.string)
-                )
-        )
-
-
 updateModel : Model -> ( Model, Cmd Msg )
 updateModel model =
     let
@@ -387,20 +383,6 @@ updateModel model =
             encodeSavedState longFieldNames model
     in
     ( model, storeState localStoredState )
-
-
-
--- TODO(glynternet): update reference point to last point when new CSV uploaded
-
-
-updateCSVDecodeModel : Model -> Result Csv.Decode.Error (List Waypoint) -> ( Model, Cmd Msg )
-updateCSVDecodeModel model result =
-    case result of
-        Ok waypoints ->
-            { model | page = CuesheetPage <| initialCuesModel waypoints } |> updateModel
-
-        Err err ->
-            ( { model | csvDecodeError = Maybe.Just <| Csv.Decode.errorToString err }, Cmd.none )
 
 
 initialCuesModel : List Waypoint -> CuesModel
@@ -513,7 +495,7 @@ view model =
                             (List.head (List.reverse cuesheetModel.waypoints) |> Maybe.map .distance)
                             cuesheetModel.waypointOptions
                             model.cuesViewOptions
-                            model.csvDecodeError
+                            model.gpxError
                         , Html.div
                             [ Html.Attributes.class "flex-container"
                             , Html.Attributes.class "column"
@@ -529,7 +511,7 @@ view model =
                 welcomePage val
 
             GetStartedPage ->
-                getStartedPage model.csvDecodeError
+                getStartedPage model.gpxError
         ]
 
 
@@ -597,8 +579,6 @@ welcomePage toGo =
               , Html.br [] []
               , viewButton "Get started..." <| ShowPage GetStartedPage
               , Html.br [] []
-              , viewButton "...play with demo..." LoadDemoData
-              , Html.br [] []
               , Html.br [] []
               , Html.h3 [] [ Html.text "...or see some examples" ]
               , Html.br [] []
@@ -642,7 +622,7 @@ welcomePage toGo =
 
 
 getStartedPage : Maybe String -> Html Msg
-getStartedPage decodeError =
+getStartedPage gpxError =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "flex-center"
@@ -654,28 +634,13 @@ getStartedPage decodeError =
               , Html.h3 [] [ Html.text "Instructions" ]
               , Html.br [] []
               , Html.p [] [ Html.text "To make your cuesheet," ]
-              , Html.p [] [ Html.text "upload a CSV file with the following columns, including title at top" ]
-              , Html.p [] [ Html.text "and a row per waypoint:" ]
+              , Html.p [] [ Html.text "upload a GPX file containing waypoints." ]
+              , Html.p [] [ Html.text "Waypoints from the GPX will be used as cue points." ]
               , Html.br [] []
-              , Html.ul []
-                    [ Html.li [] [ Html.b [] [ Html.text "\"Type\"" ], Html.text " - Supports emojis, advice is to keep it short." ]
-                    , Html.li [] [ Html.b [] [ Html.text "\"Distance\"" ], Html.text " - Just the number, no units." ]
-                    , Html.li [] [ Html.b [] [ Html.text "\"Name\"" ], Html.text " - Supports emojis." ]
-                    ]
-              , Html.br [] []
-              , viewButton "upload waypoints" OpenFileBrowser
+              , viewButton "upload GPX" OpenFileBrowser
               ]
-            , decodeError |> Maybe.map (\err -> [ Html.br [] [], viewCSVDecodeErrorPanel err ]) |> Maybe.withDefault []
+            , gpxError |> Maybe.map (\err -> [ Html.br [] [], viewGpxErrorPanel err ]) |> Maybe.withDefault []
             , [ Html.br [] []
-              , Html.p [] [ Html.text "CSV can be downloaded from Google Sheets or exported from Excel." ]
-              , Html.p [] [ Html.text "For an example file, please click the button below." ]
-              , Html.br [] []
-              , viewButton "download example CSV" DownloadDemoData
-              , Html.br [] []
-              , Html.h3 [] [ Html.text "...or play with a demo and see some examples" ]
-              , Html.br [] []
-              , viewButton "play with demo" LoadDemoData
-              , Html.br [] []
               , Html.br [] []
               ]
             ]
@@ -689,7 +654,7 @@ optionGroup title elements =
 
 
 viewOptions : Bool -> Maybe Float -> WaypointsOptions -> CuesViewOptions -> Maybe String -> Html Msg
-viewOptions show maxDistance waypointOptions cuesViewOptions decodeError =
+viewOptions show maxDistance waypointOptions cuesViewOptions gpxError =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "column"
@@ -843,20 +808,20 @@ viewOptions show maxDistance waypointOptions cuesViewOptions decodeError =
                             , Html.Attributes.style "justify-content" "center"
                             , Html.Attributes.style "align-items" "center"
                             ]
-                            [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "upload waypoints" OpenFileBrowser
+                            [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "upload GPX" OpenFileBrowser
                             , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "clear" (ShowPage <| WelcomePage False)
                             , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "share / send to device" ShowQR
                             ]
                         ]
                   ]
-                , decodeError |> Maybe.map (\err -> [ Html.br [] [], viewCSVDecodeErrorPanel err ]) |> Maybe.withDefault [ Html.div [] [] ]
+                , gpxError |> Maybe.map (\err -> [ Html.br [] [], viewGpxErrorPanel err ]) |> Maybe.withDefault [ Html.div [] [] ]
                 ]
         )
 
 
-viewCSVDecodeErrorPanel : String -> Html Msg
-viewCSVDecodeErrorPanel error =
-    viewErrorPanel <| ("There was an error decoding your CSV. Please fix any error and try again 😇\n\nThe first few errors can be seen below.\n\n" ++ String.left 1000 error ++ "...")
+viewGpxErrorPanel : String -> Html Msg
+viewGpxErrorPanel error =
+    viewErrorPanel <| ("There was an error processing your GPX file. Please fix any error and try again 😇\n\nError: " ++ String.left 1000 error)
 
 
 viewErrorPanel : String -> Html Msg
@@ -989,13 +954,13 @@ cuesheet waypoints cuesViewOptions =
                                                 Maybe.Nothing
 
                                             FromZero ->
-                                                Maybe.Just (formatFloat cuesViewOptions.distanceDetail waypoint.distance ++ "km")
+                                                Maybe.Just (formatKm cuesViewOptions.distanceDetail waypoint.distance)
 
                                             ToLast ->
-                                                lastWaypointDistance |> Maybe.map (\last -> formatFloat cuesViewOptions.distanceDetail (last - waypoint.distance) ++ "km")
+                                                lastWaypointDistance |> Maybe.map (\last -> formatKm cuesViewOptions.distanceDetail (last - waypoint.distance))
 
                                             ToPoint ->
-                                                Maybe.Just (formatFloat cuesViewOptions.distanceDetail (cuesViewOptions.referencePoint - waypoint.distance) ++ "km")
+                                                Maybe.Just (formatKm cuesViewOptions.distanceDetail (cuesViewOptions.referencePoint - waypoint.distance))
 
                                     waypointInfo =
                                         List.filterMap identity
@@ -1086,7 +1051,7 @@ cuesheet waypoints cuesViewOptions =
                                         , Svg.Attributes.dominantBaseline "middle"
                                         , Svg.Attributes.fontSize "smaller"
                                         ]
-                                        [ Svg.text <| formatFloat cuesViewOptions.distanceDetail dist ++ "km" ]
+                                        [ Svg.text <| formatKm cuesViewOptions.distanceDetail dist ]
                                     ]
                     )
             )
@@ -1117,9 +1082,9 @@ waypointInfos position waypoints =
         |> List.reverse
 
 
-formatFloat : Int -> Float -> String
-formatFloat decimalPlaces value =
-    Round.round decimalPlaces value
+formatKm : Int -> Float -> String
+formatKm decimalPlaces metres =
+    Round.round decimalPlaces (metres / 1000) ++ "km"
 
 
 checkbox : Bool -> msg -> String -> Html msg
@@ -1257,38 +1222,3 @@ encodeWaypoints fieldNames waypoints =
 
 
 port storeState : String -> Cmd msg
-
-
-
---- DEMO DATA
-
-
-demoData : String
-demoData =
-    """Distance,Segment end,Type,Name,Municipality,,Detour,Notes
-0,286,,Start,Warwick,,,
-125,286,RS,Kwik-E-Mart,,,,Close 22:00
-292.5,585,RS,Morrisons,Bridgwater,Big town,,Opens 07:00
-311.5,585,"⛺,🚰",Moorhouse Campsite,,,,
-408.4,585,🍴,Quay Cafe,,,slight,09:00-17:00
-417,585,RS,Des' Veg,South Molton,Town,,06:00-21:00
-435,585,🍴,Griffins Yard,South Molton,Town,Not A316,09:30-17:00
-437,585,❗,Detour end A361 bypass,South Molton,,,
-511,585,🍴,Monks Yard Cafe,Ilminster,Small town,slight,09:00-16:00
-558.7,585,🥤,Subway,Dorchester,Big town,slight,08:00-18:00
-560,585,RS,Co-op,Dorchester,Big town,,
-599.5,827,🚰,Water fountains,Weymouth,Town,,
-633,827,❗,Detour end Dorchester,,,,
-655,827,❗,Detour start avoid Salisbury,,,,
-688,827,❗,Detour end avoid Salisbury,Amesbury,Town,,
-688,827,🥤,Fish & Chips,Amesbury,Town,slight,11:30-20:30
-732.5,827,❗,Decision: Country road vs A4,Devizes,Big town,,"A4 saves ~15
-but may be busy,
-goes through big towns"
-749,827,RS,Co-op,Pewsey,Small town,,"Sat: 07-22
-Sun: 10-16"
-798,827,❗,A4 rejoin main route,,,,
-827.6,944.2,RS,Sainos,Henley,Big town,,07:00-23:00
-940,944.2,❗,Join cycle path,,,,
-944.2,944.2,,Finish,Warwick,,,
-"""

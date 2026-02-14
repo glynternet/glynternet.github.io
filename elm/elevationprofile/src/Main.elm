@@ -4,10 +4,10 @@ import Browser
 import Browser.Navigation
 import File exposing (File)
 import File.Select
+import GpxApi
 import Html exposing (Attribute, Html)
 import Html.Attributes
 import Html.Events
-import Http
 import Json.Decode
 import Json.Encode
 import List.Extra
@@ -33,7 +33,6 @@ main =
         }
 
 
-
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
@@ -51,7 +50,7 @@ subscriptions model =
 
 
 type alias Model =
-    { tracks : LoadableResource Tracks
+    { tracks : LoadableResource PositionalTracks
     , showOptions : Bool
     , showWaypointEditor : Bool
     , gpxServerURLOverride : Maybe String
@@ -68,22 +67,20 @@ type alias Model =
     }
 
 
-type alias Tracks =
+type alias PositionalTracks =
     { prev : List Track
     , current : Track
     , next : List Track
     }
 
 
-tracksUpdateCurrent : (Track -> Track) -> Tracks -> Tracks
+tracksUpdateCurrent : (Track -> Track) -> PositionalTracks -> PositionalTracks
 tracksUpdateCurrent updateTrack tracks =
-    Tracks tracks.prev (updateTrack tracks.current) tracks.next
+    PositionalTracks tracks.prev (updateTrack tracks.current) tracks.next
 
 
 type alias Track =
-    { trackpoints : List TrackPoint
-    , waypoints : List Waypoint
-    }
+    GpxApi.Track
 
 
 trackWithWaypoints : Track -> List Waypoint -> Track
@@ -97,17 +94,11 @@ trackUpdateWaypoint track i updateWaypoint =
 
 
 type alias TrackPoint =
-    { distance : Float
-    , elevation : Float
-    , lat : Float
-    , lon : Float
-    }
+    GpxApi.TrackPoint
 
 
 type alias Waypoint =
-    { distance : Float
-    , name : String
-    }
+    GpxApi.Waypoint
 
 
 type alias LatLon =
@@ -130,7 +121,7 @@ type LocationError
 
 
 type alias StoredState =
-    { tracks : Maybe Tracks
+    { tracks : Maybe PositionalTracks
     , gpxServerURL : Maybe String
     , fontSize : Maybe Float
     , trackHeight : Maybe Int
@@ -186,7 +177,7 @@ type Msg
     | ShowWaypointEditor Bool
     | OpenFileBrowser
     | FileUploaded File.File
-    | ElevationProfileDataResponseReceived (Result String ElevationProfileDataResponse)
+    | ElevationProfileDataResponseReceived (Result String (List Track))
     | NavigateToPrevious
     | NavigateToNext
     | WaypointDistanceChange Int Float
@@ -223,7 +214,7 @@ update msg model =
                     (\cmd ->
                         Cmd.batch
                             [ cmd
-                            , getElevationProfileDataResponse (Maybe.withDefault "https://gpx.fly.dev" model.gpxServerURLOverride) file
+                            , GpxApi.getElevationProfileDataResponse ElevationProfileDataResponseReceived (Maybe.withDefault "https://gpx.fly.dev" model.gpxServerURLOverride) file
                             ]
                     )
 
@@ -242,7 +233,7 @@ update msg model =
                                         Error "No tracks available in uploaded GPX 😢"
 
                                     first :: rest ->
-                                        Loaded <| Tracks [] first rest
+                                        Loaded <| PositionalTracks [] first rest
                         }
 
         Ignore ->
@@ -260,7 +251,7 @@ update msg model =
                                             tracks
 
                                         first :: rest ->
-                                            Tracks rest first (tracks.current :: tracks.next)
+                                            PositionalTracks rest first (tracks.current :: tracks.next)
                         }
 
                 _ ->
@@ -278,7 +269,7 @@ update msg model =
                                             tracks
 
                                         first :: rest ->
-                                            Tracks (tracks.current :: tracks.prev) first rest
+                                            PositionalTracks (tracks.current :: tracks.prev) first rest
                         }
 
                 _ ->
@@ -291,7 +282,7 @@ update msg model =
                         { model
                             | tracks =
                                 Loaded <|
-                                    Tracks
+                                    PositionalTracks
                                         tracks.prev
                                         (trackUpdateWaypoint tracks.current i (\w -> { w | name = name }))
                                         tracks.next
@@ -307,7 +298,7 @@ update msg model =
                         { model
                             | tracks =
                                 Loaded <|
-                                    Tracks
+                                    PositionalTracks
                                         tracks.prev
                                         (trackUpdateWaypoint tracks.current i (\w -> { w | distance = dist }))
                                         tracks.next
@@ -490,7 +481,7 @@ view model =
 viewOptions :
     { show : Bool
     , showWaypointEditor : Bool
-    , tracks : Maybe Tracks
+    , tracks : Maybe PositionalTracks
     , fontSize : Float
     , trackHeight : Int
     , trackThickness : Float
@@ -614,7 +605,7 @@ viewOptions options =
                                                     , Html.Events.onInput (String.toFloat >> Maybe.withDefault 500 >> UpdateIntensityTau)
                                                     ]
                                                     []
-                                                , Html.text ("\u{03C4} = " ++ String.fromFloat options.intensityTau ++ "m")
+                                                , Html.text ("τ = " ++ String.fromFloat options.intensityTau ++ "m")
                                                 ]
 
                                               else
@@ -740,10 +731,10 @@ profile track maxDistance fontSize trackHeight trackThickness waypointStrokeColo
             ]
             [ -- intensity shading
               if showIntensity then
-                  renderIntensityShading (toFloat svgWidth) maxDistance (toFloat trackHeight) (computeIntensity intensityTau track.trackpoints)
+                renderIntensityShading (toFloat svgWidth) maxDistance (toFloat trackHeight) (computeIntensity intensityTau track.trackpoints)
 
               else
-                  Svg.g [] []
+                Svg.g [] []
             , -- waypoints
               Svg.g []
                 (let
@@ -878,6 +869,7 @@ resolveElevationProfileSVGLine calc profileData trackThicknessAttrValue =
         []
 
 
+
 -- Compute trail intensity at each trackpoint using an Exponential Weighted
 -- Moving Average (EWMA) of the climbing-only grade signal.
 --
@@ -897,6 +889,8 @@ resolveElevationProfileSVGLine calc profileData trackThicknessAttrValue =
 -- Intensity is initialized at 0 (fresh legs). The τ parameter controls
 -- responsiveness: small τ tracks local steepness closely (spiky), large τ
 -- produces a smoother signal reflecting sustained climbing effort.
+
+
 computeIntensity : Float -> List TrackPoint -> List { distance : Float, intensity : Float }
 computeIntensity tau trackPoints =
     case trackPoints of
@@ -946,6 +940,7 @@ computeIntensity tau trackPoints =
             List.reverse result
 
 
+
 -- Render intensity shading as a row of SVG rectangles spanning the full chart
 -- height. Each segment between consecutive points is filled with a green →
 -- yellow → red color at 30% opacity.
@@ -955,6 +950,8 @@ computeIntensity tau trackPoints =
 -- route characteristics. When intensity is constant across the entire profile
 -- (including the trivial case of an entirely flat route where all values are 0),
 -- the range is zero and all segments render as green.
+
+
 renderIntensityShading : Float -> Float -> Float -> List { distance : Float, intensity : Float } -> Svg.Svg msg
 renderIntensityShading svgWidth maxDistance trackHeightFloat intensityPoints =
     let
@@ -1010,6 +1007,7 @@ renderIntensityShading svgWidth maxDistance trackHeightFloat intensityPoints =
         )
 
 
+
 -- Map a normalized intensity value to a green → yellow → red color string.
 -- Input is clamped to [0, 1]:
 --   0.0 → pure green  (rgb 0,255,0)
@@ -1017,6 +1015,8 @@ renderIntensityShading svgWidth maxDistance trackHeightFloat intensityPoints =
 --   1.0 → pure red    (rgb 255,0,0)
 -- Values above 1.0 (possible when a segment exceeds the normalization cap)
 -- are clamped to red.
+
+
 intensityColor : Float -> String
 intensityColor t =
     let
@@ -1083,42 +1083,11 @@ xyCalculator cfg =
 
 
 
--- GPX API
-
-
-type alias ElevationProfileDataResponse =
-    List Track
-
-
-decodeElevationProfileDataResponse : Json.Decode.Decoder ElevationProfileDataResponse
-decodeElevationProfileDataResponse =
-    Json.Decode.list
-        (Json.Decode.map2 Track
-            (Json.Decode.field "track" decodeTrackpoints)
-            (Json.Decode.maybe (Json.Decode.field "waypoints" decodeWaypoints)
-                |> Json.Decode.map (Maybe.withDefault [])
-            )
-        )
-
-
-getElevationProfileDataResponse : String -> File.File -> Cmd Msg
-getElevationProfileDataResponse url file =
-    Http.post
-        { url = url
-        , body = Http.fileBody file
-        , expect =
-            Http.expectJson
-                (Result.mapError httpErrorString >> ElevationProfileDataResponseReceived)
-                decodeElevationProfileDataResponse
-        }
-
-
-
 -- ENCODE/DECODE MODEL
 
 
-encodeTracks : Tracks -> Json.Encode.Value
-encodeTracks tracks =
+encodePositionalTracks : PositionalTracks -> Json.Encode.Value
+encodePositionalTracks tracks =
     Json.Encode.object
         [ ( "previous", Json.Encode.list encodeTrack tracks.prev )
         , ( "current", encodeTrack tracks.current )
@@ -1126,9 +1095,9 @@ encodeTracks tracks =
         ]
 
 
-decodeTracks : Json.Decode.Decoder Tracks
-decodeTracks =
-    Json.Decode.map3 Tracks
+decodePositionalTracks : Json.Decode.Decoder PositionalTracks
+decodePositionalTracks =
+    Json.Decode.map3 PositionalTracks
         (Json.Decode.field "previous" (Json.Decode.list decodeTrack))
         (Json.Decode.field "current" decodeTrack)
         (Json.Decode.field "next" (Json.Decode.list decodeTrack))
@@ -1144,9 +1113,9 @@ encodeTrack track =
 
 decodeTrack : Json.Decode.Decoder Track
 decodeTrack =
-    Json.Decode.map2 Track
-        (Json.Decode.field "trackpoints" decodeTrackpoints)
-        (Json.Decode.field "waypoints" decodeWaypoints)
+    Json.Decode.map2 GpxApi.Track
+        (Json.Decode.field "trackpoints" GpxApi.decodeTrackpoints)
+        (Json.Decode.field "waypoints" GpxApi.decodeWaypoints)
 
 
 encodeTrackpoints : List TrackPoint -> Json.Encode.Value
@@ -1162,17 +1131,6 @@ encodeTrackpoints =
         )
 
 
-decodeTrackpoints : Json.Decode.Decoder (List TrackPoint)
-decodeTrackpoints =
-    Json.Decode.list
-        (Json.Decode.map4 TrackPoint
-            (Json.Decode.field "dist" Json.Decode.float)
-            (Json.Decode.field "ele" Json.Decode.float)
-            (Json.Decode.field "lat" Json.Decode.float)
-            (Json.Decode.field "lon" Json.Decode.float)
-        )
-
-
 encodeWaypoints : List Waypoint -> Json.Encode.Value
 encodeWaypoints =
     Json.Encode.list
@@ -1181,15 +1139,6 @@ encodeWaypoints =
                 [ ( "dist", Json.Encode.float waypoint.distance )
                 , ( "name", Json.Encode.string waypoint.name )
                 ]
-        )
-
-
-decodeWaypoints : Json.Decode.Decoder (List Waypoint)
-decodeWaypoints =
-    Json.Decode.list
-        (Json.Decode.map2 Waypoint
-            (Json.Decode.field "dist" Json.Decode.float)
-            (Json.Decode.field "name" Json.Decode.string)
         )
 
 
@@ -1221,7 +1170,7 @@ encodeSavedState state =
             , state.trackHeight |> Maybe.map (\height -> ( "trackHeight", Json.Encode.int height ))
             , state.trackThickness |> Maybe.map (\thickness -> ( "trackThickness", Json.Encode.float thickness ))
             , state.waypointStrokeColor |> Maybe.map (\colour -> ( "waypointStrokeColor", Json.Encode.string colour ))
-            , state.tracks |> Maybe.map (\tracks -> ( "tracks", encodeTracks tracks ))
+            , state.tracks |> Maybe.map (\tracks -> ( "tracks", encodePositionalTracks tracks ))
             , state.trackingIntervalSec |> Maybe.map (\interval -> ( "trackingIntervalSec", Json.Encode.int interval ))
             , state.showIntensity |> Maybe.map (\show -> ( "showIntensity", Json.Encode.bool show ))
             , state.intensityTau |> Maybe.map (\tau -> ( "intensityTau", Json.Encode.float tau ))
@@ -1233,7 +1182,7 @@ encodeSavedState state =
 storedStateDecoder : Json.Decode.Decoder StoredState
 storedStateDecoder =
     Json.Decode.map6 StoredState
-        (Json.Decode.maybe (Json.Decode.field "tracks" decodeTracks))
+        (Json.Decode.maybe (Json.Decode.field "tracks" decodePositionalTracks))
         (Json.Decode.maybe (Json.Decode.field "gpxServerURL" Json.Decode.string))
         (Json.Decode.maybe (Json.Decode.field "fontSize" Json.Decode.float))
         (Json.Decode.maybe (Json.Decode.field "trackHeight" Json.Decode.int))
@@ -1360,26 +1309,6 @@ maybeFromloadableResource resource =
 
         _ ->
             Nothing
-
-
-httpErrorString : Http.Error -> String
-httpErrorString err =
-    case err of
-        Http.BadUrl msg ->
-            "bad url: " ++ msg
-
-        Http.Timeout ->
-            "timeout"
-
-        Http.NetworkError ->
-            "network error"
-
-        -- TODO(glynternet): can we capture the error message from the body?
-        Http.BadStatus code ->
-            "bad status: " ++ String.fromInt code
-
-        Http.BadBody msg ->
-            "bad body: " ++ msg
 
 
 listPopulated : List a -> Bool
