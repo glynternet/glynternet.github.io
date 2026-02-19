@@ -219,6 +219,7 @@ type Msg
     | FileUploaded File.File
     | GpxResponseReceived (Result String (List GpxApi.Track))
     | UpdateShowStartFinish Bool
+    | SetAllTypesEnabled Bool
     | ShowQR
     | CloseQR
     | Tick
@@ -270,6 +271,21 @@ update msg model =
 
                         newCuesModel =
                             { cuesModel | waypointOptions = { options | filteredLocationTypes = Dict.insert typ enabled cuesModel.waypointOptions.filteredLocationTypes } }
+                    in
+                    updateCuesModel model newCuesModel
+
+                _ ->
+                    ( model, Cmd.none )
+
+        SetAllTypesEnabled enabled ->
+            case model.page of
+                CuesheetPage cuesModel ->
+                    let
+                        options =
+                            cuesModel.waypointOptions
+
+                        newCuesModel =
+                            { cuesModel | waypointOptions = { options | filteredLocationTypes = Dict.map (\_ _ -> enabled) options.filteredLocationTypes } }
                     in
                     updateCuesModel model newCuesModel
 
@@ -745,7 +761,7 @@ viewOptions show maxDistance waypointOptions showStartFinish cuesViewOptions gpx
                                 )
                                 :: (if waypointOptions.locationFilterEnabled then
                                         [ Html.fieldset []
-                                            (waypointOptions.filteredLocationTypes
+                                            ((waypointOptions.filteredLocationTypes
                                                 |> Dict.toList
                                                 |> List.map
                                                     (\( typ, included ) ->
@@ -758,7 +774,10 @@ viewOptions show maxDistance waypointOptions showStartFinish cuesViewOptions gpx
                                                                 "unknown"
                                                             )
                                                     )
-                                             --        TODO(glynternet): add 'clear' and 'all' buttons
+                                             )
+                                                ++ [ Html.button [ Html.Events.onClick <| SetAllTypesEnabled True ] [ Html.text "All" ]
+                                                   , Html.button [ Html.Events.onClick <| SetAllTypesEnabled False ] [ Html.text "None" ]
+                                                   ]
                                             )
                                         ]
 
