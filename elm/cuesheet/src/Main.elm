@@ -342,7 +342,7 @@ update msg model =
                             let
                                 waypoints =
                                     track.waypoints
-                                        |> List.map (\w -> Waypoint w.name w.distance [])
+                                        |> List.map (\w -> Waypoint w.name w.distance w.categories)
                                         |> List.sortBy .distance
                             in
                             { model | page = CuesheetPage <| initialCuesModel waypoints, gpxError = Maybe.Nothing } |> updateModel

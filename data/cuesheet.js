@@ -1857,9 +1857,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.cN,
-		impl.df,
-		impl.da,
+		impl.cO,
+		impl.dg,
+		impl.db,
 		function() { return function() {} }
 	);
 });
@@ -3943,11 +3943,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.cN,
-		impl.df,
-		impl.da,
+		impl.cO,
+		impl.dg,
+		impl.db,
 		function(sendToApp, initialModel) {
-			var view = impl.dh;
+			var view = impl.di;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -3979,12 +3979,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.cN,
-		impl.df,
-		impl.da,
+		impl.cO,
+		impl.dg,
+		impl.db,
 		function(sendToApp, initialModel) {
 			var divertHrefToApp = impl.a8 && impl.a8(sendToApp)
-			var view = impl.dh;
+			var view = impl.di;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -3997,7 +3997,7 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.dc) && (_VirtualDom_doc.title = title = doc.dc);
+				(title !== doc.dd) && (_VirtualDom_doc.title = title = doc.dd);
 			});
 		}
 	);
@@ -4053,8 +4053,8 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.cY;
-	var onUrlRequest = impl.cZ;
+	var onUrlChange = impl.cZ;
+	var onUrlRequest = impl.c_;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
@@ -4084,13 +4084,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		cN: function(flags)
+		cO: function(flags)
 		{
-			return A3(impl.cN, flags, _Browser_getUrl(), key);
+			return A3(impl.cO, flags, _Browser_getUrl(), key);
 		},
-		dh: impl.dh,
-		df: impl.df,
-		da: impl.da
+		di: impl.di,
+		dg: impl.dg,
+		db: impl.db
 	});
 }
 
@@ -4156,17 +4156,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { cJ: 'hidden', co: 'visibilitychange' }
+		? { cK: 'hidden', cp: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { cJ: 'mozHidden', co: 'mozvisibilitychange' }
+		? { cK: 'mozHidden', cp: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { cJ: 'msHidden', co: 'msvisibilitychange' }
+		? { cK: 'msHidden', cp: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { cJ: 'webkitHidden', co: 'webkitvisibilitychange' }
-		: { cJ: 'hidden', co: 'visibilitychange' };
+		? { cK: 'webkitHidden', cp: 'webkitvisibilitychange' }
+		: { cK: 'hidden', cp: 'visibilitychange' };
 }
 
 
@@ -4331,7 +4331,7 @@ function _Browser_getElement(id)
 				ce: _Browser_doc.documentElement.clientWidth,
 				bC: _Browser_doc.documentElement.clientHeight
 			},
-			cz: {
+			cA: {
 				cf: x + rect.left,
 				cg: y + rect.top,
 				ce: rect.width,
@@ -4836,19 +4836,19 @@ var _Http_toTask = F3(function(router, toTask, request)
 	return _Scheduler_binding(function(callback)
 	{
 		function done(response) {
-			callback(toTask(request.cB.a(response)));
+			callback(toTask(request.cC.a(response)));
 		}
 
 		var xhr = new XMLHttpRequest();
 		xhr.addEventListener('error', function() { done($elm$http$Http$NetworkError_); });
 		xhr.addEventListener('timeout', function() { done($elm$http$Http$Timeout_); });
-		xhr.addEventListener('load', function() { done(_Http_toResponse(request.cB.b, xhr)); });
+		xhr.addEventListener('load', function() { done(_Http_toResponse(request.cC.b, xhr)); });
 		$elm$core$Maybe$isJust(request.cc) && _Http_track(router, xhr, request.cc.a);
 
 		try {
-			xhr.open(request.cU, request.dg, true);
+			xhr.open(request.cV, request.dh, true);
 		} catch (e) {
-			return done($elm$http$Http$BadUrl_(request.dg));
+			return done($elm$http$Http$BadUrl_(request.dh));
 		}
 
 		_Http_configureRequest(xhr, request);
@@ -4869,8 +4869,8 @@ function _Http_configureRequest(xhr, request)
 	{
 		xhr.setRequestHeader(headers.a.a, headers.a.b);
 	}
-	xhr.timeout = request.db.a || 0;
-	xhr.responseType = request.cB.d;
+	xhr.timeout = request.dc.a || 0;
+	xhr.responseType = request.cC.d;
 	xhr.withCredentials = request.cj;
 }
 
@@ -4892,9 +4892,9 @@ function _Http_toResponse(toBody, xhr)
 function _Http_toMetadata(xhr)
 {
 	return {
-		dg: xhr.responseURL,
-		c7: xhr.status,
-		c8: xhr.statusText,
+		dh: xhr.responseURL,
+		c8: xhr.status,
+		c9: xhr.statusText,
 		bB: _Http_parseHeaders(xhr.getAllResponseHeaders())
 	};
 }
@@ -4990,14 +4990,14 @@ function _Http_track(router, xhr, tracker)
 	xhr.upload.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Sending({
-			c4: event.loaded,
+			c5: event.loaded,
 			b6: event.total
 		}))));
 	});
 	xhr.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Receiving({
-			c1: event.loaded,
+			c2: event.loaded,
 			b6: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
 		}))));
 	});
@@ -5010,7 +5010,7 @@ var _Regex_never = /.^/;
 var _Regex_fromStringWith = F2(function(options, string)
 {
 	var flags = 'g';
-	if (options.cV) { flags += 'm'; }
+	if (options.cW) { flags += 'm'; }
 	if (options.cn) { flags += 'i'; }
 
 	try
@@ -5612,7 +5612,7 @@ var $elm$url$Url$Http = 0;
 var $elm$url$Url$Https = 1;
 var $elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {bw: fragment, bD: host, c$: path, bU: port_, bY: protocol, bZ: query};
+		return {bw: fragment, bD: host, c0: path, bU: port_, bY: protocol, bZ: query};
 	});
 var $elm$core$String$contains = _String_contains;
 var $elm$core$String$length = _String_length;
@@ -6311,11 +6311,11 @@ var $author$project$Main$CuesViewOptions = F5(
 var $author$project$Main$FromZero = 0;
 var $author$project$Main$Model = F7(
 	function (page, gpxError, gpxServerURLOverride, showOptions, cuesViewOptions, showQR, url) {
-		return {h: cuesViewOptions, O: gpxError, bz: gpxServerURLOverride, E: page, y: showOptions, aI: showQR, dg: url};
+		return {h: cuesViewOptions, O: gpxError, bz: gpxServerURLOverride, E: page, y: showOptions, aI: showQR, dh: url};
 	});
 var $author$project$Main$StoredState = F8(
 	function (waypoints, totalDistanceDisplay, lastReferencePoint, locationFilterEnabled, filteredLocationTypes, itemSpacing, distanceDetail, showOptions) {
-		return {j: distanceDetail, n: filteredLocationTypes, c: itemSpacing, bI: lastReferencePoint, o: locationFilterEnabled, y: showOptions, q: totalDistanceDisplay, dj: waypoints};
+		return {j: distanceDetail, n: filteredLocationTypes, c: itemSpacing, bI: lastReferencePoint, o: locationFilterEnabled, y: showOptions, q: totalDistanceDisplay, dk: waypoints};
 	});
 var $author$project$Main$WelcomePage = function (a) {
 	return {$: 0, a: a};
@@ -6663,7 +6663,7 @@ var $folkertdev$elm_flate$Checksum$Crc32$tinf_crc32 = function (buffer) {
 };
 var $folkertdev$elm_flate$Checksum$Crc32$crc32 = $folkertdev$elm_flate$Checksum$Crc32$tinf_crc32;
 var $elm$bytes$Bytes$Decode$fail = _Bytes_decodeFailure;
-var $folkertdev$elm_flate$Inflate$GZip$flags = {bl: 16, ax: 2, bu: 4, cW: 8, cb: 1};
+var $folkertdev$elm_flate$Inflate$GZip$flags = {bl: 16, ax: 2, bu: 4, cX: 8, cb: 1};
 var $elm$core$Basics$neq = _Utils_notEqual;
 var $folkertdev$elm_flate$Inflate$GZip$skipUntilZero = function () {
 	var go = function (n) {
@@ -6683,7 +6683,7 @@ var $folkertdev$elm_flate$Inflate$GZip$gzipFindBuffer = function (sliced) {
 	if ((sliced.bF !== 31) || (sliced.bG !== 139)) {
 		return $elm$core$Maybe$Nothing;
 	} else {
-		if (sliced.cU !== 8) {
+		if (sliced.cV !== 8) {
 			return $elm$core$Maybe$Nothing;
 		} else {
 			if (!(!(sliced.aU & 224))) {
@@ -6705,7 +6705,7 @@ var $folkertdev$elm_flate$Inflate$GZip$gzipFindBuffer = function (sliced) {
 					},
 					$elm$bytes$Bytes$Decode$unsignedInt16(0)) : $elm$bytes$Bytes$Decode$succeed(0);
 				var skipFileComment = flagSet($folkertdev$elm_flate$Inflate$GZip$flags.bl) ? $folkertdev$elm_flate$Inflate$GZip$skipUntilZero : $elm$bytes$Bytes$Decode$succeed(0);
-				var skipFileName = flagSet($folkertdev$elm_flate$Inflate$GZip$flags.cW) ? $folkertdev$elm_flate$Inflate$GZip$skipUntilZero : $elm$bytes$Bytes$Decode$succeed(0);
+				var skipFileName = flagSet($folkertdev$elm_flate$Inflate$GZip$flags.cX) ? $folkertdev$elm_flate$Inflate$GZip$skipUntilZero : $elm$bytes$Bytes$Decode$succeed(0);
 				var skipAll = A2(
 					$folkertdev$elm_flate$Inflate$GZip$andMap,
 					skipFileComment,
@@ -6759,7 +6759,7 @@ var $folkertdev$elm_flate$Inflate$GZip$gzipFindBuffer = function (sliced) {
 };
 var $folkertdev$elm_flate$Inflate$GZip$GzipSlice = F9(
 	function (orig, id1, id2, method, flg, restOfHeader, buffer, crc32, decompressedLength) {
-		return {m: buffer, cs: crc32, cv: decompressedLength, aU: flg, bF: id1, bG: id2, cU: method, bS: orig, c2: restOfHeader};
+		return {m: buffer, ct: crc32, cw: decompressedLength, aU: flg, bF: id1, bG: id2, cV: method, bS: orig, c3: restOfHeader};
 	});
 var $folkertdev$elm_flate$Inflate$GZip$gzipSlice = function (buffer) {
 	var decoder = A2(
@@ -9169,7 +9169,7 @@ var $folkertdev$elm_flate$Inflate$GZip$inflate = function (buffer) {
 };
 var $folkertdev$elm_flate$Inflate$Inflate$inflateGZip = $folkertdev$elm_flate$Inflate$GZip$inflate;
 var $folkertdev$elm_flate$Flate$inflateGZip = $folkertdev$elm_flate$Inflate$Inflate$inflateGZip;
-var $author$project$Main$longFieldNames = {j: 'distanceDetail', n: 'filteredLocationTypes', c: 'itemSpacing', o: 'locationFilterEnabled', F: 'referencePoint', y: 'showOptions', q: 'totalDistanceDisplay', ap: 'distance', aq: 'name', ar: 'typ', dj: 'waypoints'};
+var $author$project$Main$longFieldNames = {j: 'distanceDetail', n: 'filteredLocationTypes', c: 'itemSpacing', o: 'locationFilterEnabled', F: 'referencePoint', y: 'showOptions', q: 'totalDistanceDisplay', ap: 'distance', aq: 'name', ar: 'typ', dk: 'waypoints'};
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (!maybe.$) {
@@ -9302,7 +9302,7 @@ var $elm$url$Url$Parser$parse = F2(
 				A5(
 					$elm$url$Url$Parser$State,
 					_List_Nil,
-					$elm$url$Url$Parser$preparePath(url.c$),
+					$elm$url$Url$Parser$preparePath(url.c0),
 					$elm$url$Url$Parser$prepareQuery(url.bZ),
 					url.bw,
 					$elm$core$Basics$identity)));
@@ -9330,11 +9330,11 @@ var $elm$url$Url$Parser$query = function (_v0) {
 	};
 };
 var $elm$browser$Browser$Navigation$replaceUrl = _Browser_replaceUrl;
-var $author$project$Main$shortFieldNames = {j: 'dd', n: 'flt', c: 'is', o: 'lfe', F: 'rp', y: 'so', q: 'tdd', ap: 'd', aq: 'n', ar: 't', dj: 'w'};
+var $author$project$Main$shortFieldNames = {j: 'dd', n: 'flt', c: 'is', o: 'lfe', F: 'rp', y: 'so', q: 'tdd', ap: 'd', aq: 'n', ar: 't', dk: 'w'};
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $author$project$Main$Waypoint = F3(
 	function (name, distance, types) {
-		return {bo: distance, cW: name, M: types};
+		return {bo: distance, cX: name, M: types};
 	});
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
@@ -9390,7 +9390,7 @@ var $author$project$Main$storedStateDecoder = function (fieldNames) {
 		$elm$json$Json$Decode$maybe(
 			A2(
 				$elm$json$Json$Decode$field,
-				fieldNames.dj,
+				fieldNames.dk,
 				$author$project$Main$decodeWaypoints(fieldNames))),
 		$elm$json$Json$Decode$maybe(
 			A2($elm$json$Json$Decode$field, fieldNames.q, $elm$json$Json$Decode$string)),
@@ -9412,7 +9412,7 @@ var $author$project$Main$storedStateDecoder = function (fieldNames) {
 };
 var $author$project$Main$CuesModel = F2(
 	function (waypoints, waypointOptions) {
-		return {G: waypointOptions, dj: waypoints};
+		return {G: waypointOptions, dk: waypoints};
 	});
 var $author$project$Main$CuesheetPage = function (a) {
 	return {$: 2, a: a};
@@ -9498,7 +9498,7 @@ var $author$project$Main$storedStateModel = F2(
 										$author$project$Main$initialFilteredLocations(ws),
 										state.n))));
 					},
-					state.dj)),
+					state.dk)),
 			$elm$core$Maybe$Nothing,
 			$elm$core$Maybe$Nothing,
 			A2($elm$core$Maybe$withDefault, true, state.y),
@@ -9760,7 +9760,7 @@ var $elm$url$Url$toString = function (url) {
 					$elm$url$Url$addPort,
 					url.bU,
 					_Utils_ap(http, url.bD)),
-				url.c$)));
+				url.c0)));
 };
 var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$json$Json$Encode$dict = F3(
@@ -9813,7 +9813,7 @@ var $author$project$Main$encodeWaypoints = F2(
 						[
 							_Utils_Tuple2(
 							fieldNames.aq,
-							$elm$json$Json$Encode$string(waypoint.cW)),
+							$elm$json$Json$Encode$string(waypoint.cX)),
 							_Utils_Tuple2(
 							fieldNames.ap,
 							$elm$json$Json$Encode$float(waypoint.bo)),
@@ -9851,8 +9851,8 @@ var $author$project$Main$encodeSavedState = F2(
 							return _List_fromArray(
 								[
 									_Utils_Tuple2(
-									fieldNames.dj,
-									A2($author$project$Main$encodeWaypoints, fieldNames, cuesModel.dj)),
+									fieldNames.dk,
+									A2($author$project$Main$encodeWaypoints, fieldNames, cuesModel.dk)),
 									_Utils_Tuple2(
 									fieldNames.o,
 									$elm$json$Json$Encode$bool(cuesModel.G.o)),
@@ -9933,7 +9933,7 @@ var $author$project$Main$init = F3(
 									$elm$url$Url$Parser$Query$string('state')),
 								_Utils_update(
 									url,
-									{c$: ''})))))));
+									{c0: ''})))))));
 		return A2(
 			$elm$core$Tuple$mapSecond,
 			function (cmd) {
@@ -10007,11 +10007,11 @@ var $elm$file$File$Select$file = F2(
 	});
 var $author$project$GpxApi$Track = F2(
 	function (trackpoints, waypoints) {
-		return {de: trackpoints, dj: waypoints};
+		return {df: trackpoints, dk: waypoints};
 	});
 var $author$project$GpxApi$TrackPoint = F4(
 	function (distance, elevation, lat, lon) {
-		return {bo: distance, cA: elevation, cO: lat, cQ: lon};
+		return {bo: distance, cB: elevation, cP: lat, cR: lon};
 	});
 var $elm$json$Json$Decode$map4 = _Json_map4;
 var $author$project$GpxApi$decodeTrackpoints = $elm$json$Json$Decode$list(
@@ -10022,16 +10022,20 @@ var $author$project$GpxApi$decodeTrackpoints = $elm$json$Json$Decode$list(
 		A2($elm$json$Json$Decode$field, 'ele', $elm$json$Json$Decode$float),
 		A2($elm$json$Json$Decode$field, 'lat', $elm$json$Json$Decode$float),
 		A2($elm$json$Json$Decode$field, 'lon', $elm$json$Json$Decode$float)));
-var $author$project$GpxApi$Waypoint = F2(
-	function (distance, name) {
-		return {bo: distance, cW: name};
+var $author$project$GpxApi$Waypoint = F3(
+	function (distance, name, categories) {
+		return {co: categories, bo: distance, cX: name};
 	});
 var $author$project$GpxApi$decodeWaypoints = $elm$json$Json$Decode$list(
-	A3(
-		$elm$json$Json$Decode$map2,
+	A4(
+		$elm$json$Json$Decode$map3,
 		$author$project$GpxApi$Waypoint,
 		A2($elm$json$Json$Decode$field, 'dist', $elm$json$Json$Decode$float),
-		A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string)));
+		A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
+		A2(
+			$elm$json$Json$Decode$field,
+			'categories',
+			$elm$json$Json$Decode$list($elm$json$Json$Decode$string))));
 var $author$project$GpxApi$decodeElevationProfileDataResponse = $elm$json$Json$Decode$list(
 	A3(
 		$elm$json$Json$Decode$map2,
@@ -10112,7 +10116,7 @@ var $elm$http$Http$resolve = F2(
 			case 3:
 				var metadata = response.a;
 				return $elm$core$Result$Err(
-					$elm$http$Http$BadStatus(metadata.c7));
+					$elm$http$Http$BadStatus(metadata.c8));
 			default:
 				var body = response.b;
 				return A2(
@@ -10288,12 +10292,12 @@ var $elm$http$Http$cmdMap = F2(
 				{
 					cj: r.cj,
 					cm: r.cm,
-					cB: A2(_Http_mapExpect, func, r.cB),
+					cC: A2(_Http_mapExpect, func, r.cC),
 					bB: r.bB,
-					cU: r.cU,
-					db: r.db,
+					cV: r.cV,
+					dc: r.dc,
 					cc: r.cc,
-					dg: r.dg
+					dh: r.dh
 				});
 		}
 	});
@@ -10316,25 +10320,25 @@ var $elm$http$Http$subscription = _Platform_leaf('Http');
 var $elm$http$Http$request = function (r) {
 	return $elm$http$Http$command(
 		$elm$http$Http$Request(
-			{cj: false, cm: r.cm, cB: r.cB, bB: r.bB, cU: r.cU, db: r.db, cc: r.cc, dg: r.dg}));
+			{cj: false, cm: r.cm, cC: r.cC, bB: r.bB, cV: r.cV, dc: r.dc, cc: r.cc, dh: r.dh}));
 };
 var $elm$http$Http$post = function (r) {
 	return $elm$http$Http$request(
-		{cm: r.cm, cB: r.cB, bB: _List_Nil, cU: 'POST', db: $elm$core$Maybe$Nothing, cc: $elm$core$Maybe$Nothing, dg: r.dg});
+		{cm: r.cm, cC: r.cC, bB: _List_Nil, cV: 'POST', dc: $elm$core$Maybe$Nothing, cc: $elm$core$Maybe$Nothing, dh: r.dh});
 };
 var $author$project$GpxApi$getElevationProfileDataResponse = F3(
 	function (toMsg, url, file) {
 		return $elm$http$Http$post(
 			{
 				cm: $elm$http$Http$fileBody(file),
-				cB: A2(
+				cC: A2(
 					$elm$http$Http$expectJson,
 					A2(
 						$elm$core$Basics$composeR,
 						$elm$core$Result$mapError($author$project$GpxApi$httpErrorString),
 						toMsg),
 					$author$project$GpxApi$decodeElevationProfileDataResponse),
-				dg: url
+				dh: url
 			});
 	});
 var $author$project$Main$initialWaypointOptions = function (waypoints) {
@@ -10525,9 +10529,9 @@ var $author$project$Main$update = F2(
 								A2(
 									$elm$core$List$map,
 									function (w) {
-										return A3($author$project$Main$Waypoint, w.cW, w.bo, _List_Nil);
+										return A3($author$project$Main$Waypoint, w.cX, w.bo, w.co);
 									},
-									track.dj));
+									track.dk));
 							return $author$project$Main$updateModel(
 								_Utils_update(
 									model,
@@ -10587,7 +10591,7 @@ var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$CloseQR = {$: 14};
 var $elm$browser$Browser$Document = F2(
 	function (title, body) {
-		return {cm: body, dc: title};
+		return {cm: body, dd: title};
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Medium = 1;
 var $elm$html$Html$br = _VirtualDom_node('br');
@@ -11049,7 +11053,7 @@ var $author$project$Main$cuesheet = F2(
 													]),
 												_List_fromArray(
 													[
-														$elm$svg$Svg$text(waypoint.cW)
+														$elm$svg$Svg$text(waypoint.cX)
 													])),
 											A2(
 												$elm$core$List$indexedMap,
@@ -12385,7 +12389,7 @@ var $folkertdev$elm_flate$Experimental$ByteArray$fromBytes = function (buffer) {
 };
 var $folkertdev$elm_flate$LZ77$encodeWithOptions = F2(
 	function (_v0, buffer) {
-		var windowSize = _v0.dk;
+		var windowSize = _v0.dl;
 		return A2(
 			$folkertdev$elm_flate$LZ77$flush,
 			windowSize,
@@ -12464,7 +12468,7 @@ var $folkertdev$elm_flate$Deflate$Internal$compress = F2(
 					$folkertdev$elm_flate$Deflate$Internal$codeToSymbol,
 					A2(
 						$folkertdev$elm_flate$LZ77$encodeWithOptions,
-						{dk: windowSize},
+						{dl: windowSize},
 						buf)));
 		}
 	});
@@ -14961,7 +14965,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$timingPattern = F2(
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$apply = function (_v0) {
 	var ecLevel = _v0.a.bp;
-	var groupInfo = _v0.a.cF;
+	var groupInfo = _v0.a.cG;
 	var bytes = _v0.b;
 	var version = groupInfo.bd;
 	var size = ((version - 1) * 4) + 21;
@@ -15221,7 +15225,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicatorLength = F2(
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicator = F2(
 	function (_v0, bits) {
-		var groupInfo = _v0.cF;
+		var groupInfo = _v0.cG;
 		var inputStr = _v0.aZ;
 		var mode = _v0.aD;
 		var length = A2($pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicatorLength, mode, groupInfo.bd);
@@ -15247,11 +15251,11 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$addInfoAndFinalBits = function (_v0)
 		model,
 		A2(
 			$pablohirafuji$elm_qrcode$QRCode$Encode$addFiller,
-			model.cF.at,
+			model.cG.at,
 			$pablohirafuji$elm_qrcode$QRCode$Encode$bitsToBytes(
 				A3(
 					$pablohirafuji$elm_qrcode$QRCode$Encode$addTerminator,
-					model.cF.at,
+					model.cG.at,
 					model.aN,
 					A2(
 						$elm$core$List$cons,
@@ -15861,20 +15865,20 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$getErrorCorrection = function (_v0) 
 		function (c) {
 			return _Utils_Tuple3(model, dataBlocks, c);
 		},
-		A2($pablohirafuji$elm_qrcode$QRCode$ErrorCorrection$get, model.cF.cy, dataBlocks));
+		A2($pablohirafuji$elm_qrcode$QRCode$ErrorCorrection$get, model.cG.cz, dataBlocks));
 };
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric = 1;
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Byte = 2;
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Numeric = 0;
 var $elm$regex$Regex$Match = F4(
 	function (match, index, number, submatches) {
-		return {cM: index, cR: match, cX: number, c9: submatches};
+		return {cN: index, cS: match, cY: number, da: submatches};
 	});
 var $elm$regex$Regex$contains = _Regex_contains;
 var $elm$regex$Regex$fromStringWith = _Regex_fromStringWith;
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric$onlyAlphanumeric = A2(
 	$elm$regex$Regex$fromStringWith,
-	{cn: false, cV: false},
+	{cn: false, cW: false},
 	'^[0-9A-Z $%*+\\-.\\/:]+$');
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric$isValid = function (input) {
 	return A2(
@@ -15889,7 +15893,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric$isValid = function (inp
 };
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Byte$only8Bit = A2(
 	$elm$regex$Regex$fromStringWith,
-	{cn: false, cV: false},
+	{cn: false, cW: false},
 	'^[\\u0000-\\u00ff]+$');
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Byte$isValid = function (input) {
 	return A2(
@@ -15904,7 +15908,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$Byte$isValid = function (input) {
 };
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Numeric$onlyNumber = A2(
 	$elm$regex$Regex$fromStringWith,
-	{cn: false, cV: false},
+	{cn: false, cW: false},
 	'^[0-9]+$');
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Numeric$isValid = function (input) {
 	return A2(
@@ -15947,9 +15951,9 @@ var $pablohirafuji$elm_qrcode$QRCode$GroupInfo$newGroupInfo = F4(
 	function (version, ecPerBlock, group1, maybeGroup2) {
 		return {
 			at: A2($pablohirafuji$elm_qrcode$QRCode$GroupInfo$byteCapacity, group1, maybeGroup2) * 8,
-			cy: ecPerBlock,
+			cz: ecPerBlock,
 			bA: group1,
-			cS: maybeGroup2,
+			cT: maybeGroup2,
 			bd: version
 		};
 	});
@@ -17086,7 +17090,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$versionToModel = F5(
 		return {
 			aN: partialBitsCount + A2($pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicatorLength, mode, groupInfo.bd),
 			bp: ecLevel,
-			cF: groupInfo,
+			cG: groupInfo,
 			aZ: inputStr,
 			aD: mode
 		};
@@ -17143,9 +17147,9 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$breakList = F3(
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Encode$toBlocks = function (_v0) {
 	var model = _v0.a;
-	var groupInfo = model.cF;
+	var groupInfo = model.cG;
 	var byteList = _v0.b;
-	var _v1 = groupInfo.cS;
+	var _v1 = groupInfo.cT;
 	if (!_v1.$) {
 		var group2 = _v1.a;
 		return A2(
@@ -17213,7 +17217,7 @@ var $pablohirafuji$elm_qrcode$QRCode$fromStringWith = F2(
 					return A2(
 						$elm$core$Result$map,
 						function (matrix) {
-							return {aj: matrix, bd: encodeModel.cF.bd};
+							return {aj: matrix, bd: encodeModel.cG.bd};
 						},
 						$pablohirafuji$elm_qrcode$QRCode$Matrix$apply(
 							_Utils_Tuple2(encodeModel, encodedData)));
@@ -18518,7 +18522,7 @@ var $author$project$Main$view = function (model) {
 										},
 										A2(
 											$elm$core$Maybe$map,
-											$author$project$Main$stateUrl(model.dg),
+											$author$project$Main$stateUrl(model.dh),
 											$danfishgold$base64_bytes$Base64$fromBytes(
 												$folkertdev$elm_flate$Flate$deflateGZip(
 													$elm$bytes$Bytes$Encode$encode(
@@ -18543,7 +18547,7 @@ var $author$project$Main$view = function (model) {
 											return $.bo;
 										},
 										$elm$core$List$head(
-											$elm$core$List$reverse(cuesheetModel.dj))),
+											$elm$core$List$reverse(cuesheetModel.dk))),
 									cuesheetModel.G,
 									model.h,
 									model.O),
@@ -18561,7 +18565,7 @@ var $author$project$Main$view = function (model) {
 										[
 											A2(
 											$author$project$Main$cuesheet,
-											A2($author$project$Main$cues, cuesheetModel.G, cuesheetModel.dj),
+											A2($author$project$Main$cues, cuesheetModel.G, cuesheetModel.dk),
 											model.h)
 										]))
 								]));
@@ -18576,20 +18580,20 @@ var $author$project$Main$view = function (model) {
 };
 var $author$project$Main$main = $elm$browser$Browser$application(
 	{
-		cN: $author$project$Main$init,
-		cY: function (_v0) {
+		cO: $author$project$Main$init,
+		cZ: function (_v0) {
 			return $author$project$Main$Never;
 		},
-		cZ: function (_v1) {
+		c_: function (_v1) {
 			return $author$project$Main$Never;
 		},
-		da: $elm$core$Basics$always(
+		db: $elm$core$Basics$always(
 			A2(
 				$elm$time$Time$every,
 				1500,
 				$elm$core$Basics$always($author$project$Main$Tick))),
-		df: $author$project$Main$update,
-		dh: $author$project$Main$view
+		dg: $author$project$Main$update,
+		di: $author$project$Main$view
 	});
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	$elm$json$Json$Decode$oneOf(

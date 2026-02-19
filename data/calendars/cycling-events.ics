@@ -5,374 +5,374 @@ BEGIN:VEVENT
 DTSTART;VALUE=DATE:20261205
 DTEND;VALUE=DATE:20261206
 SUMMARY:Pleasantville (Arizona Endurance Series)
-UID:df6ac936-e4e3-40c5-b955-951a823e2297@df6a.org
+UID:d54ac19a-61b0-4a7e-8ec1-10e7da925b43@d54a.org
 DESCRIPTION:Series: Arizona Endurance Series 
  (https://rockyroad5050.wordpress.com/)\nLinks:\n  
  https://rockyroad5050.wordpress.com/pleasantville/
 LOCATION:Arizona
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20261114
 DTEND;VALUE=DATE:20261115
 SUMMARY:Picketpost Punisher (Arizona Endurance Series)
-UID:dfd94646-e33a-488f-946d-d654fda60dc6@dfd9.org
+UID:e0d58d11-e752-4545-a228-068bbb245e1c@e0d5.org
 DESCRIPTION:Series: Arizona Endurance Series 
  (https://rockyroad5050.wordpress.com/)\nLinks:\n  
  https://rockyroad5050.wordpress.com/8-picketpost-punisher/
 LOCATION:Arizona
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20261024
 DTEND;VALUE=DATE:20261025
 SUMMARY:Kentucky Camp Charity Ride (Arizona Endurance Series)
-UID:b53462fc-e440-4097-b944-66de8da44f67@b534.org
+UID:bb6d4875-0226-45d4-8c47-73d8222d5e80@bb6d.org
 DESCRIPTION:Series: Arizona Endurance Series 
  (https://rockyroad5050.wordpress.com/)\nLinks:\n  
  https://rockyroad5050.wordpress.com/kc/
 LOCATION:Arizona
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20261010
 DTEND;VALUE=DATE:20261011
 SUMMARY:Zuni Mountains 100 (MTB) (New Mexico Endurance Series)
-UID:ba758cfe-84ce-4992-ab1a-30babf55391b@ba75.org
+UID:3faaf37f-1a73-4cd0-a5ae-4411cb1878ae@3faa.org
 DESCRIPTION:Series: New Mexico Endurance Series (https://nm-
  es.weebly.com/rides.html)\nLinks:\n  https://nm-es.weebly.com/zuni-
  mountains.html
 LOCATION:New Mexico
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20261009
 DTEND;VALUE=DATE:20261013
 SUMMARY:Coconino Stage Bikepack (Arizona Endurance Series)
-UID:a65b2c9c-9b1a-4159-bcfe-efffc07c068f@a65b.org
+UID:975fcdd1-7824-4bf1-85d6-cfe0a9020f81@975f.org
 DESCRIPTION:Series: Arizona Endurance Series 
  (https://rockyroad5050.wordpress.com/)\nLinks:\n  
  https://rockyroad5050.wordpress.com/5-coconino-250-and-350/
 LOCATION:Arizona
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20261003
 DTEND;VALUE=DATE:20261004
 SUMMARY:Head to Head (Dark Timber MTB)
-UID:b0c1d6ca-fdb6-4c73-bbaf-046dce7251fa@b0c1.org
+UID:d5898080-f289-4f07-8901-5d28c82ff836@d589.org
 DESCRIPTION:42 miles - 7\,600ft\nSeries: Dark Timber MTB 
  (https://www.darktimbermtb.com/)
 LOCATION:Vail\, Colorado
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260926
 DTEND;VALUE=DATE:20260927
 SUMMARY:Mogollon Mayhem (Arizona Endurance Series)
-UID:bd1ccfde-5688-40c3-b2fb-29323c8013aa@bd1c.org
+UID:b81a7875-4f0d-4294-859d-22f3ffadb154@b81a.org
 DESCRIPTION:Series: Arizona Endurance Series 
  (https://rockyroad5050.wordpress.com/)\nLinks:\n  
  https://rockyroad5050.wordpress.com/mogollon-mayhem/
 LOCATION:Arizona
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260920
 DTEND;VALUE=DATE:20260921
 SUMMARY:MRHI Poker Ride
-UID:0eeb64c4-ebe6-4e49-849a-9c037c8bfa65@0eeb.org
+UID:a89ec666-6e9d-4a5b-85ba-81a9e42c8f6a@a89e.org
 DESCRIPTION:Links:\n  https://www.mrhi.org/upcoming-events.html\n  
  https://www.mrhi.org/poker-ride--glide.html
 LOCATION:Fairplay\, CO
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260920
 DTEND;VALUE=DATE:20260921
 SUMMARY:DATE TBD: Leadville Big Friggin' Loop (LBFL) (Colorado Endurance 
  Series)
-UID:ee26ed97-a9a8-41e2-85fd-7ee964cadbf6@ee26.org
+UID:5afe19eb-8d30-4ed3-aee9-e56e64d557aa@5afe.org
 DESCRIPTION:Date taken from 2025 schedule for time of year 
  approximation\nSeries: Colorado Endurance Series 
  (https://coloradoes.wordpress.com/)\nLinks:\n  
  https://coloradoes.wordpress.com/leadville-big-friggin-loop-2021/
 LOCATION:Leadville\, CO
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260829
 DTEND;VALUE=DATE:20260830
 SUMMARY:Santa Fe Big Friggin Loop (MTB) (New Mexico Endurance Series)
-UID:36cf146b-e262-4587-86b5-e5868951930e@36cf.org
+UID:f8b00da9-d90f-4be9-ad65-c420314453bd@f8b0.org
 DESCRIPTION:Series: New Mexico Endurance Series (https://nm-
  es.weebly.com/rides.html)\nLinks:\n  https://nm-es.weebly.com/santa-fe-
  big-friggin-loop.html
 LOCATION:Santa Fe\, NM
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260906
 DTEND;VALUE=DATE:20260907
 SUMMARY:DATE TBD: Colorado Trail Classic (CTC) (Colorado Endurance Series)
-UID:24451ac3-31a5-4c84-9785-27ae576c27c0@2445.org
+UID:c0b13529-0246-4782-bde9-99ed665c9076@c0b1.org
 DESCRIPTION:Date taken from 2025 schedule for time of year 
  approximation\nSeries: Colorado Endurance Series 
  (https://coloradoes.wordpress.com/)\nLinks:\n  
  https://coloradoes.wordpress.com/swes-event-list/colorado-trail-classic/
 LOCATION:Colorado
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260824
 DTEND;VALUE=DATE:20260825
 SUMMARY:DATE TBD: Monarch Mind Bender (Colorado Endurance Series)
-UID:3924d34f-6330-43c5-9e83-056f51737621@3924.org
+UID:920f24a1-e285-4147-8746-b153ff186fb6@920f.org
 DESCRIPTION:Date taken from 2025 schedule for time of year 
  approximation\nSeries: Colorado Endurance Series 
  (https://coloradoes.wordpress.com/)\nLinks:\n  
  https://coloradoes.wordpress.com/swes-event-list/monarch-mind-bender-mmb/
 LOCATION:Colorado
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260822
 DTEND;VALUE=DATE:20260823
 SUMMARY:Elk Mountains Ultra (Dark Timber MTB)
-UID:f573fac5-c7d0-46e0-bb1d-ac2c0f387f5d@f573.org
+UID:5d168623-2ee3-4892-a7aa-448116f0b33c@5d16.org
 DESCRIPTION:240 miles - 36\,800ft\nSeries: Dark Timber MTB 
  (https://www.darktimbermtb.com/)
 LOCATION:Eagle\, Colorado
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260822
 DTEND;VALUE=DATE:20260823
 SUMMARY:Tusayan Tussle (Arizona Endurance Series)
-UID:6e5d8941-74c6-4c8a-b70e-f22fd96786bd@6e5d.org
+UID:fb0e5fa9-11f5-427f-a984-1f79cc427af2@fb0e.org
 DESCRIPTION:Series: Arizona Endurance Series 
  (https://rockyroad5050.wordpress.com/)\nLinks:\n  
  https://rockyroad5050.wordpress.com/the-tusayan-tussle/
 LOCATION:Arizona
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260802
 DTEND;VALUE=DATE:20260810
 SUMMARY:Colorado Trail Race
-UID:3d448621-c43a-4fc6-bd85-36146f924030@3d44.org
+UID:b6e9218d-d11b-4ead-86e5-8efd1335942b@b6e9.org
 DESCRIPTION:Links:\n  https://bikepacking.com/event/2026-colorado-trail-
  race-ctr/\n  https://jwookieone.com/colorado-trail-race/the-colorado-
  trail/
 LOCATION:Denver\, CO to Durango\, CO
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260725
 DTEND;VALUE=DATE:20260726
 SUMMARY:Vail 84 (Dark Timber MTB)
-UID:76fc7079-2859-45e7-90e7-3e86cde37347@76fc.org
+UID:28d21298-44da-4148-8515-cd0b173e6665@28d2.org
 DESCRIPTION:84 miles - 14\,500ft\nSeries: Dark Timber MTB 
  (https://www.darktimbermtb.com/)
 LOCATION:Minturn\, Colorado
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260711
 DTEND;VALUE=DATE:20260712
 SUMMARY:Watermelon Beat Down (MTB) (New Mexico Endurance Series)
-UID:82c02402-9080-4599-884f-d486f8614941@82c0.org
+UID:b9a6bda9-645d-468e-9def-2797bf14c7ac@b9a6.org
 DESCRIPTION:Series: New Mexico Endurance Series (https://nm-
  es.weebly.com/rides.html)\nLinks:\n  https://nm-es.weebly.com/watermelon-
  beat-down.html
 LOCATION:New Mexico
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260712
 DTEND;VALUE=DATE:20260713
 SUMMARY:DATE TBD: Pain In The Aspen (PIA) (Colorado Endurance Series)
-UID:c47af551-7900-4814-9710-41814dd0ec04@c47a.org
+UID:97b25a52-a9d6-48da-b5cd-fc441f3852d1@97b2.org
 DESCRIPTION:Date taken from 2025 schedule for time of year 
  approximation\nSeries: Colorado Endurance Series 
  (https://coloradoes.wordpress.com/)\nLinks:\n  
  https://coloradoes.wordpress.com/swes-event-list/pain-in-the-aspen/
 LOCATION:Colorado
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260627
 DTEND;VALUE=DATE:20260628
 SUMMARY:Race in the Clouds
-UID:f2065821-fb59-4ef6-a77c-7686c3a5e86b@f206.org
+UID:6732c955-ba89-4496-aba1-1754d3c09bd5@6732.org
 DESCRIPTION:Links:\n  https://www.almafoundation.com/race-in-the-clouds/
 LOCATION:Alma\, Colorado
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260627
 DTEND;VALUE=DATE:20260628
 SUMMARY:Alpine Alleycat (Dark Timber MTB)
-UID:bc9fd37a-4940-4446-ad50-933c872297d8@bc9f.org
+UID:9b681989-1a11-4828-8e19-0223be24f21f@9b68.org
 DESCRIPTION:Choose Your Own Adventure format\nSeries: Dark Timber MTB 
  (https://www.darktimbermtb.com/)
 LOCATION:Minturn\, Colorado
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260613
 DTEND;VALUE=DATE:20260614
 SUMMARY:Trans North California 400 (TNCA400)
-UID:6799d52f-2775-48c5-8e41-0903e6310528@6799.org
+UID:b29b6842-e542-465c-9972-aba9e5dc63b3@b29b.org
 DESCRIPTION:Links:\n  https://tnca400.com/
 LOCATION:Reno\, Colorado
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260607
 DTEND;VALUE=DATE:20260608
 SUMMARY:DATE TBD: Salida Big Friggin Loop (SBFL) (Colorado Endurance 
  Series)
-UID:bae082cf-68f7-4de6-92de-fdf35b69f8dd@bae0.org
+UID:485297e5-ee4a-4959-af42-1947a247d095@4852.org
 DESCRIPTION:Date taken from 2025 schedule for time of year 
  approximation\nSeries: Colorado Endurance Series 
  (https://coloradoes.wordpress.com/)\nLinks:\n  
  https://coloradoes.wordpress.com/swes-event-list/sbfl/
 LOCATION:Salida\, CO
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260516
 DTEND;VALUE=DATE:20260517
 SUMMARY:Manzanita Mountain Epic (MTB) (New Mexico Endurance Series)
-UID:2a3bbcef-7ca8-45a2-92da-e9950b1216e2@2a3b.org
+UID:8995496b-666a-46dd-ade9-6d6e034297b1@8995.org
 DESCRIPTION:Series: New Mexico Endurance Series (https://nm-
  es.weebly.com/rides.html)\nLinks:\n  https://nm-es.weebly.com/manzanita-
  mountain-epic.html
 LOCATION:New Mexico
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260510
 DTEND;VALUE=DATE:20260511
 SUMMARY:DATE TBD: Guffey Huffer (Gravel) (Colorado Endurance Series)
-UID:be796cc9-5e83-4360-ab84-3b95a0e7b8bb@be79.org
+UID:cf241b91-0b42-4f98-b9b9-6aaf07af2d28@cf24.org
 DESCRIPTION:Date taken from 2025 schedule for time of year 
  approximation\nSeries: Colorado Endurance Series 
  (https://coloradoes.wordpress.com/)\nLinks:\n  
  https://coloradoes.wordpress.com/swes-event-list/ddf200k/
 LOCATION:Colorado
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260509
 DTEND;VALUE=DATE:20260510
 SUMMARY:Westwater 200 (Dark Timber MTB)
-UID:d1e66ec0-2aab-43e8-9033-18632a935536@d1e6.org
+UID:2f4d58db-490c-47a1-b46e-1d9ef4681c21@2f4d.org
 DESCRIPTION:322km - 5334m\nSeries: Dark Timber MTB 
  (https://www.darktimbermtb.com/)\nLinks:\n  
  https://www.darktimbermtb.com/westwater-200
 LOCATION:Fruita\, Colorado
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260425
 DTEND;VALUE=DATE:20260426
 SUMMARY:San Ysidro Dirty Century (MTB/CX Gravel Grinder) (New Mexico 
  Endurance Series)
-UID:c37d9bbf-28c2-4807-9798-032704529445@c37d.org
+UID:77370304-4cba-4ca7-9075-74873316afaf@7737.org
 DESCRIPTION:Series: New Mexico Endurance Series (https://nm-
  es.weebly.com/rides.html)\nLinks:\n  https://nm-es.weebly.com/san-ysidro-
  dirty-century.html
 LOCATION:San Ysidro\, NM
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260404
 DTEND;VALUE=DATE:20260405
 SUMMARY:East Side Epic (Leadville Winter Series) (Leadville Winter Series)
-UID:57fe1355-793f-41e0-84fc-a5071b9609c1@57fe.org
+UID:cb60b9dc-1780-4abe-9e6c-6f8a9986460f@cb60.org
 DESCRIPTION:Series: Leadville Winter Series 
  (https://www.cloudcitywheelers.com/the-winter-bike-series)
 LOCATION:Leadville
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260314
 DTEND;VALUE=DATE:20260315
 SUMMARY:ABQ Mix Media Big Friggin Loop (CX/MTB) (New Mexico Endurance 
  Series)
-UID:953eaf8b-ff15-402e-845a-decfd7e4850a@953e.org
+UID:8aef506c-75d6-40dc-98b1-f6808ed4aa0e@8aef.org
 DESCRIPTION:Series: New Mexico Endurance Series (https://nm-
  es.weebly.com/rides.html)\nLinks:\n  https://nm-es.weebly.com/abq-mixed-
  media-big-friggin-loop.html
 LOCATION:Albuquerque\, NM
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260321
 DTEND;VALUE=DATE:20260322
 SUMMARY:Fatty Patty (Leadville Winter Series)
-UID:e5ed0b88-9a52-4ed7-9cf3-fc52ed520ab6@e5ed.org
+UID:8ad3fd19-aa3f-4801-a6cd-c326ded0ff4e@8ad3.org
 DESCRIPTION:Series: Leadville Winter Series 
  (https://www.cloudcitywheelers.com/the-winter-bike-series)
 LOCATION:Leadville
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260313
 DTEND;VALUE=DATE:20260317
 SUMMARY:Doom
-UID:e68228b1-61e1-4abc-9f2c-1d646ec90958@e682.org
+UID:db8d1edb-b4e4-4bd8-aaa0-cbdfb44cec00@db8d.org
 DESCRIPTION:Links:\n  https://www.ozarkgravelcyclists.com/doombikepacking
 LOCATION:Arkansas
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260307
 DTEND;VALUE=DATE:20260308
 SUMMARY:Mineral Belt Trail Mayhem (Leadville Winter Series)
-UID:fa45f457-43ce-413f-baf7-f551aa85843d@fa45.org
+UID:d2cab47e-be24-4c01-9f53-a0c572bfb93a@d2ca.org
 DESCRIPTION:Series: Leadville Winter Series 
  (https://www.cloudcitywheelers.com/the-winter-bike-series)
 LOCATION:Leadville
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260214
 DTEND;VALUE=DATE:20260215
 SUMMARY:Frisco Freeze
-UID:6254703f-f434-47b8-bac6-4476e8ec0083@6254.org
+UID:15846211-ba97-42f2-a5b0-561311ff4c31@1584.org
 DESCRIPTION:Links:\n  https://www.townoffrisco.com/event/nordic-center-
  events/frisco-freeze-winter-bike-race/
 LOCATION:Frisco Nordic Center
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260207
 DTEND;VALUE=DATE:20260208
 SUMMARY:Tennessee Pass Night Jam (Leadville Winter Series)
-UID:8136c532-566d-4e2b-a368-244e448f7247@8136.org
+UID:967ecdb2-96af-44e4-a939-bf03dd24b1a4@967e.org
 DESCRIPTION:Series: Leadville Winter Series 
  (https://www.cloudcitywheelers.com/the-winter-bike-series)
 LOCATION:Leadville
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260201
 DTEND;VALUE=DATE:20260202
 SUMMARY:DATE TBD: Silverton Whiteout
-UID:515e276e-85df-4240-af20-7cbe7dac3b99@515e.org
+UID:ed37d1d3-f766-4fdc-af70-de9ebb225f71@ed37.org
 DESCRIPTION:Date taken from 2025 schedule for time of year 
  approximation\nLinks:\n  https://www.silvertonwhiteout.com/
 LOCATION:Silverton\, CO
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260131
 DTEND;VALUE=DATE:20260201
 SUMMARY:CANCELLED: Cottonwood Crusher (Colorado Endurance Series)
-UID:0738fc71-51d4-4266-8936-33b8f59fff66@0738.org
+UID:b9a8e4cb-4e7a-42fb-ad75-e3a421077864@b9a8.org
 DESCRIPTION:Series: Colorado Endurance Series 
  (https://coloradoes.wordpress.com/)\nLinks:\n  
  https://www.instagram.com/CottonwoodCrusher/\n  
@@ -380,97 +380,97 @@ DESCRIPTION:Series: Colorado Endurance Series
  https://www.facebook.com/groups/cottonwoodcrusher/\n  
  https://coloradoes.wordpress.com/swes-event-list/cottonwood-crusher/
 LOCATION:Colorado
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260123
 DTEND;VALUE=DATE:20260126
 SUMMARY:Fat Bike Worlds (Leadville Winter Series)
-UID:3d347ea8-ee8d-461b-86c7-07e6e430d31e@3d34.org
+UID:979b8169-97f6-4aed-9491-38eb93fbbd0d@979b.org
 DESCRIPTION:Series: Leadville Winter Series 
  (https://www.cloudcitywheelers.com/the-winter-bike-series)
 LOCATION:Leadville
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250405
 DTEND;VALUE=DATE:20250406
 SUMMARY:East Side Epic (Leadville Winter Series)
-UID:847c128e-1b4b-4d3c-b9db-3529fbd3b6bf@847c.org
+UID:e24d03da-91e1-44dd-8518-91d8b0ef9aed@e24d.org
 DESCRIPTION:Series: Leadville Winter Series 
  (https://www.cloudcitywheelers.com/the-winter-bike-series)
 LOCATION:Leadville
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250315
 DTEND;VALUE=DATE:20250316
 SUMMARY:Fatty Patty 50K (Leadville Winter Series)
-UID:339a485d-7e13-44b9-875b-cf0a604f3f77@339a.org
+UID:fd86ce9e-49c8-4bd9-8d1a-31f92fcb9403@fd86.org
 DESCRIPTION:Series: Leadville Winter Series 
  (https://www.cloudcitywheelers.com/the-winter-bike-series)
 LOCATION:Leadville
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250301
 DTEND;VALUE=DATE:20250302
 SUMMARY:Mineral Belt Mayhem (Leadville Winter Series)
-UID:7dc9f439-7f6e-49df-be8b-0846dd77e60f@7dc9.org
+UID:9883f7dc-47f7-48af-8c78-0d5dcb47b61a@9883.org
 DESCRIPTION:Series: Leadville Winter Series 
  (https://www.cloudcitywheelers.com/the-winter-bike-series)
 LOCATION:Leadville
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250212
 DTEND;VALUE=DATE:20250213
 SUMMARY:Frisco Freeze
-UID:6d29581e-8687-4df7-a9b3-70eaf4b462f4@6d29.org
+UID:19572b3d-f577-4273-89cb-a8bd6fac2938@1957.org
 DESCRIPTION:Links:\n  https://www.townoffrisco.com/event/nordic-center-
  events/frisco-freeze-winter-bike-race/
 LOCATION:Frisco Nordic Center\n616 Recreation Way\nFrisco\, CO 80443
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250208
 DTEND;VALUE=DATE:20250209
 SUMMARY:Tennessee Pass Night Jam (Leadville Winter Series)
-UID:60ac2fac-8213-4fc4-b472-3ce10a9ff732@60ac.org
+UID:cfe22ddc-5cf2-44e7-aeb8-4317798b0e0e@cfe2.org
 DESCRIPTION:Series: Leadville Winter Series 
  (https://www.cloudcitywheelers.com/the-winter-bike-series)
 LOCATION:Leadville
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250201
 DTEND;VALUE=DATE:20250202
 SUMMARY:Cottonwood Crusher
-UID:09295d07-f5a8-415c-9510-dc330d4d09d8@0929.org
+UID:ba41fee9-92e1-4fe1-a430-abde67039449@ba41.org
 DESCRIPTION:Links:\n  https://www.instagram.com/CottonwoodCrusher/\n  
  https://www.facebook.com/groups/cottonwoodcrusher/info/?_rdr\n  
  https://www.facebook.com/groups/cottonwoodcrusher/\n  
  https://coloradoes.wordpress.com/swes-event-list/cottonwood-crusher/
 LOCATION:https://goo.gl/maps/PSgGf2qwJfsK9jhL7
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250124
 DTEND;VALUE=DATE:20250127
 SUMMARY:Fat Bike Worlds
-UID:1c408531-8605-43ac-8bcf-e2c7b78b3aa4@1c40.org
+UID:5e9f6213-b298-4d3a-a7cd-d5586dc3a4cd@5e9f.org
 DESCRIPTION:Links:\n  https://fatbikeworlds.org/
 LOCATION:Crested Butte
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20250118
 DTEND;VALUE=DATE:20250119
 SUMMARY:Colorado Cup ITT (Leadville Winter Series)
-UID:cd4a1e3d-725c-4e86-ad2c-99e7cb2a861e@cd4a.org
+UID:1d38845f-790f-42ce-bd8c-7bde7afa8ee5@1d38.org
 DESCRIPTION:Series: Leadville Winter Series 
  (https://www.cloudcitywheelers.com/the-winter-bike-series)
 LOCATION:Leadville
-DTSTAMP:20260214T033649Z
+DTSTAMP:20260219T020124Z
 END:VEVENT
 END:VCALENDAR

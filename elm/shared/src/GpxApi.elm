@@ -22,6 +22,7 @@ type alias TrackPoint =
 type alias Waypoint =
     { distance : Float
     , name : String
+    , categories : List String
     }
 
 
@@ -62,9 +63,10 @@ decodeTrackpoints =
 decodeWaypoints : Json.Decode.Decoder (List Waypoint)
 decodeWaypoints =
     Json.Decode.list
-        (Json.Decode.map2 Waypoint
+        (Json.Decode.map3 Waypoint
             (Json.Decode.field "dist" Json.Decode.float)
             (Json.Decode.field "name" Json.Decode.string)
+            (Json.Decode.field "categories" (Json.Decode.list Json.Decode.string))
         )
 
 
