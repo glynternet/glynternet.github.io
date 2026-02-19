@@ -784,11 +784,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.a9.ah === region.br.ah)
+	if (region.bb.aj === region.bt.aj)
 	{
-		return 'on line ' + region.a9.ah;
+		return 'on line ' + region.bb.aj;
 	}
-	return 'on lines ' + region.a9.ah + ' through ' + region.br.ah;
+	return 'on lines ' + region.bb.aj + ' through ' + region.bt.aj;
 }
 
 
@@ -1857,9 +1857,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.cO,
-		impl.dg,
-		impl.db,
+		impl.cQ,
+		impl.di,
+		impl.dd,
 		function() { return function() {} }
 	);
 });
@@ -2719,9 +2719,9 @@ var _VirtualDom_mapEventTuple = F2(function(func, tuple)
 var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
-		bM: func(record.bM),
-		b8: record.b8,
-		bV: record.bV
+		bO: func(record.bO),
+		ca: record.ca,
+		bX: record.bX
 	}
 });
 
@@ -2989,11 +2989,11 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 		// 3 = Custom
 
 		var value = result.a;
-		var message = !tag ? value : tag < 3 ? value.a : value.bM;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.b8;
+		var message = !tag ? value : tag < 3 ? value.a : value.bO;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.ca;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.bV) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.bX) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -3943,11 +3943,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.cO,
-		impl.dg,
-		impl.db,
+		impl.cQ,
+		impl.di,
+		impl.dd,
 		function(sendToApp, initialModel) {
-			var view = impl.di;
+			var view = impl.dk;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -3979,12 +3979,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.cO,
-		impl.dg,
-		impl.db,
+		impl.cQ,
+		impl.di,
+		impl.dd,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.a8 && impl.a8(sendToApp)
-			var view = impl.di;
+			var divertHrefToApp = impl.ba && impl.ba(sendToApp)
+			var view = impl.dk;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -3992,12 +3992,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.cm);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.co);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.dd) && (_VirtualDom_doc.title = title = doc.dd);
+				(title !== doc.df) && (_VirtualDom_doc.title = title = doc.df);
 			});
 		}
 	);
@@ -4053,12 +4053,12 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.cZ;
-	var onUrlRequest = impl.c_;
+	var onUrlChange = impl.c$;
+	var onUrlRequest = impl.c0;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		a8: function(sendToApp)
+		ba: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4074,9 +4074,9 @@ function _Browser_application(impl)
 					var next = $elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.bY === next.bY
-							&& curr.bD === next.bD
-							&& curr.bU.a === next.bU.a
+							&& curr.b_ === next.b_
+							&& curr.bF === next.bF
+							&& curr.bW.a === next.bW.a
 						)
 							? $elm$browser$Browser$Internal(next)
 							: $elm$browser$Browser$External(href)
@@ -4084,13 +4084,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		cO: function(flags)
+		cQ: function(flags)
 		{
-			return A3(impl.cO, flags, _Browser_getUrl(), key);
+			return A3(impl.cQ, flags, _Browser_getUrl(), key);
 		},
+		dk: impl.dk,
 		di: impl.di,
-		dg: impl.dg,
-		db: impl.db
+		dd: impl.dd
 	});
 }
 
@@ -4156,17 +4156,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { cK: 'hidden', cp: 'visibilitychange' }
+		? { cM: 'hidden', cr: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { cK: 'mozHidden', cp: 'mozvisibilitychange' }
+		? { cM: 'mozHidden', cr: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { cK: 'msHidden', cp: 'msvisibilitychange' }
+		? { cM: 'msHidden', cr: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { cK: 'webkitHidden', cp: 'webkitvisibilitychange' }
-		: { cK: 'hidden', cp: 'visibilitychange' };
+		? { cM: 'webkitHidden', cr: 'webkitvisibilitychange' }
+		: { cM: 'hidden', cr: 'visibilitychange' };
 }
 
 
@@ -4247,12 +4247,12 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		b4: _Browser_getScene(),
-		cd: {
-			cf: _Browser_window.pageXOffset,
-			cg: _Browser_window.pageYOffset,
-			ce: _Browser_doc.documentElement.clientWidth,
-			bC: _Browser_doc.documentElement.clientHeight
+		b6: _Browser_getScene(),
+		cf: {
+			ch: _Browser_window.pageXOffset,
+			ci: _Browser_window.pageYOffset,
+			cg: _Browser_doc.documentElement.clientWidth,
+			bE: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4262,8 +4262,8 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		ce: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		bC: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		cg: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		bE: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4286,15 +4286,15 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			b4: {
-				ce: node.scrollWidth,
-				bC: node.scrollHeight
+			b6: {
+				cg: node.scrollWidth,
+				bE: node.scrollHeight
 			},
-			cd: {
-				cf: node.scrollLeft,
-				cg: node.scrollTop,
-				ce: node.clientWidth,
-				bC: node.clientHeight
+			cf: {
+				ch: node.scrollLeft,
+				ci: node.scrollTop,
+				cg: node.clientWidth,
+				bE: node.clientHeight
 			}
 		};
 	});
@@ -4324,18 +4324,18 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			b4: _Browser_getScene(),
-			cd: {
-				cf: x,
-				cg: y,
-				ce: _Browser_doc.documentElement.clientWidth,
-				bC: _Browser_doc.documentElement.clientHeight
+			b6: _Browser_getScene(),
+			cf: {
+				ch: x,
+				ci: y,
+				cg: _Browser_doc.documentElement.clientWidth,
+				bE: _Browser_doc.documentElement.clientHeight
 			},
-			cA: {
-				cf: x + rect.left,
-				cg: y + rect.top,
-				ce: rect.width,
-				bC: rect.height
+			cC: {
+				ch: x + rect.left,
+				ci: y + rect.top,
+				cg: rect.width,
+				bE: rect.height
 			}
 		};
 	});
@@ -4836,25 +4836,25 @@ var _Http_toTask = F3(function(router, toTask, request)
 	return _Scheduler_binding(function(callback)
 	{
 		function done(response) {
-			callback(toTask(request.cC.a(response)));
+			callback(toTask(request.cE.a(response)));
 		}
 
 		var xhr = new XMLHttpRequest();
 		xhr.addEventListener('error', function() { done($elm$http$Http$NetworkError_); });
 		xhr.addEventListener('timeout', function() { done($elm$http$Http$Timeout_); });
-		xhr.addEventListener('load', function() { done(_Http_toResponse(request.cC.b, xhr)); });
-		$elm$core$Maybe$isJust(request.cc) && _Http_track(router, xhr, request.cc.a);
+		xhr.addEventListener('load', function() { done(_Http_toResponse(request.cE.b, xhr)); });
+		$elm$core$Maybe$isJust(request.ce) && _Http_track(router, xhr, request.ce.a);
 
 		try {
-			xhr.open(request.cV, request.dh, true);
+			xhr.open(request.cX, request.dj, true);
 		} catch (e) {
-			return done($elm$http$Http$BadUrl_(request.dh));
+			return done($elm$http$Http$BadUrl_(request.dj));
 		}
 
 		_Http_configureRequest(xhr, request);
 
-		request.cm.a && xhr.setRequestHeader('Content-Type', request.cm.a);
-		xhr.send(request.cm.b);
+		request.co.a && xhr.setRequestHeader('Content-Type', request.co.a);
+		xhr.send(request.co.b);
 
 		return function() { xhr.c = true; xhr.abort(); };
 	});
@@ -4865,13 +4865,13 @@ var _Http_toTask = F3(function(router, toTask, request)
 
 function _Http_configureRequest(xhr, request)
 {
-	for (var headers = request.bB; headers.b; headers = headers.b) // WHILE_CONS
+	for (var headers = request.bD; headers.b; headers = headers.b) // WHILE_CONS
 	{
 		xhr.setRequestHeader(headers.a.a, headers.a.b);
 	}
-	xhr.timeout = request.dc.a || 0;
-	xhr.responseType = request.cC.d;
-	xhr.withCredentials = request.cj;
+	xhr.timeout = request.de.a || 0;
+	xhr.responseType = request.cE.d;
+	xhr.withCredentials = request.cl;
 }
 
 
@@ -4892,10 +4892,10 @@ function _Http_toResponse(toBody, xhr)
 function _Http_toMetadata(xhr)
 {
 	return {
-		dh: xhr.responseURL,
-		c8: xhr.status,
-		c9: xhr.statusText,
-		bB: _Http_parseHeaders(xhr.getAllResponseHeaders())
+		dj: xhr.responseURL,
+		da: xhr.status,
+		db: xhr.statusText,
+		bD: _Http_parseHeaders(xhr.getAllResponseHeaders())
 	};
 }
 
@@ -4990,15 +4990,15 @@ function _Http_track(router, xhr, tracker)
 	xhr.upload.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Sending({
-			c5: event.loaded,
-			b6: event.total
+			c7: event.loaded,
+			b8: event.total
 		}))));
 	});
 	xhr.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Receiving({
-			c2: event.loaded,
-			b6: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
+			c4: event.loaded,
+			b8: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
 		}))));
 	});
 }
@@ -5010,8 +5010,8 @@ var _Regex_never = /.^/;
 var _Regex_fromStringWith = F2(function(options, string)
 {
 	var flags = 'g';
-	if (options.cW) { flags += 'm'; }
-	if (options.cn) { flags += 'i'; }
+	if (options.cY) { flags += 'm'; }
+	if (options.cp) { flags += 'i'; }
 
 	try
 	{
@@ -5107,7 +5107,7 @@ var $elm$core$Maybe$Just = function (a) {
 };
 var $author$project$Main$Never = {$: 0};
 var $elm$core$Maybe$Nothing = {$: 1};
-var $author$project$Main$Tick = {$: 15};
+var $author$project$Main$Tick = {$: 16};
 var $elm$core$Basics$always = F2(
 	function (a, _v0) {
 		return a;
@@ -5612,7 +5612,7 @@ var $elm$url$Url$Http = 0;
 var $elm$url$Url$Https = 1;
 var $elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {bw: fragment, bD: host, c0: path, bU: port_, bY: protocol, bZ: query};
+		return {by: fragment, bF: host, c2: path, bW: port_, b_: protocol, b$: query};
 	});
 var $elm$core$String$contains = _String_contains;
 var $elm$core$String$length = _String_length;
@@ -5897,7 +5897,7 @@ var $elm$time$Time$Every = F2(
 	});
 var $elm$time$Time$State = F2(
 	function (taggers, processes) {
-		return {bX: processes, ca: taggers};
+		return {bZ: processes, cc: taggers};
 	});
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
@@ -6189,7 +6189,7 @@ var $elm$time$Time$spawnHelp = F3(
 	});
 var $elm$time$Time$onEffects = F3(
 	function (router, subs, _v0) {
-		var processes = _v0.bX;
+		var processes = _v0.bZ;
 		var rightStep = F3(
 			function (_v6, id, _v7) {
 				var spawns = _v7.a;
@@ -6258,7 +6258,7 @@ var $elm$time$Time$millisToPosix = $elm$core$Basics$identity;
 var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
 var $elm$time$Time$onSelfMsg = F3(
 	function (router, interval, state) {
-		var _v0 = A2($elm$core$Dict$get, interval, state.ca);
+		var _v0 = A2($elm$core$Dict$get, interval, state.cc);
 		if (_v0.$ === 1) {
 			return $elm$core$Task$succeed(state);
 		} else {
@@ -6306,17 +6306,34 @@ var $elm$time$Time$every = F2(
 	});
 var $author$project$Main$CuesViewOptions = F5(
 	function (totalDistanceDisplay, referencePoint, position, itemSpacing, distanceDetail) {
-		return {j: distanceDetail, c: itemSpacing, aF: position, F: referencePoint, q: totalDistanceDisplay};
+		return {j: distanceDetail, c: itemSpacing, aH: position, H: referencePoint, q: totalDistanceDisplay};
 	});
 var $author$project$Main$FromZero = 0;
 var $author$project$Main$Model = F7(
 	function (page, gpxError, gpxServerURLOverride, showOptions, cuesViewOptions, showQR, url) {
-		return {h: cuesViewOptions, O: gpxError, bz: gpxServerURLOverride, E: page, y: showOptions, aI: showQR, dh: url};
+		return {h: cuesViewOptions, Q: gpxError, bB: gpxServerURLOverride, A: page, B: showOptions, aK: showQR, dj: url};
 	});
-var $author$project$Main$StoredState = F8(
-	function (waypoints, totalDistanceDisplay, lastReferencePoint, locationFilterEnabled, filteredLocationTypes, itemSpacing, distanceDetail, showOptions) {
-		return {j: distanceDetail, n: filteredLocationTypes, c: itemSpacing, bI: lastReferencePoint, o: locationFilterEnabled, y: showOptions, q: totalDistanceDisplay, dk: waypoints};
-	});
+var $author$project$Main$StoredState = function (waypoints) {
+	return function (totalDistanceDisplay) {
+		return function (lastReferencePoint) {
+			return function (locationFilterEnabled) {
+				return function (filteredLocationTypes) {
+					return function (itemSpacing) {
+						return function (distanceDetail) {
+							return function (showStartFinish) {
+								return function (showOptions) {
+									return function (finishDistance) {
+										return {j: distanceDetail, n: filteredLocationTypes, x: finishDistance, c: itemSpacing, bK: lastReferencePoint, o: locationFilterEnabled, B: showOptions, v: showStartFinish, q: totalDistanceDisplay, dm: waypoints};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
 var $author$project$Main$WelcomePage = function (a) {
 	return {$: 0, a: a};
 };
@@ -6553,8 +6570,8 @@ var $elm$bytes$Bytes$Decode$unsignedInt32 = function (endianness) {
 };
 var $elm$bytes$Bytes$Decode$unsignedInt8 = _Bytes_read_u8;
 var $folkertdev$elm_flate$Checksum$Crc32$crc32Help = function (_v0) {
-	var remaining = _v0.aH;
-	var crc = _v0.ax;
+	var remaining = _v0.aJ;
+	var crc = _v0.az;
 	return (remaining >= 8) ? A3(
 		$elm$bytes$Bytes$Decode$map2,
 		F2(
@@ -6569,7 +6586,7 @@ var $folkertdev$elm_flate$Checksum$Crc32$crc32Help = function (_v0) {
 				var byte1 = 255 & (word1 >>> 24);
 				return $elm$bytes$Bytes$Decode$Loop(
 					{
-						ax: A2(
+						az: A2(
 							$folkertdev$elm_flate$Checksum$Crc32$step,
 							byte8,
 							A2(
@@ -6591,7 +6608,7 @@ var $folkertdev$elm_flate$Checksum$Crc32$crc32Help = function (_v0) {
 													$folkertdev$elm_flate$Checksum$Crc32$step,
 													byte2,
 													A2($folkertdev$elm_flate$Checksum$Crc32$step, byte1, crc)))))))),
-						aH: remaining - 8
+						aJ: remaining - 8
 					});
 			}),
 		$elm$bytes$Bytes$Decode$unsignedInt32(1),
@@ -6600,8 +6617,8 @@ var $folkertdev$elm_flate$Checksum$Crc32$crc32Help = function (_v0) {
 		function (_byte) {
 			return $elm$bytes$Bytes$Decode$Loop(
 				{
-					ax: A2($folkertdev$elm_flate$Checksum$Crc32$step, _byte, crc),
-					aH: remaining - 1
+					az: A2($folkertdev$elm_flate$Checksum$Crc32$step, _byte, crc),
+					aJ: remaining - 1
 				});
 		},
 		$elm$bytes$Bytes$Decode$unsignedInt8) : $elm$bytes$Bytes$Decode$succeed(
@@ -6657,13 +6674,13 @@ var $folkertdev$elm_flate$Checksum$Crc32$tinf_crc32 = function (buffer) {
 			$elm$bytes$Bytes$Decode$decode,
 			A2(
 				$elm$bytes$Bytes$Decode$loop,
-				{ax: initialCrc, aH: length},
+				{az: initialCrc, aJ: length},
 				$folkertdev$elm_flate$Checksum$Crc32$crc32Help),
 			buffer));
 };
 var $folkertdev$elm_flate$Checksum$Crc32$crc32 = $folkertdev$elm_flate$Checksum$Crc32$tinf_crc32;
 var $elm$bytes$Bytes$Decode$fail = _Bytes_decodeFailure;
-var $folkertdev$elm_flate$Inflate$GZip$flags = {bl: 16, ax: 2, bu: 4, cX: 8, cb: 1};
+var $folkertdev$elm_flate$Inflate$GZip$flags = {bn: 16, az: 2, bw: 4, cZ: 8, cd: 1};
 var $elm$core$Basics$neq = _Utils_notEqual;
 var $folkertdev$elm_flate$Inflate$GZip$skipUntilZero = function () {
 	var go = function (n) {
@@ -6680,20 +6697,20 @@ var $elm$bytes$Bytes$Decode$unsignedInt16 = function (endianness) {
 	return _Bytes_read_u16(!endianness);
 };
 var $folkertdev$elm_flate$Inflate$GZip$gzipFindBuffer = function (sliced) {
-	if ((sliced.bF !== 31) || (sliced.bG !== 139)) {
+	if ((sliced.bH !== 31) || (sliced.bI !== 139)) {
 		return $elm$core$Maybe$Nothing;
 	} else {
-		if (sliced.cV !== 8) {
+		if (sliced.cX !== 8) {
 			return $elm$core$Maybe$Nothing;
 		} else {
-			if (!(!(sliced.aU & 224))) {
+			if (!(!(sliced.aW & 224))) {
 				return $elm$core$Maybe$Nothing;
 			} else {
 				var headerSize = 10;
 				var flagSet = function (flag) {
-					return !(!(sliced.aU & flag));
+					return !(!(sliced.aW & flag));
 				};
-				var skipExtra = flagSet($folkertdev$elm_flate$Inflate$GZip$flags.bu) ? A2(
+				var skipExtra = flagSet($folkertdev$elm_flate$Inflate$GZip$flags.bw) ? A2(
 					$elm$bytes$Bytes$Decode$andThen,
 					function (extraSize) {
 						return A2(
@@ -6704,8 +6721,8 @@ var $folkertdev$elm_flate$Inflate$GZip$gzipFindBuffer = function (sliced) {
 							$elm$bytes$Bytes$Decode$bytes(extraSize));
 					},
 					$elm$bytes$Bytes$Decode$unsignedInt16(0)) : $elm$bytes$Bytes$Decode$succeed(0);
-				var skipFileComment = flagSet($folkertdev$elm_flate$Inflate$GZip$flags.bl) ? $folkertdev$elm_flate$Inflate$GZip$skipUntilZero : $elm$bytes$Bytes$Decode$succeed(0);
-				var skipFileName = flagSet($folkertdev$elm_flate$Inflate$GZip$flags.cX) ? $folkertdev$elm_flate$Inflate$GZip$skipUntilZero : $elm$bytes$Bytes$Decode$succeed(0);
+				var skipFileComment = flagSet($folkertdev$elm_flate$Inflate$GZip$flags.bn) ? $folkertdev$elm_flate$Inflate$GZip$skipUntilZero : $elm$bytes$Bytes$Decode$succeed(0);
+				var skipFileName = flagSet($folkertdev$elm_flate$Inflate$GZip$flags.cZ) ? $folkertdev$elm_flate$Inflate$GZip$skipUntilZero : $elm$bytes$Bytes$Decode$succeed(0);
 				var skipAll = A2(
 					$folkertdev$elm_flate$Inflate$GZip$andMap,
 					skipFileComment,
@@ -6721,13 +6738,13 @@ var $folkertdev$elm_flate$Inflate$GZip$gzipFindBuffer = function (sliced) {
 										return (a + b) + c;
 									})))));
 				var checkHeaderCrc = function (bytesRead) {
-					return flagSet($folkertdev$elm_flate$Inflate$GZip$flags.ax) ? A2(
+					return flagSet($folkertdev$elm_flate$Inflate$GZip$flags.az) ? A2(
 						$elm$bytes$Bytes$Decode$andThen,
 						function (checksum) {
 							var _v0 = A2(
 								$elm$bytes$Bytes$Decode$decode,
 								$elm$bytes$Bytes$Decode$bytes(bytesRead),
-								sliced.bS);
+								sliced.bU);
 							if (!_v0.$) {
 								var header = _v0.a;
 								return (!_Utils_eq(
@@ -6759,7 +6776,7 @@ var $folkertdev$elm_flate$Inflate$GZip$gzipFindBuffer = function (sliced) {
 };
 var $folkertdev$elm_flate$Inflate$GZip$GzipSlice = F9(
 	function (orig, id1, id2, method, flg, restOfHeader, buffer, crc32, decompressedLength) {
-		return {m: buffer, ct: crc32, cw: decompressedLength, aU: flg, bF: id1, bG: id2, cV: method, bS: orig, c3: restOfHeader};
+		return {m: buffer, cv: crc32, cy: decompressedLength, aW: flg, bH: id1, bI: id2, cX: method, bU: orig, c5: restOfHeader};
 	});
 var $folkertdev$elm_flate$Inflate$GZip$gzipSlice = function (buffer) {
 	var decoder = A2(
@@ -6798,7 +6815,7 @@ var $elm$bytes$Bytes$Encode$bytes = $elm$bytes$Bytes$Encode$Bytes;
 var $folkertdev$elm_flate$Inflate$BitReader$decode = F2(
 	function (bytes, _v0) {
 		var reader = _v0;
-		var initialState = {b: 0, m: bytes, l: 0, f: 0, L: 0};
+		var initialState = {b: 0, m: bytes, l: 0, f: 0, N: 0};
 		var _v1 = reader(initialState);
 		if (!_v1.$) {
 			var _v2 = _v1.a;
@@ -7737,7 +7754,7 @@ var $folkertdev$elm_flate$Inflate$Internal$buildTree = F3(
 			0,
 			A2($elm$core$Array$repeat, num, 0),
 			offsetsDict.b);
-		return {Y: newTable, an: translation2};
+		return {_: newTable, ap: translation2};
 	});
 var $folkertdev$elm_flate$Inflate$Internal$clcIndices = _List_fromArray(
 	[16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]);
@@ -7943,7 +7960,7 @@ var $folkertdev$elm_flate$Inflate$Internal$decodeSymbolInnerLoop = F5(
 		while (true) {
 			var newTag = tag >>> 1;
 			if (!table.b) {
-				return {b: bitsAvailable, aP: cur, ba: sum, L: tag};
+				return {b: bitsAvailable, aR: cur, bc: sum, N: tag};
 			} else {
 				var value = table.a;
 				var rest = table.b;
@@ -7962,7 +7979,7 @@ var $folkertdev$elm_flate$Inflate$Internal$decodeSymbolInnerLoop = F5(
 					sum = $temp$sum;
 					continue decodeSymbolInnerLoop;
 				} else {
-					return {b: bitsAvailable - 1, aP: newerCur, ba: newSum, L: newTag};
+					return {b: bitsAvailable - 1, aR: newerCur, bc: newSum, N: newTag};
 				}
 			}
 		}
@@ -8003,7 +8020,7 @@ var $elm$core$Array$get = F2(
 var $folkertdev$elm_flate$Inflate$BitReader$moveFromReserve = F2(
 	function (nbits, state) {
 		var masked = (nbits === 32) ? (state.l << state.b) : ((((1 << nbits) - 1) & state.l) << state.b);
-		return {b: state.b + nbits, m: state.m, l: state.l >>> nbits, f: state.f - nbits, L: masked | state.L};
+		return {b: state.b + nbits, m: state.m, l: state.l >>> nbits, f: state.f - nbits, N: masked | state.N};
 	});
 var $elm$core$Tuple$pair = F2(
 	function (a, b) {
@@ -8097,7 +8114,7 @@ var $folkertdev$elm_flate$Inflate$BitReader$readMoreBits = function (state) {
 					var _v3 = _v2.a;
 					var newReserve = _v3.a;
 					var newBuffer = _v3.b;
-					var $temp$state = {b: state1.b, m: newBuffer, l: newReserve, f: additionallyAvailable, L: state1.L};
+					var $temp$state = {b: state1.b, m: newBuffer, l: newReserve, f: additionallyAvailable, N: state1.N};
 					state = $temp$state;
 					continue readMoreBits;
 				}
@@ -8114,12 +8131,12 @@ var $folkertdev$elm_flate$Inflate$Internal$decodeSymbol = F2(
 				return $elm$core$Result$Err(e);
 			} else {
 				var d = _v0.a;
-				var _v1 = A5($folkertdev$elm_flate$Inflate$Internal$decodeSymbolInnerLoop, table, 0, d.L, d.b, 0);
-				var cur = _v1.aP;
-				var tag = _v1.L;
+				var _v1 = A5($folkertdev$elm_flate$Inflate$Internal$decodeSymbolInnerLoop, table, 0, d.N, d.b, 0);
+				var cur = _v1.aR;
+				var tag = _v1.N;
 				var bitsAvailable = _v1.b;
-				var sum = _v1.ba;
-				var _v2 = A2($elm$core$Array$get, sum + cur, tree.an);
+				var sum = _v1.bc;
+				var _v2 = A2($elm$core$Array$get, sum + cur, tree.ap);
 				if (_v2.$ === 1) {
 					return $elm$core$Result$Err('Index into trans tree out of bounds');
 				} else {
@@ -8127,7 +8144,7 @@ var $folkertdev$elm_flate$Inflate$Internal$decodeSymbol = F2(
 					return $elm$core$Result$Ok(
 						_Utils_Tuple2(
 							result,
-							{b: bitsAvailable, m: d.m, l: d.l, f: d.f, L: tag}));
+							{b: bitsAvailable, m: d.m, l: d.l, f: d.f, N: tag}));
 				}
 			}
 		};
@@ -8145,12 +8162,12 @@ var $folkertdev$elm_flate$Inflate$BitReader$readBits = F2(
 					return $elm$core$Result$Err(e);
 				} else {
 					var d = _v0.a;
-					var val = d.L & (65535 >>> (16 - numberOfBits));
-					var newTag = d.L >>> numberOfBits;
+					var val = d.N & (65535 >>> (16 - numberOfBits));
+					var newTag = d.N >>> numberOfBits;
 					return $elm$core$Result$Ok(
 						_Utils_Tuple2(
 							val + base,
-							{b: d.b - numberOfBits, m: d.m, l: d.l, f: d.f, L: newTag}));
+							{b: d.b - numberOfBits, m: d.m, l: d.l, f: d.f, N: newTag}));
 				}
 			}
 		};
@@ -8179,7 +8196,7 @@ var $folkertdev$elm_flate$Inflate$Internal$decodeDynamicTreeLength = F4(
 			var table = A2(
 				$elm$core$Maybe$withDefault,
 				_List_Nil,
-				$elm$core$List$tail(codeTree.Y));
+				$elm$core$List$tail(codeTree._));
 			return A2(
 				$folkertdev$elm_flate$Inflate$BitReader$andThen,
 				function (sym) {
@@ -8672,7 +8689,7 @@ var $folkertdev$elm_flate$Inflate$Internal$buildBitsBase = F2(
 					sum + (1 << bit),
 					A2(
 						$elm$core$Array$push,
-						{aM: sum, a: bit},
+						{aO: sum, a: bit},
 						accum));
 			});
 		var bits = A2($elm$core$Array$initialize, 30, initializer);
@@ -8689,7 +8706,7 @@ var $folkertdev$elm_flate$Inflate$Internal$hardcodedLengthTable = function (_v0)
 	return A3(
 		$elm$core$Array$set,
 		28,
-		{aM: 258, a: 0},
+		{aO: 258, a: 0},
 		array);
 }(
 	A2($folkertdev$elm_flate$Inflate$Internal$buildBitsBase, 4, 3));
@@ -8710,7 +8727,7 @@ var $folkertdev$elm_flate$Inflate$Internal$decodeLength = function (symbol) {
 			}());
 	} else {
 		var entry = _v0.a;
-		return A2($folkertdev$elm_flate$Inflate$BitReader$readBits, entry.a, entry.aM);
+		return A2($folkertdev$elm_flate$Inflate$BitReader$readBits, entry.a, entry.aO);
 	}
 };
 var $folkertdev$elm_flate$Inflate$Internal$decodeOffset = F2(
@@ -8718,7 +8735,7 @@ var $folkertdev$elm_flate$Inflate$Internal$decodeOffset = F2(
 		var table_ = A2(
 			$elm$core$Maybe$withDefault,
 			_List_Nil,
-			$elm$core$List$tail(dt.Y));
+			$elm$core$List$tail(dt._));
 		return A2(
 			$folkertdev$elm_flate$Inflate$BitReader$andThen,
 			function (distance) {
@@ -8738,7 +8755,7 @@ var $folkertdev$elm_flate$Inflate$Internal$decodeOffset = F2(
 						function (v) {
 							return outputLength - v;
 						},
-						A2($folkertdev$elm_flate$Inflate$BitReader$readBits, entry.a, entry.aM));
+						A2($folkertdev$elm_flate$Inflate$BitReader$readBits, entry.a, entry.aO));
 				}
 			},
 			A2($folkertdev$elm_flate$Inflate$Internal$decodeSymbol, table_, dt));
@@ -8750,7 +8767,7 @@ var $folkertdev$elm_flate$Inflate$Internal$inflateBlockDataHelp = F2(
 		var table = A2(
 			$elm$core$Maybe$withDefault,
 			_List_Nil,
-			$elm$core$List$tail(trees.T.Y));
+			$elm$core$List$tail(trees.V._));
 		return A2(
 			$folkertdev$elm_flate$Inflate$BitReader$andThen,
 			function (symbol) {
@@ -8769,9 +8786,9 @@ var $folkertdev$elm_flate$Inflate$Internal$inflateBlockDataHelp = F2(
 									A3($folkertdev$elm_flate$Experimental$ByteArray$copyToBack, offset, length, output)));
 						}),
 					$folkertdev$elm_flate$Inflate$Internal$decodeLength(symbol),
-					A2($folkertdev$elm_flate$Inflate$Internal$decodeOffset, outputLength, trees.bo)));
+					A2($folkertdev$elm_flate$Inflate$Internal$decodeOffset, outputLength, trees.bq)));
 			},
-			A2($folkertdev$elm_flate$Inflate$Internal$decodeSymbol, table, trees.T));
+			A2($folkertdev$elm_flate$Inflate$Internal$decodeSymbol, table, trees.V));
 	});
 var $folkertdev$elm_flate$Inflate$Internal$inflateBlockData = F3(
 	function (trees, outputLength, output) {
@@ -8975,9 +8992,9 @@ var $elm$core$Array$fromList = function (list) {
 	}
 };
 var $folkertdev$elm_flate$Inflate$Internal$sdtree = {
-	Y: _List_fromArray(
+	_: _List_fromArray(
 		[0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
-	an: A2(
+	ap: A2(
 		$elm$core$Array$append,
 		$elm$core$Array$fromList(
 			_List_fromArray(
@@ -9006,17 +9023,17 @@ var $folkertdev$elm_flate$Inflate$BitReader$flushHelp = function (state0) {
 		]) : _List_Nil)));
 	var tagEncoder = (state.b > 24) ? _List_fromArray(
 		[
-			A2($elm$bytes$Bytes$Encode$unsignedInt32, 0, state.L)
+			A2($elm$bytes$Bytes$Encode$unsignedInt32, 0, state.N)
 		]) : ((state.b > 16) ? _List_fromArray(
 		[
-			A2($elm$bytes$Bytes$Encode$unsignedInt16, 0, state.L),
-			$elm$bytes$Bytes$Encode$unsignedInt8(state.L >> 16)
+			A2($elm$bytes$Bytes$Encode$unsignedInt16, 0, state.N),
+			$elm$bytes$Bytes$Encode$unsignedInt8(state.N >> 16)
 		]) : ((state.b > 8) ? _List_fromArray(
 		[
-			A2($elm$bytes$Bytes$Encode$unsignedInt16, 0, state.L)
+			A2($elm$bytes$Bytes$Encode$unsignedInt16, 0, state.N)
 		]) : ((state.b > 1) ? _List_fromArray(
 		[
-			$elm$bytes$Bytes$Encode$unsignedInt8(state.L)
+			$elm$bytes$Bytes$Encode$unsignedInt8(state.N)
 		]) : _List_Nil)));
 	return $elm$bytes$Bytes$Encode$encode(
 		$elm$bytes$Bytes$Encode$sequence(
@@ -9035,7 +9052,7 @@ var $folkertdev$elm_flate$Inflate$BitReader$flush = function (state) {
 		m: $folkertdev$elm_flate$Inflate$BitReader$flushHelp(state),
 		l: 0,
 		f: 0,
-		L: 0
+		N: 0
 	};
 };
 var $elm$core$Basics$modBy = _Basics_modBy;
@@ -9065,9 +9082,9 @@ var $folkertdev$elm_flate$Inflate$BitReader$skipToByteBoundary = function (s) {
 	}
 };
 var $folkertdev$elm_flate$Inflate$Internal$sltree = {
-	Y: _List_fromArray(
+	_: _List_fromArray(
 		[0, 0, 0, 0, 0, 0, 0, 24, 152, 112, 0, 0, 0, 0, 0, 0]),
-	an: $elm$core$Array$fromList(
+	ap: $elm$core$Array$fromList(
 		_List_fromArray(
 			[256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 280, 281, 282, 283, 284, 285, 286, 287, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255]))
 };
@@ -9089,7 +9106,7 @@ var $folkertdev$elm_flate$Inflate$Internal$uncompressHelp = function (output) {
 			case 1:
 				return A3(
 					$folkertdev$elm_flate$Inflate$Internal$inflateBlockData,
-					{bo: $folkertdev$elm_flate$Inflate$Internal$sdtree, T: $folkertdev$elm_flate$Inflate$Internal$sltree},
+					{bq: $folkertdev$elm_flate$Inflate$Internal$sdtree, V: $folkertdev$elm_flate$Inflate$Internal$sltree},
 					$folkertdev$elm_flate$Experimental$ByteArray$length(output),
 					output);
 			case 2:
@@ -9100,7 +9117,7 @@ var $folkertdev$elm_flate$Inflate$Internal$uncompressHelp = function (output) {
 						var dtree = _v2.b;
 						return A3(
 							$folkertdev$elm_flate$Inflate$Internal$inflateBlockData,
-							{bo: dtree, T: ltree},
+							{bq: dtree, V: ltree},
 							$folkertdev$elm_flate$Experimental$ByteArray$length(output),
 							output);
 					},
@@ -9169,7 +9186,7 @@ var $folkertdev$elm_flate$Inflate$GZip$inflate = function (buffer) {
 };
 var $folkertdev$elm_flate$Inflate$Inflate$inflateGZip = $folkertdev$elm_flate$Inflate$GZip$inflate;
 var $folkertdev$elm_flate$Flate$inflateGZip = $folkertdev$elm_flate$Inflate$Inflate$inflateGZip;
-var $author$project$Main$longFieldNames = {j: 'distanceDetail', n: 'filteredLocationTypes', c: 'itemSpacing', o: 'locationFilterEnabled', F: 'referencePoint', y: 'showOptions', q: 'totalDistanceDisplay', ap: 'distance', aq: 'name', ar: 'typ', dk: 'waypoints'};
+var $author$project$Main$longFieldNames = {j: 'distanceDetail', n: 'filteredLocationTypes', x: 'finishDistance', c: 'itemSpacing', o: 'locationFilterEnabled', H: 'referencePoint', B: 'showOptions', v: 'showStartFinish', q: 'totalDistanceDisplay', ar: 'distance', as: 'name', at: 'typ', dm: 'waypoints'};
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (!maybe.$) {
@@ -9190,7 +9207,7 @@ var $elm$core$Tuple$mapSecond = F2(
 	});
 var $elm$url$Url$Parser$State = F5(
 	function (visited, unvisited, params, frag, value) {
-		return {S: frag, U: params, Q: unvisited, bc: value, Z: visited};
+		return {U: frag, W: params, S: unvisited, be: value, aa: visited};
 	});
 var $elm$url$Url$Parser$getFirstMatch = function (states) {
 	getFirstMatch:
@@ -9200,12 +9217,12 @@ var $elm$url$Url$Parser$getFirstMatch = function (states) {
 		} else {
 			var state = states.a;
 			var rest = states.b;
-			var _v1 = state.Q;
+			var _v1 = state.S;
 			if (!_v1.b) {
-				return $elm$core$Maybe$Just(state.bc);
+				return $elm$core$Maybe$Just(state.be);
 			} else {
 				if ((_v1.a === '') && (!_v1.b.b)) {
-					return $elm$core$Maybe$Just(state.bc);
+					return $elm$core$Maybe$Just(state.be);
 				} else {
 					var $temp$states = rest;
 					states = $temp$states;
@@ -9302,20 +9319,20 @@ var $elm$url$Url$Parser$parse = F2(
 				A5(
 					$elm$url$Url$Parser$State,
 					_List_Nil,
-					$elm$url$Url$Parser$preparePath(url.c0),
-					$elm$url$Url$Parser$prepareQuery(url.bZ),
-					url.bw,
+					$elm$url$Url$Parser$preparePath(url.c2),
+					$elm$url$Url$Parser$prepareQuery(url.b$),
+					url.by,
 					$elm$core$Basics$identity)));
 	});
 var $elm$url$Url$Parser$Parser = $elm$core$Basics$identity;
 var $elm$url$Url$Parser$query = function (_v0) {
 	var queryParser = _v0;
 	return function (_v1) {
-		var visited = _v1.Z;
-		var unvisited = _v1.Q;
-		var params = _v1.U;
-		var frag = _v1.S;
-		var value = _v1.bc;
+		var visited = _v1.aa;
+		var unvisited = _v1.S;
+		var params = _v1.W;
+		var frag = _v1.U;
+		var value = _v1.be;
 		return _List_fromArray(
 			[
 				A5(
@@ -9330,11 +9347,12 @@ var $elm$url$Url$Parser$query = function (_v0) {
 	};
 };
 var $elm$browser$Browser$Navigation$replaceUrl = _Browser_replaceUrl;
-var $author$project$Main$shortFieldNames = {j: 'dd', n: 'flt', c: 'is', o: 'lfe', F: 'rp', y: 'so', q: 'tdd', ap: 'd', aq: 'n', ar: 't', dk: 'w'};
+var $author$project$Main$shortFieldNames = {j: 'dd', n: 'flt', x: 'fd', c: 'is', o: 'lfe', H: 'rp', B: 'so', v: 'ssf', q: 'tdd', ar: 'd', as: 'n', at: 't', dm: 'w'};
+var $author$project$Main$andMap = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $author$project$Main$Waypoint = F3(
 	function (name, distance, types) {
-		return {bo: distance, cX: name, M: types};
+		return {bq: distance, cZ: name, O: types};
 	});
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
@@ -9346,11 +9364,11 @@ var $author$project$Main$decodeWaypoints = function (fieldNames) {
 		A4(
 			$elm$json$Json$Decode$map3,
 			$author$project$Main$Waypoint,
-			A2($elm$json$Json$Decode$field, fieldNames.aq, $elm$json$Json$Decode$string),
-			A2($elm$json$Json$Decode$field, fieldNames.ap, $elm$json$Json$Decode$float),
+			A2($elm$json$Json$Decode$field, fieldNames.as, $elm$json$Json$Decode$string),
+			A2($elm$json$Json$Decode$field, fieldNames.ar, $elm$json$Json$Decode$float),
 			A2(
 				$elm$json$Json$Decode$field,
-				fieldNames.ar,
+				fieldNames.at,
 				$elm$json$Json$Decode$list($elm$json$Json$Decode$string))));
 };
 var $elm$core$Dict$fromList = function (assocs) {
@@ -9384,35 +9402,43 @@ var $elm$json$Json$Decode$maybe = function (decoder) {
 			]));
 };
 var $author$project$Main$storedStateDecoder = function (fieldNames) {
-	return A9(
-		$elm$json$Json$Decode$map8,
-		$author$project$Main$StoredState,
+	return A2(
+		$author$project$Main$andMap,
 		$elm$json$Json$Decode$maybe(
-			A2(
-				$elm$json$Json$Decode$field,
-				fieldNames.dk,
-				$author$project$Main$decodeWaypoints(fieldNames))),
-		$elm$json$Json$Decode$maybe(
-			A2($elm$json$Json$Decode$field, fieldNames.q, $elm$json$Json$Decode$string)),
-		$elm$json$Json$Decode$maybe(
-			A2($elm$json$Json$Decode$field, fieldNames.F, $elm$json$Json$Decode$float)),
-		$elm$json$Json$Decode$maybe(
-			A2($elm$json$Json$Decode$field, fieldNames.o, $elm$json$Json$Decode$bool)),
-		$elm$json$Json$Decode$maybe(
-			A2(
-				$elm$json$Json$Decode$field,
-				fieldNames.n,
-				$elm$json$Json$Decode$dict($elm$json$Json$Decode$bool))),
-		$elm$json$Json$Decode$maybe(
-			A2($elm$json$Json$Decode$field, fieldNames.c, $elm$json$Json$Decode$int)),
-		$elm$json$Json$Decode$maybe(
-			A2($elm$json$Json$Decode$field, fieldNames.j, $elm$json$Json$Decode$int)),
-		$elm$json$Json$Decode$maybe(
-			A2($elm$json$Json$Decode$field, fieldNames.y, $elm$json$Json$Decode$bool)));
+			A2($elm$json$Json$Decode$field, fieldNames.x, $elm$json$Json$Decode$float)),
+		A2(
+			$author$project$Main$andMap,
+			$elm$json$Json$Decode$maybe(
+				A2($elm$json$Json$Decode$field, fieldNames.v, $elm$json$Json$Decode$bool)),
+			A9(
+				$elm$json$Json$Decode$map8,
+				$author$project$Main$StoredState,
+				$elm$json$Json$Decode$maybe(
+					A2(
+						$elm$json$Json$Decode$field,
+						fieldNames.dm,
+						$author$project$Main$decodeWaypoints(fieldNames))),
+				$elm$json$Json$Decode$maybe(
+					A2($elm$json$Json$Decode$field, fieldNames.q, $elm$json$Json$Decode$string)),
+				$elm$json$Json$Decode$maybe(
+					A2($elm$json$Json$Decode$field, fieldNames.H, $elm$json$Json$Decode$float)),
+				$elm$json$Json$Decode$maybe(
+					A2($elm$json$Json$Decode$field, fieldNames.o, $elm$json$Json$Decode$bool)),
+				$elm$json$Json$Decode$maybe(
+					A2(
+						$elm$json$Json$Decode$field,
+						fieldNames.n,
+						$elm$json$Json$Decode$dict($elm$json$Json$Decode$bool))),
+				$elm$json$Json$Decode$maybe(
+					A2($elm$json$Json$Decode$field, fieldNames.c, $elm$json$Json$Decode$int)),
+				$elm$json$Json$Decode$maybe(
+					A2($elm$json$Json$Decode$field, fieldNames.j, $elm$json$Json$Decode$int)),
+				$elm$json$Json$Decode$maybe(
+					A2($elm$json$Json$Decode$field, fieldNames.B, $elm$json$Json$Decode$bool)))));
 };
-var $author$project$Main$CuesModel = F2(
-	function (waypoints, waypointOptions) {
-		return {G: waypointOptions, dk: waypoints};
+var $author$project$Main$CuesModel = F4(
+	function (waypoints, waypointOptions, showStartFinish, finishDistance) {
+		return {x: finishDistance, v: showStartFinish, I: waypointOptions, dm: waypoints};
 	});
 var $author$project$Main$CuesheetPage = function (a) {
 	return {$: 2, a: a};
@@ -9437,7 +9463,7 @@ var $author$project$Main$initialFilteredLocations = A2(
 			function (el, _v0) {
 				var waypointsIterationCurrent = _v0.a;
 				var includeUnknown = _v0.b;
-				return $elm$core$List$isEmpty(el.M) ? _Utils_Tuple2(waypointsIterationCurrent, true) : _Utils_Tuple2(
+				return $elm$core$List$isEmpty(el.O) ? _Utils_Tuple2(waypointsIterationCurrent, true) : _Utils_Tuple2(
 					A3(
 						$elm$core$List$foldl,
 						F2(
@@ -9445,7 +9471,7 @@ var $author$project$Main$initialFilteredLocations = A2(
 								return A3($elm$core$Dict$insert, typ, true, waypointIterationCurrent);
 							}),
 						waypointsIterationCurrent,
-						el.M),
+						el.O),
 					includeUnknown);
 			}),
 		_Utils_Tuple2($elm$core$Dict$empty, false)),
@@ -9459,23 +9485,22 @@ var $author$project$Main$initialFilteredLocations = A2(
 		}
 	});
 var $author$project$Main$None = 3;
-var $author$project$Main$ToLast = 1;
+var $author$project$Main$ToFinish = 1;
 var $author$project$Main$ToPoint = 2;
-var $author$project$Main$parseTotalDistanceDisplay = F2(
-	function (point, v) {
-		switch (v) {
-			case 'from zero':
-				return $elm$core$Maybe$Just(0);
-			case 'to last':
-				return $elm$core$Maybe$Just(1);
-			case 'to point':
-				return $elm$core$Maybe$Just(2);
-			case 'hide':
-				return $elm$core$Maybe$Just(3);
-			default:
-				return $elm$core$Maybe$Nothing;
-		}
-	});
+var $author$project$Main$parseTotalDistanceDisplay = function (v) {
+	switch (v) {
+		case 'from zero':
+			return $elm$core$Maybe$Just(0);
+		case 'to finish':
+			return $elm$core$Maybe$Just(1);
+		case 'to point':
+			return $elm$core$Maybe$Just(2);
+		case 'hide':
+			return $elm$core$Maybe$Just(3);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Main$storedStateModel = F2(
 	function (url, state) {
 		return A7(
@@ -9487,7 +9512,7 @@ var $author$project$Main$storedStateModel = F2(
 					$elm$core$Maybe$map,
 					function (ws) {
 						return $author$project$Main$CuesheetPage(
-							A2(
+							A4(
 								$author$project$Main$CuesModel,
 								ws,
 								A2(
@@ -9496,22 +9521,21 @@ var $author$project$Main$storedStateModel = F2(
 									A2(
 										$elm$core$Maybe$withDefault,
 										$author$project$Main$initialFilteredLocations(ws),
-										state.n))));
+										state.n)),
+								A2($elm$core$Maybe$withDefault, false, state.v),
+								A2($elm$core$Maybe$withDefault, 0, state.x)));
 					},
-					state.dk)),
+					state.dm)),
 			$elm$core$Maybe$Nothing,
 			$elm$core$Maybe$Nothing,
-			A2($elm$core$Maybe$withDefault, true, state.y),
+			A2($elm$core$Maybe$withDefault, true, state.B),
 			A5(
 				$author$project$Main$CuesViewOptions,
 				A2(
 					$elm$core$Maybe$withDefault,
 					0,
-					A2(
-						$elm$core$Maybe$andThen,
-						$author$project$Main$parseTotalDistanceDisplay($elm$core$Maybe$Nothing),
-						state.q)),
-				A2($elm$core$Maybe$withDefault, 1000, state.bI),
+					A2($elm$core$Maybe$andThen, $author$project$Main$parseTotalDistanceDisplay, state.q)),
+				A2($elm$core$Maybe$withDefault, 1000, state.bK),
 				0,
 				A2($elm$core$Maybe$withDefault, $author$project$Main$defaultSpacing, state.c),
 				A2($elm$core$Maybe$withDefault, $author$project$Main$defaultDistanceDetail, state.j)),
@@ -9740,7 +9764,7 @@ var $elm$url$Url$addPrefixed = F3(
 	});
 var $elm$url$Url$toString = function (url) {
 	var http = function () {
-		var _v0 = url.bY;
+		var _v0 = url.b_;
 		if (!_v0) {
 			return 'http://';
 		} else {
@@ -9750,17 +9774,17 @@ var $elm$url$Url$toString = function (url) {
 	return A3(
 		$elm$url$Url$addPrefixed,
 		'#',
-		url.bw,
+		url.by,
 		A3(
 			$elm$url$Url$addPrefixed,
 			'?',
-			url.bZ,
+			url.b$,
 			_Utils_ap(
 				A2(
 					$elm$url$Url$addPort,
-					url.bU,
-					_Utils_ap(http, url.bD)),
-				url.c0)));
+					url.bW,
+					_Utils_ap(http, url.bF)),
+				url.c2)));
 };
 var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$json$Json$Encode$dict = F3(
@@ -9812,14 +9836,14 @@ var $author$project$Main$encodeWaypoints = F2(
 					_List_fromArray(
 						[
 							_Utils_Tuple2(
-							fieldNames.aq,
-							$elm$json$Json$Encode$string(waypoint.cX)),
-							_Utils_Tuple2(
-							fieldNames.ap,
-							$elm$json$Json$Encode$float(waypoint.bo)),
+							fieldNames.as,
+							$elm$json$Json$Encode$string(waypoint.cZ)),
 							_Utils_Tuple2(
 							fieldNames.ar,
-							A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$string, waypoint.M))
+							$elm$json$Json$Encode$float(waypoint.bq)),
+							_Utils_Tuple2(
+							fieldNames.at,
+							A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$string, waypoint.O))
 						]));
 			},
 			waypoints);
@@ -9829,7 +9853,7 @@ var $author$project$Main$formatTotalDistanceDisplay = function (v) {
 		case 0:
 			return 'from zero';
 		case 1:
-			return 'to last';
+			return 'to finish';
 		case 2:
 			return 'to point';
 		default:
@@ -9845,20 +9869,26 @@ var $author$project$Main$encodeSavedState = F2(
 			$elm$json$Json$Encode$object(
 				_Utils_ap(
 					function () {
-						var _v0 = model.E;
+						var _v0 = model.A;
 						if (_v0.$ === 2) {
 							var cuesModel = _v0.a;
 							return _List_fromArray(
 								[
 									_Utils_Tuple2(
-									fieldNames.dk,
-									A2($author$project$Main$encodeWaypoints, fieldNames, cuesModel.dk)),
+									fieldNames.dm,
+									A2($author$project$Main$encodeWaypoints, fieldNames, cuesModel.dm)),
 									_Utils_Tuple2(
 									fieldNames.o,
-									$elm$json$Json$Encode$bool(cuesModel.G.o)),
+									$elm$json$Json$Encode$bool(cuesModel.I.o)),
 									_Utils_Tuple2(
 									fieldNames.n,
-									A3($elm$json$Json$Encode$dict, $elm$core$Basics$identity, $elm$json$Json$Encode$bool, cuesModel.G.n))
+									A3($elm$json$Json$Encode$dict, $elm$core$Basics$identity, $elm$json$Json$Encode$bool, cuesModel.I.n)),
+									_Utils_Tuple2(
+									fieldNames.v,
+									$elm$json$Json$Encode$bool(cuesModel.v)),
+									_Utils_Tuple2(
+									fieldNames.x,
+									$elm$json$Json$Encode$float(cuesModel.x))
 								]);
 						} else {
 							return _List_Nil;
@@ -9871,8 +9901,8 @@ var $author$project$Main$encodeSavedState = F2(
 							$elm$json$Json$Encode$string(
 								$author$project$Main$formatTotalDistanceDisplay(model.h.q))),
 							_Utils_Tuple2(
-							fieldNames.F,
-							$elm$json$Json$Encode$float(model.h.F)),
+							fieldNames.H,
+							$elm$json$Json$Encode$float(model.h.H)),
 							_Utils_Tuple2(
 							fieldNames.j,
 							$elm$json$Json$Encode$int(model.h.j)),
@@ -9880,8 +9910,8 @@ var $author$project$Main$encodeSavedState = F2(
 							fieldNames.c,
 							$elm$json$Json$Encode$int(model.h.c)),
 							_Utils_Tuple2(
-							fieldNames.y,
-							$elm$json$Json$Encode$bool(model.y))
+							fieldNames.B,
+							$elm$json$Json$Encode$bool(model.B))
 						]))));
 	});
 var $author$project$Main$storeState = _Platform_outgoingPort('storeState', $elm$json$Json$Encode$string);
@@ -9933,7 +9963,7 @@ var $author$project$Main$init = F3(
 									$elm$url$Url$Parser$Query$string('state')),
 								_Utils_update(
 									url,
-									{c0: ''})))))));
+									{c2: ''})))))));
 		return A2(
 			$elm$core$Tuple$mapSecond,
 			function (cmd) {
@@ -9956,7 +9986,7 @@ var $author$project$Main$init = F3(
 											$elm$url$Url$toString(
 												_Utils_update(
 													url,
-													{bZ: $elm$core$Maybe$Nothing})))),
+													{b$: $elm$core$Maybe$Nothing})))),
 									queryState)))));
 			},
 			$author$project$Main$updateModel(
@@ -9985,7 +10015,7 @@ var $author$project$Main$init = F3(
 									A2(
 										$elm$core$Basics$composeR,
 										$elm$core$Result$withDefault(
-											A8($author$project$Main$StoredState, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing)),
+											$author$project$Main$StoredState($elm$core$Maybe$Nothing)($elm$core$Maybe$Nothing)($elm$core$Maybe$Nothing)($elm$core$Maybe$Nothing)($elm$core$Maybe$Nothing)($elm$core$Maybe$Nothing)($elm$core$Maybe$Nothing)($elm$core$Maybe$Nothing)($elm$core$Maybe$Nothing)($elm$core$Maybe$Nothing)),
 										$author$project$Main$storedStateModel(url))),
 								maybeState));
 					}
@@ -10007,11 +10037,11 @@ var $elm$file$File$Select$file = F2(
 	});
 var $author$project$GpxApi$Track = F2(
 	function (trackpoints, waypoints) {
-		return {df: trackpoints, dk: waypoints};
+		return {dh: trackpoints, dm: waypoints};
 	});
 var $author$project$GpxApi$TrackPoint = F4(
 	function (distance, elevation, lat, lon) {
-		return {bo: distance, cB: elevation, cP: lat, cR: lon};
+		return {bq: distance, cD: elevation, cR: lat, cT: lon};
 	});
 var $elm$json$Json$Decode$map4 = _Json_map4;
 var $author$project$GpxApi$decodeTrackpoints = $elm$json$Json$Decode$list(
@@ -10024,7 +10054,7 @@ var $author$project$GpxApi$decodeTrackpoints = $elm$json$Json$Decode$list(
 		A2($elm$json$Json$Decode$field, 'lon', $elm$json$Json$Decode$float)));
 var $author$project$GpxApi$Waypoint = F3(
 	function (distance, name, categories) {
-		return {co: categories, bo: distance, cX: name};
+		return {cq: categories, bq: distance, cZ: name};
 	});
 var $author$project$GpxApi$decodeWaypoints = $elm$json$Json$Decode$list(
 	A4(
@@ -10116,7 +10146,7 @@ var $elm$http$Http$resolve = F2(
 			case 3:
 				var metadata = response.a;
 				return $elm$core$Result$Err(
-					$elm$http$Http$BadStatus(metadata.c8));
+					$elm$http$Http$BadStatus(metadata.da));
 			default:
 				var body = response.b;
 				return A2(
@@ -10161,7 +10191,7 @@ var $elm$http$Http$Request = function (a) {
 };
 var $elm$http$Http$State = F2(
 	function (reqs, subs) {
-		return {b0: reqs, b9: subs};
+		return {b2: reqs, cb: subs};
 	});
 var $elm$http$Http$init = $elm$core$Task$succeed(
 	A2($elm$http$Http$State, $elm$core$Dict$empty, _List_Nil));
@@ -10203,7 +10233,7 @@ var $elm$http$Http$updateReqs = F3(
 					return A2(
 						$elm$core$Task$andThen,
 						function (pid) {
-							var _v4 = req.cc;
+							var _v4 = req.ce;
 							if (_v4.$ === 1) {
 								return A3($elm$http$Http$updateReqs, router, otherCmds, reqs);
 							} else {
@@ -10233,7 +10263,7 @@ var $elm$http$Http$onEffects = F4(
 				return $elm$core$Task$succeed(
 					A2($elm$http$Http$State, reqs, subs));
 			},
-			A3($elm$http$Http$updateReqs, router, cmds, state.b0));
+			A3($elm$http$Http$updateReqs, router, cmds, state.b2));
 	});
 var $elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
@@ -10276,7 +10306,7 @@ var $elm$http$Http$onSelfMsg = F3(
 				A2(
 					$elm$core$List$filterMap,
 					A3($elm$http$Http$maybeSend, router, tracker, progress),
-					state.b9)));
+					state.cb)));
 	});
 var $elm$http$Http$Cancel = function (a) {
 	return {$: 0, a: a};
@@ -10290,14 +10320,14 @@ var $elm$http$Http$cmdMap = F2(
 			var r = cmd.a;
 			return $elm$http$Http$Request(
 				{
-					cj: r.cj,
-					cm: r.cm,
-					cC: A2(_Http_mapExpect, func, r.cC),
-					bB: r.bB,
-					cV: r.cV,
-					dc: r.dc,
-					cc: r.cc,
-					dh: r.dh
+					cl: r.cl,
+					co: r.co,
+					cE: A2(_Http_mapExpect, func, r.cE),
+					bD: r.bD,
+					cX: r.cX,
+					de: r.de,
+					ce: r.ce,
+					dj: r.dj
 				});
 		}
 	});
@@ -10320,27 +10350,36 @@ var $elm$http$Http$subscription = _Platform_leaf('Http');
 var $elm$http$Http$request = function (r) {
 	return $elm$http$Http$command(
 		$elm$http$Http$Request(
-			{cj: false, cm: r.cm, cC: r.cC, bB: r.bB, cV: r.cV, dc: r.dc, cc: r.cc, dh: r.dh}));
+			{cl: false, co: r.co, cE: r.cE, bD: r.bD, cX: r.cX, de: r.de, ce: r.ce, dj: r.dj}));
 };
 var $elm$http$Http$post = function (r) {
 	return $elm$http$Http$request(
-		{cm: r.cm, cC: r.cC, bB: _List_Nil, cV: 'POST', dc: $elm$core$Maybe$Nothing, cc: $elm$core$Maybe$Nothing, dh: r.dh});
+		{co: r.co, cE: r.cE, bD: _List_Nil, cX: 'POST', de: $elm$core$Maybe$Nothing, ce: $elm$core$Maybe$Nothing, dj: r.dj});
 };
 var $author$project$GpxApi$getElevationProfileDataResponse = F3(
 	function (toMsg, url, file) {
 		return $elm$http$Http$post(
 			{
-				cm: $elm$http$Http$fileBody(file),
-				cC: A2(
+				co: $elm$http$Http$fileBody(file),
+				cE: A2(
 					$elm$http$Http$expectJson,
 					A2(
 						$elm$core$Basics$composeR,
 						$elm$core$Result$mapError($author$project$GpxApi$httpErrorString),
 						toMsg),
 					$author$project$GpxApi$decodeElevationProfileDataResponse),
-				dh: url
+				dj: url
 			});
 	});
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Main$initialWaypointOptions = function (waypoints) {
 	return A2(
 		$author$project$Main$WaypointsOptions,
@@ -10348,18 +10387,21 @@ var $author$project$Main$initialWaypointOptions = function (waypoints) {
 		$author$project$Main$initialFilteredLocations(waypoints));
 };
 var $elm$core$List$sortBy = _List_sortBy;
-var $author$project$Main$initialCuesModel = function (waypoints) {
-	var sortedWaypoint = A2(
-		$elm$core$List$sortBy,
-		function ($) {
-			return $.bo;
-		},
-		waypoints);
-	return A2(
-		$author$project$Main$CuesModel,
-		sortedWaypoint,
-		$author$project$Main$initialWaypointOptions(sortedWaypoint));
-};
+var $author$project$Main$initialCuesModel = F2(
+	function (waypoints, trackFinish) {
+		var sortedWaypoints = A2(
+			$elm$core$List$sortBy,
+			function ($) {
+				return $.bq;
+			},
+			waypoints);
+		return A4(
+			$author$project$Main$CuesModel,
+			sortedWaypoints,
+			$author$project$Main$initialWaypointOptions(sortedWaypoints),
+			true,
+			trackFinish);
+	});
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm$core$Basics$not = _Basics_not;
 var $author$project$Main$updateCuesModel = F2(
@@ -10368,7 +10410,7 @@ var $author$project$Main$updateCuesModel = F2(
 			_Utils_update(
 				model,
 				{
-					E: $author$project$Main$CuesheetPage(cuesModel)
+					A: $author$project$Main$CuesheetPage(cuesModel)
 				}));
 	});
 var $author$project$Main$update = F2(
@@ -10379,21 +10421,21 @@ var $author$project$Main$update = F2(
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
-						{E: page}));
+						{A: page}));
 			case 2:
 				var typ = msg.a;
 				var enabled = msg.b;
-				var _v1 = model.E;
+				var _v1 = model.A;
 				if (_v1.$ === 2) {
 					var cuesModel = _v1.a;
-					var options = cuesModel.G;
+					var options = cuesModel.I;
 					var newCuesModel = _Utils_update(
 						cuesModel,
 						{
-							G: _Utils_update(
+							I: _Utils_update(
 								options,
 								{
-									n: A3($elm$core$Dict$insert, typ, enabled, cuesModel.G.n)
+									n: A3($elm$core$Dict$insert, typ, enabled, cuesModel.I.n)
 								})
 						});
 					return A2($author$project$Main$updateCuesModel, model, newCuesModel);
@@ -10405,7 +10447,7 @@ var $author$project$Main$update = F2(
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
-						{y: show}));
+						{B: show}));
 			case 4:
 				var maybeSelection = msg.a;
 				return A2(
@@ -10427,14 +10469,14 @@ var $author$project$Main$update = F2(
 						maybeSelection));
 			case 5:
 				var enabled = msg.a;
-				var _v2 = model.E;
+				var _v2 = model.A;
 				if (_v2.$ === 2) {
 					var cuesModel = _v2.a;
-					var options = cuesModel.G;
+					var options = cuesModel.I;
 					var newCuesModel = _Utils_update(
 						cuesModel,
 						{
-							G: _Utils_update(
+							I: _Utils_update(
 								options,
 								{o: enabled})
 						});
@@ -10451,7 +10493,7 @@ var $author$project$Main$update = F2(
 						{
 							h: _Utils_update(
 								options,
-								{aF: position})
+								{aH: position})
 						}));
 			case 7:
 				var point = msg.a;
@@ -10462,7 +10504,7 @@ var $author$project$Main$update = F2(
 						{
 							h: _Utils_update(
 								options,
-								{F: point})
+								{H: point})
 						}));
 			case 8:
 				var spacing = msg.a;
@@ -10486,6 +10528,20 @@ var $author$project$Main$update = F2(
 								options,
 								{j: detail})
 						}));
+			case 13:
+				var show = msg.a;
+				var _v3 = model.A;
+				if (_v3.$ === 2) {
+					var cuesModel = _v3.a;
+					return A2(
+						$author$project$Main$updateCuesModel,
+						model,
+						_Utils_update(
+							cuesModel,
+							{v: show}));
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
 			case 10:
 				return _Utils_Tuple2(
 					model,
@@ -10499,11 +10555,11 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{O: $elm$core$Maybe$Nothing}),
+						{Q: $elm$core$Maybe$Nothing}),
 					A3(
 						$author$project$GpxApi$getElevationProfileDataResponse,
 						$author$project$Main$GpxResponseReceived,
-						A2($elm$core$Maybe$withDefault, 'https://gpx.fly.dev', model.bz),
+						A2($elm$core$Maybe$withDefault, 'https://gpx.fly.dev', model.bB),
 						file));
 			case 12:
 				var result = msg.a;
@@ -10513,7 +10569,7 @@ var $author$project$Main$update = F2(
 						_Utils_update(
 							model,
 							{
-								O: $elm$core$Maybe$Just(errMsg)
+								Q: $elm$core$Maybe$Just(errMsg)
 							}),
 						$elm$core$Platform$Cmd$none);
 				} else {
@@ -10524,28 +10580,38 @@ var $author$project$Main$update = F2(
 							var waypoints = A2(
 								$elm$core$List$sortBy,
 								function ($) {
-									return $.bo;
+									return $.bq;
 								},
 								A2(
 									$elm$core$List$map,
 									function (w) {
-										return A3($author$project$Main$Waypoint, w.cX, w.bo, w.co);
+										return A3($author$project$Main$Waypoint, w.cZ, w.bq, w.cq);
 									},
-									track.dk));
+									track.dm));
+							var trackEndDistance = A2(
+								$elm$core$Maybe$withDefault,
+								0,
+								A2(
+									$elm$core$Maybe$map,
+									function ($) {
+										return $.bq;
+									},
+									$elm$core$List$head(
+										$elm$core$List$reverse(track.dh))));
+							var cuesModel = A2($author$project$Main$initialCuesModel, waypoints, trackEndDistance);
 							return $author$project$Main$updateModel(
 								_Utils_update(
 									model,
 									{
-										O: $elm$core$Maybe$Nothing,
-										E: $author$project$Main$CuesheetPage(
-											$author$project$Main$initialCuesModel(waypoints))
+										Q: $elm$core$Maybe$Nothing,
+										A: $author$project$Main$CuesheetPage(cuesModel)
 									}));
 						} else {
 							return _Utils_Tuple2(
 								_Utils_update(
 									model,
 									{
-										O: $elm$core$Maybe$Just('Multiple tracks found in GPX file; only single-track GPX files are supported')
+										Q: $elm$core$Maybe$Just('Multiple tracks found in GPX file; only single-track GPX files are supported')
 									}),
 								$elm$core$Platform$Cmd$none);
 						}
@@ -10554,32 +10620,32 @@ var $author$project$Main$update = F2(
 							_Utils_update(
 								model,
 								{
-									O: $elm$core$Maybe$Just('No tracks found in GPX file')
+									Q: $elm$core$Maybe$Just('No tracks found in GPX file')
 								}),
 							$elm$core$Platform$Cmd$none);
 					}
 				}
-			case 13:
-				return $author$project$Main$updateModel(
-					_Utils_update(
-						model,
-						{aI: true}));
 			case 14:
 				return $author$project$Main$updateModel(
 					_Utils_update(
 						model,
-						{aI: false}));
+						{aK: true}));
+			case 15:
+				return $author$project$Main$updateModel(
+					_Utils_update(
+						model,
+						{aK: false}));
 			case 0:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			default:
-				var _v5 = model.E;
-				if (!_v5.$) {
-					var val = _v5.a;
+				var _v6 = model.A;
+				if (!_v6.$) {
+					var val = _v6.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
 							{
-								E: $author$project$Main$WelcomePage(!val)
+								A: $author$project$Main$WelcomePage(!val)
 							}),
 						$elm$core$Platform$Cmd$none);
 				} else {
@@ -10588,10 +10654,10 @@ var $author$project$Main$update = F2(
 		}
 	});
 var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $author$project$Main$CloseQR = {$: 14};
+var $author$project$Main$CloseQR = {$: 15};
 var $elm$browser$Browser$Document = F2(
 	function (title, body) {
-		return {cm: body, dd: title};
+		return {co: body, df: title};
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Medium = 1;
 var $elm$html$Html$br = _VirtualDom_node('br');
@@ -10626,7 +10692,7 @@ var $author$project$Main$cues = F2(
 						true,
 						A2($elm$core$Dict$get, typ, waypointOptions.n));
 				};
-				var _v0 = w.M;
+				var _v0 = w.O;
 				if (!_v0.b) {
 					return includeType($author$project$Main$unknownType) ? $elm$core$Maybe$Just(w) : $elm$core$Maybe$Nothing;
 				} else {
@@ -10639,7 +10705,7 @@ var $author$project$Main$cues = F2(
 						return $elm$core$Maybe$Just(
 							_Utils_update(
 								w,
-								{M: some}));
+								{O: some}));
 					}
 				}
 			},
@@ -10894,15 +10960,6 @@ var $author$project$Main$formatKm = F2(
 	});
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
 var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
 var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
@@ -10927,7 +10984,7 @@ var $author$project$Main$waypointInfos = F2(
 				$elm$core$List$foldl,
 				F2(
 					function (el, accum) {
-						return (_Utils_cmp(el.bo, position) < 0) ? accum : _Utils_Tuple2(
+						return (_Utils_cmp(el.bq, position) < 0) ? accum : _Utils_Tuple2(
 							$elm$core$Maybe$Just(el),
 							_Utils_ap(
 								A2(
@@ -10941,7 +10998,7 @@ var $author$project$Main$waypointInfos = F2(
 											function (previous) {
 												return _List_fromArray(
 													[
-														$author$project$Main$Ride(el.bo - previous.bo)
+														$author$project$Main$Ride(el.bq - previous.bq)
 													]);
 											},
 											accum.a))),
@@ -10957,18 +11014,11 @@ var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
 var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
 var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
 var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
-var $author$project$Main$cuesheet = F2(
-	function (waypoints, cuesViewOptions) {
+var $author$project$Main$cuesheet = F3(
+	function (waypoints, cuesViewOptions, finishDistance) {
 		var svgContentLeftStart = 0;
 		var svgContentLeftStartString = $elm$core$String$fromInt(svgContentLeftStart);
-		var lastWaypointDistance = A2(
-			$elm$core$Maybe$map,
-			function ($) {
-				return $.bo;
-			},
-			$elm$core$List$head(
-				$elm$core$List$reverse(waypoints)));
-		var info = A2($author$project$Main$waypointInfos, cuesViewOptions.aF, waypoints);
+		var info = A2($author$project$Main$waypointInfos, cuesViewOptions.aH, waypoints);
 		var svgHeight = cuesViewOptions.c * $elm$core$List$length(info);
 		return A2(
 			$elm$html$Html$div,
@@ -11003,17 +11053,13 @@ var $author$project$Main$cuesheet = F2(
 												return $elm$core$Maybe$Nothing;
 											case 0:
 												return $elm$core$Maybe$Just(
-													A2($author$project$Main$formatKm, cuesViewOptions.j, waypoint.bo));
+													A2($author$project$Main$formatKm, cuesViewOptions.j, waypoint.bq));
 											case 1:
-												return A2(
-													$elm$core$Maybe$map,
-													function (last) {
-														return A2($author$project$Main$formatKm, cuesViewOptions.j, last - waypoint.bo);
-													},
-													lastWaypointDistance);
+												return $elm$core$Maybe$Just(
+													A2($author$project$Main$formatKm, cuesViewOptions.j, finishDistance - waypoint.bq));
 											default:
 												return $elm$core$Maybe$Just(
-													A2($author$project$Main$formatKm, cuesViewOptions.j, cuesViewOptions.F - waypoint.bo));
+													A2($author$project$Main$formatKm, cuesViewOptions.j, cuesViewOptions.H - waypoint.bq));
 										}
 									}();
 									var waypointInfo = A2(
@@ -11023,7 +11069,7 @@ var $author$project$Main$cuesheet = F2(
 											[
 												waypointDistance,
 												function () {
-												var _v1 = waypoint.M;
+												var _v1 = waypoint.O;
 												if (!_v1.b) {
 													return $elm$core$Maybe$Nothing;
 												} else {
@@ -11053,7 +11099,7 @@ var $author$project$Main$cuesheet = F2(
 													]),
 												_List_fromArray(
 													[
-														$elm$svg$Svg$text(waypoint.cX)
+														$elm$svg$Svg$text(waypoint.cZ)
 													])),
 											A2(
 												$elm$core$List$indexedMap,
@@ -11222,7 +11268,7 @@ var $folkertdev$elm_flate$Deflate$Internal$chunks = F2(
 		}
 	});
 var $folkertdev$elm_flate$Deflate$Internal$default_block_size = 1024 * 1024;
-var $folkertdev$elm_flate$Deflate$BitWriter$empty = {z: 0, A: _List_Nil, L: 0};
+var $folkertdev$elm_flate$Deflate$BitWriter$empty = {C: 0, D: _List_Nil, N: 0};
 var $folkertdev$elm_flate$Deflate$Symbol$code = function (symbol) {
 	switch (symbol.$) {
 		case 1:
@@ -11493,7 +11539,7 @@ var $folkertdev$elm_flate$LengthLimitedHuffmanCodes$mergeLoop = F3(
 					var _v2 = _v0.b;
 					var y = _v2.a;
 					var yrest = _v2.b;
-					if (_Utils_cmp(x.H, y.H) < 0) {
+					if (_Utils_cmp(x.J, y.J) < 0) {
 						var $temp$xarr = xrest,
 							$temp$yarr = yarr,
 							$temp$accum = A2($elm$core$Array$push, x, accum);
@@ -11525,8 +11571,8 @@ var $folkertdev$elm_flate$LengthLimitedHuffmanCodes$merge = F2(
 var $folkertdev$elm_flate$LengthLimitedHuffmanCodes$mergeNodes = F2(
 	function (node1, node2) {
 		return {
-			X: A2($elm$core$Array$append, node1.X, node2.X),
-			H: node1.H + node2.H
+			Z: A2($elm$core$Array$append, node1.Z, node2.Z),
+			J: node1.J + node2.J
 		};
 	});
 var $folkertdev$elm_flate$LengthLimitedHuffmanCodes$package = function (nodes) {
@@ -11566,8 +11612,8 @@ var $folkertdev$elm_flate$LengthLimitedHuffmanCodes$package = function (nodes) {
 var $folkertdev$elm_flate$LengthLimitedHuffmanCodes$singletonNode = F2(
 	function (symbol, weight) {
 		return {
-			X: A2($elm$core$Array$repeat, 1, symbol),
-			H: weight
+			Z: A2($elm$core$Array$repeat, 1, symbol),
+			J: weight
 		};
 	});
 var $elm_community$list_extra$List$Extra$stableSortWith = F2(
@@ -11618,7 +11664,7 @@ var $folkertdev$elm_flate$LengthLimitedHuffmanCodes$calculate = F2(
 				$elm_community$list_extra$List$Extra$stableSortWith,
 				F2(
 					function (a, b) {
-						return A2($elm$core$Basics$compare, a.H, b.H);
+						return A2($elm$core$Basics$compare, a.J, b.J);
 					}),
 				$elm$core$Array$toList(
 					A2(
@@ -11674,7 +11720,7 @@ var $folkertdev$elm_flate$LengthLimitedHuffmanCodes$calculate = F2(
 			A2(
 				$elm$core$Basics$composeR,
 				function ($) {
-					return $.X;
+					return $.Z;
 				},
 				$elm$core$Array$toList),
 			$elm$core$Array$toList(
@@ -11695,7 +11741,7 @@ var $folkertdev$elm_flate$Huffman$new = function (n) {
 		$elm$core$Array$repeat,
 		n,
 		$folkertdev$elm_flate$Huffman$codeFromRecord(
-			{a: 0, ce: 0}));
+			{a: 0, cg: 0}));
 };
 var $folkertdev$elm_flate$Huffman$inverseEndianLoop = F4(
 	function (i, limit, f, t) {
@@ -11717,10 +11763,10 @@ var $folkertdev$elm_flate$Huffman$inverseEndianLoop = F4(
 		}
 	});
 var $folkertdev$elm_flate$Huffman$inverseEndian = function (_v0) {
-	var width = _v0.ce;
+	var width = _v0.cg;
 	var bits = _v0.a;
 	var inverseBits = A4($folkertdev$elm_flate$Huffman$inverseEndianLoop, 0, width, bits, 0);
-	return {a: inverseBits, ce: width};
+	return {a: inverseBits, cg: width};
 };
 var $folkertdev$elm_flate$Huffman$setMapping = F3(
 	function (symbol, code, _v0) {
@@ -11757,7 +11803,7 @@ var $folkertdev$elm_flate$Huffman$restoreCanonicalHuffmanCodes = F2(
 				var prevWidth = _v2.b;
 				var currentTree = _v2.c;
 				var newBits = code << (bitWidth - prevWidth);
-				var nextCode = {a: newBits, ce: bitWidth};
+				var nextCode = {a: newBits, cg: bitWidth};
 				return _Utils_Tuple3(
 					newBits + 1,
 					bitWidth,
@@ -11822,11 +11868,11 @@ var $folkertdev$elm_flate$Deflate$Symbol$buildDynamicHuffmanCodec = function (sy
 	var distanceCounts = _v0.b;
 	var emptyDistanceCount = _v0.c;
 	return {
-		bo: emptyDistanceCount ? A2(
+		bq: emptyDistanceCount ? A2(
 			$folkertdev$elm_flate$Huffman$fromFrequencies,
 			A3($elm$core$Array$set, 0, 1, distanceCounts),
 			15) : A2($folkertdev$elm_flate$Huffman$fromFrequencies, distanceCounts, 15),
-		T: A2($folkertdev$elm_flate$Huffman$fromFrequencies, literalCounts, 15)
+		V: A2($folkertdev$elm_flate$Huffman$fromFrequencies, literalCounts, 15)
 	};
 };
 var $folkertdev$elm_flate$Deflate$Symbol$EndOfBlock = {$: 0};
@@ -12389,7 +12435,7 @@ var $folkertdev$elm_flate$Experimental$ByteArray$fromBytes = function (buffer) {
 };
 var $folkertdev$elm_flate$LZ77$encodeWithOptions = F2(
 	function (_v0, buffer) {
-		var windowSize = _v0.dl;
+		var windowSize = _v0.dn;
 		return A2(
 			$folkertdev$elm_flate$LZ77$flush,
 			windowSize,
@@ -12468,24 +12514,24 @@ var $folkertdev$elm_flate$Deflate$Internal$compress = F2(
 					$folkertdev$elm_flate$Deflate$Internal$codeToSymbol,
 					A2(
 						$folkertdev$elm_flate$LZ77$encodeWithOptions,
-						{dl: windowSize},
+						{dn: windowSize},
 						buf)));
 		}
 	});
 var $folkertdev$elm_flate$Deflate$BitWriter$flushIfNeeded = F3(
 	function (tag, bitsWritten, encoders) {
 		return (bitsWritten >= 16) ? {
-			z: bitsWritten - 16,
-			A: A2(
+			C: bitsWritten - 16,
+			D: A2(
 				$elm$core$List$cons,
 				A2($elm$bytes$Bytes$Encode$unsignedInt16, 0, tag),
 				encoders),
-			L: tag >> 16
-		} : {z: bitsWritten, A: encoders, L: tag};
+			N: tag >> 16
+		} : {C: bitsWritten, D: encoders, N: tag};
 	});
 var $folkertdev$elm_flate$Deflate$BitWriter$writeBits = F3(
 	function (bitwidth, bits, state) {
-		return A3($folkertdev$elm_flate$Deflate$BitWriter$flushIfNeeded, state.L | (bits << state.z), state.z + bitwidth, state.A);
+		return A3($folkertdev$elm_flate$Deflate$BitWriter$flushIfNeeded, state.N | (bits << state.C), state.C + bitwidth, state.D);
 	});
 var $folkertdev$elm_flate$Huffman$encode = F2(
 	function (symbol, _v0) {
@@ -12494,7 +12540,7 @@ var $folkertdev$elm_flate$Huffman$encode = F2(
 		if (_v1.$ === 1) {
 			return A2($folkertdev$elm_flate$Deflate$BitWriter$writeBits, 0, 0);
 		} else {
-			var width = _v1.a.ce;
+			var width = _v1.a.cg;
 			var bits = _v1.a.a;
 			return A2($folkertdev$elm_flate$Deflate$BitWriter$writeBits, width, bits);
 		}
@@ -12546,7 +12592,7 @@ var $folkertdev$elm_flate$Deflate$Symbol$encode = F3(
 				var extra = _v1.c;
 				return A2(
 					$elm$core$Basics$composeR,
-					A2($folkertdev$elm_flate$Huffman$encode, code_, htrees.bo),
+					A2($folkertdev$elm_flate$Huffman$encode, code_, htrees.bq),
 					(bits > 0) ? A2($folkertdev$elm_flate$Deflate$BitWriter$writeBits, bits, extra) : $elm$core$Basics$identity);
 			}
 		}();
@@ -12555,7 +12601,7 @@ var $folkertdev$elm_flate$Deflate$Symbol$encode = F3(
 				A3(
 					$folkertdev$elm_flate$Huffman$encode,
 					$folkertdev$elm_flate$Deflate$Symbol$code(symbol),
-					htrees.T,
+					htrees.V,
 					bitWriter)));
 	});
 var $folkertdev$elm_flate$Deflate$Symbol$bitwidth_code_order = _List_fromArray(
@@ -12584,7 +12630,7 @@ var $folkertdev$elm_flate$Deflate$Symbol$calculateCodes = function (runLengths) 
 						A2(
 							$elm$core$Array$repeat,
 							c,
-							_Utils_Tuple3(r.bc, 0, 0)));
+							_Utils_Tuple3(r.be, 0, 0)));
 				}
 			}
 		});
@@ -12622,19 +12668,19 @@ var $folkertdev$elm_flate$Deflate$Symbol$calculateCodes = function (runLengths) 
 		});
 	var folder = F2(
 		function (r, codes) {
-			return (!r.bc) ? A2(loop1, r.R, codes) : A3(
+			return (!r.be) ? A2(loop1, r.T, codes) : A3(
 				loop2,
 				r,
-				r.R - 1,
+				r.T - 1,
 				A2(
 					$elm$core$Array$push,
-					_Utils_Tuple3(r.bc, 0, 0),
+					_Utils_Tuple3(r.be, 0, 0),
 					codes));
 		});
 	return A3($elm$core$Array$foldl, folder, $elm$core$Array$empty, runLengths);
 };
 var $folkertdev$elm_flate$Huffman$getWidth = function (_v0) {
-	var width = _v0.ce;
+	var width = _v0.cg;
 	return width;
 };
 var $folkertdev$elm_flate$Huffman$lookup = F2(
@@ -12675,17 +12721,17 @@ var $folkertdev$elm_flate$Deflate$Symbol$calculateRunLengths = F2(
 						if (!runLengths.b) {
 							return A2(
 								$elm$core$List$cons,
-								{R: 1, bc: c},
+								{T: 1, be: c},
 								runLengths);
 						} else {
 							var last = runLengths.a;
 							var remaining = runLengths.b;
-							return _Utils_eq(last.bc, c) ? A2(
+							return _Utils_eq(last.be, c) ? A2(
 								$elm$core$List$cons,
-								{R: last.R + 1, bc: last.bc},
+								{T: last.T + 1, be: last.be},
 								remaining) : A2(
 								$elm$core$List$cons,
-								{R: 1, bc: c},
+								{T: 1, be: c},
 								runLengths);
 						}
 					});
@@ -12703,8 +12749,8 @@ var $folkertdev$elm_flate$Deflate$Symbol$buildBitWidthCodes = F3(
 			$folkertdev$elm_flate$Deflate$Symbol$calculateRunLengths,
 			_List_fromArray(
 				[
-					_Utils_Tuple2(trees.T, literalCodeCount),
-					_Utils_Tuple2(trees.bo, distanceCodeCount)
+					_Utils_Tuple2(trees.V, literalCodeCount),
+					_Utils_Tuple2(trees.bq, distanceCodeCount)
 				]),
 			_List_Nil);
 		return $folkertdev$elm_flate$Deflate$Symbol$calculateCodes(runLengths);
@@ -12773,7 +12819,7 @@ var $folkertdev$elm_flate$Huffman$usedMaxSymbol = function (_v0) {
 			$folkertdev$elm_flate$Huffman$positionFromTheEnd,
 			function (_v1) {
 				var value = _v1;
-				return value.ce > 0;
+				return value.cg > 0;
 			},
 			array));
 };
@@ -12785,19 +12831,19 @@ var $folkertdev$elm_flate$Deflate$Symbol$writeDynamicHuffmanCodec = F2(
 			A2(
 				$elm$core$Maybe$withDefault,
 				0,
-				$folkertdev$elm_flate$Huffman$usedMaxSymbol(trees.T)) + 1);
+				$folkertdev$elm_flate$Huffman$usedMaxSymbol(trees.V)) + 1);
 		var distance_code_count = A2(
 			$elm$core$Basics$max,
 			1,
 			A2(
 				$elm$core$Maybe$withDefault,
 				0,
-				$folkertdev$elm_flate$Huffman$usedMaxSymbol(trees.bo)) + 1);
+				$folkertdev$elm_flate$Huffman$usedMaxSymbol(trees.bq)) + 1);
 		var codes = A3(
 			$folkertdev$elm_flate$Deflate$Symbol$buildBitWidthCodes,
 			literal_code_count,
 			distance_code_count,
-			{bo: trees.bo, T: trees.T});
+			{bq: trees.bq, V: trees.V});
 		var codeCounts = A3(
 			$elm$core$Array$foldl,
 			function (_v2) {
@@ -12934,15 +12980,15 @@ var $folkertdev$elm_flate$Deflate$BitWriter$flushLoop = F3(
 				encoders = $temp$encoders;
 				continue flushLoop;
 			} else {
-				return {z: bitsWritten, A: encoders, L: tag};
+				return {C: bitsWritten, D: encoders, N: tag};
 			}
 		}
 	});
 var $folkertdev$elm_flate$Deflate$BitWriter$flush = function (state) {
-	return A3($folkertdev$elm_flate$Deflate$BitWriter$flushLoop, state.L, state.z, state.A);
+	return A3($folkertdev$elm_flate$Deflate$BitWriter$flushLoop, state.N, state.C, state.D);
 };
 var $folkertdev$elm_flate$Deflate$BitWriter$run = function (state) {
-	return $elm$core$List$reverse(state.A);
+	return $elm$core$List$reverse(state.D);
 };
 var $folkertdev$elm_flate$Deflate$Internal$encodeDynamic = F2(
 	function (windowSize, buffer) {
@@ -13235,9 +13281,9 @@ var $folkertdev$elm_flate$ByteArray$toBytes = function (array) {
 var $folkertdev$elm_flate$Deflate$BitWriter$writeEncoder = F2(
 	function (encoder, state) {
 		return {
-			z: state.z,
-			A: A2($elm$core$List$cons, encoder, state.A),
-			L: state.L
+			C: state.C,
+			D: A2($elm$core$List$cons, encoder, state.D),
+			N: state.N
 		};
 	});
 var $folkertdev$elm_flate$Deflate$Internal$encodeRawBlock = F2(
@@ -13288,331 +13334,331 @@ var $folkertdev$elm_flate$Huffman$fromList = A2(
 	A2($elm$core$Basics$composeL, $elm$core$Basics$identity, $elm$core$Array$fromList),
 	$elm$core$List$map($folkertdev$elm_flate$Huffman$codeFromRecord));
 var $folkertdev$elm_flate$Huffman$hardcodedStaticHuffmanTree = {
-	bo: $folkertdev$elm_flate$Huffman$fromList(
+	bq: $folkertdev$elm_flate$Huffman$fromList(
 		_List_fromArray(
 			[
-				{a: 0, ce: 5},
-				{a: 16, ce: 5},
-				{a: 8, ce: 5},
-				{a: 24, ce: 5},
-				{a: 4, ce: 5},
-				{a: 20, ce: 5},
-				{a: 12, ce: 5},
-				{a: 28, ce: 5},
-				{a: 2, ce: 5},
-				{a: 18, ce: 5},
-				{a: 10, ce: 5},
-				{a: 26, ce: 5},
-				{a: 6, ce: 5},
-				{a: 22, ce: 5},
-				{a: 14, ce: 5},
-				{a: 30, ce: 5},
-				{a: 1, ce: 5},
-				{a: 17, ce: 5},
-				{a: 9, ce: 5},
-				{a: 25, ce: 5},
-				{a: 5, ce: 5},
-				{a: 21, ce: 5},
-				{a: 13, ce: 5},
-				{a: 29, ce: 5},
-				{a: 3, ce: 5},
-				{a: 19, ce: 5},
-				{a: 11, ce: 5},
-				{a: 27, ce: 5},
-				{a: 7, ce: 5},
-				{a: 23, ce: 5}
+				{a: 0, cg: 5},
+				{a: 16, cg: 5},
+				{a: 8, cg: 5},
+				{a: 24, cg: 5},
+				{a: 4, cg: 5},
+				{a: 20, cg: 5},
+				{a: 12, cg: 5},
+				{a: 28, cg: 5},
+				{a: 2, cg: 5},
+				{a: 18, cg: 5},
+				{a: 10, cg: 5},
+				{a: 26, cg: 5},
+				{a: 6, cg: 5},
+				{a: 22, cg: 5},
+				{a: 14, cg: 5},
+				{a: 30, cg: 5},
+				{a: 1, cg: 5},
+				{a: 17, cg: 5},
+				{a: 9, cg: 5},
+				{a: 25, cg: 5},
+				{a: 5, cg: 5},
+				{a: 21, cg: 5},
+				{a: 13, cg: 5},
+				{a: 29, cg: 5},
+				{a: 3, cg: 5},
+				{a: 19, cg: 5},
+				{a: 11, cg: 5},
+				{a: 27, cg: 5},
+				{a: 7, cg: 5},
+				{a: 23, cg: 5}
 			])),
-	T: $folkertdev$elm_flate$Huffman$fromList(
+	V: $folkertdev$elm_flate$Huffman$fromList(
 		_List_fromArray(
 			[
-				{a: 12, ce: 8},
-				{a: 140, ce: 8},
-				{a: 76, ce: 8},
-				{a: 204, ce: 8},
-				{a: 44, ce: 8},
-				{a: 172, ce: 8},
-				{a: 108, ce: 8},
-				{a: 236, ce: 8},
-				{a: 28, ce: 8},
-				{a: 156, ce: 8},
-				{a: 92, ce: 8},
-				{a: 220, ce: 8},
-				{a: 60, ce: 8},
-				{a: 188, ce: 8},
-				{a: 124, ce: 8},
-				{a: 252, ce: 8},
-				{a: 2, ce: 8},
-				{a: 130, ce: 8},
-				{a: 66, ce: 8},
-				{a: 194, ce: 8},
-				{a: 34, ce: 8},
-				{a: 162, ce: 8},
-				{a: 98, ce: 8},
-				{a: 226, ce: 8},
-				{a: 18, ce: 8},
-				{a: 146, ce: 8},
-				{a: 82, ce: 8},
-				{a: 210, ce: 8},
-				{a: 50, ce: 8},
-				{a: 178, ce: 8},
-				{a: 114, ce: 8},
-				{a: 242, ce: 8},
-				{a: 10, ce: 8},
-				{a: 138, ce: 8},
-				{a: 74, ce: 8},
-				{a: 202, ce: 8},
-				{a: 42, ce: 8},
-				{a: 170, ce: 8},
-				{a: 106, ce: 8},
-				{a: 234, ce: 8},
-				{a: 26, ce: 8},
-				{a: 154, ce: 8},
-				{a: 90, ce: 8},
-				{a: 218, ce: 8},
-				{a: 58, ce: 8},
-				{a: 186, ce: 8},
-				{a: 122, ce: 8},
-				{a: 250, ce: 8},
-				{a: 6, ce: 8},
-				{a: 134, ce: 8},
-				{a: 70, ce: 8},
-				{a: 198, ce: 8},
-				{a: 38, ce: 8},
-				{a: 166, ce: 8},
-				{a: 102, ce: 8},
-				{a: 230, ce: 8},
-				{a: 22, ce: 8},
-				{a: 150, ce: 8},
-				{a: 86, ce: 8},
-				{a: 214, ce: 8},
-				{a: 54, ce: 8},
-				{a: 182, ce: 8},
-				{a: 118, ce: 8},
-				{a: 246, ce: 8},
-				{a: 14, ce: 8},
-				{a: 142, ce: 8},
-				{a: 78, ce: 8},
-				{a: 206, ce: 8},
-				{a: 46, ce: 8},
-				{a: 174, ce: 8},
-				{a: 110, ce: 8},
-				{a: 238, ce: 8},
-				{a: 30, ce: 8},
-				{a: 158, ce: 8},
-				{a: 94, ce: 8},
-				{a: 222, ce: 8},
-				{a: 62, ce: 8},
-				{a: 190, ce: 8},
-				{a: 126, ce: 8},
-				{a: 254, ce: 8},
-				{a: 1, ce: 8},
-				{a: 129, ce: 8},
-				{a: 65, ce: 8},
-				{a: 193, ce: 8},
-				{a: 33, ce: 8},
-				{a: 161, ce: 8},
-				{a: 97, ce: 8},
-				{a: 225, ce: 8},
-				{a: 17, ce: 8},
-				{a: 145, ce: 8},
-				{a: 81, ce: 8},
-				{a: 209, ce: 8},
-				{a: 49, ce: 8},
-				{a: 177, ce: 8},
-				{a: 113, ce: 8},
-				{a: 241, ce: 8},
-				{a: 9, ce: 8},
-				{a: 137, ce: 8},
-				{a: 73, ce: 8},
-				{a: 201, ce: 8},
-				{a: 41, ce: 8},
-				{a: 169, ce: 8},
-				{a: 105, ce: 8},
-				{a: 233, ce: 8},
-				{a: 25, ce: 8},
-				{a: 153, ce: 8},
-				{a: 89, ce: 8},
-				{a: 217, ce: 8},
-				{a: 57, ce: 8},
-				{a: 185, ce: 8},
-				{a: 121, ce: 8},
-				{a: 249, ce: 8},
-				{a: 5, ce: 8},
-				{a: 133, ce: 8},
-				{a: 69, ce: 8},
-				{a: 197, ce: 8},
-				{a: 37, ce: 8},
-				{a: 165, ce: 8},
-				{a: 101, ce: 8},
-				{a: 229, ce: 8},
-				{a: 21, ce: 8},
-				{a: 149, ce: 8},
-				{a: 85, ce: 8},
-				{a: 213, ce: 8},
-				{a: 53, ce: 8},
-				{a: 181, ce: 8},
-				{a: 117, ce: 8},
-				{a: 245, ce: 8},
-				{a: 13, ce: 8},
-				{a: 141, ce: 8},
-				{a: 77, ce: 8},
-				{a: 205, ce: 8},
-				{a: 45, ce: 8},
-				{a: 173, ce: 8},
-				{a: 109, ce: 8},
-				{a: 237, ce: 8},
-				{a: 29, ce: 8},
-				{a: 157, ce: 8},
-				{a: 93, ce: 8},
-				{a: 221, ce: 8},
-				{a: 61, ce: 8},
-				{a: 189, ce: 8},
-				{a: 125, ce: 8},
-				{a: 253, ce: 8},
-				{a: 19, ce: 9},
-				{a: 275, ce: 9},
-				{a: 147, ce: 9},
-				{a: 403, ce: 9},
-				{a: 83, ce: 9},
-				{a: 339, ce: 9},
-				{a: 211, ce: 9},
-				{a: 467, ce: 9},
-				{a: 51, ce: 9},
-				{a: 307, ce: 9},
-				{a: 179, ce: 9},
-				{a: 435, ce: 9},
-				{a: 115, ce: 9},
-				{a: 371, ce: 9},
-				{a: 243, ce: 9},
-				{a: 499, ce: 9},
-				{a: 11, ce: 9},
-				{a: 267, ce: 9},
-				{a: 139, ce: 9},
-				{a: 395, ce: 9},
-				{a: 75, ce: 9},
-				{a: 331, ce: 9},
-				{a: 203, ce: 9},
-				{a: 459, ce: 9},
-				{a: 43, ce: 9},
-				{a: 299, ce: 9},
-				{a: 171, ce: 9},
-				{a: 427, ce: 9},
-				{a: 107, ce: 9},
-				{a: 363, ce: 9},
-				{a: 235, ce: 9},
-				{a: 491, ce: 9},
-				{a: 27, ce: 9},
-				{a: 283, ce: 9},
-				{a: 155, ce: 9},
-				{a: 411, ce: 9},
-				{a: 91, ce: 9},
-				{a: 347, ce: 9},
-				{a: 219, ce: 9},
-				{a: 475, ce: 9},
-				{a: 59, ce: 9},
-				{a: 315, ce: 9},
-				{a: 187, ce: 9},
-				{a: 443, ce: 9},
-				{a: 123, ce: 9},
-				{a: 379, ce: 9},
-				{a: 251, ce: 9},
-				{a: 507, ce: 9},
-				{a: 7, ce: 9},
-				{a: 263, ce: 9},
-				{a: 135, ce: 9},
-				{a: 391, ce: 9},
-				{a: 71, ce: 9},
-				{a: 327, ce: 9},
-				{a: 199, ce: 9},
-				{a: 455, ce: 9},
-				{a: 39, ce: 9},
-				{a: 295, ce: 9},
-				{a: 167, ce: 9},
-				{a: 423, ce: 9},
-				{a: 103, ce: 9},
-				{a: 359, ce: 9},
-				{a: 231, ce: 9},
-				{a: 487, ce: 9},
-				{a: 23, ce: 9},
-				{a: 279, ce: 9},
-				{a: 151, ce: 9},
-				{a: 407, ce: 9},
-				{a: 87, ce: 9},
-				{a: 343, ce: 9},
-				{a: 215, ce: 9},
-				{a: 471, ce: 9},
-				{a: 55, ce: 9},
-				{a: 311, ce: 9},
-				{a: 183, ce: 9},
-				{a: 439, ce: 9},
-				{a: 119, ce: 9},
-				{a: 375, ce: 9},
-				{a: 247, ce: 9},
-				{a: 503, ce: 9},
-				{a: 15, ce: 9},
-				{a: 271, ce: 9},
-				{a: 143, ce: 9},
-				{a: 399, ce: 9},
-				{a: 79, ce: 9},
-				{a: 335, ce: 9},
-				{a: 207, ce: 9},
-				{a: 463, ce: 9},
-				{a: 47, ce: 9},
-				{a: 303, ce: 9},
-				{a: 175, ce: 9},
-				{a: 431, ce: 9},
-				{a: 111, ce: 9},
-				{a: 367, ce: 9},
-				{a: 239, ce: 9},
-				{a: 495, ce: 9},
-				{a: 31, ce: 9},
-				{a: 287, ce: 9},
-				{a: 159, ce: 9},
-				{a: 415, ce: 9},
-				{a: 95, ce: 9},
-				{a: 351, ce: 9},
-				{a: 223, ce: 9},
-				{a: 479, ce: 9},
-				{a: 63, ce: 9},
-				{a: 319, ce: 9},
-				{a: 191, ce: 9},
-				{a: 447, ce: 9},
-				{a: 127, ce: 9},
-				{a: 383, ce: 9},
-				{a: 255, ce: 9},
-				{a: 511, ce: 9},
-				{a: 0, ce: 7},
-				{a: 64, ce: 7},
-				{a: 32, ce: 7},
-				{a: 96, ce: 7},
-				{a: 16, ce: 7},
-				{a: 80, ce: 7},
-				{a: 48, ce: 7},
-				{a: 112, ce: 7},
-				{a: 8, ce: 7},
-				{a: 72, ce: 7},
-				{a: 40, ce: 7},
-				{a: 104, ce: 7},
-				{a: 24, ce: 7},
-				{a: 88, ce: 7},
-				{a: 56, ce: 7},
-				{a: 120, ce: 7},
-				{a: 4, ce: 7},
-				{a: 68, ce: 7},
-				{a: 36, ce: 7},
-				{a: 100, ce: 7},
-				{a: 20, ce: 7},
-				{a: 84, ce: 7},
-				{a: 52, ce: 7},
-				{a: 116, ce: 7},
-				{a: 3, ce: 8},
-				{a: 131, ce: 8},
-				{a: 67, ce: 8},
-				{a: 195, ce: 8},
-				{a: 35, ce: 8},
-				{a: 163, ce: 8},
-				{a: 99, ce: 8},
-				{a: 227, ce: 8}
+				{a: 12, cg: 8},
+				{a: 140, cg: 8},
+				{a: 76, cg: 8},
+				{a: 204, cg: 8},
+				{a: 44, cg: 8},
+				{a: 172, cg: 8},
+				{a: 108, cg: 8},
+				{a: 236, cg: 8},
+				{a: 28, cg: 8},
+				{a: 156, cg: 8},
+				{a: 92, cg: 8},
+				{a: 220, cg: 8},
+				{a: 60, cg: 8},
+				{a: 188, cg: 8},
+				{a: 124, cg: 8},
+				{a: 252, cg: 8},
+				{a: 2, cg: 8},
+				{a: 130, cg: 8},
+				{a: 66, cg: 8},
+				{a: 194, cg: 8},
+				{a: 34, cg: 8},
+				{a: 162, cg: 8},
+				{a: 98, cg: 8},
+				{a: 226, cg: 8},
+				{a: 18, cg: 8},
+				{a: 146, cg: 8},
+				{a: 82, cg: 8},
+				{a: 210, cg: 8},
+				{a: 50, cg: 8},
+				{a: 178, cg: 8},
+				{a: 114, cg: 8},
+				{a: 242, cg: 8},
+				{a: 10, cg: 8},
+				{a: 138, cg: 8},
+				{a: 74, cg: 8},
+				{a: 202, cg: 8},
+				{a: 42, cg: 8},
+				{a: 170, cg: 8},
+				{a: 106, cg: 8},
+				{a: 234, cg: 8},
+				{a: 26, cg: 8},
+				{a: 154, cg: 8},
+				{a: 90, cg: 8},
+				{a: 218, cg: 8},
+				{a: 58, cg: 8},
+				{a: 186, cg: 8},
+				{a: 122, cg: 8},
+				{a: 250, cg: 8},
+				{a: 6, cg: 8},
+				{a: 134, cg: 8},
+				{a: 70, cg: 8},
+				{a: 198, cg: 8},
+				{a: 38, cg: 8},
+				{a: 166, cg: 8},
+				{a: 102, cg: 8},
+				{a: 230, cg: 8},
+				{a: 22, cg: 8},
+				{a: 150, cg: 8},
+				{a: 86, cg: 8},
+				{a: 214, cg: 8},
+				{a: 54, cg: 8},
+				{a: 182, cg: 8},
+				{a: 118, cg: 8},
+				{a: 246, cg: 8},
+				{a: 14, cg: 8},
+				{a: 142, cg: 8},
+				{a: 78, cg: 8},
+				{a: 206, cg: 8},
+				{a: 46, cg: 8},
+				{a: 174, cg: 8},
+				{a: 110, cg: 8},
+				{a: 238, cg: 8},
+				{a: 30, cg: 8},
+				{a: 158, cg: 8},
+				{a: 94, cg: 8},
+				{a: 222, cg: 8},
+				{a: 62, cg: 8},
+				{a: 190, cg: 8},
+				{a: 126, cg: 8},
+				{a: 254, cg: 8},
+				{a: 1, cg: 8},
+				{a: 129, cg: 8},
+				{a: 65, cg: 8},
+				{a: 193, cg: 8},
+				{a: 33, cg: 8},
+				{a: 161, cg: 8},
+				{a: 97, cg: 8},
+				{a: 225, cg: 8},
+				{a: 17, cg: 8},
+				{a: 145, cg: 8},
+				{a: 81, cg: 8},
+				{a: 209, cg: 8},
+				{a: 49, cg: 8},
+				{a: 177, cg: 8},
+				{a: 113, cg: 8},
+				{a: 241, cg: 8},
+				{a: 9, cg: 8},
+				{a: 137, cg: 8},
+				{a: 73, cg: 8},
+				{a: 201, cg: 8},
+				{a: 41, cg: 8},
+				{a: 169, cg: 8},
+				{a: 105, cg: 8},
+				{a: 233, cg: 8},
+				{a: 25, cg: 8},
+				{a: 153, cg: 8},
+				{a: 89, cg: 8},
+				{a: 217, cg: 8},
+				{a: 57, cg: 8},
+				{a: 185, cg: 8},
+				{a: 121, cg: 8},
+				{a: 249, cg: 8},
+				{a: 5, cg: 8},
+				{a: 133, cg: 8},
+				{a: 69, cg: 8},
+				{a: 197, cg: 8},
+				{a: 37, cg: 8},
+				{a: 165, cg: 8},
+				{a: 101, cg: 8},
+				{a: 229, cg: 8},
+				{a: 21, cg: 8},
+				{a: 149, cg: 8},
+				{a: 85, cg: 8},
+				{a: 213, cg: 8},
+				{a: 53, cg: 8},
+				{a: 181, cg: 8},
+				{a: 117, cg: 8},
+				{a: 245, cg: 8},
+				{a: 13, cg: 8},
+				{a: 141, cg: 8},
+				{a: 77, cg: 8},
+				{a: 205, cg: 8},
+				{a: 45, cg: 8},
+				{a: 173, cg: 8},
+				{a: 109, cg: 8},
+				{a: 237, cg: 8},
+				{a: 29, cg: 8},
+				{a: 157, cg: 8},
+				{a: 93, cg: 8},
+				{a: 221, cg: 8},
+				{a: 61, cg: 8},
+				{a: 189, cg: 8},
+				{a: 125, cg: 8},
+				{a: 253, cg: 8},
+				{a: 19, cg: 9},
+				{a: 275, cg: 9},
+				{a: 147, cg: 9},
+				{a: 403, cg: 9},
+				{a: 83, cg: 9},
+				{a: 339, cg: 9},
+				{a: 211, cg: 9},
+				{a: 467, cg: 9},
+				{a: 51, cg: 9},
+				{a: 307, cg: 9},
+				{a: 179, cg: 9},
+				{a: 435, cg: 9},
+				{a: 115, cg: 9},
+				{a: 371, cg: 9},
+				{a: 243, cg: 9},
+				{a: 499, cg: 9},
+				{a: 11, cg: 9},
+				{a: 267, cg: 9},
+				{a: 139, cg: 9},
+				{a: 395, cg: 9},
+				{a: 75, cg: 9},
+				{a: 331, cg: 9},
+				{a: 203, cg: 9},
+				{a: 459, cg: 9},
+				{a: 43, cg: 9},
+				{a: 299, cg: 9},
+				{a: 171, cg: 9},
+				{a: 427, cg: 9},
+				{a: 107, cg: 9},
+				{a: 363, cg: 9},
+				{a: 235, cg: 9},
+				{a: 491, cg: 9},
+				{a: 27, cg: 9},
+				{a: 283, cg: 9},
+				{a: 155, cg: 9},
+				{a: 411, cg: 9},
+				{a: 91, cg: 9},
+				{a: 347, cg: 9},
+				{a: 219, cg: 9},
+				{a: 475, cg: 9},
+				{a: 59, cg: 9},
+				{a: 315, cg: 9},
+				{a: 187, cg: 9},
+				{a: 443, cg: 9},
+				{a: 123, cg: 9},
+				{a: 379, cg: 9},
+				{a: 251, cg: 9},
+				{a: 507, cg: 9},
+				{a: 7, cg: 9},
+				{a: 263, cg: 9},
+				{a: 135, cg: 9},
+				{a: 391, cg: 9},
+				{a: 71, cg: 9},
+				{a: 327, cg: 9},
+				{a: 199, cg: 9},
+				{a: 455, cg: 9},
+				{a: 39, cg: 9},
+				{a: 295, cg: 9},
+				{a: 167, cg: 9},
+				{a: 423, cg: 9},
+				{a: 103, cg: 9},
+				{a: 359, cg: 9},
+				{a: 231, cg: 9},
+				{a: 487, cg: 9},
+				{a: 23, cg: 9},
+				{a: 279, cg: 9},
+				{a: 151, cg: 9},
+				{a: 407, cg: 9},
+				{a: 87, cg: 9},
+				{a: 343, cg: 9},
+				{a: 215, cg: 9},
+				{a: 471, cg: 9},
+				{a: 55, cg: 9},
+				{a: 311, cg: 9},
+				{a: 183, cg: 9},
+				{a: 439, cg: 9},
+				{a: 119, cg: 9},
+				{a: 375, cg: 9},
+				{a: 247, cg: 9},
+				{a: 503, cg: 9},
+				{a: 15, cg: 9},
+				{a: 271, cg: 9},
+				{a: 143, cg: 9},
+				{a: 399, cg: 9},
+				{a: 79, cg: 9},
+				{a: 335, cg: 9},
+				{a: 207, cg: 9},
+				{a: 463, cg: 9},
+				{a: 47, cg: 9},
+				{a: 303, cg: 9},
+				{a: 175, cg: 9},
+				{a: 431, cg: 9},
+				{a: 111, cg: 9},
+				{a: 367, cg: 9},
+				{a: 239, cg: 9},
+				{a: 495, cg: 9},
+				{a: 31, cg: 9},
+				{a: 287, cg: 9},
+				{a: 159, cg: 9},
+				{a: 415, cg: 9},
+				{a: 95, cg: 9},
+				{a: 351, cg: 9},
+				{a: 223, cg: 9},
+				{a: 479, cg: 9},
+				{a: 63, cg: 9},
+				{a: 319, cg: 9},
+				{a: 191, cg: 9},
+				{a: 447, cg: 9},
+				{a: 127, cg: 9},
+				{a: 383, cg: 9},
+				{a: 255, cg: 9},
+				{a: 511, cg: 9},
+				{a: 0, cg: 7},
+				{a: 64, cg: 7},
+				{a: 32, cg: 7},
+				{a: 96, cg: 7},
+				{a: 16, cg: 7},
+				{a: 80, cg: 7},
+				{a: 48, cg: 7},
+				{a: 112, cg: 7},
+				{a: 8, cg: 7},
+				{a: 72, cg: 7},
+				{a: 40, cg: 7},
+				{a: 104, cg: 7},
+				{a: 24, cg: 7},
+				{a: 88, cg: 7},
+				{a: 56, cg: 7},
+				{a: 120, cg: 7},
+				{a: 4, cg: 7},
+				{a: 68, cg: 7},
+				{a: 36, cg: 7},
+				{a: 100, cg: 7},
+				{a: 20, cg: 7},
+				{a: 84, cg: 7},
+				{a: 52, cg: 7},
+				{a: 116, cg: 7},
+				{a: 3, cg: 8},
+				{a: 131, cg: 8},
+				{a: 67, cg: 8},
+				{a: 195, cg: 8},
+				{a: 35, cg: 8},
+				{a: 163, cg: 8},
+				{a: 99, cg: 8},
+				{a: 227, cg: 8}
 			]))
 };
 var $folkertdev$elm_flate$Deflate$Internal$encodeCompressStatic = F3(
@@ -13876,16 +13922,16 @@ var $elm$bytes$Bytes$Decode$map3 = F4(
 			});
 	});
 var $danfishgold$base64_bytes$Decode$loopHelp = function (_v0) {
-	var remaining = _v0.aH;
-	var string = _v0.aJ;
+	var remaining = _v0.aJ;
+	var string = _v0.aL;
 	if (remaining >= 18) {
 		return A2(
 			$elm$bytes$Bytes$Decode$map,
 			function (result) {
 				return $elm$bytes$Bytes$Decode$Loop(
 					{
-						aH: remaining - 18,
-						aJ: _Utils_ap(string, result)
+						aJ: remaining - 18,
+						aL: _Utils_ap(string, result)
 					});
 			},
 			$danfishgold$base64_bytes$Decode$decode18Bytes);
@@ -13896,8 +13942,8 @@ var $danfishgold$base64_bytes$Decode$loopHelp = function (_v0) {
 					var combined = ((a << 16) | (b << 8)) | c;
 					return $elm$bytes$Bytes$Decode$Loop(
 						{
-							aH: remaining - 3,
-							aJ: _Utils_ap(
+							aJ: remaining - 3,
+							aL: _Utils_ap(
 								string,
 								A2($danfishgold$base64_bytes$Decode$bitsToChars, combined, 0))
 						});
@@ -13936,7 +13982,7 @@ var $danfishgold$base64_bytes$Decode$loopHelp = function (_v0) {
 var $danfishgold$base64_bytes$Decode$decoder = function (width) {
 	return A2(
 		$elm$bytes$Bytes$Decode$loop,
-		{aH: width, aJ: ''},
+		{aJ: width, aL: ''},
 		$danfishgold$base64_bytes$Decode$loopHelp);
 };
 var $danfishgold$base64_bytes$Decode$fromBytes = function (bytes) {
@@ -13975,17 +14021,17 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$isOccupy = F4(
 		}
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$nextModule = function (placement) {
-	var row = placement.a7;
-	var col = placement.v;
-	var isRight = placement.I;
-	var isUp = placement.af;
+	var row = placement.a9;
+	var col = placement.w;
+	var isRight = placement.K;
+	var isUp = placement.ah;
 	return isRight ? _Utils_update(
 		placement,
-		{v: col - 1, I: false}) : (isUp ? _Utils_update(
+		{w: col - 1, K: false}) : (isUp ? _Utils_update(
 		placement,
-		{v: col + 1, I: true, a7: row - 1}) : _Utils_update(
+		{w: col + 1, K: true, a9: row - 1}) : _Utils_update(
 		placement,
-		{v: col + 1, I: true, a7: row + 1}));
+		{w: col + 1, K: true, a9: row + 1}));
 };
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$bitToColor = F2(
 	function (_byte, offset) {
@@ -13993,9 +14039,9 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$bitToColor = F2(
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$setDataModule = F3(
 	function (_v0, _byte, offset) {
-		var size = _v0.b6;
-		var row = _v0.a7;
-		var col = _v0.v;
+		var size = _v0.b8;
+		var row = _v0.a9;
+		var col = _v0.w;
 		return A2(
 			$elm$core$Array$set,
 			A3($pablohirafuji$elm_qrcode$QRCode$Matrix$getIndex, size, row, col),
@@ -14008,9 +14054,9 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$addDataModule = F4(
 	function (placement, bytes, offset, matrix) {
 		addDataModule:
 		while (true) {
-			var size = placement.b6;
-			var row = placement.a7;
-			var col = placement.v;
+			var size = placement.b8;
+			var row = placement.a9;
+			var col = placement.w;
 			if (!bytes.b) {
 				return matrix;
 			} else {
@@ -14030,7 +14076,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$addDataModule = F4(
 					if (col === 6) {
 						var $temp$placement = _Utils_update(
 							placement,
-							{v: col - 1, I: true}),
+							{w: col - 1, K: true}),
 							$temp$bytes = bytes,
 							$temp$offset = offset,
 							$temp$matrix = matrix;
@@ -14043,7 +14089,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$addDataModule = F4(
 						if (row < 0) {
 							var $temp$placement = _Utils_update(
 								placement,
-								{v: col - 2, I: true, af: false, a7: 0}),
+								{w: col - 2, K: true, ah: false, a9: 0}),
 								$temp$bytes = bytes,
 								$temp$offset = offset,
 								$temp$matrix = matrix;
@@ -14056,7 +14102,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$addDataModule = F4(
 							if (_Utils_cmp(row, size) > -1) {
 								var $temp$placement = _Utils_update(
 									placement,
-									{v: col - 2, I: true, af: true, a7: size - 1}),
+									{w: col - 2, K: true, ah: true, a9: size - 1}),
 									$temp$bytes = bytes,
 									$temp$offset = offset,
 									$temp$matrix = matrix;
@@ -14095,7 +14141,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$addDataModule = F4(
 		}
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$initPlacement = function (size) {
-	return {v: size + 1, I: true, af: true, a7: size + 1, b6: size};
+	return {w: size + 1, K: true, ah: true, a9: size + 1, b8: size};
 };
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$addData = F3(
 	function (size, bytes, matrix) {
@@ -14964,10 +15010,10 @@ var $pablohirafuji$elm_qrcode$QRCode$Matrix$timingPattern = F2(
 			range);
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Matrix$apply = function (_v0) {
-	var ecLevel = _v0.a.bp;
-	var groupInfo = _v0.a.cG;
+	var ecLevel = _v0.a.br;
+	var groupInfo = _v0.a.cI;
 	var bytes = _v0.b;
-	var version = groupInfo.bd;
+	var version = groupInfo.bf;
 	var size = ((version - 1) * 4) + 21;
 	return A2(
 		$elm$core$Result$map,
@@ -15225,10 +15271,10 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicatorLength = F2(
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicator = F2(
 	function (_v0, bits) {
-		var groupInfo = _v0.cG;
-		var inputStr = _v0.aZ;
-		var mode = _v0.aD;
-		var length = A2($pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicatorLength, mode, groupInfo.bd);
+		var groupInfo = _v0.cI;
+		var inputStr = _v0.a$;
+		var mode = _v0.aF;
+		var length = A2($pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicatorLength, mode, groupInfo.bf);
 		var charCount = (mode === 3) ? $elm$core$List$length(bits) : $elm$core$String$length(inputStr);
 		return _Utils_Tuple2(charCount, length);
 	});
@@ -15251,16 +15297,16 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$addInfoAndFinalBits = function (_v0)
 		model,
 		A2(
 			$pablohirafuji$elm_qrcode$QRCode$Encode$addFiller,
-			model.cG.at,
+			model.cI.av,
 			$pablohirafuji$elm_qrcode$QRCode$Encode$bitsToBytes(
 				A3(
 					$pablohirafuji$elm_qrcode$QRCode$Encode$addTerminator,
-					model.cG.at,
-					model.aN,
+					model.cI.av,
+					model.aP,
 					A2(
 						$elm$core$List$cons,
 						_Utils_Tuple2(
-							$pablohirafuji$elm_qrcode$QRCode$Encode$modeIndicator(model.aD),
+							$pablohirafuji$elm_qrcode$QRCode$Encode$modeIndicator(model.aF),
 							4),
 						A2(
 							$elm$core$List$cons,
@@ -15865,20 +15911,20 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$getErrorCorrection = function (_v0) 
 		function (c) {
 			return _Utils_Tuple3(model, dataBlocks, c);
 		},
-		A2($pablohirafuji$elm_qrcode$QRCode$ErrorCorrection$get, model.cG.cz, dataBlocks));
+		A2($pablohirafuji$elm_qrcode$QRCode$ErrorCorrection$get, model.cI.cB, dataBlocks));
 };
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric = 1;
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Byte = 2;
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Numeric = 0;
 var $elm$regex$Regex$Match = F4(
 	function (match, index, number, submatches) {
-		return {cN: index, cS: match, cY: number, da: submatches};
+		return {cP: index, cU: match, c_: number, dc: submatches};
 	});
 var $elm$regex$Regex$contains = _Regex_contains;
 var $elm$regex$Regex$fromStringWith = _Regex_fromStringWith;
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric$onlyAlphanumeric = A2(
 	$elm$regex$Regex$fromStringWith,
-	{cn: false, cW: false},
+	{cp: false, cY: false},
 	'^[0-9A-Z $%*+\\-.\\/:]+$');
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric$isValid = function (input) {
 	return A2(
@@ -15893,7 +15939,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$Alphanumeric$isValid = function (inp
 };
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Byte$only8Bit = A2(
 	$elm$regex$Regex$fromStringWith,
-	{cn: false, cW: false},
+	{cp: false, cY: false},
 	'^[\\u0000-\\u00ff]+$');
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Byte$isValid = function (input) {
 	return A2(
@@ -15908,7 +15954,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$Byte$isValid = function (input) {
 };
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Numeric$onlyNumber = A2(
 	$elm$regex$Regex$fromStringWith,
-	{cn: false, cW: false},
+	{cp: false, cY: false},
 	'^[0-9]+$');
 var $pablohirafuji$elm_qrcode$QRCode$Encode$Numeric$isValid = function (input) {
 	return A2(
@@ -15927,8 +15973,8 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$selectMode = function (input) {
 var $pablohirafuji$elm_qrcode$QRCode$Error$InputLengthOverflow = {$: 7};
 var $pablohirafuji$elm_qrcode$QRCode$Encode$filterCapacity = F3(
 	function (mode, dataLength, _v0) {
-		var version = _v0.bd;
-		var capacity = _v0.at;
+		var version = _v0.bf;
+		var capacity = _v0.av;
 		return _Utils_cmp(
 			A2($pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicatorLength, mode, version) + dataLength,
 			capacity) < 1;
@@ -15950,11 +15996,11 @@ var $pablohirafuji$elm_qrcode$QRCode$GroupInfo$byteCapacity = F2(
 var $pablohirafuji$elm_qrcode$QRCode$GroupInfo$newGroupInfo = F4(
 	function (version, ecPerBlock, group1, maybeGroup2) {
 		return {
-			at: A2($pablohirafuji$elm_qrcode$QRCode$GroupInfo$byteCapacity, group1, maybeGroup2) * 8,
-			cz: ecPerBlock,
-			bA: group1,
-			cT: maybeGroup2,
-			bd: version
+			av: A2($pablohirafuji$elm_qrcode$QRCode$GroupInfo$byteCapacity, group1, maybeGroup2) * 8,
+			cB: ecPerBlock,
+			bC: group1,
+			cV: maybeGroup2,
+			bf: version
 		};
 	});
 var $pablohirafuji$elm_qrcode$QRCode$GroupInfo$dataH = _List_fromArray(
@@ -17078,7 +17124,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$getVersion = F3(
 				A2(
 					$elm$core$List$sortBy,
 					function ($) {
-						return $.at;
+						return $.av;
 					},
 					A2(
 						$elm$core$List$filter,
@@ -17088,11 +17134,11 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$getVersion = F3(
 var $pablohirafuji$elm_qrcode$QRCode$Encode$versionToModel = F5(
 	function (inputStr, ecLevel, mode, partialBitsCount, groupInfo) {
 		return {
-			aN: partialBitsCount + A2($pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicatorLength, mode, groupInfo.bd),
-			bp: ecLevel,
-			cG: groupInfo,
-			aZ: inputStr,
-			aD: mode
+			aP: partialBitsCount + A2($pablohirafuji$elm_qrcode$QRCode$Encode$charCountIndicatorLength, mode, groupInfo.bf),
+			br: ecLevel,
+			cI: groupInfo,
+			a$: inputStr,
+			aF: mode
 		};
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Encode$selectVersion = F4(
@@ -17147,9 +17193,9 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$breakList = F3(
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Encode$toBlocks = function (_v0) {
 	var model = _v0.a;
-	var groupInfo = model.cG;
+	var groupInfo = model.cI;
 	var byteList = _v0.b;
-	var _v1 = groupInfo.cT;
+	var _v1 = groupInfo.cV;
 	if (!_v1.$) {
 		var group2 = _v1.a;
 		return A2(
@@ -17166,7 +17212,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$toBlocks = function (_v0) {
 					A3(
 						$pablohirafuji$elm_qrcode$QRCode$Encode$breakList,
 						false,
-						groupInfo.bA,
+						groupInfo.bC,
 						_Utils_Tuple2(byteList, _List_Nil)))));
 	} else {
 		return A2(
@@ -17180,7 +17226,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Encode$toBlocks = function (_v0) {
 				A3(
 					$pablohirafuji$elm_qrcode$QRCode$Encode$breakList,
 					true,
-					groupInfo.bA,
+					groupInfo.bC,
 					_Utils_Tuple2(byteList, _List_Nil))));
 	}
 };
@@ -17217,7 +17263,7 @@ var $pablohirafuji$elm_qrcode$QRCode$fromStringWith = F2(
 					return A2(
 						$elm$core$Result$map,
 						function (matrix) {
-							return {aj: matrix, bd: encodeModel.cG.bd};
+							return {al: matrix, bf: encodeModel.cI.bf};
 						},
 						$pablohirafuji$elm_qrcode$QRCode$Matrix$apply(
 							_Utils_Tuple2(encodeModel, encodedData)));
@@ -17362,6 +17408,38 @@ var $author$project$Main$getStartedPage = function (gpxError) {
 					])
 				])));
 };
+var $author$project$Main$startFinishType = 'Start/Finish';
+var $author$project$Main$injectStartFinish = F2(
+	function (finishDistance, waypoints) {
+		var hasWaypointAtDistance = function (d) {
+			return A2(
+				$elm$core$List$any,
+				function (w) {
+					return _Utils_eq(w.bq, d);
+				},
+				waypoints);
+		};
+		var withStart = hasWaypointAtDistance(0) ? waypoints : A2(
+			$elm$core$List$cons,
+			A3(
+				$author$project$Main$Waypoint,
+				'Start',
+				0,
+				_List_fromArray(
+					[$author$project$Main$startFinishType])),
+			waypoints);
+		return hasWaypointAtDistance(finishDistance) ? withStart : _Utils_ap(
+			withStart,
+			_List_fromArray(
+				[
+					A3(
+					$author$project$Main$Waypoint,
+					'Finish',
+					finishDistance,
+					_List_fromArray(
+						[$author$project$Main$startFinishType]))
+				]));
+	});
 var $author$project$Main$resultCollect = function (res) {
 	if (!res.$) {
 		var ok = res.a;
@@ -17404,7 +17482,7 @@ var $author$project$Main$stateUrl = F2(
 			_Utils_update(
 				url,
 				{
-					bZ: $elm$core$Maybe$Just(
+					b$: $elm$core$Maybe$Just(
 						A2(
 							$elm$core$String$dropLeft,
 							1,
@@ -17419,7 +17497,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Render$Svg$appendLastRect = function (_v0) 
 	var rowLines = _v0.b;
 	return A2(
 		$elm$core$List$cons,
-		'h' + $elm$core$String$fromInt(lastRect.ce * $pablohirafuji$elm_qrcode$QRCode$Render$Svg$moduleSize),
+		'h' + $elm$core$String$fromInt(lastRect.cg * $pablohirafuji$elm_qrcode$QRCode$Render$Svg$moduleSize),
 		rowLines);
 };
 var $elm$core$String$concat = function (strings) {
@@ -17432,26 +17510,26 @@ var $pablohirafuji$elm_qrcode$QRCode$Render$Svg$toRowLines = F2(
 	function (isDark, _v0) {
 		var lastRect = _v0.a;
 		var rowLines = _v0.b;
-		return isDark ? ((!lastRect.W) ? _Utils_Tuple2(
+		return isDark ? ((!lastRect.Y) ? _Utils_Tuple2(
 			_Utils_update(
 				lastRect,
-				{ce: lastRect.ce + 1}),
+				{cg: lastRect.cg + 1}),
 			rowLines) : _Utils_Tuple2(
-			{W: 0, ce: 1},
+			{Y: 0, cg: 1},
 			A2(
 				$elm$core$List$cons,
 				$elm$core$String$concat(
 					_List_fromArray(
 						[
-							(lastRect.ce > 0) ? ('h' + $elm$core$String$fromInt(lastRect.ce * $pablohirafuji$elm_qrcode$QRCode$Render$Svg$moduleSize)) : '',
+							(lastRect.cg > 0) ? ('h' + $elm$core$String$fromInt(lastRect.cg * $pablohirafuji$elm_qrcode$QRCode$Render$Svg$moduleSize)) : '',
 							'm',
-							$elm$core$String$fromInt(lastRect.W * $pablohirafuji$elm_qrcode$QRCode$Render$Svg$moduleSize),
+							$elm$core$String$fromInt(lastRect.Y * $pablohirafuji$elm_qrcode$QRCode$Render$Svg$moduleSize),
 							' 0'
 						])),
 				rowLines))) : _Utils_Tuple2(
 			_Utils_update(
 				lastRect,
-				{W: lastRect.W + 1}),
+				{Y: lastRect.Y + 1}),
 			rowLines);
 	});
 var $pablohirafuji$elm_qrcode$QRCode$Render$Svg$viewRow = F3(
@@ -17510,7 +17588,7 @@ var $pablohirafuji$elm_qrcode$QRCode$Render$Svg$viewBase = F3(
 											$elm$core$List$foldl,
 											$pablohirafuji$elm_qrcode$QRCode$Render$Svg$toRowLines,
 											_Utils_Tuple2(
-												{W: 0, ce: 0},
+												{Y: 0, cg: 0},
 												_List_Nil)),
 										A2($elm$core$Basics$composeR, $pablohirafuji$elm_qrcode$QRCode$Render$Svg$appendLastRect, $elm$core$List$reverse)),
 									matrix)))))));
@@ -17518,16 +17596,16 @@ var $pablohirafuji$elm_qrcode$QRCode$Render$Svg$viewBase = F3(
 var $pablohirafuji$elm_qrcode$QRCode$Render$Svg$view = $pablohirafuji$elm_qrcode$QRCode$Render$Svg$viewBase(4);
 var $pablohirafuji$elm_qrcode$QRCode$toSvg = F2(
 	function (extraAttrs, _v0) {
-		var matrix = _v0.aj;
+		var matrix = _v0.al;
 		return A2($pablohirafuji$elm_qrcode$QRCode$Render$Svg$view, extraAttrs, matrix);
 	});
 var $abadi199$elm_input_extra$Dropdown$Item = F3(
 	function (value, text, enabled) {
-		return {bq: enabled, cb: text, bc: value};
+		return {bs: enabled, cd: text, be: value};
 	});
 var $abadi199$elm_input_extra$Dropdown$Options = F3(
 	function (items, emptyItem, onChange) {
-		return {ay: emptyItem, aC: items, a1: onChange};
+		return {aA: emptyItem, aE: items, a3: onChange};
 	});
 var $author$project$Main$ShowOptions = function (a) {
 	return {$: 3, a: a};
@@ -17535,7 +17613,7 @@ var $author$project$Main$ShowOptions = function (a) {
 var $author$project$Main$ShowPage = function (a) {
 	return {$: 1, a: a};
 };
-var $author$project$Main$ShowQR = {$: 13};
+var $author$project$Main$ShowQR = {$: 14};
 var $author$project$Main$TypeEnabled = F2(
 	function (a, b) {
 		return {$: 2, a: a, b: b};
@@ -17554,6 +17632,9 @@ var $author$project$Main$UpdatePosition = function (a) {
 };
 var $author$project$Main$UpdateReferencePoint = function (a) {
 	return {$: 7, a: a};
+};
+var $author$project$Main$UpdateShowStartFinish = function (a) {
+	return {$: 13, a: a};
 };
 var $author$project$Main$UpdateTotalDistanceDisplay = function (a) {
 	return {$: 4, a: a};
@@ -17618,7 +17699,7 @@ var $abadi199$elm_input_extra$Dropdown$onChange = F2(
 					A2(
 						$elm$core$Basics$composeR,
 						function ($) {
-							return $.bc;
+							return $.be;
 						},
 						$elm$core$Basics$eq(string)),
 					emptyItem)) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(string);
@@ -17638,12 +17719,12 @@ var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('
 var $abadi199$elm_input_extra$Dropdown$dropdown = F3(
 	function (options, attributes, currentValue) {
 		var itemsWithEmptyItems = function () {
-			var _v1 = options.ay;
+			var _v1 = options.aA;
 			if (!_v1.$) {
 				var emptyItem = _v1.a;
-				return A2($elm$core$List$cons, emptyItem, options.aC);
+				return A2($elm$core$List$cons, emptyItem, options.aE);
 			} else {
-				return options.aC;
+				return options.aE;
 			}
 		}();
 		var isSelected = function (value) {
@@ -17656,9 +17737,9 @@ var $abadi199$elm_input_extra$Dropdown$dropdown = F3(
 					currentValue));
 		};
 		var toOption = function (_v0) {
-			var value = _v0.bc;
-			var text = _v0.cb;
-			var enabled = _v0.bq;
+			var value = _v0.be;
+			var text = _v0.cd;
+			var enabled = _v0.bs;
 			return A2(
 				$elm$html$Html$option,
 				_List_fromArray(
@@ -17679,7 +17760,7 @@ var $abadi199$elm_input_extra$Dropdown$dropdown = F3(
 				attributes,
 				_List_fromArray(
 					[
-						A2($abadi199$elm_input_extra$Dropdown$onChange, options.ay, options.a1)
+						A2($abadi199$elm_input_extra$Dropdown$onChange, options.aA, options.a3)
 					])),
 			A2($elm$core$List$map, toOption, itemsWithEmptyItems));
 	});
@@ -17732,8 +17813,8 @@ var $author$project$Main$optionGroup = F2(
 	});
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$core$String$toFloat = _String_toFloat;
-var $author$project$Main$viewOptions = F5(
-	function (show, maxDistance, waypointOptions, cuesViewOptions, gpxError) {
+var $author$project$Main$viewOptions = F6(
+	function (show, maxDistance, waypointOptions, showStartFinish, cuesViewOptions, gpxError) {
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -17870,6 +17951,18 @@ var $author$project$Main$viewOptions = F5(
 									A2($elm$html$Html$hr, _List_Nil, _List_Nil),
 									A2(
 									$author$project$Main$optionGroup,
+									'Start/Finish',
+									_List_fromArray(
+										[
+											A3(
+											$author$project$Main$checkbox,
+											showStartFinish,
+											$author$project$Main$UpdateShowStartFinish(!showStartFinish),
+											'Show start/finish')
+										])),
+									A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+									A2(
+									$author$project$Main$optionGroup,
 									'Total distance',
 									_Utils_ap(
 										_List_fromArray(
@@ -17904,8 +17997,7 @@ var $author$project$Main$viewOptions = F5(
 													$elm$core$Maybe$Nothing,
 													A2(
 														$elm$core$Basics$composeR,
-														$elm$core$Maybe$map(
-															$author$project$Main$parseTotalDistanceDisplay($elm$core$Maybe$Nothing)),
+														$elm$core$Maybe$map($author$project$Main$parseTotalDistanceDisplay),
 														A2(
 															$elm$core$Basics$composeR,
 															$elm$core$Maybe$withDefault($elm$core$Maybe$Nothing),
@@ -17938,7 +18030,7 @@ var $author$project$Main$viewOptions = F5(
 																			A2($elm$core$Basics$composeR, $elm$core$String$fromFloat, $elm$html$Html$Attributes$max),
 																			maxDistance)),
 																		$elm$html$Html$Attributes$value(
-																		$elm$core$String$fromFloat(cuesViewOptions.F)),
+																		$elm$core$String$fromFloat(cuesViewOptions.H)),
 																		$elm$html$Html$Events$onInput(
 																		A2(
 																			$elm$core$Basics$composeR,
@@ -17975,7 +18067,7 @@ var $author$project$Main$viewOptions = F5(
 														A2($elm$core$Basics$composeR, $elm$core$String$fromFloat, $elm$html$Html$Attributes$max),
 														maxDistance)),
 													$elm$html$Html$Attributes$value(
-													$elm$core$String$fromFloat(cuesViewOptions.aF)),
+													$elm$core$String$fromFloat(cuesViewOptions.aH)),
 													$elm$html$Html$Events$onInput(
 													A2(
 														$elm$core$Basics$composeR,
@@ -18134,44 +18226,42 @@ var $author$project$Main$welcomePage = function (toGo) {
 	var cafeType = 'CAFE';
 	var exampleWaypoints = _List_fromArray(
 		[
-			A3($author$project$Main$Waypoint, 'Start', 0.0, _List_Nil),
 			A3(
 			$author$project$Main$Waypoint,
 			'Blue shoes',
-			56.1,
+			56100,
 			_List_fromArray(
 				[cafeType])),
 			A3(
 			$author$project$Main$Waypoint,
 			'Lungburner',
-			56.3,
+			56300,
 			_List_fromArray(
 				[climbType])),
 			A3(
 			$author$project$Main$Waypoint,
 			'Steep Street',
-			63.7,
+			63700,
 			_List_fromArray(
 				[climbType])),
 			A3(
 			$author$project$Main$Waypoint,
 			'Foosville fountain',
-			98.3,
+			98300,
 			_List_fromArray(
 				[waterType, cafeType])),
 			A3(
 			$author$project$Main$Waypoint,
 			'Cosy hedge',
-			198.2,
+			198200,
 			_List_fromArray(
 				['😴'])),
 			A3(
 			$author$project$Main$Waypoint,
 			'Legburner',
-			243.8,
+			243800,
 			_List_fromArray(
-				[climbType])),
-			A3($author$project$Main$Waypoint, 'Finish', 273.5, _List_Nil)
+				[climbType]))
 		]);
 	return A2(
 		$elm$html$Html$div,
@@ -18299,10 +18389,12 @@ var $author$project$Main$welcomePage = function (toGo) {
 												[
 													$elm$html$Html$text(desc)
 												])),
-											A2(
+											A3(
 											$author$project$Main$cuesheet,
-											waypointModifier(exampleWaypoints),
-											opts)
+											waypointModifier(
+												A2($author$project$Main$injectStartFinish, 273500, exampleWaypoints)),
+											opts,
+											273500)
 										]));
 							},
 							_List_fromArray(
@@ -18321,7 +18413,7 @@ var $author$project$Main$welcomePage = function (toGo) {
 											return _Utils_update(
 												w,
 												{
-													M: A2(
+													O: A2(
 														$elm$core$List$map,
 														function (typ) {
 															return A2(
@@ -18338,7 +18430,7 @@ var $author$project$Main$welcomePage = function (toGo) {
 																				_Utils_Tuple2(waterType, '🚰')
 																			]))));
 														},
-														w.M)
+														w.O)
 												});
 										}),
 									A5($author$project$Main$CuesViewOptions, 3, 1000, 0, $author$project$Main$defaultSpacing, $author$project$Main$defaultDistanceDetail)),
@@ -18375,11 +18467,11 @@ var $author$project$Main$view = function (model) {
 		_List_fromArray(
 			[
 				function () {
-				var _v0 = model.E;
+				var _v0 = model.A;
 				switch (_v0.$) {
 					case 2:
 						var cuesheetModel = _v0.a;
-						return model.aI ? A2(
+						return model.aK ? A2(
 							$elm$html$Html$div,
 							_List_fromArray(
 								[
@@ -18522,7 +18614,7 @@ var $author$project$Main$view = function (model) {
 										},
 										A2(
 											$elm$core$Maybe$map,
-											$author$project$Main$stateUrl(model.dh),
+											$author$project$Main$stateUrl(model.dj),
 											$danfishgold$base64_bytes$Base64$fromBytes(
 												$folkertdev$elm_flate$Flate$deflateGZip(
 													$elm$bytes$Bytes$Encode$encode(
@@ -18536,64 +18628,69 @@ var $author$project$Main$view = function (model) {
 									$elm$html$Html$Attributes$class('page'),
 									A2($elm$html$Html$Attributes$style, 'height', '100%')
 								]),
-							_List_fromArray(
-								[
-									A5(
-									$author$project$Main$viewOptions,
-									model.y,
-									A2(
-										$elm$core$Maybe$map,
-										function ($) {
-											return $.bo;
-										},
-										$elm$core$List$head(
-											$elm$core$List$reverse(cuesheetModel.dk))),
-									cuesheetModel.G,
-									model.h,
-									model.O),
-									A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('flex-container'),
-											$elm$html$Html$Attributes$class('column'),
-											$elm$html$Html$Attributes$class('wide'),
-											A2($elm$html$Html$Attributes$style, 'height', '100%'),
-											A2($elm$html$Html$Attributes$style, 'justify-content', 'center')
-										]),
-									_List_fromArray(
-										[
-											A2(
-											$author$project$Main$cuesheet,
-											A2($author$project$Main$cues, cuesheetModel.G, cuesheetModel.dk),
-											model.h)
-										]))
-								]));
+							function () {
+								var waypointsWithStartFinish = cuesheetModel.v ? A2($author$project$Main$injectStartFinish, cuesheetModel.x, cuesheetModel.dm) : cuesheetModel.dm;
+								return _List_fromArray(
+									[
+										A6(
+										$author$project$Main$viewOptions,
+										model.B,
+										A2(
+											$elm$core$Maybe$map,
+											function ($) {
+												return $.bq;
+											},
+											$elm$core$List$head(
+												$elm$core$List$reverse(waypointsWithStartFinish))),
+										cuesheetModel.I,
+										cuesheetModel.v,
+										model.h,
+										model.Q),
+										A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('flex-container'),
+												$elm$html$Html$Attributes$class('column'),
+												$elm$html$Html$Attributes$class('wide'),
+												A2($elm$html$Html$Attributes$style, 'height', '100%'),
+												A2($elm$html$Html$Attributes$style, 'justify-content', 'center')
+											]),
+										_List_fromArray(
+											[
+												A3(
+												$author$project$Main$cuesheet,
+												A2($author$project$Main$cues, cuesheetModel.I, waypointsWithStartFinish),
+												model.h,
+												cuesheetModel.x)
+											]))
+									]);
+							}());
 					case 0:
 						var val = _v0.a;
 						return $author$project$Main$welcomePage(val);
 					default:
-						return $author$project$Main$getStartedPage(model.O);
+						return $author$project$Main$getStartedPage(model.Q);
 				}
 			}()
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$application(
 	{
-		cO: $author$project$Main$init,
-		cZ: function (_v0) {
+		cQ: $author$project$Main$init,
+		c$: function (_v0) {
 			return $author$project$Main$Never;
 		},
-		c_: function (_v1) {
+		c0: function (_v1) {
 			return $author$project$Main$Never;
 		},
-		db: $elm$core$Basics$always(
+		dd: $elm$core$Basics$always(
 			A2(
 				$elm$time$Time$every,
 				1500,
 				$elm$core$Basics$always($author$project$Main$Tick))),
-		dg: $author$project$Main$update,
-		di: $author$project$Main$view
+		di: $author$project$Main$update,
+		dk: $author$project$Main$view
 	});
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	$elm$json$Json$Decode$oneOf(

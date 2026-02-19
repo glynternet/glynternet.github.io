@@ -56,7 +56,9 @@ type alias StoredState =
     , filteredLocationTypes : Maybe (Dict.Dict String Bool)
     , itemSpacing : Maybe Int
     , distanceDetail : Maybe Int
+    , showStartFinish : Maybe Bool
     , showOptions : Maybe Bool
+    , finishDistance : Maybe Float
     }
 
 
@@ -80,6 +82,8 @@ type Page
 type alias CuesModel =
     { waypoints : List Waypoint
     , waypointOptions : WaypointsOptions
+    , showStartFinish : Bool
+    , finishDistance : Float
     }
 
 
@@ -101,7 +105,7 @@ type alias CuesViewOptions =
 
 type TotalDistanceDisplay
     = FromZero
-    | ToLast
+    | ToFinish
     | ToPoint
     | None
 
@@ -115,6 +119,10 @@ type alias Waypoint =
 
 unknownType =
     ""
+
+
+startFinishType =
+    "Start/Finish"
 
 
 type Info
@@ -145,7 +153,7 @@ init maybeState url key =
                 |> Maybe.map
                     (Json.Decode.decodeValue (storedStateDecoder longFieldNames)
                         -- TODO: handle error
-                        >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
+                        >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
                         >> storedStateModel url
                     )
                 -- TODO(glynternet): best default value for last reference point/?
@@ -174,6 +182,8 @@ storedStateModel url state =
                             (state.locationFilterEnabled |> Maybe.withDefault False)
                             (state.filteredLocationTypes |> Maybe.withDefault (initialFilteredLocations ws))
                         )
+                        (state.showStartFinish |> Maybe.withDefault False)
+                        (state.finishDistance |> Maybe.withDefault 0)
                         |> CuesheetPage
                 )
             |> Maybe.withDefault (WelcomePage False)
@@ -183,7 +193,7 @@ storedStateModel url state =
         (state.showOptions |> Maybe.withDefault True)
         (CuesViewOptions
             -- TODO(glynternet): store "to point" state
-            (state.totalDistanceDisplay |> Maybe.andThen (parseTotalDistanceDisplay Maybe.Nothing) |> Maybe.withDefault FromZero)
+            (state.totalDistanceDisplay |> Maybe.andThen parseTotalDistanceDisplay |> Maybe.withDefault FromZero)
             (state.lastReferencePoint |> Maybe.withDefault 1000)
             -- TODO(glynternet): best default or getting last point here?
             0
@@ -208,6 +218,7 @@ type Msg
     | OpenFileBrowser
     | FileUploaded File.File
     | GpxResponseReceived (Result String (List GpxApi.Track))
+    | UpdateShowStartFinish Bool
     | ShowQR
     | CloseQR
     | Tick
@@ -323,6 +334,14 @@ update msg model =
             in
             updateModel { model | cuesViewOptions = { options | distanceDetail = detail } }
 
+        UpdateShowStartFinish show ->
+            case model.page of
+                CuesheetPage cuesModel ->
+                    updateCuesModel model { cuesModel | showStartFinish = show }
+
+                _ ->
+                    ( model, Cmd.none )
+
         OpenFileBrowser ->
             ( model, File.Select.file [ "application/gpx+xml" ] FileUploaded )
 
@@ -344,8 +363,14 @@ update msg model =
                                     track.waypoints
                                         |> List.map (\w -> Waypoint w.name w.distance w.categories)
                                         |> List.sortBy .distance
+
+                                trackEndDistance =
+                                    List.head (List.reverse track.trackpoints) |> Maybe.map .distance |> Maybe.withDefault 0
+
+                                cuesModel =
+                                    initialCuesModel waypoints trackEndDistance
                             in
-                            { model | page = CuesheetPage <| initialCuesModel waypoints, gpxError = Maybe.Nothing } |> updateModel
+                            { model | page = CuesheetPage cuesModel, gpxError = Maybe.Nothing } |> updateModel
 
                         [] ->
                             ( { model | gpxError = Maybe.Just "No tracks found in GPX file" }, Cmd.none )
@@ -385,13 +410,13 @@ updateModel model =
     ( model, storeState localStoredState )
 
 
-initialCuesModel : List Waypoint -> CuesModel
-initialCuesModel waypoints =
+initialCuesModel : List Waypoint -> Float -> CuesModel
+initialCuesModel waypoints trackFinish =
     let
-        sortedWaypoint =
+        sortedWaypoints =
             List.sortBy .distance waypoints
     in
-    CuesModel sortedWaypoint (initialWaypointOptions sortedWaypoint)
+    CuesModel sortedWaypoints (initialWaypointOptions sortedWaypoints) True trackFinish
 
 
 
@@ -491,21 +516,31 @@ view model =
                         , Html.Attributes.class "page"
                         , Html.Attributes.style "height" "100%"
                         ]
-                        [ viewOptions model.showOptions
-                            (List.head (List.reverse cuesheetModel.waypoints) |> Maybe.map .distance)
+                        (let
+                            waypointsWithStartFinish =
+                                if cuesheetModel.showStartFinish then
+                                    injectStartFinish cuesheetModel.finishDistance cuesheetModel.waypoints
+
+                                else
+                                    cuesheetModel.waypoints
+                         in
+                         [ viewOptions model.showOptions
+                            (List.head (List.reverse waypointsWithStartFinish) |> Maybe.map .distance)
                             cuesheetModel.waypointOptions
+                            cuesheetModel.showStartFinish
                             model.cuesViewOptions
                             model.gpxError
-                        , Html.div
+                         , Html.div
                             [ Html.Attributes.class "flex-container"
                             , Html.Attributes.class "column"
                             , Html.Attributes.class "wide"
                             , Html.Attributes.style "height" "100%"
                             , Html.Attributes.style "justify-content" "center"
                             ]
-                            [ cuesheet (cues cuesheetModel.waypointOptions cuesheetModel.waypoints) model.cuesViewOptions
+                            [ cuesheet (cues cuesheetModel.waypointOptions waypointsWithStartFinish) model.cuesViewOptions cuesheetModel.finishDistance
                             ]
-                        ]
+                         ]
+                        )
 
             WelcomePage val ->
                 welcomePage val
@@ -547,14 +582,12 @@ welcomePage toGo =
             "WATER"
 
         exampleWaypoints =
-            [ Waypoint "Start" 0.0 []
-            , Waypoint "Blue shoes" 56.1 [ cafeType ]
-            , Waypoint "Lungburner" 56.3 [ climbType ]
-            , Waypoint "Steep Street" 63.7 [ climbType ]
-            , Waypoint "Foosville fountain" 98.3 [ waterType, cafeType ]
-            , Waypoint "Cosy hedge" 198.2 [ "😴" ]
-            , Waypoint "Legburner" 243.8 [ climbType ]
-            , Waypoint "Finish" 273.5 []
+            [ Waypoint "Blue shoes" 56100 [ cafeType ]
+            , Waypoint "Lungburner" 56300 [ climbType ]
+            , Waypoint "Steep Street" 63700 [ climbType ]
+            , Waypoint "Foosville fountain" 98300 [ waterType, cafeType ]
+            , Waypoint "Cosy hedge" 198200 [ "😴" ]
+            , Waypoint "Legburner" 243800 [ climbType ]
             ]
     in
     Html.div
@@ -591,9 +624,9 @@ welcomePage toGo =
                     , Html.Attributes.class "flex-wrap"
                     , Html.Attributes.class "wide-row-narrow-column"
                     ]
-                    (List.map (\( desc, waypointModifier, opts ) -> Html.div [] [ Html.h4 [ Html.Attributes.style "text-align" "center" ] [ Html.text desc ], cuesheet (waypointModifier exampleWaypoints) opts ])
+                    (List.map (\( desc, waypointModifier, opts ) -> Html.div [] [ Html.h4 [ Html.Attributes.style "text-align" "center" ] [ Html.text desc ], cuesheet (waypointModifier (injectStartFinish 273500 exampleWaypoints)) opts 273500 ])
                         [ if toGo then
-                            ( "Distance to go", identity, CuesViewOptions ToLast 1000 0 defaultSpacing defaultDistanceDetail )
+                            ( "Distance to go", identity, CuesViewOptions ToFinish 1000 0 defaultSpacing defaultDistanceDetail )
 
                           else
                             ( "Distance from zero", identity, CuesViewOptions FromZero 1000 0 defaultSpacing defaultDistanceDetail )
@@ -653,8 +686,8 @@ optionGroup title elements =
         (Html.legend [] [ Html.text title ] :: elements)
 
 
-viewOptions : Bool -> Maybe Float -> WaypointsOptions -> CuesViewOptions -> Maybe String -> Html Msg
-viewOptions show maxDistance waypointOptions cuesViewOptions gpxError =
+viewOptions : Bool -> Maybe Float -> WaypointsOptions -> Bool -> CuesViewOptions -> Maybe String -> Html Msg
+viewOptions show maxDistance waypointOptions showStartFinish cuesViewOptions gpxError =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "column"
@@ -734,16 +767,20 @@ viewOptions show maxDistance waypointOptions cuesViewOptions gpxError =
                                    )
                             )
                         , Html.hr [] []
+                        , optionGroup "Start/Finish"
+                            [ checkbox showStartFinish (UpdateShowStartFinish (not showStartFinish)) "Show start/finish"
+                            ]
+                        , Html.hr [] []
                         , optionGroup "Total distance"
                             ([ Dropdown.dropdown
                                 (Dropdown.Options
                                     [ Dropdown.Item (formatTotalDistanceDisplay FromZero) (formatTotalDistanceDisplay FromZero) True
-                                    , Dropdown.Item (formatTotalDistanceDisplay ToLast) (formatTotalDistanceDisplay ToLast) True
+                                    , Dropdown.Item (formatTotalDistanceDisplay ToFinish) (formatTotalDistanceDisplay ToFinish) True
                                     , Dropdown.Item (formatTotalDistanceDisplay ToPoint) (formatTotalDistanceDisplay ToPoint) True
                                     , Dropdown.Item (formatTotalDistanceDisplay None) (formatTotalDistanceDisplay None) True
                                     ]
                                     Maybe.Nothing
-                                    (Maybe.map (parseTotalDistanceDisplay Maybe.Nothing)
+                                    (Maybe.map parseTotalDistanceDisplay
                                         >> Maybe.withDefault Maybe.Nothing
                                         >> UpdateTotalDistanceDisplay
                                     )
@@ -841,14 +878,14 @@ viewButtonWithAttributes attrs text msg =
         [ Html.text text ]
 
 
-parseTotalDistanceDisplay : Maybe Float -> String -> Maybe TotalDistanceDisplay
-parseTotalDistanceDisplay point v =
+parseTotalDistanceDisplay : String -> Maybe TotalDistanceDisplay
+parseTotalDistanceDisplay v =
     case v of
         "from zero" ->
             Maybe.Just FromZero
 
-        "to last" ->
-            Maybe.Just ToLast
+        "to finish" ->
+            Maybe.Just ToFinish
 
         "to point" ->
             Maybe.Just <| ToPoint
@@ -866,14 +903,34 @@ formatTotalDistanceDisplay v =
         FromZero ->
             "from zero"
 
-        ToLast ->
-            "to last"
+        ToFinish ->
+            "to finish"
 
         ToPoint ->
             "to point"
 
         None ->
             "hide"
+
+
+injectStartFinish : Float -> List Waypoint -> List Waypoint
+injectStartFinish finishDistance waypoints =
+    let
+        hasWaypointAtDistance d =
+            List.any (\w -> w.distance == d) waypoints
+
+        withStart =
+            if hasWaypointAtDistance 0 then
+                waypoints
+
+            else
+                Waypoint "Start" 0 [ startFinishType ] :: waypoints
+    in
+    if hasWaypointAtDistance finishDistance then
+        withStart
+
+    else
+        withStart ++ [ Waypoint "Finish" finishDistance [ startFinishType ] ]
 
 
 cues : WaypointsOptions -> List Waypoint -> List Waypoint
@@ -911,8 +968,8 @@ cues waypointOptions waypoints =
         waypoints
 
 
-cuesheet : List Waypoint -> CuesViewOptions -> Html Msg
-cuesheet waypoints cuesViewOptions =
+cuesheet : List Waypoint -> CuesViewOptions -> Float -> Html Msg
+cuesheet waypoints cuesViewOptions finishDistance =
     let
         info =
             waypointInfos cuesViewOptions.position waypoints
@@ -925,9 +982,6 @@ cuesheet waypoints cuesViewOptions =
 
         svgContentLeftStartString =
             String.fromInt svgContentLeftStart
-
-        lastWaypointDistance =
-            List.head (List.reverse waypoints) |> Maybe.map .distance
     in
     Html.div
         [ Html.Attributes.class "cuesheet"
@@ -956,8 +1010,8 @@ cuesheet waypoints cuesViewOptions =
                                             FromZero ->
                                                 Maybe.Just (formatKm cuesViewOptions.distanceDetail waypoint.distance)
 
-                                            ToLast ->
-                                                lastWaypointDistance |> Maybe.map (\last -> formatKm cuesViewOptions.distanceDetail (last - waypoint.distance))
+                                            ToFinish ->
+                                                Maybe.Just (formatKm cuesViewOptions.distanceDetail (finishDistance - waypoint.distance))
 
                                             ToPoint ->
                                                 Maybe.Just (formatKm cuesViewOptions.distanceDetail (cuesViewOptions.referencePoint - waypoint.distance))
@@ -1121,6 +1175,10 @@ type alias StoredStateCodeFields =
     , filteredLocationTypes : String
     , itemSpacing : String
     , showOptions : String
+    , showStartFinish : String
+
+    -- When finishDistance can be inferred from trackpoints, remove finishDistance from storedState
+    , finishDistance : String
     }
 
 
@@ -1137,6 +1195,8 @@ longFieldNames =
     , filteredLocationTypes = "filteredLocationTypes"
     , itemSpacing = "itemSpacing"
     , showOptions = "showOptions"
+    , showStartFinish = "showStartFinish"
+    , finishDistance = "finishDistance"
     }
 
 
@@ -1159,6 +1219,8 @@ shortFieldNames =
     , filteredLocationTypes = "flt"
     , itemSpacing = "is"
     , showOptions = "so"
+    , showStartFinish = "ssf"
+    , finishDistance = "fd"
     }
 
 
@@ -1170,6 +1232,8 @@ encodeSavedState fieldNames model =
                 [ ( fieldNames.waypoints, encodeWaypoints fieldNames cuesModel.waypoints )
                 , ( fieldNames.locationFilterEnabled, Json.Encode.bool cuesModel.waypointOptions.locationFilterEnabled )
                 , ( fieldNames.filteredLocationTypes, Json.Encode.dict identity Json.Encode.bool cuesModel.waypointOptions.filteredLocationTypes )
+                , ( fieldNames.showStartFinish, Json.Encode.bool cuesModel.showStartFinish )
+                , ( fieldNames.finishDistance, Json.Encode.float cuesModel.finishDistance )
                 ]
 
             _ ->
@@ -1196,6 +1260,13 @@ storedStateDecoder fieldNames =
         (Json.Decode.maybe (Json.Decode.field fieldNames.itemSpacing Json.Decode.int))
         (Json.Decode.maybe (Json.Decode.field fieldNames.distanceDetail Json.Decode.int))
         (Json.Decode.maybe (Json.Decode.field fieldNames.showOptions Json.Decode.bool))
+        |> andMap (Json.Decode.maybe (Json.Decode.field fieldNames.showStartFinish Json.Decode.bool))
+        |> andMap (Json.Decode.maybe (Json.Decode.field fieldNames.finishDistance Json.Decode.float))
+
+
+andMap : Json.Decode.Decoder a -> Json.Decode.Decoder (a -> b) -> Json.Decode.Decoder b
+andMap =
+    Json.Decode.map2 (|>)
 
 
 decodeWaypoints : StoredStateCodeFields -> Json.Decode.Decoder (List Waypoint)
