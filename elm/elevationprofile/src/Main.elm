@@ -752,7 +752,7 @@ profile track maxDistance fontSize trackHeight trackThickness waypointStrokeColo
                                     calc.x waypoint.distance
 
                                 y =
-                                    calc.y <| interpolateWaypointElevation track.trackpoints waypoint - 5
+                                    calc.y <| interpolateWaypointElevation track.trackpoints waypoint.distance - 5
                             in
                             [ Svg.line
                                 [ Svg.Attributes.x1 <| x
@@ -782,7 +782,7 @@ profile track maxDistance fontSize trackHeight trackThickness waypointStrokeColo
                             calc.x loc.matchedDistance
 
                         yPos =
-                            calc.y (interpolateWaypointElevation track.trackpoints { distance = loc.matchedDistance, name = "" })
+                            calc.y (interpolateWaypointElevation track.trackpoints loc.matchedDistance)
                     in
                     Svg.g []
                         [ Svg.line
@@ -830,14 +830,14 @@ profile track maxDistance fontSize trackHeight trackThickness waypointStrokeColo
         ]
 
 
-interpolateWaypointElevation : List TrackPoint -> Waypoint -> Float
-interpolateWaypointElevation trackPoints waypoint =
+interpolateWaypointElevation : List TrackPoint -> Float -> Float
+interpolateWaypointElevation trackPoints distance =
     case trackPoints of
         [] ->
             0
 
         a :: others ->
-            if a.distance >= waypoint.distance then
+            if a.distance >= distance then
                 a.elevation
 
             else
@@ -846,12 +846,12 @@ interpolateWaypointElevation trackPoints waypoint =
                         a.elevation
 
                     b :: _ ->
-                        if b.distance >= waypoint.distance then
+                        if b.distance >= distance then
                             -- properly interpolate here
                             a.elevation
 
                         else
-                            interpolateWaypointElevation others waypoint
+                            interpolateWaypointElevation others distance
 
 
 resolveElevationProfileSVGLine : XYCalculator -> List TrackPoint -> String -> Svg.Svg msg
