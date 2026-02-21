@@ -14,13 +14,14 @@ url: "https://www.glyn.io" # the base hostname & protocol for your site
 # Build settings
 incremental: true
 include: [_pages]
+exclude:
+    - elm/
 markdown: kramdown
 permalink: /:year/:month/:title
 sass:
     style: compressed
 
 plugins:
-  - jemoji
   - jekyll-sitemap
 # - amp-jekyll # Acceletrated Mobile Pages
 
