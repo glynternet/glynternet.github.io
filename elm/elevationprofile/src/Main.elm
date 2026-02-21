@@ -2,6 +2,7 @@ port module Main exposing (main)
 
 import Browser
 import Browser.Navigation
+import Dict
 import File exposing (File)
 import File.Select
 import GpxApi
@@ -65,6 +66,8 @@ type alias Model =
     , locationError : Maybe LocationError
     , trackingEnabled : Bool
     , trackingIntervalSec : Int
+    , categoryFilterEnabled : Bool
+    , filteredCategories : Dict.Dict String Bool
     }
 
 
@@ -130,6 +133,8 @@ type alias StoredState =
     , trackingIntervalSec : Maybe Int
     , showIntensity : Maybe Bool
     , intensityTau : Maybe Float
+    , categoryFilterEnabled : Maybe Bool
+    , filteredCategories : Maybe (Dict.Dict String Bool)
     }
 
 
@@ -148,12 +153,14 @@ storedStateModel state =
     , locationError = Nothing
     , trackingEnabled = False
     , trackingIntervalSec = Maybe.withDefault 60 state.trackingIntervalSec
+    , categoryFilterEnabled = Maybe.withDefault False state.categoryFilterEnabled
+    , filteredCategories = Maybe.withDefault Dict.empty state.filteredCategories
     }
 
 
 defaultStoredState : StoredState
 defaultStoredState =
-    StoredState Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
+    StoredState Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
@@ -194,6 +201,9 @@ type Msg
     | Tick Time.Posix
     | GPXStringed String
     | ElevationProfileResponseStringReceived String
+    | CategoryEnabled String Bool
+    | UpdateCategoryFilterEnabled Bool
+    | SetAllCategoriesEnabled Bool
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -383,6 +393,13 @@ update msg model =
                                 { model | tracks = Error ("getting profile data from GPX: " ++ errMsg) }
 
                         Ok tracks ->
+                            let
+                                allWaypoints =
+                                    List.concatMap .waypoints tracks
+
+                                categories =
+                                    initialFilteredCategories allWaypoints
+                            in
                             updateModel
                                 { model
                                     | tracks =
@@ -392,12 +409,79 @@ update msg model =
 
                                             first :: rest ->
                                                 Loaded <| PositionalTracks [] first rest
+                                    , filteredCategories = categories
                                 }
+
+        CategoryEnabled category enabled ->
+            updateModel { model | filteredCategories = Dict.insert category enabled model.filteredCategories }
+
+        UpdateCategoryFilterEnabled enabled ->
+            updateModel { model | categoryFilterEnabled = enabled }
+
+        SetAllCategoriesEnabled enabled ->
+            updateModel { model | filteredCategories = Dict.map (\_ _ -> enabled) model.filteredCategories }
 
 
 updateModel : Model -> ( Model, Cmd Msg )
 updateModel model =
     ( model, storeState (storedStateFromModel model |> encodeSavedState) )
+
+
+unknownCategory : String
+unknownCategory =
+    ""
+
+
+initialFilteredCategories : List Waypoint -> Dict.Dict String Bool
+initialFilteredCategories =
+    List.foldl
+        (\w ( acc, includeUnknown ) ->
+            if List.isEmpty w.categories then
+                ( acc, True )
+
+            else
+                ( List.foldl (\cat d -> Dict.insert cat True d) acc w.categories
+                , includeUnknown
+                )
+        )
+        ( Dict.empty, False )
+        >> (\( d, hasUnknown ) ->
+                if hasUnknown then
+                    Dict.insert unknownCategory True d
+
+                else
+                    d
+           )
+
+
+filterWaypointsByCategory : Bool -> Dict.Dict String Bool -> List Waypoint -> List Waypoint
+filterWaypointsByCategory filterEnabled categories waypoints =
+    if not filterEnabled then
+        waypoints
+
+    else
+        List.filterMap
+            (\w ->
+                let
+                    includeCategory cat =
+                        Dict.get cat categories |> Maybe.withDefault True
+                in
+                case w.categories of
+                    [] ->
+                        if includeCategory unknownCategory then
+                            Just w
+
+                        else
+                            Nothing
+
+                    cats ->
+                        if List.any includeCategory cats then
+                            Just w
+
+                        else
+                            Nothing
+            )
+            waypoints
 
 
 
@@ -427,6 +511,8 @@ view model =
                 , trackingIntervalSec = model.trackingIntervalSec
                 , showIntensity = model.showIntensity
                 , intensityTau = model.intensityTau
+                , categoryFilterEnabled = model.categoryFilterEnabled
+                , filteredCategories = model.filteredCategories
                 }
             , Html.div
                 [ Html.Attributes.class "flex-container"
@@ -458,8 +544,11 @@ view model =
                         let
                             maxDistance =
                                 Maybe.withDefault 1 <| List.maximum <| List.map .distance tracks.current.trackpoints
+
+                            filteredWaypoints =
+                                filterWaypointsByCategory model.categoryFilterEnabled model.filteredCategories tracks.current.waypoints
                         in
-                        profile tracks.current maxDistance model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor model.location model.showIntensity model.intensityTau
+                        profile { trackpoints = tracks.current.trackpoints, waypoints = filteredWaypoints } maxDistance model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor model.location model.showIntensity model.intensityTau
                             :: (if model.showWaypointEditor then
                                     [ Html.div []
                                         (tracks.current.waypoints
@@ -510,6 +599,8 @@ viewOptions :
     , trackingIntervalSec : Int
     , showIntensity : Bool
     , intensityTau : Float
+    , categoryFilterEnabled : Bool
+    , filteredCategories : Dict.Dict String Bool
     }
     -> Html Msg
 viewOptions options =
@@ -602,6 +693,55 @@ viewOptions options =
                                             ]
                                             []
                                         ]
+                                  , optionGroup "Waypoint categories"
+                                        (Html.select
+                                            [ Html.Events.onInput
+                                                (\val ->
+                                                    case val of
+                                                        "all" ->
+                                                            UpdateCategoryFilterEnabled False
+
+                                                        _ ->
+                                                            UpdateCategoryFilterEnabled True
+                                                )
+                                            ]
+                                            [ Html.option
+                                                [ Html.Attributes.value "all"
+                                                , Html.Attributes.selected (not options.categoryFilterEnabled)
+                                                ]
+                                                [ Html.text "all" ]
+                                            , Html.option
+                                                [ Html.Attributes.value "filtered"
+                                                , Html.Attributes.selected options.categoryFilterEnabled
+                                                ]
+                                                [ Html.text "filtered" ]
+                                            ]
+                                            :: (if options.categoryFilterEnabled then
+                                                    [ Html.fieldset []
+                                                        ((options.filteredCategories
+                                                            |> Dict.toList
+                                                            |> List.map
+                                                                (\( cat, included ) ->
+                                                                    checkbox included
+                                                                        (CategoryEnabled cat (not included))
+                                                                        (if cat /= unknownCategory then
+                                                                            cat
+
+                                                                         else
+                                                                            "unknown"
+                                                                        )
+                                                                )
+                                                         )
+                                                            ++ [ Html.button [ Html.Events.onClick <| SetAllCategoriesEnabled True ] [ Html.text "All" ]
+                                                               , Html.button [ Html.Events.onClick <| SetAllCategoriesEnabled False ] [ Html.text "None" ]
+                                                               ]
+                                                        )
+                                                    ]
+
+                                                else
+                                                    []
+                                               )
+                                        )
                                   , optionGroup "Intensity"
                                         (List.concat
                                             [ [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ]
@@ -707,6 +847,14 @@ optionGroup : String -> List (Html Msg) -> Html Msg
 optionGroup title elements =
     Html.div [ Html.Attributes.class "flex-container", Html.Attributes.class "column" ]
         (Html.legend [] [ Html.text title ] :: elements)
+
+
+checkbox : Bool -> Msg -> String -> Html Msg
+checkbox checked msg label =
+    Html.div []
+        [ Html.input [ Html.Attributes.type_ "checkbox", Html.Events.onClick msg, Html.Attributes.checked checked ] []
+        , Html.label [ Html.Events.onClick msg ] [ Html.text label ]
+        ]
 
 
 profile : Track -> Float -> Float -> Int -> Float -> String -> Maybe LocationState -> Bool -> Float -> Html Msg
@@ -1175,6 +1323,8 @@ storedStateFromModel model =
         (Just model.trackingIntervalSec)
         (Just model.showIntensity)
         (Just model.intensityTau)
+        (Just model.categoryFilterEnabled)
+        (Just model.filteredCategories)
 
 
 encodeSavedState : StoredState -> String
@@ -1190,6 +1340,8 @@ encodeSavedState state =
             , state.trackingIntervalSec |> Maybe.map (\interval -> ( "trackingIntervalSec", Json.Encode.int interval ))
             , state.showIntensity |> Maybe.map (\show -> ( "showIntensity", Json.Encode.bool show ))
             , state.intensityTau |> Maybe.map (\tau -> ( "intensityTau", Json.Encode.float tau ))
+            , state.categoryFilterEnabled |> Maybe.map (\enabled -> ( "categoryFilterEnabled", Json.Encode.bool enabled ))
+            , state.filteredCategories |> Maybe.map (\cats -> ( "filteredCategories", Json.Encode.dict identity Json.Encode.bool cats ))
             ]
         )
         |> Json.Encode.encode 0
@@ -1206,6 +1358,8 @@ storedStateDecoder =
         |> andMap (Json.Decode.maybe (Json.Decode.field "trackingIntervalSec" Json.Decode.int))
         |> andMap (Json.Decode.maybe (Json.Decode.field "showIntensity" Json.Decode.bool))
         |> andMap (Json.Decode.maybe (Json.Decode.field "intensityTau" Json.Decode.float))
+        |> andMap (Json.Decode.maybe (Json.Decode.field "categoryFilterEnabled" Json.Decode.bool))
+        |> andMap (Json.Decode.maybe (Json.Decode.field "filteredCategories" (Json.Decode.dict Json.Decode.bool)))
 
 
 andMap : Json.Decode.Decoder a -> Json.Decode.Decoder (a -> b) -> Json.Decode.Decoder b
