@@ -43,9 +43,7 @@ decodeElevationProfileDataResponse =
     Json.Decode.list
         (Json.Decode.map2 Track
             (Json.Decode.field "track" decodeTrackpoints)
-            (Json.Decode.maybe (Json.Decode.field "waypoints" decodeWaypoints)
-                |> Json.Decode.map (Maybe.withDefault [])
-            )
+            (Json.Decode.oneOf [ Json.Decode.field "waypoints" decodeWaypoints, Json.Decode.null [] ])
         )
 
 
@@ -66,7 +64,7 @@ decodeWaypoints =
         (Json.Decode.map3 Waypoint
             (Json.Decode.field "dist" Json.Decode.float)
             (Json.Decode.field "name" Json.Decode.string)
-            (Json.Decode.field "categories" (Json.Decode.list Json.Decode.string))
+            (Json.Decode.field "categories" <| jsonDecodeNullableList Json.Decode.string)
         )
 
 
@@ -87,3 +85,8 @@ httpErrorString err =
 
         Http.BadBody msg ->
             "bad body: " ++ msg
+
+
+jsonDecodeNullableList : Json.Decode.Decoder a -> Json.Decode.Decoder (List a)
+jsonDecodeNullableList elementDecoder =
+    Json.Decode.oneOf [ Json.Decode.list elementDecoder, Json.Decode.null [] ]

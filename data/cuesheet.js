@@ -10056,6 +10056,14 @@ var $author$project$GpxApi$Waypoint = F3(
 	function (distance, name, categories) {
 		return {cq: categories, bq: distance, cZ: name};
 	});
+var $author$project$GpxApi$jsonDecodeNullableList = function (elementDecoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				$elm$json$Json$Decode$list(elementDecoder),
+				$elm$json$Json$Decode$null(_List_Nil)
+			]));
+};
 var $author$project$GpxApi$decodeWaypoints = $elm$json$Json$Decode$list(
 	A4(
 		$elm$json$Json$Decode$map3,
@@ -10065,17 +10073,18 @@ var $author$project$GpxApi$decodeWaypoints = $elm$json$Json$Decode$list(
 		A2(
 			$elm$json$Json$Decode$field,
 			'categories',
-			$elm$json$Json$Decode$list($elm$json$Json$Decode$string))));
+			$author$project$GpxApi$jsonDecodeNullableList($elm$json$Json$Decode$string))));
 var $author$project$GpxApi$decodeElevationProfileDataResponse = $elm$json$Json$Decode$list(
 	A3(
 		$elm$json$Json$Decode$map2,
 		$author$project$GpxApi$Track,
 		A2($elm$json$Json$Decode$field, 'track', $author$project$GpxApi$decodeTrackpoints),
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$core$Maybe$withDefault(_List_Nil),
-			$elm$json$Json$Decode$maybe(
-				A2($elm$json$Json$Decode$field, 'waypoints', $author$project$GpxApi$decodeWaypoints)))));
+		$elm$json$Json$Decode$oneOf(
+			_List_fromArray(
+				[
+					A2($elm$json$Json$Decode$field, 'waypoints', $author$project$GpxApi$decodeWaypoints),
+					$elm$json$Json$Decode$null(_List_Nil)
+				]))));
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
 		return {$: 3, a: a, b: b};

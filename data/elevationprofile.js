@@ -5606,6 +5606,16 @@ var $author$project$GpxApi$Waypoint = F3(
 	function (distance, name, categories) {
 		return {aX: categories, an: distance, a8: name};
 	});
+var $elm$json$Json$Decode$null = _Json_decodeNull;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $author$project$GpxApi$jsonDecodeNullableList = function (elementDecoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				$elm$json$Json$Decode$list(elementDecoder),
+				$elm$json$Json$Decode$null(_List_Nil)
+			]));
+};
 var $elm$json$Json$Decode$map3 = _Json_map3;
 var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$GpxApi$decodeWaypoints = $elm$json$Json$Decode$list(
@@ -5617,7 +5627,7 @@ var $author$project$GpxApi$decodeWaypoints = $elm$json$Json$Decode$list(
 		A2(
 			$elm$json$Json$Decode$field,
 			'categories',
-			$elm$json$Json$Decode$list($elm$json$Json$Decode$string))));
+			$author$project$GpxApi$jsonDecodeNullableList($elm$json$Json$Decode$string))));
 var $author$project$Main$decodeTrack = A3(
 	$elm$json$Json$Decode$map2,
 	$author$project$GpxApi$Track,
@@ -5637,7 +5647,6 @@ var $author$project$Main$decodePositionalTracks = A4(
 		$elm$json$Json$Decode$list($author$project$Main$decodeTrack)));
 var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$json$Json$Decode$map6 = _Json_map6;
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $elm$json$Json$Decode$maybe = function (decoder) {
 	return $elm$json$Json$Decode$oneOf(
 		_List_fromArray(
@@ -5735,7 +5744,6 @@ var $author$project$Main$init = F3(
 					maybeState)),
 			$elm$core$Platform$Cmd$none);
 	});
-var $elm$json$Json$Decode$null = _Json_decodeNull;
 var $author$project$Main$LocationReceived = function (a) {
 	return {$: 15, a: a};
 };
@@ -6286,11 +6294,12 @@ var $author$project$GpxApi$decodeElevationProfileDataResponse = $elm$json$Json$D
 		$elm$json$Json$Decode$map2,
 		$author$project$GpxApi$Track,
 		A2($elm$json$Json$Decode$field, 'track', $author$project$GpxApi$decodeTrackpoints),
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$core$Maybe$withDefault(_List_Nil),
-			$elm$json$Json$Decode$maybe(
-				A2($elm$json$Json$Decode$field, 'waypoints', $author$project$GpxApi$decodeWaypoints)))));
+		$elm$json$Json$Decode$oneOf(
+			_List_fromArray(
+				[
+					A2($elm$json$Json$Decode$field, 'waypoints', $author$project$GpxApi$decodeWaypoints),
+					$elm$json$Json$Decode$null(_List_Nil)
+				]))));
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
