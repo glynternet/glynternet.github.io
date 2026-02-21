@@ -14,6 +14,14 @@ series:
 
 events:
 
+### 2027
+- summary: Frisco Freeze
+  begin: 2027-02-13
+  location: Frisco Nordic Center
+  urls:
+  - https://www.townoffrisco.com/event/nordic-center-events/frisco-freeze-winter-bike-race/
+
+
 ### 2026
 
 - summary: Pleasantville
