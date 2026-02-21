@@ -12,6 +12,11 @@
     <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ "/feed.xml" | prepend: site.baseurl | prepend: site.url }}">
     {% if page.manifest %}
     <link rel="manifest" href="{{ page.manifest }}">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js');
+        }
+    </script>
     {% endif %}
     {% for script in page.scripts %}
     <script src="/data/{{ script }}.js"></script>
