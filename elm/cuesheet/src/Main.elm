@@ -74,7 +74,6 @@ type alias StoredState =
 type alias Model =
     { page : Page
     , gpxError : Maybe String
-    , gpxServerURLOverride : Maybe String
     , showOptions : Bool
     , cuesViewOptions : CuesViewOptions
     , showQR : Bool
@@ -166,7 +165,7 @@ init maybeState url key =
                         >> storedStateModel url
                     )
                 -- TODO(glynternet): best default value for last reference point/?
-                |> Maybe.withDefault (Model (WelcomePage False) Maybe.Nothing Maybe.Nothing True (CuesViewOptions FromZero 1000 0 defaultSpacing defaultDistanceDetail) False url)
+                |> Maybe.withDefault (Model (WelcomePage False) Maybe.Nothing True (CuesViewOptions FromZero 1000 0 defaultSpacing defaultDistanceDetail) False url)
     )
         |> updateModel
         |> Tuple.mapSecond
@@ -198,7 +197,6 @@ storedStateModel url state =
             |> Maybe.withDefault (WelcomePage False)
         )
         Maybe.Nothing
-        Maybe.Nothing
         (state.showOptions |> Maybe.withDefault True)
         (CuesViewOptions
             -- TODO(glynternet): store "to point" state
@@ -226,7 +224,6 @@ type Msg
     | UpdateDistanceDetail Int
     | OpenFileBrowser
     | FileUploaded File.File
-    | GpxResponseReceived (Result String (List GpxApi.Track))
     | UpdateShowStartFinish Bool
     | SetAllTypesEnabled Bool
     | ShowQR
@@ -374,40 +371,8 @@ update msg model =
 
         FileUploaded file ->
             ( { model | gpxError = Maybe.Nothing }
-            , Cmd.batch
-                --[ GpxApi.getElevationProfileDataResponse GpxResponseReceived (Maybe.withDefault "https://gpx.fly.dev" model.gpxServerURLOverride) file
-                --, Task.perform GPXStringed (File.toString file)
-                [ Task.perform GPXStringed (File.toString file)
-                ]
+            , Task.perform GPXStringed (File.toString file)
             )
-
-        GpxResponseReceived result ->
-            case result of
-                Err errMsg ->
-                    ( { model | gpxError = Maybe.Just errMsg }, Cmd.none )
-
-                Ok tracks ->
-                    case tracks of
-                        [ track ] ->
-                            let
-                                waypoints =
-                                    track.waypoints
-                                        |> List.map (\w -> Waypoint w.name w.distance w.categories)
-                                        |> List.sortBy .distance
-
-                                trackEndDistance =
-                                    List.head (List.reverse track.trackpoints) |> Maybe.map .distance |> Maybe.withDefault 0
-
-                                cuesModel =
-                                    initialCuesModel waypoints trackEndDistance
-                            in
-                            { model | page = CuesheetPage cuesModel, gpxError = Maybe.Nothing } |> updateModel
-
-                        [] ->
-                            ( { model | gpxError = Maybe.Just "No tracks found in GPX file" }, Cmd.none )
-
-                        _ ->
-                            ( { model | gpxError = Maybe.Just "Multiple tracks found in GPX file; only single-track GPX files are supported" }, Cmd.none )
 
         ShowQR ->
             updateModel { model | showQR = True }
