@@ -6,6 +6,7 @@ import Dict
 import File exposing (File)
 import File.Select
 import GpxApi
+import Location
 import Html exposing (Attribute, Html)
 import Html.Attributes
 import Html.Events
@@ -68,6 +69,7 @@ type alias Model =
     , trackingIntervalSec : Int
     , categoryFilterEnabled : Bool
     , filteredCategories : Dict.Dict String Bool
+    , manualPosition : Maybe Float
     }
 
 
@@ -106,22 +108,15 @@ type alias Waypoint =
 
 
 type alias LatLon =
-    { lat : Float
-    , lon : Float
-    }
+    Location.LatLon
 
 
 type alias LocationState =
-    { position : LatLon
-    , accuracy : Float
-    , matchedDistance : Float
-    }
+    Location.LocationState
 
 
-type LocationError
-    = PermissionDenied
-    | PositionUnavailable
-    | GeoTimeout
+type alias LocationError =
+    Location.LocationError
 
 
 type alias StoredState =
@@ -135,6 +130,7 @@ type alias StoredState =
     , intensityTau : Maybe Float
     , categoryFilterEnabled : Maybe Bool
     , filteredCategories : Maybe (Dict.Dict String Bool)
+    , manualPosition : Maybe Float
     }
 
 
@@ -155,12 +151,13 @@ storedStateModel state =
     , trackingIntervalSec = Maybe.withDefault 60 state.trackingIntervalSec
     , categoryFilterEnabled = Maybe.withDefault False state.categoryFilterEnabled
     , filteredCategories = Maybe.withDefault Dict.empty state.filteredCategories
+    , manualPosition = state.manualPosition
     }
 
 
 defaultStoredState : StoredState
 defaultStoredState =
-    StoredState Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
+    StoredState Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
@@ -204,6 +201,7 @@ type Msg
     | CategoryEnabled String Bool
     | UpdateCategoryFilterEnabled Bool
     | SetAllCategoriesEnabled Bool
+    | UpdateManualPosition (Maybe Float)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -353,7 +351,7 @@ update msg model =
                         Loaded tracks ->
                             let
                                 gpsPos =
-                                    LatLon pos.lat pos.lon
+                                    Location.LatLon pos.lat pos.lon
 
                                 matchedDist =
                                     findNearestTrackPoint gpsPos tracks.current.trackpoints
@@ -361,7 +359,7 @@ update msg model =
                                         |> Maybe.withDefault 0
                             in
                             ( { model
-                                | location = Just (LocationState gpsPos pos.accuracy matchedDist)
+                                | location = Just (Location.LocationState gpsPos pos.accuracy matchedDist)
                                 , locationError = Nothing
                               }
                             , Cmd.none
@@ -375,7 +373,7 @@ update msg model =
 
                 -- JSON decode failure; treat as unavailable
                 Err _ ->
-                    ( { model | locationError = Just PositionUnavailable }, Cmd.none )
+                    ( { model | locationError = Just Location.PositionUnavailable }, Cmd.none )
 
         GPXStringed gpxContent ->
             ( model, calculateElevationProfileData gpxContent )
@@ -421,10 +419,23 @@ update msg model =
         SetAllCategoriesEnabled enabled ->
             updateModel { model | filteredCategories = Dict.map (\_ _ -> enabled) model.filteredCategories }
 
+        UpdateManualPosition pos ->
+            updateModel { model | manualPosition = pos }
+
 
 updateModel : Model -> ( Model, Cmd Msg )
 updateModel model =
     ( model, storeState (storedStateFromModel model |> encodeSavedState) )
+
+
+effectivePosition : Model -> Maybe Float
+effectivePosition model =
+    case model.manualPosition of
+        Just _ ->
+            model.manualPosition
+
+        Nothing ->
+            model.location |> Maybe.map .matchedDistance
 
 
 unknownCategory : String
@@ -513,6 +524,7 @@ view model =
                 , intensityTau = model.intensityTau
                 , categoryFilterEnabled = model.categoryFilterEnabled
                 , filteredCategories = model.filteredCategories
+                , manualPosition = model.manualPosition
                 }
             , Html.div
                 [ Html.Attributes.class "flex-container"
@@ -548,7 +560,7 @@ view model =
                             filteredWaypoints =
                                 filterWaypointsByCategory model.categoryFilterEnabled model.filteredCategories tracks.current.waypoints
                         in
-                        profile { trackpoints = tracks.current.trackpoints, waypoints = filteredWaypoints } maxDistance model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor model.location model.showIntensity model.intensityTau
+                        profile { trackpoints = tracks.current.trackpoints, waypoints = filteredWaypoints } maxDistance model.fontSize model.trackHeight model.trackThickness model.waypointStrokeColor (effectivePosition model) model.showIntensity model.intensityTau
                             :: (if model.showWaypointEditor then
                                     [ Html.div []
                                         (tracks.current.waypoints
@@ -601,6 +613,7 @@ viewOptions :
     , intensityTau : Float
     , categoryFilterEnabled : Bool
     , filteredCategories : Dict.Dict String Bool
+    , manualPosition : Maybe Float
     }
     -> Html Msg
 viewOptions options =
@@ -770,6 +783,32 @@ viewOptions options =
                                                 []
                                             ]
                                         )
+                                  , optionGroup "Position"
+                                        (let
+                                            maxDist =
+                                                options.tracks
+                                                    |> Maybe.andThen (\ts -> List.maximum (List.map .distance ts.current.trackpoints))
+                                                    |> Maybe.withDefault 1
+                                         in
+                                         List.concat
+                                            [ [ Html.input
+                                                    [ Html.Attributes.type_ "range"
+                                                    , Html.Attributes.min "0"
+                                                    , Html.Attributes.max (String.fromFloat maxDist)
+                                                    , Html.Attributes.step "100"
+                                                    , Html.Attributes.value (options.manualPosition |> Maybe.map String.fromFloat |> Maybe.withDefault "0")
+                                                    , Html.Events.onInput (String.toFloat >> Maybe.map Just >> Maybe.withDefault Nothing >> UpdateManualPosition)
+                                                    ]
+                                                    []
+                                              ]
+                                            , case options.manualPosition of
+                                                Just _ ->
+                                                    [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "Clear position" (UpdateManualPosition Nothing) ]
+
+                                                Nothing ->
+                                                    []
+                                            ]
+                                        )
                                   ]
                                 , if options.tracks /= Nothing then
                                     List.concat
@@ -857,8 +896,8 @@ checkbox checked msg label =
         ]
 
 
-profile : Track -> Float -> Float -> Int -> Float -> String -> Maybe LocationState -> Bool -> Float -> Html Msg
-profile track maxDistance fontSize trackHeight trackThickness waypointStrokeColor maybeLocation showIntensity intensityTau =
+profile : Track -> Float -> Float -> Int -> Float -> String -> Maybe Float -> Bool -> Float -> Html Msg
+profile track maxDistance fontSize trackHeight trackThickness waypointStrokeColor maybePosition showIntensity intensityTau =
     let
         -- TODO(ghanmer): combine these max folds to not iterate through twice
         maxElevation =
@@ -941,14 +980,14 @@ profile track maxDistance fontSize trackHeight trackThickness waypointStrokeColo
             , -- track line
               resolveElevationProfileSVGLine calc track.trackpoints (String.fromFloat trackThickness)
             , -- position marker
-              case maybeLocation of
-                Just loc ->
+              case maybePosition of
+                Just posDistance ->
                     let
                         xPos =
-                            calc.x loc.matchedDistance
+                            calc.x posDistance
 
                         yPos =
-                            calc.y (interpolateWaypointElevation track.trackpoints loc.matchedDistance)
+                            calc.y (interpolateWaypointElevation track.trackpoints posDistance)
                     in
                     Svg.g []
                         [ Svg.line
@@ -1325,6 +1364,7 @@ storedStateFromModel model =
         (Just model.intensityTau)
         (Just model.categoryFilterEnabled)
         (Just model.filteredCategories)
+        model.manualPosition
 
 
 encodeSavedState : StoredState -> String
@@ -1342,6 +1382,7 @@ encodeSavedState state =
             , state.intensityTau |> Maybe.map (\tau -> ( "intensityTau", Json.Encode.float tau ))
             , state.categoryFilterEnabled |> Maybe.map (\enabled -> ( "categoryFilterEnabled", Json.Encode.bool enabled ))
             , state.filteredCategories |> Maybe.map (\cats -> ( "filteredCategories", Json.Encode.dict identity Json.Encode.bool cats ))
+            , state.manualPosition |> Maybe.map (\pos -> ( "manualPosition", Json.Encode.float pos ))
             ]
         )
         |> Json.Encode.encode 0
@@ -1360,6 +1401,7 @@ storedStateDecoder =
         |> andMap (Json.Decode.maybe (Json.Decode.field "intensityTau" Json.Decode.float))
         |> andMap (Json.Decode.maybe (Json.Decode.field "categoryFilterEnabled" Json.Decode.bool))
         |> andMap (Json.Decode.maybe (Json.Decode.field "filteredCategories" (Json.Decode.dict Json.Decode.bool)))
+        |> andMap (Json.Decode.maybe (Json.Decode.field "manualPosition" Json.Decode.float))
 
 
 andMap : Json.Decode.Decoder a -> Json.Decode.Decoder (a -> b) -> Json.Decode.Decoder b
@@ -1380,78 +1422,19 @@ port receiveLocation : (Json.Decode.Value -> msg) -> Sub msg
 -- LOCATION
 
 
-haversineDistance : LatLon -> LatLon -> Float
-haversineDistance a b =
-    let
-        r =
-            6371000
-
-        toRad deg =
-            deg * pi / 180
-
-        dLat =
-            toRad (b.lat - a.lat)
-
-        dLon =
-            toRad (b.lon - a.lon)
-
-        sinDLat =
-            sin (dLat / 2)
-
-        sinDLon =
-            sin (dLon / 2)
-
-        h =
-            sinDLat * sinDLat + cos (toRad a.lat) * cos (toRad b.lat) * sinDLon * sinDLon
-    in
-    2 * r * asin (sqrt h)
-
-
 findNearestTrackPoint : LatLon -> List TrackPoint -> Maybe TrackPoint
-findNearestTrackPoint pos trackpoints =
-    trackpoints
-        |> List.map (\tp -> ( haversineDistance pos (LatLon tp.lat tp.lon), tp ))
-        |> List.sortBy Tuple.first
-        |> List.head
-        |> Maybe.map Tuple.second
+findNearestTrackPoint =
+    Location.findNearestTrackPoint
 
 
 decodeLocationResult : Json.Decode.Decoder (Result LocationError { lat : Float, lon : Float, accuracy : Float })
 decodeLocationResult =
-    Json.Decode.oneOf
-        [ Json.Decode.field "error" Json.Decode.string
-            |> Json.Decode.map
-                (\code ->
-                    Err
-                        (case code of
-                            "permission_denied" ->
-                                PermissionDenied
-
-                            "timeout" ->
-                                GeoTimeout
-
-                            _ ->
-                                PositionUnavailable
-                        )
-                )
-        , Json.Decode.map3 (\lat lon acc -> Ok { lat = lat, lon = lon, accuracy = acc })
-            (Json.Decode.field "lat" Json.Decode.float)
-            (Json.Decode.field "lon" Json.Decode.float)
-            (Json.Decode.field "accuracy" Json.Decode.float)
-        ]
+    Location.decodeLocationResult
 
 
 locationErrorToString : LocationError -> String
-locationErrorToString err =
-    case err of
-        PermissionDenied ->
-            "Location permission denied"
-
-        PositionUnavailable ->
-            "Position unavailable"
-
-        GeoTimeout ->
-            "Location request timed out"
+locationErrorToString =
+    Location.locationErrorToString
 
 
 

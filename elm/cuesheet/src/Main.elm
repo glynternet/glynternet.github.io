@@ -1,33 +1,23 @@
 port module Main exposing (storeState)
 
-import Base64
 import Browser
-import Browser.Navigation
-import Bytes
-import Bytes.Decode
-import Bytes.Encode
 import Dict
 import Dropdown
 import File
 import File.Select
-import Flate
 import GpxApi
 import Html exposing (Attribute, Html)
+import Location
 import Html.Attributes
 import Html.Events
 import Json.Decode
 import Json.Encode
-import QRCode
 import Round
 import String
 import Svg
 import Svg.Attributes
 import Task
 import Time
-import Url exposing (Protocol(..))
-import Url.Builder
-import Url.Parser exposing ((</>), (<?>))
-import Url.Parser.Query
 
 
 
@@ -35,21 +25,25 @@ import Url.Parser.Query
 
 
 main =
-    Browser.application
+    Browser.document
         { init = init
         , view = view
         , update = update
         , subscriptions = subscriptions
-        , onUrlRequest = \_ -> Never
-        , onUrlChange = \_ -> Never
         }
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
+subscriptions model =
     Sub.batch
-        [ Time.every 1500 (always Tick)
+        [ Time.every 1500 (always AnimationTick)
         , receiveElevationProfileData WasmResponseReceived
+        , receiveLocation LocationReceived
+        , if model.trackingEnabled then
+            Time.every (toFloat model.trackingIntervalSec * 1000) LocationTick
+
+          else
+            Sub.none
         ]
 
 
@@ -58,16 +52,17 @@ subscriptions _ =
 
 
 type alias StoredState =
-    { waypoints : Maybe (List Waypoint)
+    { waypoints : Maybe (List GpxApi.Waypoint)
     , totalDistanceDisplay : Maybe String
     , lastReferencePoint : Maybe Float
-    , locationFilterEnabled : Maybe Bool
-    , filteredLocationTypes : Maybe (Dict.Dict String Bool)
+    , categoryFilterEnabled : Maybe Bool
+    , filteredCategories : Maybe (Dict.Dict String Bool)
     , itemSpacing : Maybe Int
     , distanceDetail : Maybe Int
     , showStartFinish : Maybe Bool
     , showOptions : Maybe Bool
     , finishDistance : Maybe Float
+    , trackingIntervalSec : Maybe Int
     }
 
 
@@ -76,8 +71,10 @@ type alias Model =
     , gpxError : Maybe String
     , showOptions : Bool
     , cuesViewOptions : CuesViewOptions
-    , showQR : Bool
-    , url : Url.Url
+    , location : Maybe Location.LocationState
+    , locationError : Maybe Location.LocationError
+    , trackingEnabled : Bool
+    , trackingIntervalSec : Int
     }
 
 
@@ -88,17 +85,18 @@ type Page
 
 
 type alias CuesModel =
-    { waypoints : List Waypoint
+    { waypoints : List GpxApi.Waypoint
     , waypointOptions : WaypointsOptions
     , showStartFinish : Bool
     , finishDistance : Float
+    , trackpoints : List GpxApi.TrackPoint
     }
 
 
 type alias WaypointsOptions =
     { -- TODO: combine filter enabled and dict into single Maybe then deserialise from null or object
-      locationFilterEnabled : Bool
-    , filteredLocationTypes : Dict.Dict String Bool
+      categoryFilterEnabled : Bool
+    , filteredCategories : Dict.Dict String Bool
     }
 
 
@@ -118,80 +116,48 @@ type TotalDistanceDisplay
     | None
 
 
-type alias Waypoint =
-    { name : String
-    , distance : Float
-    , types : List String
-    }
-
-
-unknownType =
+unknownCategory =
     ""
 
 
-startFinishType =
+startFinishCategory =
     "Start/Finish"
 
 
 type Info
-    = InfoWaypoint Waypoint
+    = InfoWaypoint GpxApi.Waypoint
     | Ride Float
 
 
-init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
-init maybeState url key =
-    let
-        queryState =
-            -- snap the url path to empty to skip handling of url segments
-            Url.Parser.parse (Url.Parser.query (Url.Parser.Query.string "state")) { url | path = "" }
-                |> Maybe.withDefault Maybe.Nothing
-                |> Maybe.andThen Base64.toBytes
-                |> Maybe.andThen Flate.inflateGZip
-                -- example from https://package.elm-lang.org/packages/folkertdev/elm-flate/latest/Flate
-                |> Maybe.andThen (\buf -> Bytes.Decode.decode (Bytes.Decode.string (Bytes.width buf)) buf)
-                -- TODO: handle decode error, get user to send me the state
-                |> Maybe.andThen (Json.Decode.decodeString (storedStateDecoder shortFieldNames) >> Result.toMaybe)
-    in
-    (case queryState of
-        Just storedState ->
-            storedStateModel url storedState
-
-        Nothing ->
-            maybeState
-                |> Maybe.map
-                    (Json.Decode.decodeValue (storedStateDecoder longFieldNames)
-                        -- TODO: handle error
-                        >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
-                        >> storedStateModel url
-                    )
-                -- TODO(glynternet): best default value for last reference point/?
-                |> Maybe.withDefault (Model (WelcomePage False) Maybe.Nothing True (CuesViewOptions FromZero 1000 0 defaultSpacing defaultDistanceDetail) False url)
+init : Maybe Json.Decode.Value -> ( Model, Cmd Msg )
+init maybeState =
+    (maybeState
+        |> Maybe.map
+            (Json.Decode.decodeValue (storedStateDecoder longFieldNames)
+                -- TODO: handle error
+                >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
+                >> storedStateModel
+            )
+        -- TODO(glynternet): best default value for last reference point/?
+        |> Maybe.withDefault (Model (WelcomePage False) Maybe.Nothing True (CuesViewOptions FromZero 1000 0 defaultSpacing defaultDistanceDetail) Nothing Nothing False 60)
     )
         |> updateModel
-        |> Tuple.mapSecond
-            (\cmd ->
-                -- if state from query was successful, remove query from URL
-                (queryState |> Maybe.map (always (Browser.Navigation.replaceUrl key <| Url.toString { url | query = Maybe.Nothing })))
-                    |> Maybe.map List.singleton
-                    |> Maybe.withDefault []
-                    |> (::) cmd
-                    |> Cmd.batch
-            )
 
 
-storedStateModel : Url.Url -> StoredState -> Model
-storedStateModel url state =
+storedStateModel : StoredState -> Model
+storedStateModel state =
     Model
         (state.waypoints
             |> Maybe.map
                 (\ws ->
                     CuesModel ws
                         (WaypointsOptions
-                            (state.locationFilterEnabled |> Maybe.withDefault False)
-                            (state.filteredLocationTypes |> Maybe.withDefault (initialFilteredLocations ws))
+                            (state.categoryFilterEnabled |> Maybe.withDefault False)
+                            (state.filteredCategories |> Maybe.withDefault (initialFilteredCategories ws))
                         )
                         (state.showStartFinish |> Maybe.withDefault False)
                         (state.finishDistance |> Maybe.withDefault 0)
+                        []
                         |> CuesheetPage
                 )
             |> Maybe.withDefault (WelcomePage False)
@@ -207,17 +173,19 @@ storedStateModel url state =
             (Maybe.withDefault defaultSpacing state.itemSpacing)
             (Maybe.withDefault defaultDistanceDetail state.distanceDetail)
         )
+        Nothing
+        Nothing
         False
-        url
+        (Maybe.withDefault 60 state.trackingIntervalSec)
 
 
 type Msg
-    = Never
+    = NoOp
     | ShowPage Page
-    | TypeEnabled String Bool
+    | CategoryEnabled String Bool
     | ShowOptions Bool
     | UpdateTotalDistanceDisplay (Maybe TotalDistanceDisplay)
-    | UpdateFilterEnabled Bool
+    | UpdateCategoryFilterEnabled Bool
     | UpdatePosition Float
     | UpdateReferencePoint Float
     | UpdateItemSpacing Int
@@ -225,31 +193,34 @@ type Msg
     | OpenFileBrowser
     | FileUploaded File.File
     | UpdateShowStartFinish Bool
-    | SetAllTypesEnabled Bool
-    | ShowQR
-    | CloseQR
-    | Tick
+    | SetAllCategoriesEnabled Bool
+    | AnimationTick
+    | LocationTick Time.Posix
+    | LocationReceived Json.Decode.Value
+    | RequestLocation
+    | ToggleTracking
+    | SetTrackingInterval Int
     | GPXStringed String
     | WasmResponseReceived String
 
 
-initialWaypointOptions : List Waypoint -> WaypointsOptions
+initialWaypointOptions : List GpxApi.Waypoint -> WaypointsOptions
 initialWaypointOptions waypoints =
-    WaypointsOptions False (initialFilteredLocations waypoints)
+    WaypointsOptions False (initialFilteredCategories waypoints)
 
 
-initialFilteredLocations : List Waypoint -> Dict.Dict String Bool
-initialFilteredLocations =
+initialFilteredCategories : List GpxApi.Waypoint -> Dict.Dict String Bool
+initialFilteredCategories =
     List.foldl
         (\el ( waypointsIterationCurrent, includeUnknown ) ->
-            if List.isEmpty el.types then
+            if List.isEmpty el.categories then
                 ( waypointsIterationCurrent, True )
 
             else
                 ( List.foldl
-                    (\typ waypointIterationCurrent -> Dict.insert typ True waypointIterationCurrent)
+                    (\cat waypointIterationCurrent -> Dict.insert cat True waypointIterationCurrent)
                     waypointsIterationCurrent
-                    el.types
+                    el.categories
                 , includeUnknown
                 )
         )
@@ -257,7 +228,7 @@ initialFilteredLocations =
         >> (\base ->
                 case base of
                     ( d, True ) ->
-                        Dict.insert unknownType True d
+                        Dict.insert unknownCategory True d
 
                     ( d, False ) ->
                         d
@@ -270,7 +241,7 @@ update msg model =
         ShowPage page ->
             updateModel { model | page = page }
 
-        TypeEnabled typ enabled ->
+        CategoryEnabled cat enabled ->
             case model.page of
                 CuesheetPage cuesModel ->
                     let
@@ -278,14 +249,14 @@ update msg model =
                             cuesModel.waypointOptions
 
                         newCuesModel =
-                            { cuesModel | waypointOptions = { options | filteredLocationTypes = Dict.insert typ enabled cuesModel.waypointOptions.filteredLocationTypes } }
+                            { cuesModel | waypointOptions = { options | filteredCategories = Dict.insert cat enabled cuesModel.waypointOptions.filteredCategories } }
                     in
                     updateCuesModel model newCuesModel
 
                 _ ->
                     ( model, Cmd.none )
 
-        SetAllTypesEnabled enabled ->
+        SetAllCategoriesEnabled enabled ->
             case model.page of
                 CuesheetPage cuesModel ->
                     let
@@ -293,7 +264,7 @@ update msg model =
                             cuesModel.waypointOptions
 
                         newCuesModel =
-                            { cuesModel | waypointOptions = { options | filteredLocationTypes = Dict.map (\_ _ -> enabled) options.filteredLocationTypes } }
+                            { cuesModel | waypointOptions = { options | filteredCategories = Dict.map (\_ _ -> enabled) options.filteredCategories } }
                     in
                     updateCuesModel model newCuesModel
 
@@ -315,7 +286,7 @@ update msg model =
                     )
                 |> Maybe.withDefault ( model, Cmd.none )
 
-        UpdateFilterEnabled enabled ->
+        UpdateCategoryFilterEnabled enabled ->
             case model.page of
                 CuesheetPage cuesModel ->
                     let
@@ -323,7 +294,7 @@ update msg model =
                             cuesModel.waypointOptions
 
                         newCuesModel =
-                            { cuesModel | waypointOptions = { options | locationFilterEnabled = enabled } }
+                            { cuesModel | waypointOptions = { options | categoryFilterEnabled = enabled } }
                     in
                     updateCuesModel model newCuesModel
 
@@ -374,22 +345,71 @@ update msg model =
             , Task.perform GPXStringed (File.toString file)
             )
 
-        ShowQR ->
-            updateModel { model | showQR = True }
-
-        CloseQR ->
-            updateModel { model | showQR = False }
-
-        Never ->
+        NoOp ->
             ( model, Cmd.none )
 
-        Tick ->
+        AnimationTick ->
             case model.page of
                 WelcomePage val ->
                     ( { model | page = WelcomePage (not val) }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
+
+        LocationTick _ ->
+            ( model, requestLocation () )
+
+        LocationReceived value ->
+            case Json.Decode.decodeValue Location.decodeLocationResult value of
+                Ok (Ok pos) ->
+                    case model.page of
+                        CuesheetPage cuesModel ->
+                            let
+                                gpsPos =
+                                    Location.LatLon pos.lat pos.lon
+
+                                matchedDist =
+                                    Location.findNearestTrackPoint gpsPos cuesModel.trackpoints
+                                        |> Maybe.map .distance
+                                        |> Maybe.withDefault 0
+
+                                options =
+                                    model.cuesViewOptions
+                            in
+                            updateModel
+                                { model
+                                    | location = Just (Location.LocationState gpsPos pos.accuracy matchedDist)
+                                    , locationError = Nothing
+                                    , cuesViewOptions = { options | position = matchedDist }
+                                }
+
+                        _ ->
+                            ( { model | locationError = Nothing }, Cmd.none )
+
+                Ok (Err locErr) ->
+                    ( { model | locationError = Just locErr }, Cmd.none )
+
+                -- JSON decode failure; treat as unavailable
+                Err _ ->
+                    ( { model | locationError = Just Location.PositionUnavailable }, Cmd.none )
+
+        RequestLocation ->
+            ( model, requestLocation () )
+
+        ToggleTracking ->
+            let
+                nowEnabled =
+                    not model.trackingEnabled
+            in
+            if nowEnabled then
+                updateModel { model | trackingEnabled = True }
+                    |> Tuple.mapSecond (\cmd -> Cmd.batch [ cmd, requestLocation () ])
+
+            else
+                updateModel { model | trackingEnabled = False }
+
+        SetTrackingInterval interval ->
+            updateModel { model | trackingIntervalSec = interval }
 
         GPXStringed gpxContent ->
             ( model, calculateElevationProfileData gpxContent )
@@ -410,14 +430,13 @@ update msg model =
                                     let
                                         waypoints =
                                             track.waypoints
-                                                |> List.map (\w -> Waypoint w.name w.distance w.categories)
                                                 |> List.sortBy .distance
 
                                         trackEndDistance =
                                             List.head (List.reverse track.trackpoints) |> Maybe.map .distance |> Maybe.withDefault 0
 
                                         cuesModel =
-                                            initialCuesModel waypoints trackEndDistance
+                                            initialCuesModel waypoints trackEndDistance track.trackpoints
                                     in
                                     { model | page = CuesheetPage cuesModel, gpxError = Maybe.Nothing } |> updateModel
 
@@ -435,20 +454,16 @@ updateCuesModel model cuesModel =
 
 updateModel : Model -> ( Model, Cmd Msg )
 updateModel model =
-    let
-        localStoredState =
-            encodeSavedState longFieldNames model
-    in
-    ( model, storeState localStoredState )
+    ( model, storeState (encodeSavedState longFieldNames model) )
 
 
-initialCuesModel : List Waypoint -> Float -> CuesModel
-initialCuesModel waypoints trackFinish =
+initialCuesModel : List GpxApi.Waypoint -> Float -> List GpxApi.TrackPoint -> CuesModel
+initialCuesModel waypoints trackFinish trackpoints =
     let
         sortedWaypoints =
             List.sortBy .distance waypoints
     in
-    CuesModel sortedWaypoints (initialWaypointOptions sortedWaypoints) True trackFinish
+    CuesModel sortedWaypoints (initialWaypointOptions sortedWaypoints) True trackFinish trackpoints
 
 
 
@@ -461,88 +476,7 @@ view model =
     Browser.Document "Cuesheet"
         [ case model.page of
             CuesheetPage cuesheetModel ->
-                if model.showQR then
-                    Html.div
-                        [ Html.Attributes.class "flex-container"
-                        , Html.Attributes.class "column"
-                        , Html.Attributes.class "page"
-                        , Html.Attributes.style "height" "100%"
-                        , Html.Attributes.style "justify-content" "center"
-                        , Html.Attributes.style "align-items" "center"
-                        ]
-                        (encodeSavedState shortFieldNames model
-                            |> Bytes.Encode.string
-                            |> Bytes.Encode.encode
-                            |> Flate.deflateGZip
-                            |> Base64.fromBytes
-                            |> Maybe.map (stateUrl model.url)
-                            |> Maybe.map
-                                (\url ->
-                                    -- WEBrick has max URL length of around 2090 (form local testing), picking 1800 as max to be safe
-                                    if String.length url > 1800 then
-                                        [ viewErrorPanel "😞 the URL created for sharing would be too long for the current method,\n\nplease let me know and I will work out a new way to do this!" ]
-
-                                    else
-                                        QRCode.fromStringWith QRCode.Medium url
-                                            |> Result.map
-                                                (\qr ->
-                                                    [ QRCode.toSvg [ Svg.Attributes.width "100%", Svg.Attributes.height "500" ] qr
-                                                    , Html.br [] []
-                                                    , Html.p [] [ Html.text "Scan the QR code above on your device" ]
-                                                    , Html.p [] [ Html.text "and follow the link to load in the current cues." ]
-                                                    , Html.br [] []
-                                                    , Html.p [] [ Html.text "Alternatively, copy this link and send to your device through some other means..." ]
-                                                    , Html.br [] []
-                                                    , Html.p
-                                                        [ Html.Attributes.style "word-break" "break-all"
-                                                        , Html.Attributes.style "white-space" "normal"
-                                                        ]
-                                                        [ Html.text url ]
-                                                    ]
-                                                )
-                                            |> Result.mapError
-                                                (\err ->
-                                                    case err of
-                                                        QRCode.AlignmentPatternNotFound ->
-                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: AlignmentPatternNotFound" ]
-
-                                                        QRCode.InvalidNumericChar ->
-                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidNumericChar" ]
-
-                                                        QRCode.InvalidAlphanumericChar ->
-                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidAlphanumericChar" ]
-
-                                                        QRCode.InvalidUTF8Char ->
-                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: InvalidUTF8Char" ]
-
-                                                        QRCode.LogTableException _ ->
-                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: LogTableException" ]
-
-                                                        QRCode.PolynomialMultiplyException ->
-                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: PolynomialMultiplyException" ]
-
-                                                        QRCode.PolynomialModException ->
-                                                            [ viewErrorPanel "😞 there was an error encoding your share code, please contact me and give me this state error: PolynomialModException" ]
-
-                                                        QRCode.InputLengthOverflow ->
-                                                            [ viewErrorPanel "😞 sadly the data you are using is too large for the current sharing mechanism.\n\nPlease contact me and I will try to rectify the issue!" ]
-                                                )
-                                            |> resultCollect
-                                )
-                            -- error with creating base64 bytes, should never happen according to the docs
-                            |> Maybe.withDefault [ viewErrorPanel "😞 there was an error preparing your QR code, so sorry.\n\nPlease contact me and I will try to rectify the issue!" ]
-                            |> (\els ->
-                                    els
-                                        ++ [ Html.br [] []
-                                           , Html.button
-                                                [ Html.Events.onClick CloseQR, Html.Attributes.class "button-4" ]
-                                                [ Html.text "Close" ]
-                                           ]
-                               )
-                        )
-
-                else
-                    Html.div
+                Html.div
                         [ Html.Attributes.class "flex-container"
                         , Html.Attributes.class "row"
                         , Html.Attributes.class "page"
@@ -562,6 +496,10 @@ view model =
                             cuesheetModel.showStartFinish
                             model.cuesViewOptions
                             model.gpxError
+                            model.location
+                            model.locationError
+                            model.trackingEnabled
+                            model.trackingIntervalSec
                          , Html.div
                             [ Html.Attributes.class "flex-container"
                             , Html.Attributes.class "column"
@@ -582,24 +520,6 @@ view model =
         ]
 
 
-resultCollect : Result a a -> a
-resultCollect res =
-    case res of
-        Ok ok ->
-            ok
-
-        Err err ->
-            err
-
-
-stateUrl : Url.Url -> String -> String
-stateUrl url encodedState =
-    Url.toString
-        { url
-          --drop first letter of query which is '?' and gets prepended again by the Url.toString call
-            | query = encodedState |> Url.Builder.string "state" |> List.singleton |> Url.Builder.toQuery |> String.dropLeft 1 |> Maybe.Just
-        }
-
 
 welcomePage : Bool -> Html Msg
 welcomePage toGo =
@@ -614,12 +534,12 @@ welcomePage toGo =
             "WATER"
 
         exampleWaypoints =
-            [ Waypoint "Blue shoes" 56100 [ cafeType ]
-            , Waypoint "Lungburner" 56300 [ climbType ]
-            , Waypoint "Steep Street" 63700 [ climbType ]
-            , Waypoint "Foosville fountain" 98300 [ waterType, cafeType ]
-            , Waypoint "Cosy hedge" 198200 [ "😴" ]
-            , Waypoint "Legburner" 243800 [ climbType ]
+            [ GpxApi.Waypoint 56100 "Blue shoes" [ cafeType ]
+            , GpxApi.Waypoint 56300 "Lungburner" [ climbType ]
+            , GpxApi.Waypoint 63700 "Steep Street" [ climbType ]
+            , GpxApi.Waypoint 98300 "Foosville fountain" [ waterType, cafeType ]
+            , GpxApi.Waypoint 198200 "Cosy hedge" [ "😴" ]
+            , GpxApi.Waypoint 243800 "Legburner" [ climbType ]
             ]
     in
     Html.div
@@ -635,9 +555,8 @@ welcomePage toGo =
               , Html.ul []
                     [ Html.li [] [ Html.text "Customise information level" ]
                     , Html.li [] [ Html.text "Compact or spacious view" ]
-                    , Html.li [] [ Html.text "User-defined location types" ]
-                    , Html.li [] [ Html.text "Filter location types" ]
-                    , Html.li [] [ Html.text "Design on desktop, send to device" ]
+                    , Html.li [] [ Html.text "User-defined waypoint categories" ]
+                    , Html.li [] [ Html.text "Filter waypoint categories" ]
                     , Html.li [] [ Html.text "...and more." ]
                     ]
               , Html.br [] []
@@ -662,23 +581,23 @@ welcomePage toGo =
 
                           else
                             ( "Distance from zero", identity, CuesViewOptions FromZero 1000 0 defaultSpacing defaultDistanceDetail )
-                        , ( "Custom location types"
+                        , ( "Custom categories"
                           , List.map
                                 (\w ->
                                     { w
-                                        | types =
+                                        | categories =
                                             List.map
-                                                (\typ ->
-                                                    Dict.get typ (Dict.fromList [ ( cafeType, "☕" ), ( climbType, "⛰️" ), ( waterType, "🚰" ) ])
-                                                        |> Maybe.withDefault typ
+                                                (\cat ->
+                                                    Dict.get cat (Dict.fromList [ ( cafeType, "☕" ), ( climbType, "⛰️" ), ( waterType, "🚰" ) ])
+                                                        |> Maybe.withDefault cat
                                                 )
-                                                w.types
+                                                w.categories
                                     }
                                 )
                           , CuesViewOptions None 1000 0 defaultSpacing defaultDistanceDetail
                           )
                         , ( "Custom spacing", identity, CuesViewOptions None 1000 0 (defaultSpacing - 10) defaultDistanceDetail )
-                        , ( "Filter location types", cues (WaypointsOptions True (initialFilteredLocations exampleWaypoints |> Dict.map (\typ _ -> List.member typ [ unknownType, climbType, waterType ]))), CuesViewOptions None 1000 0 defaultSpacing defaultDistanceDetail )
+                        , ( "Filter categories", cues (WaypointsOptions True (initialFilteredCategories exampleWaypoints |> Dict.map (\typ _ -> List.member typ [ unknownCategory, climbType, waterType ]))), CuesViewOptions None 1000 0 defaultSpacing defaultDistanceDetail )
                         ]
                     )
               ]
@@ -718,8 +637,8 @@ optionGroup title elements =
         (Html.legend [] [ Html.text title ] :: elements)
 
 
-viewOptions : Bool -> Maybe Float -> WaypointsOptions -> Bool -> CuesViewOptions -> Maybe String -> Html Msg
-viewOptions show maxDistance waypointOptions showStartFinish cuesViewOptions gpxError =
+viewOptions : Bool -> Maybe Float -> WaypointsOptions -> Bool -> CuesViewOptions -> Maybe String -> Maybe Location.LocationState -> Maybe Location.LocationError -> Bool -> Int -> Html Msg
+viewOptions show maxDistance waypointOptions showStartFinish cuesViewOptions gpxError location locationError trackingEnabled trackingIntervalSec =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "column"
@@ -734,8 +653,6 @@ viewOptions show maxDistance waypointOptions showStartFinish cuesViewOptions gpx
                 , Html.Attributes.style "width" "1em"
                 ]
                 [ Html.span [ Html.Events.onClick <| ShowOptions True ] [ Html.text "options" ]
-                , Html.span [] [ Html.text " | " ]
-                , Html.span [ Html.Events.onClick <| ShowQR ] [ Html.text "share" ]
                 ]
             ]
 
@@ -745,7 +662,7 @@ viewOptions show maxDistance waypointOptions showStartFinish cuesViewOptions gpx
                         [ Html.h2 [] [ Html.text "Options" ]
                         , Html.p [ Html.Events.onClick <| ShowOptions False ] [ Html.text "(hide)" ]
                         , Html.hr [] []
-                        , optionGroup "Waypoint types"
+                        , optionGroup "Waypoint categories"
                             (Dropdown.dropdown
                                 (Dropdown.Options
                                     [ Dropdown.Item "all" "all" True
@@ -756,34 +673,34 @@ viewOptions show maxDistance waypointOptions showStartFinish cuesViewOptions gpx
                                         (\selection ->
                                             case selection of
                                                 "all" ->
-                                                    UpdateFilterEnabled False
+                                                    UpdateCategoryFilterEnabled False
 
                                                 "filtered" ->
-                                                    UpdateFilterEnabled True
+                                                    UpdateCategoryFilterEnabled True
 
                                                 _ ->
-                                                    Never
+                                                    NoOp
                                         )
-                                        >> Maybe.withDefault Never
+                                        >> Maybe.withDefault NoOp
                                     )
                                 )
                                 []
                                 (Maybe.Just <|
-                                    if waypointOptions.locationFilterEnabled then
+                                    if waypointOptions.categoryFilterEnabled then
                                         "filtered"
 
                                     else
                                         "all"
                                 )
-                                :: (if waypointOptions.locationFilterEnabled then
+                                :: (if waypointOptions.categoryFilterEnabled then
                                         [ Html.fieldset []
-                                            ((waypointOptions.filteredLocationTypes
+                                            ((waypointOptions.filteredCategories
                                                 |> Dict.toList
                                                 |> List.map
                                                     (\( typ, included ) ->
                                                         checkbox included
-                                                            (TypeEnabled typ (not included))
-                                                            (if typ /= unknownType then
+                                                            (CategoryEnabled typ (not included))
+                                                            (if typ /= unknownCategory then
                                                                 typ
 
                                                              else
@@ -791,8 +708,8 @@ viewOptions show maxDistance waypointOptions showStartFinish cuesViewOptions gpx
                                                             )
                                                     )
                                              )
-                                                ++ [ Html.button [ Html.Events.onClick <| SetAllTypesEnabled True ] [ Html.text "All" ]
-                                                   , Html.button [ Html.Events.onClick <| SetAllTypesEnabled False ] [ Html.text "None" ]
+                                                ++ [ Html.button [ Html.Events.onClick <| SetAllCategoriesEnabled True ] [ Html.text "All" ]
+                                                   , Html.button [ Html.Events.onClick <| SetAllCategoriesEnabled False ] [ Html.text "None" ]
                                                    ]
                                             )
                                         ]
@@ -882,9 +799,54 @@ viewOptions show maxDistance waypointOptions showStartFinish cuesViewOptions gpx
                             ]
                             [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "upload GPX" OpenFileBrowser
                             , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "clear" (ShowPage <| WelcomePage False)
-                            , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "share / send to device" ShowQR
                             ]
+                        , Html.hr [] []
+                        , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "Refresh Location" RequestLocation
+                        , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ]
+                            (if trackingEnabled then
+                                "Stop Tracking"
+
+                             else
+                                "Start Tracking"
+                            )
+                            ToggleTracking
                         ]
+                        ++ (if trackingEnabled then
+                                [ optionGroup ("Interval: " ++ String.fromInt trackingIntervalSec ++ "s")
+                                    [ Html.input
+                                        [ Html.Attributes.type_ "range"
+                                        , Html.Attributes.min "10"
+                                        , Html.Attributes.max "300"
+                                        , Html.Attributes.step "10"
+                                        , Html.Attributes.value <| String.fromInt trackingIntervalSec
+                                        , Html.Events.onInput (String.toInt >> Maybe.withDefault 60 >> SetTrackingInterval)
+                                        ]
+                                        []
+                                    ]
+                                ]
+
+                            else
+                                []
+                           )
+                        ++ [ Html.p
+                                [ Html.Attributes.style "font-size" "0.8em"
+                                , Html.Attributes.style "margin" "0.5em 0"
+                                ]
+                                [ Html.text
+                                    (case locationError of
+                                        Just err ->
+                                            Location.locationErrorToString err
+
+                                        Nothing ->
+                                            case location of
+                                                Just loc ->
+                                                    "Accuracy: " ++ String.fromFloat (toFloat (round (loc.accuracy * 10)) / 10) ++ "m"
+
+                                                Nothing ->
+                                                    "No location fix"
+                                    )
+                                ]
+                           ]
                   ]
                 , gpxError |> Maybe.map (\err -> [ Html.br [] [], viewGpxErrorPanel err ]) |> Maybe.withDefault [ Html.div [] [] ]
                 ]
@@ -948,7 +910,7 @@ formatTotalDistanceDisplay v =
             "hide"
 
 
-injectStartFinish : Float -> List Waypoint -> List Waypoint
+injectStartFinish : Float -> List GpxApi.Waypoint -> List GpxApi.Waypoint
 injectStartFinish finishDistance waypoints =
     let
         hasWaypointAtDistance d =
@@ -959,43 +921,43 @@ injectStartFinish finishDistance waypoints =
                 waypoints
 
             else
-                Waypoint "Start" 0 [ startFinishType ] :: waypoints
+                GpxApi.Waypoint 0 "Start" [ startFinishCategory ] :: waypoints
     in
     if hasWaypointAtDistance finishDistance then
         withStart
 
     else
-        withStart ++ [ Waypoint "Finish" finishDistance [ startFinishType ] ]
+        withStart ++ [ GpxApi.Waypoint finishDistance "Finish" [ startFinishCategory ] ]
 
 
-cues : WaypointsOptions -> List Waypoint -> List Waypoint
+cues : WaypointsOptions -> List GpxApi.Waypoint -> List GpxApi.Waypoint
 cues waypointOptions waypoints =
-    if waypointOptions.locationFilterEnabled then
+    if waypointOptions.categoryFilterEnabled then
         List.filterMap
             (\w ->
                 let
-                    includeType =
-                        \typ ->
-                            Dict.get typ waypointOptions.filteredLocationTypes
+                    includeCategory =
+                        \cat ->
+                            Dict.get cat waypointOptions.filteredCategories
                                 |> Maybe.withDefault True
                 in
-                case w.types of
-                    -- if no types then we just check the unknown type key
+                case w.categories of
+                    -- if no categories then we just check the unknown category key
                     [] ->
-                        if includeType unknownType then
+                        if includeCategory unknownCategory then
                             Maybe.Just w
 
                         else
                             Maybe.Nothing
 
-                    types ->
-                        case List.filter includeType types of
-                            -- If there are types and they are all filtered out, don't show waypoint
+                    cats ->
+                        case List.filter includeCategory cats of
+                            -- If there are categories and they are all filtered out, don't show waypoint
                             [] ->
                                 Maybe.Nothing
 
                             some ->
-                                Maybe.Just { w | types = some }
+                                Maybe.Just { w | categories = some }
             )
             waypoints
 
@@ -1003,7 +965,7 @@ cues waypointOptions waypoints =
         waypoints
 
 
-cuesheet : List Waypoint -> CuesViewOptions -> Float -> Html Msg
+cuesheet : List GpxApi.Waypoint -> CuesViewOptions -> Float -> Html Msg
 cuesheet waypoints cuesViewOptions finishDistance =
     let
         info =
@@ -1054,12 +1016,12 @@ cuesheet waypoints cuesViewOptions finishDistance =
                                     waypointInfo =
                                         List.filterMap identity
                                             [ waypointDistance
-                                            , case waypoint.types of
+                                            , case waypoint.categories of
                                                 [] ->
                                                     Maybe.Nothing
 
-                                                types ->
-                                                    Maybe.Just <| String.join ", " types
+                                                cats ->
+                                                    Maybe.Just <| String.join ", " cats
                                             ]
 
                                     waypointInfoLines =
@@ -1147,7 +1109,7 @@ cuesheet waypoints cuesViewOptions finishDistance =
         ]
 
 
-waypointInfos : Float -> List Waypoint -> List Info
+waypointInfos : Float -> List GpxApi.Waypoint -> List Info
 waypointInfos position waypoints =
     List.foldl
         (\el accum ->
@@ -1202,18 +1164,19 @@ type alias StoredStateCodeFields =
     { waypoints : String
     , waypointName : String
     , waypointDistance : String
-    , waypointType : String
+    , waypointCategories : String
     , totalDistanceDisplay : String
     , referencePoint : String
     , distanceDetail : String
-    , locationFilterEnabled : String
-    , filteredLocationTypes : String
+    , categoryFilterEnabled : String
+    , filteredCategories : String
     , itemSpacing : String
     , showOptions : String
     , showStartFinish : String
 
     -- When finishDistance can be inferred from trackpoints, remove finishDistance from storedState
     , finishDistance : String
+    , trackingIntervalSec : String
     }
 
 
@@ -1222,40 +1185,17 @@ longFieldNames =
     { waypoints = "waypoints"
     , waypointName = "name"
     , waypointDistance = "distance"
-    , waypointType = "typ"
+    , waypointCategories = "categories"
     , totalDistanceDisplay = "totalDistanceDisplay"
     , referencePoint = "referencePoint"
     , distanceDetail = "distanceDetail"
-    , locationFilterEnabled = "locationFilterEnabled"
-    , filteredLocationTypes = "filteredLocationTypes"
+    , categoryFilterEnabled = "categoryFilterEnabled"
+    , filteredCategories = "filteredCategories"
     , itemSpacing = "itemSpacing"
     , showOptions = "showOptions"
     , showStartFinish = "showStartFinish"
     , finishDistance = "finishDistance"
-    }
-
-
-{-| shortFieldNames are used within the QR code to reduce the payload size,
-as when the state is transferred as a query param it's easy to overload
-the server used under the hood for jekyll and get the following error
-which results in a 404:
-ERROR WEBrick::HTTPStatus::RequestURITooLarge
--}
-shortFieldNames : StoredStateCodeFields
-shortFieldNames =
-    { waypoints = "w"
-    , waypointName = "n"
-    , waypointDistance = "d"
-    , waypointType = "t"
-    , totalDistanceDisplay = "tdd"
-    , referencePoint = "rp"
-    , distanceDetail = "dd"
-    , locationFilterEnabled = "lfe"
-    , filteredLocationTypes = "flt"
-    , itemSpacing = "is"
-    , showOptions = "so"
-    , showStartFinish = "ssf"
-    , finishDistance = "fd"
+    , trackingIntervalSec = "trackingIntervalSec"
     }
 
 
@@ -1265,8 +1205,8 @@ encodeSavedState fieldNames model =
         ((case model.page of
             CuesheetPage cuesModel ->
                 [ ( fieldNames.waypoints, encodeWaypoints fieldNames cuesModel.waypoints )
-                , ( fieldNames.locationFilterEnabled, Json.Encode.bool cuesModel.waypointOptions.locationFilterEnabled )
-                , ( fieldNames.filteredLocationTypes, Json.Encode.dict identity Json.Encode.bool cuesModel.waypointOptions.filteredLocationTypes )
+                , ( fieldNames.categoryFilterEnabled, Json.Encode.bool cuesModel.waypointOptions.categoryFilterEnabled )
+                , ( fieldNames.filteredCategories, Json.Encode.dict identity Json.Encode.bool cuesModel.waypointOptions.filteredCategories )
                 , ( fieldNames.showStartFinish, Json.Encode.bool cuesModel.showStartFinish )
                 , ( fieldNames.finishDistance, Json.Encode.float cuesModel.finishDistance )
                 ]
@@ -1279,6 +1219,7 @@ encodeSavedState fieldNames model =
                , ( fieldNames.distanceDetail, Json.Encode.int model.cuesViewOptions.distanceDetail )
                , ( fieldNames.itemSpacing, Json.Encode.int model.cuesViewOptions.itemSpacing )
                , ( fieldNames.showOptions, Json.Encode.bool model.showOptions )
+               , ( fieldNames.trackingIntervalSec, Json.Encode.int model.trackingIntervalSec )
                ]
         )
         |> Json.Encode.encode 0
@@ -1290,13 +1231,14 @@ storedStateDecoder fieldNames =
         (Json.Decode.maybe (Json.Decode.field fieldNames.waypoints (decodeWaypoints fieldNames)))
         (Json.Decode.maybe (Json.Decode.field fieldNames.totalDistanceDisplay Json.Decode.string))
         (Json.Decode.maybe (Json.Decode.field fieldNames.referencePoint Json.Decode.float))
-        (Json.Decode.maybe (Json.Decode.field fieldNames.locationFilterEnabled Json.Decode.bool))
-        (Json.Decode.maybe (Json.Decode.field fieldNames.filteredLocationTypes (Json.Decode.dict Json.Decode.bool)))
+        (Json.Decode.maybe (Json.Decode.field fieldNames.categoryFilterEnabled Json.Decode.bool))
+        (Json.Decode.maybe (Json.Decode.field fieldNames.filteredCategories (Json.Decode.dict Json.Decode.bool)))
         (Json.Decode.maybe (Json.Decode.field fieldNames.itemSpacing Json.Decode.int))
         (Json.Decode.maybe (Json.Decode.field fieldNames.distanceDetail Json.Decode.int))
         (Json.Decode.maybe (Json.Decode.field fieldNames.showOptions Json.Decode.bool))
         |> andMap (Json.Decode.maybe (Json.Decode.field fieldNames.showStartFinish Json.Decode.bool))
         |> andMap (Json.Decode.maybe (Json.Decode.field fieldNames.finishDistance Json.Decode.float))
+        |> andMap (Json.Decode.maybe (Json.Decode.field fieldNames.trackingIntervalSec Json.Decode.int))
 
 
 andMap : Json.Decode.Decoder a -> Json.Decode.Decoder (a -> b) -> Json.Decode.Decoder b
@@ -1304,24 +1246,24 @@ andMap =
     Json.Decode.map2 (|>)
 
 
-decodeWaypoints : StoredStateCodeFields -> Json.Decode.Decoder (List Waypoint)
+decodeWaypoints : StoredStateCodeFields -> Json.Decode.Decoder (List GpxApi.Waypoint)
 decodeWaypoints fieldNames =
     Json.Decode.list
-        (Json.Decode.map3 Waypoint
-            (Json.Decode.field fieldNames.waypointName Json.Decode.string)
+        (Json.Decode.map3 GpxApi.Waypoint
             (Json.Decode.field fieldNames.waypointDistance Json.Decode.float)
-            (Json.Decode.field fieldNames.waypointType (Json.Decode.list Json.Decode.string))
+            (Json.Decode.field fieldNames.waypointName Json.Decode.string)
+            (Json.Decode.field fieldNames.waypointCategories (Json.Decode.list Json.Decode.string))
         )
 
 
-encodeWaypoints : StoredStateCodeFields -> List Waypoint -> Json.Encode.Value
+encodeWaypoints : StoredStateCodeFields -> List GpxApi.Waypoint -> Json.Encode.Value
 encodeWaypoints fieldNames waypoints =
     Json.Encode.list
         (\waypoint ->
             Json.Encode.object
                 [ ( fieldNames.waypointName, Json.Encode.string waypoint.name )
                 , ( fieldNames.waypointDistance, Json.Encode.float waypoint.distance )
-                , ( fieldNames.waypointType, Json.Encode.list Json.Encode.string waypoint.types )
+                , ( fieldNames.waypointCategories, Json.Encode.list Json.Encode.string waypoint.categories )
                 ]
         )
         waypoints
@@ -1334,3 +1276,9 @@ port calculateElevationProfileData : String -> Cmd msg
 
 
 port receiveElevationProfileData : (String -> msg) -> Sub msg
+
+
+port requestLocation : () -> Cmd msg
+
+
+port receiveLocation : (Json.Decode.Value -> msg) -> Sub msg
