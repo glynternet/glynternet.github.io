@@ -8,6 +8,7 @@ import File.Select
 import GpxApi
 import Html exposing (Attribute, Html)
 import Location
+import PositionalTracks exposing (PositionalTracks)
 import Html.Attributes
 import Html.Events
 import Json.Decode
@@ -52,7 +53,7 @@ subscriptions model =
 
 
 type alias StoredState =
-    { waypoints : Maybe (List GpxApi.Waypoint)
+    { tracks : Maybe PositionalTracks
     , totalDistanceDisplay : Maybe String
     , lastReferencePoint : Maybe Float
     , categoryFilterEnabled : Maybe Bool
@@ -61,7 +62,6 @@ type alias StoredState =
     , distanceDetail : Maybe Int
     , showStartFinish : Maybe Bool
     , showOptions : Maybe Bool
-    , finishDistance : Maybe Float
     , trackingIntervalSec : Maybe Int
     }
 
@@ -85,12 +85,18 @@ type Page
 
 
 type alias CuesModel =
-    { waypoints : List GpxApi.Waypoint
+    { tracks : PositionalTracks
     , waypointOptions : WaypointsOptions
     , showStartFinish : Bool
-    , finishDistance : Float
-    , trackpoints : List GpxApi.TrackPoint
     }
+
+
+getFinishDistance : PositionalTracks -> Float
+getFinishDistance tracks =
+    List.reverse tracks.current.trackpoints
+        |> List.head
+        |> Maybe.map .distance
+        |> Maybe.withDefault 0
 
 
 type alias WaypointsOptions =
@@ -135,7 +141,7 @@ init maybeState =
         |> Maybe.map
             (Json.Decode.decodeValue (storedStateDecoder longFieldNames)
                 -- TODO: handle error
-                >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
+                >> Result.withDefault (StoredState Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing Maybe.Nothing)
                 >> storedStateModel
             )
         -- TODO(glynternet): best default value for last reference point/?
@@ -147,17 +153,19 @@ init maybeState =
 storedStateModel : StoredState -> Model
 storedStateModel state =
     Model
-        (state.waypoints
+        (state.tracks
             |> Maybe.map
-                (\ws ->
-                    CuesModel ws
+                (\tracks ->
+                    let
+                        allWaypoints =
+                            List.concatMap .waypoints (tracks.prev ++ [ tracks.current ] ++ tracks.next)
+                    in
+                    CuesModel tracks
                         (WaypointsOptions
                             (state.categoryFilterEnabled |> Maybe.withDefault False)
-                            (state.filteredCategories |> Maybe.withDefault (initialFilteredCategories ws))
+                            (state.filteredCategories |> Maybe.withDefault (initialFilteredCategories allWaypoints))
                         )
                         (state.showStartFinish |> Maybe.withDefault False)
-                        (state.finishDistance |> Maybe.withDefault 0)
-                        []
                         |> CuesheetPage
                 )
             |> Maybe.withDefault (WelcomePage False)
@@ -202,6 +210,8 @@ type Msg
     | SetTrackingInterval Int
     | GPXStringed String
     | WasmResponseReceived String
+    | NavigateToPrevious
+    | NavigateToNext
 
 
 initialWaypointOptions : List GpxApi.Waypoint -> WaypointsOptions
@@ -369,7 +379,7 @@ update msg model =
                                     Location.LatLon pos.lat pos.lon
 
                                 matchedDist =
-                                    Location.findNearestTrackPoint gpsPos cuesModel.trackpoints
+                                    Location.findNearestTrackPoint gpsPos cuesModel.tracks.current.trackpoints
                                         |> Maybe.map .distance
                                         |> Maybe.withDefault 0
 
@@ -425,26 +435,40 @@ update msg model =
                             ( { model | gpxError = Maybe.Just errMsg }, Cmd.none )
 
                         Ok tracks ->
-                            case tracks of
-                                [ track ] ->
-                                    let
-                                        waypoints =
-                                            track.waypoints
-                                                |> List.sortBy .distance
+                            case PositionalTracks.fromList tracks of
+                                Nothing ->
+                                    ( { model | gpxError = Maybe.Just "No tracks found in GPX file" }, Cmd.none )
 
-                                        trackEndDistance =
-                                            List.head (List.reverse track.trackpoints) |> Maybe.map .distance |> Maybe.withDefault 0
+                                Just positionalTracks ->
+                                    let
+                                        allWaypoints =
+                                            List.concatMap .waypoints tracks
 
                                         cuesModel =
-                                            initialCuesModel waypoints trackEndDistance track.trackpoints
+                                            CuesModel
+                                                positionalTracks
+                                                (initialWaypointOptions (List.sortBy .distance allWaypoints))
+                                                True
                                     in
                                     { model | page = CuesheetPage cuesModel, gpxError = Maybe.Nothing } |> updateModel
 
-                                [] ->
-                                    ( { model | gpxError = Maybe.Just "No tracks found in GPX file" }, Cmd.none )
+        NavigateToPrevious ->
+            case model.page of
+                CuesheetPage cuesModel ->
+                    updateCuesModel model
+                        { cuesModel | tracks = PositionalTracks.navigatePrevious cuesModel.tracks }
 
-                                _ ->
-                                    ( { model | gpxError = Maybe.Just "Multiple tracks found in GPX file; only single-track GPX files are supported" }, Cmd.none )
+                _ ->
+                    ( model, Cmd.none )
+
+        NavigateToNext ->
+            case model.page of
+                CuesheetPage cuesModel ->
+                    updateCuesModel model
+                        { cuesModel | tracks = PositionalTracks.navigateNext cuesModel.tracks }
+
+                _ ->
+                    ( model, Cmd.none )
 
 
 updateCuesModel : Model -> CuesModel -> ( Model, Cmd Msg )
@@ -456,14 +480,6 @@ updateModel : Model -> ( Model, Cmd Msg )
 updateModel model =
     ( model, storeState (encodeSavedState longFieldNames model) )
 
-
-initialCuesModel : List GpxApi.Waypoint -> Float -> List GpxApi.TrackPoint -> CuesModel
-initialCuesModel waypoints trackFinish trackpoints =
-    let
-        sortedWaypoints =
-            List.sortBy .distance waypoints
-    in
-    CuesModel sortedWaypoints (initialWaypointOptions sortedWaypoints) True trackFinish trackpoints
 
 
 
@@ -483,12 +499,15 @@ view model =
                         , Html.Attributes.style "height" "100%"
                         ]
                         (let
+                            currentFinishDistance =
+                                getFinishDistance cuesheetModel.tracks
+
                             waypointsWithStartFinish =
                                 if cuesheetModel.showStartFinish then
-                                    injectStartFinish cuesheetModel.finishDistance cuesheetModel.waypoints
+                                    injectStartFinish currentFinishDistance cuesheetModel.tracks.current.waypoints
 
                                 else
-                                    cuesheetModel.waypoints
+                                    cuesheetModel.tracks.current.waypoints
                          in
                          [ viewOptions model.showOptions
                             (List.head (List.reverse waypointsWithStartFinish) |> Maybe.map .distance)
@@ -507,8 +526,11 @@ view model =
                             , Html.Attributes.style "height" "100%"
                             , Html.Attributes.style "justify-content" "center"
                             ]
-                            [ cuesheet (cues cuesheetModel.waypointOptions waypointsWithStartFinish) model.cuesViewOptions cuesheetModel.finishDistance
-                            ]
+                            (List.concat
+                                [ [ trackNavigationView cuesheetModel.tracks ]
+                                , [ cuesheet (cues cuesheetModel.waypointOptions waypointsWithStartFinish) model.cuesViewOptions currentFinishDistance ]
+                                ]
+                            )
                          ]
                         )
 
@@ -519,6 +541,39 @@ view model =
                 getStartedPage model.gpxError
         ]
 
+
+
+trackNavigationView : PositionalTracks -> Html Msg
+trackNavigationView tracks =
+    let
+        hasPrev =
+            not (List.isEmpty tracks.prev)
+
+        hasNext =
+            not (List.isEmpty tracks.next)
+    in
+    if not hasPrev && not hasNext then
+        Html.text ""
+
+    else
+        Html.div
+            [ Html.Attributes.class "flex-container"
+            , Html.Attributes.style "justify-content" "center"
+            , Html.Attributes.style "gap" "1em"
+            , Html.Attributes.style "padding" "0.5em"
+            ]
+            [ if hasPrev then
+                Html.button [ Html.Events.onClick NavigateToPrevious ] [ Html.text "← Prev track" ]
+
+              else
+                Html.text ""
+            , Html.text ("Track " ++ String.fromInt (List.length tracks.prev + 1) ++ " of " ++ String.fromInt (List.length tracks.prev + 1 + List.length tracks.next))
+            , if hasNext then
+                Html.button [ Html.Events.onClick NavigateToNext ] [ Html.text "Next track →" ]
+
+              else
+                Html.text ""
+            ]
 
 
 welcomePage : Bool -> Html Msg
@@ -911,7 +966,7 @@ formatTotalDistanceDisplay v =
 
 
 injectStartFinish : Float -> List GpxApi.Waypoint -> List GpxApi.Waypoint
-injectStartFinish finishDistance waypoints =
+injectStartFinish finishDist waypoints =
     let
         hasWaypointAtDistance d =
             List.any (\w -> w.distance == d) waypoints
@@ -923,11 +978,11 @@ injectStartFinish finishDistance waypoints =
             else
                 GpxApi.Waypoint 0 "Start" [ startFinishCategory ] :: waypoints
     in
-    if hasWaypointAtDistance finishDistance then
+    if hasWaypointAtDistance finishDist then
         withStart
 
     else
-        withStart ++ [ GpxApi.Waypoint finishDistance "Finish" [ startFinishCategory ] ]
+        withStart ++ [ GpxApi.Waypoint finishDist "Finish" [ startFinishCategory ] ]
 
 
 cues : WaypointsOptions -> List GpxApi.Waypoint -> List GpxApi.Waypoint
@@ -966,7 +1021,7 @@ cues waypointOptions waypoints =
 
 
 cuesheet : List GpxApi.Waypoint -> CuesViewOptions -> Float -> Html Msg
-cuesheet waypoints cuesViewOptions finishDistance =
+cuesheet waypoints cuesViewOptions finishDist =
     let
         info =
             waypointInfos cuesViewOptions.position waypoints
@@ -1008,7 +1063,7 @@ cuesheet waypoints cuesViewOptions finishDistance =
                                                 Maybe.Just (formatKm cuesViewOptions.distanceDetail waypoint.distance)
 
                                             ToFinish ->
-                                                Maybe.Just (formatKm cuesViewOptions.distanceDetail (finishDistance - waypoint.distance))
+                                                Maybe.Just (formatKm cuesViewOptions.distanceDetail (finishDist - waypoint.distance))
 
                                             ToPoint ->
                                                 Maybe.Just (formatKm cuesViewOptions.distanceDetail (cuesViewOptions.referencePoint - waypoint.distance))
@@ -1161,10 +1216,7 @@ defaultDistanceDetail =
 
 
 type alias StoredStateCodeFields =
-    { waypoints : String
-    , waypointName : String
-    , waypointDistance : String
-    , waypointCategories : String
+    { tracks : String
     , totalDistanceDisplay : String
     , referencePoint : String
     , distanceDetail : String
@@ -1173,19 +1225,13 @@ type alias StoredStateCodeFields =
     , itemSpacing : String
     , showOptions : String
     , showStartFinish : String
-
-    -- When finishDistance can be inferred from trackpoints, remove finishDistance from storedState
-    , finishDistance : String
     , trackingIntervalSec : String
     }
 
 
 longFieldNames : StoredStateCodeFields
 longFieldNames =
-    { waypoints = "waypoints"
-    , waypointName = "name"
-    , waypointDistance = "distance"
-    , waypointCategories = "categories"
+    { tracks = "tracks"
     , totalDistanceDisplay = "totalDistanceDisplay"
     , referencePoint = "referencePoint"
     , distanceDetail = "distanceDetail"
@@ -1194,7 +1240,6 @@ longFieldNames =
     , itemSpacing = "itemSpacing"
     , showOptions = "showOptions"
     , showStartFinish = "showStartFinish"
-    , finishDistance = "finishDistance"
     , trackingIntervalSec = "trackingIntervalSec"
     }
 
@@ -1204,11 +1249,10 @@ encodeSavedState fieldNames model =
     Json.Encode.object
         ((case model.page of
             CuesheetPage cuesModel ->
-                [ ( fieldNames.waypoints, encodeWaypoints fieldNames cuesModel.waypoints )
+                [ ( fieldNames.tracks, PositionalTracks.encode cuesModel.tracks )
                 , ( fieldNames.categoryFilterEnabled, Json.Encode.bool cuesModel.waypointOptions.categoryFilterEnabled )
                 , ( fieldNames.filteredCategories, Json.Encode.dict identity Json.Encode.bool cuesModel.waypointOptions.filteredCategories )
                 , ( fieldNames.showStartFinish, Json.Encode.bool cuesModel.showStartFinish )
-                , ( fieldNames.finishDistance, Json.Encode.float cuesModel.finishDistance )
                 ]
 
             _ ->
@@ -1228,7 +1272,7 @@ encodeSavedState fieldNames model =
 storedStateDecoder : StoredStateCodeFields -> Json.Decode.Decoder StoredState
 storedStateDecoder fieldNames =
     Json.Decode.map8 StoredState
-        (Json.Decode.maybe (Json.Decode.field fieldNames.waypoints (decodeWaypoints fieldNames)))
+        (Json.Decode.maybe (Json.Decode.field fieldNames.tracks PositionalTracks.decoder))
         (Json.Decode.maybe (Json.Decode.field fieldNames.totalDistanceDisplay Json.Decode.string))
         (Json.Decode.maybe (Json.Decode.field fieldNames.referencePoint Json.Decode.float))
         (Json.Decode.maybe (Json.Decode.field fieldNames.categoryFilterEnabled Json.Decode.bool))
@@ -1237,36 +1281,12 @@ storedStateDecoder fieldNames =
         (Json.Decode.maybe (Json.Decode.field fieldNames.distanceDetail Json.Decode.int))
         (Json.Decode.maybe (Json.Decode.field fieldNames.showOptions Json.Decode.bool))
         |> andMap (Json.Decode.maybe (Json.Decode.field fieldNames.showStartFinish Json.Decode.bool))
-        |> andMap (Json.Decode.maybe (Json.Decode.field fieldNames.finishDistance Json.Decode.float))
         |> andMap (Json.Decode.maybe (Json.Decode.field fieldNames.trackingIntervalSec Json.Decode.int))
 
 
 andMap : Json.Decode.Decoder a -> Json.Decode.Decoder (a -> b) -> Json.Decode.Decoder b
 andMap =
     Json.Decode.map2 (|>)
-
-
-decodeWaypoints : StoredStateCodeFields -> Json.Decode.Decoder (List GpxApi.Waypoint)
-decodeWaypoints fieldNames =
-    Json.Decode.list
-        (Json.Decode.map3 GpxApi.Waypoint
-            (Json.Decode.field fieldNames.waypointDistance Json.Decode.float)
-            (Json.Decode.field fieldNames.waypointName Json.Decode.string)
-            (Json.Decode.field fieldNames.waypointCategories (Json.Decode.list Json.Decode.string))
-        )
-
-
-encodeWaypoints : StoredStateCodeFields -> List GpxApi.Waypoint -> Json.Encode.Value
-encodeWaypoints fieldNames waypoints =
-    Json.Encode.list
-        (\waypoint ->
-            Json.Encode.object
-                [ ( fieldNames.waypointName, Json.Encode.string waypoint.name )
-                , ( fieldNames.waypointDistance, Json.Encode.float waypoint.distance )
-                , ( fieldNames.waypointCategories, Json.Encode.list Json.Encode.string waypoint.categories )
-                ]
-        )
-        waypoints
 
 
 port storeState : String -> Cmd msg

@@ -7,6 +7,7 @@ import File exposing (File)
 import File.Select
 import GpxApi
 import Location
+import PositionalTracks exposing (PositionalTracks)
 import Html exposing (Attribute, Html)
 import Html.Attributes
 import Html.Events
@@ -71,18 +72,6 @@ type alias Model =
     , filteredCategories : Dict.Dict String Bool
     , manualPosition : Maybe Float
     }
-
-
-type alias PositionalTracks =
-    { prev : List Track
-    , current : Track
-    , next : List Track
-    }
-
-
-tracksUpdateCurrent : (Track -> Track) -> PositionalTracks -> PositionalTracks
-tracksUpdateCurrent updateTrack tracks =
-    PositionalTracks tracks.prev (updateTrack tracks.current) tracks.next
 
 
 type alias Track =
@@ -233,16 +222,7 @@ update msg model =
             case model.tracks of
                 Loaded tracks ->
                     updateModel
-                        { model
-                            | tracks =
-                                Loaded <|
-                                    case tracks.prev of
-                                        [] ->
-                                            tracks
-
-                                        first :: rest ->
-                                            PositionalTracks rest first (tracks.current :: tracks.next)
-                        }
+                        { model | tracks = Loaded (PositionalTracks.navigatePrevious tracks) }
 
                 _ ->
                     ( model, Cmd.none )
@@ -251,16 +231,7 @@ update msg model =
             case model.tracks of
                 Loaded tracks ->
                     updateModel
-                        { model
-                            | tracks =
-                                Loaded <|
-                                    case tracks.next of
-                                        [] ->
-                                            tracks
-
-                                        first :: rest ->
-                                            PositionalTracks (tracks.current :: tracks.prev) first rest
-                        }
+                        { model | tracks = Loaded (PositionalTracks.navigateNext tracks) }
 
                 _ ->
                     ( model, Cmd.none )
@@ -272,10 +243,9 @@ update msg model =
                         { model
                             | tracks =
                                 Loaded <|
-                                    PositionalTracks
-                                        tracks.prev
-                                        (trackUpdateWaypoint tracks.current i (\w -> { w | name = name }))
-                                        tracks.next
+                                    PositionalTracks.updateCurrent
+                                        (\current -> trackUpdateWaypoint current i (\w -> { w | name = name }))
+                                        tracks
                         }
 
                 _ ->
@@ -288,10 +258,9 @@ update msg model =
                         { model
                             | tracks =
                                 Loaded <|
-                                    PositionalTracks
-                                        tracks.prev
-                                        (trackUpdateWaypoint tracks.current i (\w -> { w | distance = dist }))
-                                        tracks.next
+                                    PositionalTracks.updateCurrent
+                                        (\current -> trackUpdateWaypoint current i (\w -> { w | distance = dist }))
+                                        tracks
                         }
 
                 _ ->
@@ -300,7 +269,7 @@ update msg model =
         DeleteWaypoint i ->
             case model.tracks of
                 Loaded tracks ->
-                    updateModel { model | tracks = Loaded <| tracksUpdateCurrent (\current -> trackWithWaypoints current (List.Extra.removeAt i current.waypoints)) tracks }
+                    updateModel { model | tracks = Loaded <| PositionalTracks.updateCurrent (\current -> trackWithWaypoints current (List.Extra.removeAt i current.waypoints)) tracks }
 
                 _ ->
                     ( model, Cmd.none )
@@ -401,12 +370,12 @@ update msg model =
                             updateModel
                                 { model
                                     | tracks =
-                                        case tracks of
-                                            [] ->
+                                        case PositionalTracks.fromList tracks of
+                                            Nothing ->
                                                 Error "No tracks available in uploaded GPX 😢"
 
-                                            first :: rest ->
-                                                Loaded <| PositionalTracks [] first rest
+                                            Just positionalTracks ->
+                                                Loaded positionalTracks
                                     , filteredCategories = categories
                                 }
 
@@ -1292,59 +1261,13 @@ xyCalculator cfg =
 
 
 encodePositionalTracks : PositionalTracks -> Json.Encode.Value
-encodePositionalTracks tracks =
-    Json.Encode.object
-        [ ( "previous", Json.Encode.list encodeTrack tracks.prev )
-        , ( "current", encodeTrack tracks.current )
-        , ( "next", Json.Encode.list encodeTrack tracks.next )
-        ]
+encodePositionalTracks =
+    PositionalTracks.encode
 
 
 decodePositionalTracks : Json.Decode.Decoder PositionalTracks
 decodePositionalTracks =
-    Json.Decode.map3 PositionalTracks
-        (Json.Decode.field "previous" (Json.Decode.list decodeTrack))
-        (Json.Decode.field "current" decodeTrack)
-        (Json.Decode.field "next" (Json.Decode.list decodeTrack))
-
-
-encodeTrack : Track -> Json.Encode.Value
-encodeTrack track =
-    Json.Encode.object
-        [ ( "trackpoints", encodeTrackpoints track.trackpoints )
-        , ( "waypoints", encodeWaypoints track.waypoints )
-        ]
-
-
-decodeTrack : Json.Decode.Decoder Track
-decodeTrack =
-    Json.Decode.map2 GpxApi.Track
-        (Json.Decode.field "trackpoints" GpxApi.decodeTrackpoints)
-        (Json.Decode.field "waypoints" GpxApi.decodeWaypoints)
-
-
-encodeTrackpoints : List TrackPoint -> Json.Encode.Value
-encodeTrackpoints =
-    Json.Encode.list
-        (\point ->
-            Json.Encode.object
-                [ ( "dist", Json.Encode.float point.distance )
-                , ( "ele", Json.Encode.float point.elevation )
-                , ( "lat", Json.Encode.float point.lat )
-                , ( "lon", Json.Encode.float point.lon )
-                ]
-        )
-
-
-encodeWaypoints : List Waypoint -> Json.Encode.Value
-encodeWaypoints =
-    Json.Encode.list
-        (\waypoint ->
-            Json.Encode.object
-                [ ( "dist", Json.Encode.float waypoint.distance )
-                , ( "name", Json.Encode.string waypoint.name )
-                ]
-        )
+    PositionalTracks.decoder
 
 
 
