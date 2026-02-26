@@ -1056,6 +1056,12 @@ viewElevationProfileTab model tracks =
         maxDistance =
             Maybe.withDefault 1 <| List.maximum <| List.map .distance tracks.current.trackpoints
 
+        trackMaxElevation =
+            Maybe.withDefault 1 <| List.maximum <| List.map .elevation tracks.current.trackpoints
+
+        trackMinElevation =
+            Maybe.withDefault 1 <| List.minimum <| List.map .elevation tracks.current.trackpoints
+
         filteredWaypoints =
             filterWaypointsByCategory model.categoryFilterEnabled model.filteredCategories tracks.current.waypoints
 
@@ -1106,7 +1112,7 @@ viewElevationProfileTab model tracks =
                                     |> List.filter (\pt -> pt.distance >= segStart && pt.distance <= segEnd)
                                     |> List.map (\pt -> { pt | distance = pt.distance - segStart })
                         in
-                        profile seg segMaxDistance ep.fontSize ep.trackHeight ep.trackThickness ep.waypointStrokeColor segPosition segIntensity
+                        profile seg segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.waypointStrokeColor segPosition segIntensity
                     )
     in
     Html.div []
@@ -1143,15 +1149,9 @@ viewElevationProfileTab model tracks =
         )
 
 
-profile : Track -> Float -> Float -> Int -> Float -> String -> Maybe Float -> List { distance : Float, intensity : Float } -> Html Msg
-profile track maxDistance fontSize trackHeight trackThickness waypointStrokeColor maybePosition intensityPoints =
+profile : Track -> Float -> Float -> Float -> Float -> Int -> Float -> String -> Maybe Float -> List { distance : Float, intensity : Float } -> Html Msg
+profile track maxDistance minElevation maxElevation fontSize trackHeight trackThickness waypointStrokeColor maybePosition intensityPoints =
     let
-        maxElevation =
-            Maybe.withDefault 1 <| List.maximum <| List.map .elevation track.trackpoints
-
-        minElevation =
-            Maybe.withDefault 1 <| List.minimum <| List.map .elevation track.trackpoints
-
         waypointTextHeight =
             100
 
