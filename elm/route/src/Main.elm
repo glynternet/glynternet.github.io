@@ -91,6 +91,7 @@ type alias ElevationProfileOptions =
     , showIntensity : Bool
     , intensityTau : Float
     , manualPosition : Maybe Float
+    , splits : Int
     }
 
 
@@ -144,6 +145,7 @@ defaultElevationProfileOptions =
     , showIntensity = False
     , intensityTau = 500
     , manualPosition = Nothing
+    , splits = 1
     }
 
 
@@ -188,6 +190,7 @@ type alias StoredState =
     , showIntensity : Maybe Bool
     , intensityTau : Maybe Float
     , manualPosition : Maybe Float
+    , splits : Maybe Int
 
     -- Cuesheet
     , totalDistanceDisplay : Maybe String
@@ -218,6 +221,7 @@ storedStateModel state =
         , showIntensity = state.showIntensity |> Maybe.withDefault defaultElevationProfileOptions.showIntensity
         , intensityTau = state.intensityTau |> Maybe.withDefault defaultElevationProfileOptions.intensityTau
         , manualPosition = state.manualPosition
+        , splits = state.splits |> Maybe.withDefault defaultElevationProfileOptions.splits
         }
     , cuesheet =
         { totalDistanceDisplay = state.totalDistanceDisplay |> Maybe.andThen parseTotalDistanceDisplay |> Maybe.withDefault defaultCuesheetOptions.totalDistanceDisplay
@@ -232,7 +236,7 @@ storedStateModel state =
 
 defaultStoredState : StoredState
 defaultStoredState =
-    StoredState Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
+    StoredState Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
@@ -286,6 +290,7 @@ type Msg
     | ShowIntensity Bool
     | UpdateIntensityTau Float
     | UpdateManualPosition (Maybe Float)
+    | UpdateSplits Int
       -- Cuesheet
     | UpdateTotalDistanceDisplay (Maybe TotalDistanceDisplay)
     | UpdatePosition Float
@@ -541,6 +546,13 @@ update msg model =
             in
             updateModel { model | elevationProfile = { ep | manualPosition = pos } }
 
+        UpdateSplits n ->
+            let
+                ep =
+                    model.elevationProfile
+            in
+            updateModel { model | elevationProfile = { ep | splits = n } }
+
         -- Cuesheet options
         UpdateTotalDistanceDisplay maybeSelection ->
             maybeSelection
@@ -607,6 +619,129 @@ trackWithWaypoints track waypoints =
 trackUpdateWaypoint : Track -> Int -> (Waypoint -> Waypoint) -> Track
 trackUpdateWaypoint track i updateWaypoint =
     trackWithWaypoints track <| List.Extra.updateAt i updateWaypoint track.waypoints
+
+
+splitTrackByDistance : Int -> Track -> List Track
+splitTrackByDistance n track =
+    if n <= 1 then
+        [ track ]
+
+    else
+        let
+            totalDistance =
+                List.reverse track.trackpoints
+                    |> List.head
+                    |> Maybe.map .distance
+                    |> Maybe.withDefault 0
+
+            segmentLength =
+                totalDistance / toFloat n
+        in
+        List.range 0 (n - 1)
+            |> List.map
+                (\i ->
+                    let
+                        segStart =
+                            toFloat i * segmentLength
+
+                        segEnd =
+                            toFloat (i + 1) * segmentLength
+
+                        segTrackpoints =
+                            extractSegmentTrackpoints segStart segEnd track.trackpoints
+
+                        segWaypoints =
+                            track.waypoints
+                                |> List.filter (\w -> w.distance >= segStart && w.distance <= segEnd)
+                                |> List.map (\w -> { w | distance = w.distance - segStart })
+                    in
+                    { trackpoints = segTrackpoints |> List.map (\tp -> { tp | distance = tp.distance - segStart })
+                    , waypoints = segWaypoints
+                    }
+                )
+
+
+extractSegmentTrackpoints : Float -> Float -> List TrackPoint -> List TrackPoint
+extractSegmentTrackpoints segStart segEnd trackpoints =
+    let
+        pointsInRange =
+            trackpoints
+                |> List.filter (\tp -> tp.distance >= segStart && tp.distance <= segEnd)
+
+        startPoint =
+            interpolateTrackpointAt segStart trackpoints
+
+        endPoint =
+            interpolateTrackpointAt segEnd trackpoints
+
+        withStart =
+            case ( startPoint, List.head pointsInRange ) of
+                ( Just sp, Just first ) ->
+                    if first.distance > segStart then
+                        sp :: pointsInRange
+
+                    else
+                        pointsInRange
+
+                ( Just sp, Nothing ) ->
+                    [ sp ]
+
+                _ ->
+                    pointsInRange
+
+        withStartAndEnd =
+            case ( endPoint, List.reverse withStart |> List.head ) of
+                ( Just ep, Just lastPt ) ->
+                    if lastPt.distance < segEnd then
+                        withStart ++ [ ep ]
+
+                    else
+                        withStart
+
+                ( Just ep, Nothing ) ->
+                    [ ep ]
+
+                _ ->
+                    withStart
+    in
+    withStartAndEnd
+
+
+interpolateTrackpointAt : Float -> List TrackPoint -> Maybe TrackPoint
+interpolateTrackpointAt dist trackpoints =
+    case trackpoints of
+        [] ->
+            Nothing
+
+        [ only ] ->
+            if only.distance == dist then
+                Just only
+
+            else
+                Nothing
+
+        a :: b :: rest ->
+            if a.distance == dist then
+                Just a
+
+            else if a.distance < dist && b.distance >= dist then
+                let
+                    t =
+                        if b.distance == a.distance then
+                            0
+
+                        else
+                            (dist - a.distance) / (b.distance - a.distance)
+                in
+                Just
+                    { distance = dist
+                    , elevation = a.elevation + t * (b.elevation - a.elevation)
+                    , lat = a.lat + t * (b.lat - a.lat)
+                    , lon = a.lon + t * (b.lon - a.lon)
+                    }
+
+            else
+                interpolateTrackpointAt dist (b :: rest)
 
 
 unknownCategory : String
@@ -923,10 +1058,60 @@ viewElevationProfileTab model tracks =
 
         filteredWaypoints =
             filterWaypointsByCategory model.categoryFilterEnabled model.filteredCategories tracks.current.waypoints
+
+        pos =
+            effectivePosition model
+
+        segmentLength =
+            maxDistance / toFloat (max 1 ep.splits)
+
+        fullIntensity =
+            if ep.showIntensity then
+                computeIntensity ep.intensityTau tracks.current.trackpoints
+
+            else
+                []
+
+        profileViews =
+            GpxApi.Track tracks.current.trackpoints filteredWaypoints
+                |> splitTrackByDistance ep.splits
+                |> List.indexedMap
+                    (\i seg ->
+                        let
+                            segMaxDistance =
+                                List.reverse seg.trackpoints
+                                    |> List.head
+                                    |> Maybe.map .distance
+                                    |> Maybe.withDefault segmentLength
+
+                            segStart =
+                                toFloat i * segmentLength
+
+                            segEnd =
+                                segStart + segmentLength
+
+                            segPosition =
+                                pos
+                                    |> Maybe.andThen
+                                        (\p ->
+                                            if p >= segStart && p <= segEnd then
+                                                Just (p - segStart)
+
+                                            else
+                                                Nothing
+                                        )
+
+                            segIntensity =
+                                fullIntensity
+                                    |> List.filter (\pt -> pt.distance >= segStart && pt.distance <= segEnd)
+                                    |> List.map (\pt -> { pt | distance = pt.distance - segStart })
+                        in
+                        profile seg segMaxDistance ep.fontSize ep.trackHeight ep.trackThickness ep.waypointStrokeColor segPosition segIntensity
+                    )
     in
     Html.div []
-        (profile { trackpoints = tracks.current.trackpoints, waypoints = filteredWaypoints } maxDistance ep.fontSize ep.trackHeight ep.trackThickness ep.waypointStrokeColor (effectivePosition model) ep.showIntensity ep.intensityTau
-            :: (if model.showWaypointEditor then
+        (profileViews
+            ++ (if model.showWaypointEditor then
                     [ Html.div []
                         (tracks.current.waypoints
                             |> List.indexedMap
@@ -958,8 +1143,8 @@ viewElevationProfileTab model tracks =
         )
 
 
-profile : Track -> Float -> Float -> Int -> Float -> String -> Maybe Float -> Bool -> Float -> Html Msg
-profile track maxDistance fontSize trackHeight trackThickness waypointStrokeColor maybePosition showIntensity intensityTau =
+profile : Track -> Float -> Float -> Int -> Float -> String -> Maybe Float -> List { distance : Float, intensity : Float } -> Html Msg
+profile track maxDistance fontSize trackHeight trackThickness waypointStrokeColor maybePosition intensityPoints =
     let
         maxElevation =
             Maybe.withDefault 1 <| List.maximum <| List.map .elevation track.trackpoints
@@ -992,11 +1177,11 @@ profile track maxDistance fontSize trackHeight trackThickness waypointStrokeColo
             [ Svg.Attributes.viewBox <| "-5 -5 " ++ String.fromInt (svgWidth + 10) ++ " " ++ (String.fromInt <| svgHeight + 10)
             ]
             [ -- intensity shading
-              if showIntensity then
-                renderIntensityShading (toFloat svgWidth) maxDistance (toFloat trackHeight) (computeIntensity intensityTau track.trackpoints)
+              if List.isEmpty intensityPoints then
+                Svg.g [] []
 
               else
-                Svg.g [] []
+                renderIntensityShading (toFloat svgWidth) maxDistance (toFloat trackHeight) intensityPoints
             , -- waypoints
               Svg.g []
                 (let
@@ -1727,6 +1912,17 @@ viewElevationProfileOptions model =
                 []
             ]
         )
+    , optionGroup "Splits"
+        [ Html.input
+            [ Html.Attributes.type_ "range"
+            , Html.Attributes.min "1"
+            , Html.Attributes.max "10"
+            , Html.Attributes.value <| String.fromInt ep.splits
+            , Html.Events.onInput (String.toInt >> Maybe.map (clamp 1 10) >> Maybe.withDefault 1 >> UpdateSplits)
+            ]
+            []
+        , Html.text (String.fromInt ep.splits)
+        ]
     , optionGroup "Position"
         (let
             maxDist =
@@ -2019,6 +2215,7 @@ storedStateFromModel model =
     , showIntensity = Just model.elevationProfile.showIntensity
     , intensityTau = Just model.elevationProfile.intensityTau
     , manualPosition = model.elevationProfile.manualPosition
+    , splits = Just model.elevationProfile.splits
     , totalDistanceDisplay = Just (formatTotalDistanceDisplay model.cuesheet.totalDistanceDisplay)
     , referencePoint = Just model.cuesheet.referencePoint
     , itemSpacing = Just model.cuesheet.itemSpacing
@@ -2049,6 +2246,7 @@ encodeSavedState model =
             , state.showIntensity |> Maybe.map (\show -> ( "showIntensity", Json.Encode.bool show ))
             , state.intensityTau |> Maybe.map (\tau -> ( "intensityTau", Json.Encode.float tau ))
             , state.manualPosition |> Maybe.map (\pos -> ( "manualPosition", Json.Encode.float pos ))
+            , state.splits |> Maybe.map (\n -> ( "splits", Json.Encode.int n ))
             , state.totalDistanceDisplay |> Maybe.map (\tdd -> ( "totalDistanceDisplay", Json.Encode.string tdd ))
             , state.referencePoint |> Maybe.map (\point -> ( "referencePoint", Json.Encode.float point ))
             , state.itemSpacing |> Maybe.map (\spacing -> ( "itemSpacing", Json.Encode.int spacing ))
@@ -2075,6 +2273,7 @@ storedStateDecoder =
         |> andMap (Json.Decode.maybe (Json.Decode.field "showIntensity" Json.Decode.bool))
         |> andMap (Json.Decode.maybe (Json.Decode.field "intensityTau" Json.Decode.float))
         |> andMap (Json.Decode.maybe (Json.Decode.field "manualPosition" Json.Decode.float))
+        |> andMap (Json.Decode.maybe (Json.Decode.field "splits" Json.Decode.int))
         |> andMap (Json.Decode.maybe (Json.Decode.field "totalDistanceDisplay" Json.Decode.string))
         |> andMap (Json.Decode.maybe (Json.Decode.field "referencePoint" Json.Decode.float))
         |> andMap (Json.Decode.maybe (Json.Decode.field "itemSpacing" Json.Decode.int))
