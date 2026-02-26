@@ -17,6 +17,7 @@ include: [_pages]
 exclude:
     - elm/
     - wasm/
+    - .idea/
 markdown: kramdown
 permalink: /:year/:month/:title
 sass:

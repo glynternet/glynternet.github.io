@@ -23,7 +23,9 @@ layout: default
 				});
 					if (app.ports.calculateElevationProfileData) {
 					app.ports.calculateElevationProfileData.subscribe(gpxData => {
-						app.ports.receiveElevationProfileData.send(elevationProfileData(gpxData));
+						let profileData = elevationProfileData(gpxData);
+						console.log(JSON.parse(profileData));
+						app.ports.receiveElevationProfileData.send(profileData);
 					});
 				}
 				if (app.ports.requestLocation) {
