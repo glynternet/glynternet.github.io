@@ -1,6 +1,6 @@
 ELM_OPTIMIZE ?= --optimize
 
-image: gems calendars wasm cuesheet.js elevationprofile.js
+image: gems calendars wasm route.js
 	docker build -t glynternet/glynternet:latest .
 
 gems:
@@ -23,24 +23,17 @@ sh:
 wasm:
 	${MAKE} -C wasm
 
-# phony because elm-live produces this and I can't work out how to produce to another path and still work in dev mode.
-.PHONY: cuesheet.js
-cuesheet.js:
+.PHONY: route.js
+route.js:
 	docker run --rm \
+		--user="$$(id -u):$$(id -g)" \
 		--volume="${PWD}:/elmapp:Z" \
 		glynternet/elm:latest \
-		sh -c "cd elmapp/elm/cuesheet && elm make ${ELM_OPTIMIZE} ./src/Main.elm --output=../../data/$@"
-
-# phony because elm-live produces this and I can't work out how to produce to another path and still work in dev mode.
-.PHONY: elevationprofile.js
-elevationprofile.js:
-	docker run --rm \
-		--volume="${PWD}:/elmapp:Z" \
-		glynternet/elm:latest \
-		sh -c "cd elmapp/elm/elevationprofile && elm make ${ELM_OPTIMIZE} ./src/Main.elm --output=../../data/$@"
+		sh -c "cd elmapp/elm/route && elm make ${ELM_OPTIMIZE} ./src/Main.elm --output=../../data/$@"
 
 elm-sh:
 	docker run --rm -it \
+		--user="$$(id -u):$$(id -g)" \
 		--volume="${PWD}:/elmapp:Z" \
 		glynternet/elm:latest \
 		sh

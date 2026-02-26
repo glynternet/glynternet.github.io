@@ -4,11 +4,9 @@ const RUNTIME_NAME = 'runtime-' + CACHE_VERSION;
 
 // Assets to cache immediately on install, before any user interaction.
 const PRECACHE_URLS = [
-  '/cycling/elevationprofile',
-  '/cycling/cuesheet',
+  '/cycling/route',
   '/css/main.css',
-  '/data/elevationprofile.js',
-  '/data/cuesheet.js',
+  '/data/route.js',
   '/data/go-wasm-exec.js',
   '/data/gpx.wasm',
   '/data/avva.png',
