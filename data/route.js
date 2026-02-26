@@ -9624,7 +9624,7 @@ var $author$project$Main$viewElevationProfileOptions = function (model) {
 								[
 									$elm$html$Html$Attributes$type_('range'),
 									$elm$html$Html$Attributes$min('100'),
-									$elm$html$Html$Attributes$max('10000'),
+									$elm$html$Html$Attributes$max('20000'),
 									$elm$html$Html$Attributes$step('50'),
 									$elm$html$Html$Attributes$value(
 									$elm$core$String$fromFloat(ep.p)),

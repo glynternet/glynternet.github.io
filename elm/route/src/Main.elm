@@ -1899,7 +1899,7 @@ viewElevationProfileOptions model =
                 [ Html.input
                     [ Html.Attributes.type_ "range"
                     , Html.Attributes.min "100"
-                    , Html.Attributes.max "10000"
+                    , Html.Attributes.max "20000"
                     , Html.Attributes.step "50"
                     , Html.Attributes.value <| String.fromFloat ep.intensityTau
                     , Html.Events.onInput (String.toFloat >> Maybe.withDefault 500 >> UpdateIntensityTau)
