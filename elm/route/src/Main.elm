@@ -677,7 +677,7 @@ splitTrackByDistance n track =
                     in
                     { trackpoints = segTrackpoints |> List.map (\tp -> { tp | distance = tp.distance - segStart })
                     , waypoints = segWaypoints
-                    , gainLoss = ( 0, 0 )
+                    , gainLoss = computeGainLoss segTrackpoints
                     }
                 )
 
@@ -726,6 +726,34 @@ extractSegmentTrackpoints segStart segEnd trackpoints =
                     withStart
     in
     withStartAndEnd
+
+
+computeGainLoss : List TrackPoint -> ( Float, Float )
+computeGainLoss trackpoints =
+    case trackpoints of
+        [] ->
+            ( 0, 0 )
+
+        first :: rest ->
+            computeGainLossHelper first.elevation ( 0, 0 ) rest
+
+
+computeGainLossHelper : Float -> ( Float, Float ) -> List TrackPoint -> ( Float, Float )
+computeGainLossHelper prevEle ( gain, loss ) remaining =
+    case remaining of
+        [] ->
+            ( gain, loss )
+
+        tp :: rest ->
+            let
+                delta =
+                    tp.elevation - prevEle
+            in
+            if delta > 0 then
+                computeGainLossHelper tp.elevation ( gain + delta, loss ) rest
+
+            else
+                computeGainLossHelper tp.elevation ( gain, loss - delta ) rest
 
 
 interpolateTrackpointAt : Float -> List TrackPoint -> Maybe TrackPoint
@@ -1244,9 +1272,19 @@ profile track maxDistance minElevation maxElevation fontSize trackHeight trackTh
                 }
     in
     Html.div
-        [ Html.Attributes.class "TODO"
+        [ Html.Attributes.style "margin-top" "16px"
         ]
-        [ Svg.svg
+        [ let
+            ( gain, loss ) =
+                track.gainLoss
+          in
+          Html.div
+            [ Html.Attributes.style "text-align" "center"
+            , Html.Attributes.style "font-size" "1em"
+            , Html.Attributes.style "padding" "4px 0"
+            ]
+            [ Html.text <| formatKm 1 maxDistance ++ " " ++ formatEleGainLoss gain loss ]
+        , Svg.svg
             [ Svg.Attributes.viewBox <| "-5 -5 " ++ String.fromInt (svgWidth + 10) ++ " " ++ (String.fromInt <| svgHeight + 10)
             ]
             [ -- intensity shading
