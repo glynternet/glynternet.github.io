@@ -17,6 +17,7 @@ import Json.Encode
 type alias Track =
     { trackpoints : List TrackPoint
     , waypoints : List Waypoint
+    , gainLoss : ( Float, Float )
     }
 
 
@@ -48,9 +49,13 @@ decodeElevationProfileDataResponse =
 
 decodeTrack : Json.Decode.Decoder Track
 decodeTrack =
-    Json.Decode.map2 Track
+    Json.Decode.map3 Track
         (Json.Decode.field "track" decodeTrackpoints)
         (Json.Decode.field "waypoints" (Json.Decode.oneOf [ decodeWaypoints, Json.Decode.null [] ]))
+        (Json.Decode.map2 Tuple.pair
+            (Json.Decode.field "gain" Json.Decode.float)
+            (Json.Decode.field "loss" Json.Decode.float)
+        )
 
 
 decodeTrackpoints : Json.Decode.Decoder (List TrackPoint)
@@ -98,6 +103,8 @@ encodeTrack track =
     Json.Encode.object
         [ ( "track", encodeTrackpoints track.trackpoints )
         , ( "waypoints", encodeWaypoints track.waypoints )
+        , ( "gain", Json.Encode.float (Tuple.first track.gainLoss) )
+        , ( "loss", Json.Encode.float (Tuple.second track.gainLoss) )
         ]
 
 
