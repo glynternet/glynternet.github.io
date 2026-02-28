@@ -14,7 +14,6 @@ import Json.Decode
 import Json.Encode
 import List.Extra
 import Location
-import PositionalTracks exposing (PositionalTracks)
 import Round
 import String
 import Svg
@@ -22,6 +21,7 @@ import Svg.Attributes
 import Task
 import Time
 import Url
+import Zipper exposing (Zipper)
 
 
 
@@ -57,9 +57,10 @@ subscriptions model =
 
 
 type alias Model =
-    { tracks : LoadableResource PositionalTracks
+    { tracks : LoadableResource (Zipper GpxApi.Track)
     , showOptions : Bool
     , activeTab : Tab
+
     -- Location tracking
     , location : Maybe LocationState
     , locationError : Maybe LocationError
@@ -176,7 +177,7 @@ defaultDistanceDetail =
 
 
 type alias StoredState =
-    { tracks : Maybe PositionalTracks
+    { tracks : Maybe (Zipper GpxApi.Track)
     , activeTab : Maybe String
     , showOptions : Maybe Bool
     , trackingIntervalSec : Maybe Int
@@ -355,7 +356,7 @@ update msg model =
                             updateModel
                                 { model
                                     | tracks =
-                                        case PositionalTracks.fromList tracks of
+                                        case Zipper.fromList tracks of
                                             Nothing ->
                                                 Error "No tracks available in uploaded GPX"
 
@@ -367,7 +368,7 @@ update msg model =
         NavigateToPrevious ->
             case model.tracks of
                 Loaded tracks ->
-                    updateModel { model | tracks = Loaded (PositionalTracks.navigatePrevious tracks) }
+                    updateModel { model | tracks = Loaded (Zipper.navigatePrevious tracks) }
 
                 _ ->
                     ( model, Cmd.none )
@@ -375,7 +376,7 @@ update msg model =
         NavigateToNext ->
             case model.tracks of
                 Loaded tracks ->
-                    updateModel { model | tracks = Loaded (PositionalTracks.navigateNext tracks) }
+                    updateModel { model | tracks = Loaded (Zipper.navigateNext tracks) }
 
                 _ ->
                     ( model, Cmd.none )
@@ -459,7 +460,7 @@ update msg model =
                         { model
                             | tracks =
                                 Loaded <|
-                                    PositionalTracks.updateCurrent
+                                    Zipper.updateCurrent
                                         (\current -> trackUpdateWaypoint current i (\w -> { w | name = name }))
                                         tracks
                         }
@@ -474,7 +475,7 @@ update msg model =
                         { model
                             | tracks =
                                 Loaded <|
-                                    PositionalTracks.updateCurrent
+                                    Zipper.updateCurrent
                                         (\current -> trackUpdateWaypoint current i (\w -> { w | distance = dist }))
                                         tracks
                         }
@@ -489,7 +490,7 @@ update msg model =
                         { model
                             | tracks =
                                 Loaded <|
-                                    PositionalTracks.updateCurrent
+                                    Zipper.updateCurrent
                                         (\current -> trackWithWaypoints current (List.Extra.removeAt i current.waypoints))
                                         tracks
                         }
@@ -931,7 +932,7 @@ effectivePosition model =
             model.location |> Maybe.map .matchedDistance
 
 
-getFinishDistance : PositionalTracks -> Float
+getFinishDistance : Zipper GpxApi.Track -> Float
 getFinishDistance tracks =
     List.reverse tracks.current.trackpoints
         |> List.head
@@ -1119,7 +1120,7 @@ viewTabBar activeTab =
         ]
 
 
-viewTrackNavigation : PositionalTracks -> Html Msg
+viewTrackNavigation : Zipper GpxApi.Track -> Html Msg
 viewTrackNavigation tracks =
     let
         hasPrev =
@@ -1156,7 +1157,7 @@ viewTrackNavigation tracks =
 -- ELEVATION PROFILE VIEW
 
 
-viewElevationProfileTab : Model -> PositionalTracks -> Html Msg
+viewElevationProfileTab : Model -> Zipper GpxApi.Track -> Html Msg
 viewElevationProfileTab model tracks =
     let
         ep =
@@ -1557,7 +1558,7 @@ type Info
     | Ride Float ( Float, Float )
 
 
-viewCuesheetTab : Model -> PositionalTracks -> Html Msg
+viewCuesheetTab : Model -> Zipper GpxApi.Track -> Html Msg
 viewCuesheetTab model tracks =
     let
         cs =
@@ -1604,7 +1605,7 @@ viewCuesheetTab model tracks =
         ]
 
 
-viewWaypointsTab : Model -> PositionalTracks -> Html Msg
+viewWaypointsTab : Model -> Zipper GpxApi.Track -> Html Msg
 viewWaypointsTab _ tracks =
     let
         maxDistance =
@@ -2584,7 +2585,7 @@ encodeSavedState model =
     Json.Encode.object
         (List.filterMap
             identity
-            [ state.tracks |> Maybe.map (\tracks -> ( "tracks", PositionalTracks.encode tracks ))
+            [ state.tracks |> Maybe.map (\tracks -> ( "tracks", Zipper.encode GpxApi.encodeTrack tracks ))
             , state.activeTab |> Maybe.map (\tab -> ( "activeTab", Json.Encode.string tab ))
             , state.showOptions |> Maybe.map (\show -> ( "showOptions", Json.Encode.bool show ))
             , state.trackingIntervalSec |> Maybe.map (\interval -> ( "trackingIntervalSec", Json.Encode.int interval ))
@@ -2611,7 +2612,7 @@ encodeSavedState model =
 storedStateDecoder : Json.Decode.Decoder StoredState
 storedStateDecoder =
     Json.Decode.map5 StoredState
-        (Json.Decode.maybe (Json.Decode.field "tracks" PositionalTracks.decoder))
+        (Json.Decode.maybe (Json.Decode.field "tracks" (Zipper.decoder GpxApi.decodeTrack)))
         (Json.Decode.maybe (Json.Decode.field "activeTab" Json.Decode.string))
         (Json.Decode.maybe (Json.Decode.field "showOptions" Json.Decode.bool))
         (Json.Decode.maybe (Json.Decode.field "trackingIntervalSec" Json.Decode.int))

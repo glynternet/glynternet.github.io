@@ -1,6 +1,17 @@
-module GpxApi exposing (Track, TrackPoint, Waypoint, decodeElevationProfileDataResponse, decodeResult, decodeTrackpoints, decodeWaypoints)
+module GpxApi exposing
+    ( Track
+    , TrackPoint
+    , Waypoint
+    , decodeElevationProfileDataResponse
+    , decodeResult
+    , decodeTrack
+    , decodeTrackpoints
+    , decodeWaypoints
+    , encodeTrack
+    )
 
 import Json.Decode
+import Json.Encode
 
 
 type alias Track =
@@ -26,13 +37,20 @@ type alias Waypoint =
     }
 
 
+
+--DECODE
+
+
 decodeElevationProfileDataResponse : Json.Decode.Decoder (List Track)
 decodeElevationProfileDataResponse =
-    Json.Decode.list
-        (Json.Decode.map2 Track
-            (Json.Decode.field "track" decodeTrackpoints)
-            (Json.Decode.oneOf [ Json.Decode.field "waypoints" decodeWaypoints, Json.Decode.null [] ])
-        )
+    Json.Decode.list decodeTrack
+
+
+decodeTrack : Json.Decode.Decoder Track
+decodeTrack =
+    Json.Decode.map2 Track
+        (Json.Decode.field "track" decodeTrackpoints)
+        (Json.Decode.oneOf [ Json.Decode.field "waypoints" decodeWaypoints, Json.Decode.null [] ])
 
 
 decodeTrackpoints : Json.Decode.Decoder (List TrackPoint)
@@ -69,3 +87,42 @@ decodeResult decoder =
 jsonDecodeNullableList : Json.Decode.Decoder a -> Json.Decode.Decoder (List a)
 jsonDecodeNullableList elementDecoder =
     Json.Decode.oneOf [ Json.Decode.list elementDecoder, Json.Decode.null [] ]
+
+
+
+--ENCODE
+
+
+encodeTrack : Track -> Json.Encode.Value
+encodeTrack track =
+    Json.Encode.object
+        [ ( "track", encodeTrackpoints track.trackpoints )
+        , ( "waypoints", encodeWaypoints track.waypoints )
+        ]
+
+
+encodeTrackpoints : List TrackPoint -> Json.Encode.Value
+encodeTrackpoints =
+    Json.Encode.list
+        (\point ->
+            Json.Encode.object
+                [ ( "dist", Json.Encode.float point.distance )
+                , ( "ele", Json.Encode.float point.elevation )
+                , ( "lat", Json.Encode.float point.lat )
+                , ( "lon", Json.Encode.float point.lon )
+                ]
+        )
+
+
+encodeWaypoints : List Waypoint -> Json.Encode.Value
+encodeWaypoints =
+    Json.Encode.list
+        (\waypoint ->
+            Json.Encode.object
+                [ ( "dist", Json.Encode.float waypoint.distance )
+                , ( "name", Json.Encode.string waypoint.name )
+                , ( "categories", Json.Encode.list Json.Encode.string waypoint.categories )
+                , ( "gain", Json.Encode.float waypoint.gain )
+                , ( "loss", Json.Encode.float waypoint.loss )
+                ]
+        )
