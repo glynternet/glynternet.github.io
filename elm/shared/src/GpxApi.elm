@@ -50,7 +50,7 @@ decodeTrack : Json.Decode.Decoder Track
 decodeTrack =
     Json.Decode.map2 Track
         (Json.Decode.field "track" decodeTrackpoints)
-        (Json.Decode.oneOf [ Json.Decode.field "waypoints" decodeWaypoints, Json.Decode.null [] ])
+        (Json.Decode.field "waypoints" (Json.Decode.oneOf [ decodeWaypoints, Json.Decode.null [] ]))
 
 
 decodeTrackpoints : Json.Decode.Decoder (List TrackPoint)
