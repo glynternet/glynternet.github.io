@@ -60,8 +60,6 @@ type alias Model =
     { tracks : LoadableResource PositionalTracks
     , showOptions : Bool
     , activeTab : Tab
-    , showWaypointEditor : Bool
-
     -- Location tracking
     , location : Maybe LocationState
     , locationError : Maybe LocationError
@@ -81,6 +79,7 @@ type alias Model =
 type Tab
     = ElevationProfileTab
     | CuesheetTab
+    | WaypointsTab
 
 
 type alias ElevationProfileOptions =
@@ -208,7 +207,6 @@ storedStateModel state =
     { tracks = loadableResourceFromMaybe state.tracks
     , showOptions = state.showOptions |> Maybe.withDefault True
     , activeTab = state.activeTab |> Maybe.andThen parseTab |> Maybe.withDefault ElevationProfileTab
-    , showWaypointEditor = False
     , location = Nothing
     , locationError = Nothing
     , trackingEnabled = False
@@ -262,7 +260,6 @@ type Msg
     = Ignore
       -- Shared
     | ShowOptions Bool
-    | ShowWaypointEditor Bool
     | OpenFileBrowser
     | FileUploaded File.File
     | GPXStringed String
@@ -315,9 +312,6 @@ update msg model =
 
         ShowOptions show ->
             ( { model | showOptions = show }, Cmd.none )
-
-        ShowWaypointEditor show ->
-            updateModel { model | showWaypointEditor = show }
 
         SwitchTab tab ->
             updateModel { model | activeTab = tab }
@@ -1048,6 +1042,9 @@ view model =
 
                             CuesheetTab ->
                                 viewCuesheetTab model tracks
+
+                            WaypointsTab ->
+                                viewWaypointsTab model tracks
                         ]
                     ]
             )
@@ -1100,7 +1097,7 @@ viewTabBar activeTab =
         , Html.button
             [ Html.Events.onClick (SwitchTab CuesheetTab)
             , Html.Attributes.class "button-4"
-            , Html.Attributes.style "border-radius" "0 4px 4px 0"
+            , Html.Attributes.style "border-radius" "0"
             , if activeTab == CuesheetTab then
                 Html.Attributes.style "font-weight" "bold"
 
@@ -1108,6 +1105,17 @@ viewTabBar activeTab =
                 Html.Attributes.style "opacity" "0.7"
             ]
             [ Html.text "Cuesheet" ]
+        , Html.button
+            [ Html.Events.onClick (SwitchTab WaypointsTab)
+            , Html.Attributes.class "button-4"
+            , Html.Attributes.style "border-radius" "0 4px 4px 0"
+            , if activeTab == WaypointsTab then
+                Html.Attributes.style "font-weight" "bold"
+
+              else
+                Html.Attributes.style "opacity" "0.7"
+            ]
+            [ Html.text "Waypoints" ]
         ]
 
 
@@ -1216,38 +1224,7 @@ viewElevationProfileTab model tracks =
                         profile seg segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.waypointStrokeColor segPosition segIntensity
                     )
     in
-    Html.div []
-        (profileViews
-            ++ (if model.showWaypointEditor then
-                    [ Html.div []
-                        (tracks.current.waypoints
-                            |> List.indexedMap
-                                (\i waypoint ->
-                                    Html.div []
-                                        [ Html.input
-                                            [ Html.Attributes.type_ "number"
-                                            , Html.Attributes.min "0"
-                                            , maxDistance |> (String.fromFloat >> Html.Attributes.max)
-                                            , Html.Attributes.value <| String.fromFloat waypoint.distance
-                                            , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1000 >> WaypointDistanceChange i)
-                                            ]
-                                            []
-                                        , Html.textarea
-                                            [ Html.Attributes.placeholder "Waypoint name..."
-                                            , Html.Attributes.value waypoint.name
-                                            , Html.Events.onInput <| WaypointNameChange i
-                                            ]
-                                            []
-                                        , viewButtonWithAttributes [] "X" (DeleteWaypoint i)
-                                        ]
-                                )
-                        )
-                    ]
-
-                else
-                    []
-               )
-        )
+    Html.div [] profileViews
 
 
 profile : Track -> Float -> Float -> Float -> Float -> Int -> Float -> String -> Maybe Float -> List { distance : Float, intensity : Float } -> Html Msg
@@ -1627,6 +1604,39 @@ viewCuesheetTab model tracks =
         ]
 
 
+viewWaypointsTab : Model -> PositionalTracks -> Html Msg
+viewWaypointsTab _ tracks =
+    let
+        maxDistance =
+            getFinishDistance tracks
+    in
+    Html.div []
+        [ Html.div []
+            (tracks.current.waypoints
+                |> List.indexedMap
+                    (\i waypoint ->
+                        Html.div []
+                            [ Html.input
+                                [ Html.Attributes.type_ "number"
+                                , Html.Attributes.min "0"
+                                , maxDistance |> (String.fromFloat >> Html.Attributes.max)
+                                , Html.Attributes.value <| String.fromFloat waypoint.distance
+                                , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1000 >> WaypointDistanceChange i)
+                                ]
+                                []
+                            , Html.textarea
+                                [ Html.Attributes.placeholder "Waypoint name..."
+                                , Html.Attributes.value waypoint.name
+                                , Html.Events.onInput <| WaypointNameChange i
+                                ]
+                                []
+                            , viewButtonWithAttributes [] "X" (DeleteWaypoint i)
+                            ]
+                    )
+            )
+        ]
+
+
 cuesheetSvg : List Waypoint -> CuesheetOptions -> Float -> ( Float, Float ) -> Maybe Waypoint -> Html Msg
 cuesheetSvg waypoints cs finishDist refPointEle refWaypoint =
     let
@@ -1950,7 +1960,6 @@ viewOptionsPanel model =
                             ]
                             (List.concat
                                 [ [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "upload GPX" OpenFileBrowser ]
-                                , viewWaypointEditorButton model
                                 , viewTrackNavigationButtons model
                                 ]
                             )
@@ -1968,29 +1977,14 @@ viewOptionsPanel model =
                         CuesheetTab ->
                             viewCuesheetOptionsPanel model
 
+                        WaypointsTab ->
+                            []
+
                     -- Location tracking
                     , viewLocationOptions model
                     ]
             ]
         )
-
-
-viewWaypointEditorButton : Model -> List (Html Msg)
-viewWaypointEditorButton model =
-    case model.tracks of
-        Loaded tracks ->
-            if listPopulated tracks.current.waypoints then
-                if model.showWaypointEditor then
-                    [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "HIDE EDITOR" (ShowWaypointEditor False) ]
-
-                else
-                    [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "SHOW EDITOR" (ShowWaypointEditor True) ]
-
-            else
-                []
-
-        _ ->
-            []
 
 
 viewTrackNavigationButtons : Model -> List (Html Msg)
@@ -2533,6 +2527,9 @@ parseTab s =
         "cuesheet" ->
             Just CuesheetTab
 
+        "waypoints" ->
+            Just WaypointsTab
+
         _ ->
             Nothing
 
@@ -2545,6 +2542,9 @@ formatTab tab =
 
         CuesheetTab ->
             "cuesheet"
+
+        WaypointsTab ->
+            "waypoints"
 
 
 
