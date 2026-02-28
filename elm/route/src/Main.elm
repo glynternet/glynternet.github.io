@@ -940,8 +940,8 @@ getFinishDistance tracks =
         |> Maybe.withDefault 0
 
 
-injectStartFinish : Float -> List Waypoint -> List Waypoint
-injectStartFinish finishDist waypoints =
+injectStartFinish : Float -> List GpxApi.TrackPoint -> List Waypoint -> List Waypoint
+injectStartFinish finishDist trackpoints waypoints =
     let
         hasWaypointAtDistance d =
             List.any (\w -> w.distance == d) waypoints
@@ -958,13 +958,13 @@ injectStartFinish finishDist waypoints =
 
     else
         let
-            lastGainLoss =
+            finishGainLoss =
                 List.reverse waypoints
                     |> List.head
                     |> Maybe.map (\w -> ( w.gain, w.loss ))
-                    |> Maybe.withDefault ( 0, 0 )
+                    |> Maybe.withDefault (cumulativeGainLossAtDistance finishDist trackpoints)
         in
-        withStart ++ [ GpxApi.Waypoint finishDist "Finish" [ startFinishCategory ] (Tuple.first lastGainLoss) (Tuple.second lastGainLoss) ]
+        withStart ++ [ GpxApi.Waypoint finishDist "Finish" [ startFinishCategory ] (Tuple.first finishGainLoss) (Tuple.second finishGainLoss) ]
 
 
 
@@ -1569,7 +1569,7 @@ viewCuesheetTab model tracks =
 
         waypointsWithStartFinish =
             if cs.showStartFinish then
-                injectStartFinish currentFinishDistance tracks.current.waypoints
+                injectStartFinish currentFinishDistance tracks.current.trackpoints tracks.current.waypoints
 
             else
                 tracks.current.waypoints
@@ -2201,14 +2201,14 @@ viewCuesheetOptionsPanel model =
                         if model.categoryFilterEnabled then
                             cuesFilterByCategory model.filteredCategories
                                 (if cs.showStartFinish then
-                                    injectStartFinish (getFinishDistance ts) ts.current.waypoints
+                                    injectStartFinish (getFinishDistance ts) ts.current.trackpoints ts.current.waypoints
 
                                  else
                                     ts.current.waypoints
                                 )
 
                         else if cs.showStartFinish then
-                            injectStartFinish (getFinishDistance ts) ts.current.waypoints
+                            injectStartFinish (getFinishDistance ts) ts.current.trackpoints ts.current.waypoints
 
                         else
                             ts.current.waypoints
