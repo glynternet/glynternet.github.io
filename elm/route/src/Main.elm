@@ -109,6 +109,8 @@ type TotalDistanceDisplay
     = FromZero
     | ToFinish
     | ToPoint
+    | ToWaypoint Int
+    | FromWaypoint Int
     | None
 
 
@@ -298,6 +300,7 @@ type Msg
     | UpdateItemSpacing Int
     | UpdateDistanceDetail Int
     | UpdateShowStartFinish Bool
+    | UpdateSelectedWaypoint Int
 
 
 
@@ -442,13 +445,17 @@ update msg model =
 
         -- Category filtering
         CategoryEnabled category enabled ->
-            updateModel { model | filteredCategories = Dict.insert category enabled model.filteredCategories }
+            let
+                newCategories =
+                    Dict.insert category enabled model.filteredCategories
+            in
+            updateModel (correctWaypointSelectionInModel { model | filteredCategories = newCategories })
 
         UpdateCategoryFilterEnabled enabled ->
-            updateModel { model | categoryFilterEnabled = enabled }
+            updateModel (correctWaypointSelectionInModel { model | categoryFilterEnabled = enabled })
 
         SetAllCategoriesEnabled enabled ->
-            updateModel { model | filteredCategories = Dict.map (\_ _ -> enabled) model.filteredCategories }
+            updateModel (correctWaypointSelectionInModel { model | filteredCategories = Dict.map (\_ _ -> enabled) model.filteredCategories })
 
         -- Waypoint editing
         WaypointNameChange i name ->
@@ -600,6 +607,24 @@ update msg model =
                     model.cuesheet
             in
             updateModel { model | cuesheet = { cs | showStartFinish = show } }
+
+        UpdateSelectedWaypoint idx ->
+            let
+                cs =
+                    model.cuesheet
+
+                newDisplay =
+                    case cs.totalDistanceDisplay of
+                        ToWaypoint _ ->
+                            ToWaypoint idx
+
+                        FromWaypoint _ ->
+                            FromWaypoint idx
+
+                        other ->
+                            other
+            in
+            updateModel { model | cuesheet = { cs | totalDistanceDisplay = newDisplay } }
 
 
 updateModel : Model -> ( Model, Cmd Msg )
@@ -804,6 +829,75 @@ filterWaypointsByCategory filterEnabled categories waypoints =
                             Nothing
             )
             waypoints
+
+
+indexedFilteredWaypoints : List Waypoint -> List Waypoint -> List ( Int, Waypoint )
+indexedFilteredWaypoints allWaypoints filtered =
+    allWaypoints
+        |> List.indexedMap Tuple.pair
+        |> List.filter (\( _, wp ) -> List.member wp filtered)
+
+
+correctWaypointSelection : TotalDistanceDisplay -> List ( Int, Waypoint ) -> TotalDistanceDisplay
+correctWaypointSelection display indexed =
+    case display of
+        ToWaypoint idx ->
+            if List.any (\( i, _ ) -> i == idx) indexed then
+                display
+
+            else
+                case List.Extra.last indexed of
+                    Just ( lastIdx, _ ) ->
+                        ToWaypoint lastIdx
+
+                    Nothing ->
+                        display
+
+        FromWaypoint idx ->
+            if List.any (\( i, _ ) -> i == idx) indexed then
+                display
+
+            else
+                case List.head indexed of
+                    Just ( firstIdx, _ ) ->
+                        FromWaypoint firstIdx
+
+                    Nothing ->
+                        display
+
+        _ ->
+            display
+
+
+lookupWaypointByIndex : Int -> List Waypoint -> Maybe Waypoint
+lookupWaypointByIndex idx waypoints =
+    List.Extra.getAt idx waypoints
+
+
+correctWaypointSelectionInModel : Model -> Model
+correctWaypointSelectionInModel model =
+    case maybeFromloadableResource model.tracks of
+        Nothing ->
+            model
+
+        Just tracks ->
+            let
+                allWaypoints =
+                    tracks.current.waypoints
+
+                filtered =
+                    filterWaypointsByCategory model.categoryFilterEnabled model.filteredCategories allWaypoints
+
+                indexed =
+                    indexedFilteredWaypoints allWaypoints filtered
+
+                cs =
+                    model.cuesheet
+
+                corrected =
+                    correctWaypointSelection cs.totalDistanceDisplay indexed
+            in
+            { model | cuesheet = { cs | totalDistanceDisplay = corrected } }
 
 
 cuesFilterByCategory : Dict.Dict String Bool -> List Waypoint -> List Waypoint
@@ -1509,16 +1603,32 @@ viewCuesheetTab model tracks =
             else
                 waypointsWithStartFinish
 
+        refWaypoint =
+            case cs.totalDistanceDisplay of
+                ToWaypoint idx ->
+                    lookupWaypointByIndex idx tracks.current.waypoints
+
+                FromWaypoint idx ->
+                    lookupWaypointByIndex idx tracks.current.waypoints
+
+                _ ->
+                    Nothing
+
         refPointEle =
-            cumulativeGainLossAtDistance cs.referencePoint tracks.current.trackpoints
+            case refWaypoint of
+                Just wp ->
+                    ( wp.gain, wp.loss )
+
+                Nothing ->
+                    cumulativeGainLossAtDistance cs.referencePoint tracks.current.trackpoints
     in
     Html.div []
-        [ cuesheetSvg filteredWaypoints cs currentFinishDistance refPointEle
+        [ cuesheetSvg filteredWaypoints cs currentFinishDistance refPointEle refWaypoint
         ]
 
 
-cuesheetSvg : List Waypoint -> CuesheetOptions -> Float -> ( Float, Float ) -> Html Msg
-cuesheetSvg waypoints cs finishDist refPointEle =
+cuesheetSvg : List Waypoint -> CuesheetOptions -> Float -> ( Float, Float ) -> Maybe Waypoint -> Html Msg
+cuesheetSvg waypoints cs finishDist refPointEle refWaypoint =
     let
         info =
             waypointInfos cs.position waypoints
@@ -1567,6 +1677,14 @@ cuesheetSvg waypoints cs finishDist refPointEle =
                                             ToPoint ->
                                                 Just (formatKm cs.distanceDetail (cs.referencePoint - waypoint.distance))
 
+                                            ToWaypoint _ ->
+                                                refWaypoint
+                                                    |> Maybe.map (\rw -> formatKm cs.distanceDetail (rw.distance - waypoint.distance))
+
+                                            FromWaypoint _ ->
+                                                refWaypoint
+                                                    |> Maybe.map (\rw -> formatKm cs.distanceDetail (waypoint.distance - rw.distance))
+
                                     waypointEle =
                                         case cs.totalDistanceDisplay of
                                             None ->
@@ -1590,6 +1708,24 @@ cuesheetSvg waypoints cs finishDist refPointEle =
                                                         (Tuple.first refPointEle - waypoint.gain)
                                                         (Tuple.second refPointEle - waypoint.loss)
                                                     )
+
+                                            ToWaypoint _ ->
+                                                refWaypoint
+                                                    |> Maybe.map
+                                                        (\rw ->
+                                                            formatEleGainLoss
+                                                                (rw.gain - waypoint.gain)
+                                                                (rw.loss - waypoint.loss)
+                                                        )
+
+                                            FromWaypoint _ ->
+                                                refWaypoint
+                                                    |> Maybe.map
+                                                        (\rw ->
+                                                            formatEleGainLoss
+                                                                (waypoint.gain - rw.gain)
+                                                                (waypoint.loss - rw.loss)
+                                                        )
 
                                     waypointInfo =
                                         List.filterMap identity
@@ -2056,6 +2192,58 @@ viewCuesheetOptionsPanel model =
         maxDistance =
             maybeFromloadableResource model.tracks
                 |> Maybe.map (\ts -> getFinishDistance ts)
+
+        maybeTracks =
+            maybeFromloadableResource model.tracks
+
+        allWaypoints =
+            maybeTracks |> Maybe.map (\ts -> ts.current.waypoints) |> Maybe.withDefault []
+
+        filteredWps =
+            maybeTracks
+                |> Maybe.map
+                    (\ts ->
+                        if model.categoryFilterEnabled then
+                            cuesFilterByCategory model.filteredCategories
+                                (if cs.showStartFinish then
+                                    injectStartFinish (getFinishDistance ts) ts.current.waypoints
+
+                                 else
+                                    ts.current.waypoints
+                                )
+
+                        else if cs.showStartFinish then
+                            injectStartFinish (getFinishDistance ts) ts.current.waypoints
+
+                        else
+                            ts.current.waypoints
+                    )
+                |> Maybe.withDefault []
+
+        indexedFiltered =
+            indexedFilteredWaypoints allWaypoints filteredWps
+
+        parseModeDropdown maybeStr =
+            case maybeStr of
+                Just "to waypoint" ->
+                    let
+                        defaultIdx =
+                            List.head indexedFiltered |> Maybe.map Tuple.first |> Maybe.withDefault 0
+                    in
+                    UpdateTotalDistanceDisplay (Just (ToWaypoint defaultIdx))
+
+                Just "from waypoint" ->
+                    let
+                        defaultIdx =
+                            List.head indexedFiltered |> Maybe.map Tuple.first |> Maybe.withDefault 0
+                    in
+                    UpdateTotalDistanceDisplay (Just (FromWaypoint defaultIdx))
+
+                _ ->
+                    maybeStr
+                        |> Maybe.map parseTotalDistanceDisplay
+                        |> Maybe.withDefault Nothing
+                        |> UpdateTotalDistanceDisplay
     in
     [ optionGroup "Start/Finish"
         [ checkbox cs.showStartFinish (UpdateShowStartFinish (not cs.showStartFinish)) "Show start/finish"
@@ -2067,16 +2255,15 @@ viewCuesheetOptionsPanel model =
                 [ Dropdown.Item (formatTotalDistanceDisplay FromZero) (formatTotalDistanceDisplay FromZero) True
                 , Dropdown.Item (formatTotalDistanceDisplay ToFinish) (formatTotalDistanceDisplay ToFinish) True
                 , Dropdown.Item (formatTotalDistanceDisplay ToPoint) (formatTotalDistanceDisplay ToPoint) True
+                , Dropdown.Item "to waypoint" "to waypoint" True
+                , Dropdown.Item "from waypoint" "from waypoint" True
                 , Dropdown.Item (formatTotalDistanceDisplay None) (formatTotalDistanceDisplay None) True
                 ]
                 Nothing
-                (Maybe.map parseTotalDistanceDisplay
-                    >> Maybe.withDefault Nothing
-                    >> UpdateTotalDistanceDisplay
-                )
+                parseModeDropdown
             )
             []
-            (Just <| formatTotalDistanceDisplay cs.totalDistanceDisplay)
+            (Just <| formatTotalDistanceDisplayLabel cs.totalDistanceDisplay)
          ]
             ++ (case cs.totalDistanceDisplay of
                     ToPoint ->
@@ -2091,6 +2278,12 @@ viewCuesheetOptionsPanel model =
                                 []
                             ]
                         ]
+
+                    ToWaypoint selectedIdx ->
+                        [ viewWaypointSelector indexedFiltered selectedIdx ]
+
+                    FromWaypoint selectedIdx ->
+                        [ viewWaypointSelector indexedFiltered selectedIdx ]
 
                     _ ->
                         []
@@ -2210,6 +2403,34 @@ viewButtonWithAttributes attrs text onClickMsg =
         [ Html.text text ]
 
 
+viewWaypointSelector : List ( Int, Waypoint ) -> Int -> Html Msg
+viewWaypointSelector indexed selectedIdx =
+    Dropdown.dropdown
+        (Dropdown.Options
+            (indexed
+                |> List.map
+                    (\( idx, wp ) ->
+                        let
+                            label =
+                                wp.name ++ " (km " ++ formatKm 1 wp.distance ++ ")"
+                        in
+                        Dropdown.Item (String.fromInt idx) label True
+                    )
+            )
+            Nothing
+            (\maybeStr ->
+                case maybeStr |> Maybe.andThen String.toInt of
+                    Just idx ->
+                        UpdateSelectedWaypoint idx
+
+                    Nothing ->
+                        Ignore
+            )
+        )
+        []
+        (Just (String.fromInt selectedIdx))
+
+
 optionGroup : String -> List (Html Msg) -> Html Msg
 optionGroup title elements =
     Html.div [ Html.Attributes.class "flex-container", Html.Attributes.class "column" ]
@@ -2244,7 +2465,24 @@ parseTotalDistanceDisplay v =
             Just None
 
         _ ->
-            Nothing
+            if String.startsWith "to waypoint" v then
+                case String.split ":" v of
+                    [ _, idxStr ] ->
+                        String.toInt idxStr |> Maybe.map ToWaypoint
+
+                    _ ->
+                        Just (ToWaypoint 0)
+
+            else if String.startsWith "from waypoint" v then
+                case String.split ":" v of
+                    [ _, idxStr ] ->
+                        String.toInt idxStr |> Maybe.map FromWaypoint
+
+                    _ ->
+                        Just (FromWaypoint 0)
+
+            else
+                Nothing
 
 
 formatTotalDistanceDisplay : TotalDistanceDisplay -> String
@@ -2259,8 +2497,27 @@ formatTotalDistanceDisplay v =
         ToPoint ->
             "to point"
 
+        ToWaypoint idx ->
+            "to waypoint:" ++ String.fromInt idx
+
+        FromWaypoint idx ->
+            "from waypoint:" ++ String.fromInt idx
+
         None ->
             "hide"
+
+
+formatTotalDistanceDisplayLabel : TotalDistanceDisplay -> String
+formatTotalDistanceDisplayLabel v =
+    case v of
+        ToWaypoint _ ->
+            "to waypoint"
+
+        FromWaypoint _ ->
+            "from waypoint"
+
+        other ->
+            formatTotalDistanceDisplay other
 
 
 
