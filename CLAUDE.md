@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a Jekyll-based static website (glynternet.github.io) that includes cycling event calendars, route planning tools, and various personal content. The `_calendar/` directory contains YAML event definitions that are converted to iCalendar (.ics) format and also used to generate human-readable calendar pages.
+This is a Jekyll-based static website (glynternet.github.io) that includes cycling event calendars, route planning tools, and various personal content. The `_calendar/` directory contains YAML event definitions that are converted to iCalendar (.ics) format and also used to generate human-readable calendar pages. The site is deployed via GitHub Actions (`.github/workflows/pages.yml`) on pushes to the `develop` branch.
 
 ## Build Commands
 
@@ -27,7 +27,7 @@ make cycling-events  # Generates data/calendars/cycling-events.ics and copies YA
 ### Building the Entire Site
 From the root directory:
 ```bash
-# Build entire site (includes calendars, Elm apps, and Jekyll)
+# Build entire site (includes calendars, WASM, Elm route app, and Jekyll)
 make image
 
 # Serve site locally on http://[::1]:4000
@@ -36,9 +36,11 @@ make serve
 # Build just the calendars
 make calendars
 
-# Build Elm applications
-make cuesheet.js         # Compiles elm/cuesheet to data/cuesheet.js
-make elevationprofile.js # Compiles elm/elevationprofile to data/elevationprofile.js
+# Build the unified route Elm application (cuesheet + elevation profile)
+make route.js            # Compiles elm/route to data/route.js
+
+# Build WASM module (GPX profile data server)
+make wasm                # Builds wasm/ Go code to data/gpx.wasm
 
 # Get shell access to Docker containers
 make sh        # Jekyll container
@@ -75,10 +77,11 @@ events:
 This is a Jekyll static site with the following structure:
 - `_calendar/`: Calendar YAML sources
 - `_data/`: Jekyll data files (includes cycling_events.yml copied from _calendar/)
-- `data/`: Build outputs (calendars, Elm JS, GPX files, images)
+- `data/`: Build outputs (calendars, compiled Elm JS, WASM, GPX files, images)
 - `elm/`: Elm applications for interactive features
-  - `elm/cuesheet/`: Route cue sheet application
-  - `elm/elevationprofile/`: Elevation profile visualization
+  - `elm/route/`: Unified route application (cue sheet + elevation profile + splits)
+  - `elm/shared/`: Shared Elm modules (GpxApi, Zipper, Location)
+- `wasm/`: Go source for GPX WASM module (profile data server)
 - `_pages/`: Jekyll page content (Markdown files for site pages)
 - `_layouts/`: Jekyll templates
 - `_includes/`: Jekyll partials
@@ -132,9 +135,14 @@ The project uses Docker for consistent build environments:
 - Elm compilation uses `glynternet/elm:latest`
 - All builds are designed to run in containers with volume mounts
 
+## Service Worker
+
+The site includes a service worker (`sw.js`) that provides offline support for the route tools (cue sheet, elevation profile). It caches the WASM module, compiled Elm JS, and other assets for offline use.
+
 ## Notes
 
 - The site uses Jekyll with incremental builds enabled
 - Markdown is processed with kramdown
 - Jekyll plugins: jemoji, jekyll-sitemap
 - Site URL: https://www.glyn.io
+- CI/CD: GitHub Actions deploys to GitHub Pages on push to `develop`
