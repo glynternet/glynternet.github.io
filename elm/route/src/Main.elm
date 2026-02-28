@@ -862,13 +862,20 @@ injectStartFinish finishDist waypoints =
                 waypoints
 
             else
-                GpxApi.Waypoint 0 "Start" [ startFinishCategory ] :: waypoints
+                GpxApi.Waypoint 0 "Start" [ startFinishCategory ] 0 0 :: waypoints
     in
     if hasWaypointAtDistance finishDist then
         withStart
 
     else
-        withStart ++ [ GpxApi.Waypoint finishDist "Finish" [ startFinishCategory ] ]
+        let
+            lastGainLoss =
+                List.reverse waypoints
+                    |> List.head
+                    |> Maybe.map (\w -> ( w.gain, w.loss ))
+                    |> Maybe.withDefault ( 0, 0 )
+        in
+        withStart ++ [ GpxApi.Waypoint finishDist "Finish" [ startFinishCategory ] (Tuple.first lastGainLoss) (Tuple.second lastGainLoss) ]
 
 
 
@@ -1476,7 +1483,7 @@ xyCalculator cfg =
 
 type Info
     = InfoWaypoint Waypoint
-    | Ride Float
+    | Ride Float ( Float, Float )
 
 
 viewCuesheetTab : Model -> PositionalTracks -> Html Msg
@@ -1501,17 +1508,23 @@ viewCuesheetTab model tracks =
 
             else
                 waypointsWithStartFinish
+
+        refPointEle =
+            cumulativeGainLossAtDistance cs.referencePoint tracks.current.trackpoints
     in
     Html.div []
-        [ cuesheetSvg filteredWaypoints cs currentFinishDistance
+        [ cuesheetSvg filteredWaypoints cs currentFinishDistance refPointEle
         ]
 
 
-cuesheetSvg : List Waypoint -> CuesheetOptions -> Float -> Html Msg
-cuesheetSvg waypoints cs finishDist =
+cuesheetSvg : List Waypoint -> CuesheetOptions -> Float -> ( Float, Float ) -> Html Msg
+cuesheetSvg waypoints cs finishDist refPointEle =
     let
         info =
             waypointInfos cs.position waypoints
+
+        lastWaypoint =
+            List.reverse waypoints |> List.head
 
         svgHeight =
             (*) cs.itemSpacing (List.length info)
@@ -1554,9 +1567,34 @@ cuesheetSvg waypoints cs finishDist =
                                             ToPoint ->
                                                 Just (formatKm cs.distanceDetail (cs.referencePoint - waypoint.distance))
 
+                                    waypointEle =
+                                        case cs.totalDistanceDisplay of
+                                            None ->
+                                                Nothing
+
+                                            FromZero ->
+                                                Just (formatEleGainLoss waypoint.gain waypoint.loss)
+
+                                            ToFinish ->
+                                                lastWaypoint
+                                                    |> Maybe.map
+                                                        (\last ->
+                                                            formatEleGainLoss
+                                                                (last.gain - waypoint.gain)
+                                                                (last.loss - waypoint.loss)
+                                                        )
+
+                                            ToPoint ->
+                                                Just
+                                                    (formatEleGainLoss
+                                                        (Tuple.first refPointEle - waypoint.gain)
+                                                        (Tuple.second refPointEle - waypoint.loss)
+                                                    )
+
                                     waypointInfo =
                                         List.filterMap identity
                                             [ waypointDistance
+                                            , waypointEle
                                             , case waypoint.categories of
                                                 [] ->
                                                     Nothing
@@ -1595,7 +1633,7 @@ cuesheetSvg waypoints cs finishDist =
                                            )
                                     )
 
-                            Ride dist ->
+                            Ride dist ( gain, loss ) ->
                                 let
                                     arrowTop =
                                         "2"
@@ -1643,7 +1681,11 @@ cuesheetSvg waypoints cs finishDist =
                                         , Svg.Attributes.dominantBaseline "middle"
                                         , Svg.Attributes.fontSize "smaller"
                                         ]
-                                        [ Svg.text <| formatKm cs.distanceDetail dist ]
+                                        [ Svg.text <|
+                                            formatKm cs.distanceDetail dist
+                                                ++ " "
+                                                ++ formatEleGainLoss gain loss
+                                        ]
                                     ]
                     )
             )
@@ -1661,7 +1703,14 @@ waypointInfos position waypoints =
                 ( Just el
                 , (InfoWaypoint el
                     :: (Tuple.first accum
-                            |> Maybe.map (\previous -> [ Ride (el.distance - previous.distance) ])
+                            |> Maybe.map
+                                (\previous ->
+                                    [ Ride (el.distance - previous.distance)
+                                        ( el.gain - previous.gain
+                                        , el.loss - previous.loss
+                                        )
+                                    ]
+                                )
                             |> Maybe.withDefault []
                        )
                   )
@@ -1677,6 +1726,51 @@ waypointInfos position waypoints =
 formatKm : Int -> Float -> String
 formatKm decimalPlaces metres =
     Round.round decimalPlaces (metres / 1000) ++ "km"
+
+
+formatM : Float -> String
+formatM metres =
+    Round.round 0 metres ++ "m"
+
+
+formatEleGainLoss : Float -> Float -> String
+formatEleGainLoss gain loss =
+    "↑" ++ formatM gain ++ " ↓" ++ formatM loss
+
+
+cumulativeGainLossAtDistance : Float -> List GpxApi.TrackPoint -> ( Float, Float )
+cumulativeGainLossAtDistance dist trackpoints =
+    case trackpoints of
+        [] ->
+            ( 0, 0 )
+
+        first :: rest ->
+            cumulativeGainLossHelper dist first.elevation ( 0, 0 ) rest
+
+
+cumulativeGainLossHelper : Float -> Float -> ( Float, Float ) -> List GpxApi.TrackPoint -> ( Float, Float )
+cumulativeGainLossHelper dist prevEle ( gain, loss ) remaining =
+    case remaining of
+        [] ->
+            ( gain, loss )
+
+        tp :: rest ->
+            let
+                delta =
+                    tp.elevation - prevEle
+
+                newGainLoss =
+                    if delta > 0 then
+                        ( gain + delta, loss )
+
+                    else
+                        ( gain, loss - delta )
+            in
+            if tp.distance >= dist then
+                newGainLoss
+
+            else
+                cumulativeGainLossHelper dist tp.elevation newGainLoss rest
 
 
 

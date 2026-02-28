@@ -112,5 +112,7 @@ encodeWaypoints =
                 [ ( "dist", Json.Encode.float waypoint.distance )
                 , ( "name", Json.Encode.string waypoint.name )
                 , ( "categories", Json.Encode.list Json.Encode.string waypoint.categories )
+                , ( "gain", Json.Encode.float waypoint.gain )
+                , ( "loss", Json.Encode.float waypoint.loss )
                 ]
         )
