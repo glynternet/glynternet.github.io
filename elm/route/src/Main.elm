@@ -71,6 +71,9 @@ type alias Model =
     , categoryFilterEnabled : Bool
     , filteredCategories : Dict.Dict String Bool
 
+    -- Waypoint editing
+    , newCategoryInputs : Dict.Dict Int String
+
     -- View-specific options
     , elevationProfile : ElevationProfileOptions
     , cuesheet : CuesheetOptions
@@ -214,6 +217,7 @@ storedStateModel state =
     , trackingIntervalSec = state.trackingIntervalSec |> Maybe.withDefault 60
     , categoryFilterEnabled = state.categoryFilterEnabled |> Maybe.withDefault False
     , filteredCategories = state.filteredCategories |> Maybe.withDefault Dict.empty
+    , newCategoryInputs = Dict.empty
     , elevationProfile =
         { fontSize = state.fontSize |> Maybe.withDefault defaultElevationProfileOptions.fontSize
         , trackHeight = state.trackHeight |> Maybe.withDefault defaultElevationProfileOptions.trackHeight
@@ -282,6 +286,9 @@ type Msg
     | WaypointDistanceChange Int Float
     | WaypointNameChange Int String
     | DeleteWaypoint Int
+    | WaypointCategoryToggle Int String Bool
+    | WaypointCategoryAdd Int String
+    | WaypointNewCategoryInput Int String
       -- Elevation profile
     | UpdateFontSize Float
     | UpdateTrackHeight Int
@@ -497,6 +504,92 @@ update msg model =
 
                 _ ->
                     ( model, Cmd.none )
+
+        WaypointCategoryToggle i cat add ->
+            case model.tracks of
+                Loaded tracks ->
+                    let
+                        updateCats w =
+                            if add then
+                                if List.member cat w.categories then
+                                    w
+                                else
+                                    { w | categories = w.categories ++ [ cat ] }
+                            else
+                                { w | categories = List.filter (\c -> c /= cat) w.categories }
+
+                        newTracks =
+                            Zipper.updateCurrent
+                                (\current -> trackUpdateWaypoint current i updateCats)
+                                tracks
+
+                        newFilteredCategories =
+                            if add then
+                                if Dict.member cat model.filteredCategories then
+                                    model.filteredCategories
+                                else
+                                    Dict.insert cat True model.filteredCategories
+                            else
+                                let
+                                    allWaypoints =
+                                        List.concatMap .waypoints (newTracks.prev ++ [ newTracks.current ] ++ newTracks.next)
+
+                                    catStillUsed =
+                                        List.any (\w -> List.member cat w.categories) allWaypoints
+                                in
+                                if catStillUsed then
+                                    model.filteredCategories
+                                else
+                                    Dict.remove cat model.filteredCategories
+                    in
+                    updateModel
+                        { model
+                            | tracks = Loaded newTracks
+                            , filteredCategories = newFilteredCategories
+                        }
+
+                _ ->
+                    ( model, Cmd.none )
+
+        WaypointNewCategoryInput i value ->
+            ( { model | newCategoryInputs = Dict.insert i value model.newCategoryInputs }, Cmd.none )
+
+        WaypointCategoryAdd i _ ->
+            let
+                trimmed =
+                    String.trim (Dict.get i model.newCategoryInputs |> Maybe.withDefault "")
+            in
+            if String.isEmpty trimmed then
+                ( model, Cmd.none )
+            else
+                case model.tracks of
+                    Loaded tracks ->
+                        let
+                            updateCats w =
+                                if List.member trimmed w.categories then
+                                    w
+                                else
+                                    { w | categories = w.categories ++ [ trimmed ] }
+
+                            newFilteredCategories =
+                                if Dict.member trimmed model.filteredCategories then
+                                    model.filteredCategories
+                                else
+                                    Dict.insert trimmed True model.filteredCategories
+                        in
+                        updateModel
+                            { model
+                                | tracks =
+                                    Loaded <|
+                                        Zipper.updateCurrent
+                                            (\current -> trackUpdateWaypoint current i updateCats)
+                                            tracks
+                                , filteredCategories = newFilteredCategories
+                                , newCategoryInputs = Dict.remove i model.newCategoryInputs
+                            }
+
+                    _ ->
+                        ( model, Cmd.none )
 
         -- Elevation profile options
         UpdateFontSize size ->
@@ -1638,10 +1731,13 @@ viewCuesheetTab model tracks =
 
 
 viewWaypointsTab : Model -> Zipper GpxApi.Track -> Html Msg
-viewWaypointsTab _ tracks =
+viewWaypointsTab model tracks =
     let
         maxDistance =
             getFinishDistance tracks
+
+        allCategories =
+            Dict.keys model.filteredCategories
     in
     Html.div []
         [ Html.div []
@@ -1664,9 +1760,41 @@ viewWaypointsTab _ tracks =
                                 ]
                                 []
                             , viewButtonWithAttributes [] "X" (DeleteWaypoint i)
+                            , viewWaypointCategories i waypoint.categories allCategories (Dict.get i model.newCategoryInputs |> Maybe.withDefault "")
                             ]
                     )
             )
+        ]
+
+
+viewWaypointCategories : Int -> List String -> List String -> String -> Html Msg
+viewWaypointCategories idx waypointCategories allCategories newCatInput =
+    Html.div []
+        [ Html.div []
+            (allCategories
+                |> List.map
+                    (\cat ->
+                        Html.label []
+                            [ Html.input
+                                [ Html.Attributes.type_ "checkbox"
+                                , Html.Attributes.checked (List.member cat waypointCategories)
+                                , Html.Events.onCheck (WaypointCategoryToggle idx cat)
+                                ]
+                                []
+                            , Html.text cat
+                            ]
+                    )
+            )
+        , Html.div []
+            [ Html.input
+                [ Html.Attributes.type_ "text"
+                , Html.Attributes.placeholder "New category..."
+                , Html.Attributes.value newCatInput
+                , Html.Events.onInput (WaypointNewCategoryInput idx)
+                ]
+                []
+            , viewButtonWithAttributes [] "Add" (WaypointCategoryAdd idx "")
+            ]
         ]
 
 
