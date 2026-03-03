@@ -62,8 +62,8 @@ type alias Model =
     , activeTab : Tab
 
     -- Location tracking
-    , location : Maybe LocationState
-    , locationError : Maybe LocationError
+    , location : Maybe Location.LocationState
+    , locationError : Maybe Location.LocationError
     , trackingEnabled : Bool
     , trackingIntervalSec : Int
 
@@ -121,29 +121,6 @@ type TotalDistanceDisplay
     | FromWaypoint Int
     | None
 
-
-type alias Track =
-    GpxApi.Track
-
-
-type alias TrackPoint =
-    GpxApi.TrackPoint
-
-
-type alias Waypoint =
-    GpxApi.Waypoint
-
-
-type alias LatLon =
-    Location.LatLon
-
-
-type alias LocationState =
-    Location.LocationState
-
-
-type alias LocationError =
-    Location.LocationError
 
 
 defaultElevationProfileOptions : ElevationProfileOptions
@@ -841,17 +818,17 @@ updateModel model =
 -- HELPERS
 
 
-trackWithWaypoints : Track -> List Waypoint -> Track
+trackWithWaypoints : GpxApi.Track -> List GpxApi.Waypoint -> GpxApi.Track
 trackWithWaypoints track waypoints =
     { track | waypoints = waypoints }
 
 
-trackUpdateWaypoint : Track -> Int -> (Waypoint -> Waypoint) -> Track
+trackUpdateWaypoint : GpxApi.Track -> Int -> (GpxApi.Waypoint -> GpxApi.Waypoint) -> GpxApi.Track
 trackUpdateWaypoint track i updateWaypoint =
     trackWithWaypoints track <| List.Extra.updateAt i updateWaypoint track.waypoints
 
 
-splitTrackByDistance : Int -> Track -> List Track
+splitTrackByDistance : Int -> GpxApi.Track -> List GpxApi.Track
 splitTrackByDistance n track =
     if n <= 1 then
         [ track ]
@@ -892,7 +869,7 @@ splitTrackByDistance n track =
                 )
 
 
-splitTrackByWaypoints : List Float -> Track -> List Track
+splitTrackByWaypoints : List Float -> GpxApi.Track -> List GpxApi.Track
 splitTrackByWaypoints splitDistances track =
     let
         totalDistance =
@@ -926,7 +903,7 @@ splitTrackByWaypoints splitDistances track =
             )
 
 
-extractSegmentTrackpoints : Float -> Float -> List TrackPoint -> List TrackPoint
+extractSegmentTrackpoints : Float -> Float -> List GpxApi.TrackPoint -> List GpxApi.TrackPoint
 extractSegmentTrackpoints segStart segEnd trackpoints =
     let
         pointsInRange =
@@ -972,7 +949,7 @@ extractSegmentTrackpoints segStart segEnd trackpoints =
     withStartAndEnd
 
 
-computeGainLoss : List TrackPoint -> ( Float, Float )
+computeGainLoss : List GpxApi.TrackPoint -> ( Float, Float )
 computeGainLoss trackpoints =
     case trackpoints of
         [] ->
@@ -982,7 +959,7 @@ computeGainLoss trackpoints =
             computeGainLossHelper first.elevation ( 0, 0 ) rest
 
 
-computeGainLossHelper : Float -> ( Float, Float ) -> List TrackPoint -> ( Float, Float )
+computeGainLossHelper : Float -> ( Float, Float ) -> List GpxApi.TrackPoint -> ( Float, Float )
 computeGainLossHelper prevEle ( gain, loss ) remaining =
     case remaining of
         [] ->
@@ -1000,7 +977,7 @@ computeGainLossHelper prevEle ( gain, loss ) remaining =
                 computeGainLossHelper tp.elevation ( gain, loss - delta ) rest
 
 
-interpolateTrackpointAt : Float -> List TrackPoint -> Maybe TrackPoint
+interpolateTrackpointAt : Float -> List GpxApi.TrackPoint -> Maybe GpxApi.TrackPoint
 interpolateTrackpointAt dist trackpoints =
     case trackpoints of
         [] ->
@@ -1047,7 +1024,7 @@ startFinishCategory =
     "Start/Finish"
 
 
-initialFilteredCategories : List Waypoint -> Dict.Dict String Bool
+initialFilteredCategories : List GpxApi.Waypoint -> Dict.Dict String Bool
 initialFilteredCategories =
     List.foldl
         (\w ( acc, includeUnknown ) ->
@@ -1069,7 +1046,7 @@ initialFilteredCategories =
            )
 
 
-filterWaypointsByCategory : Bool -> Dict.Dict String Bool -> List Waypoint -> List Waypoint
+filterWaypointsByCategory : Bool -> Dict.Dict String Bool -> List GpxApi.Waypoint -> List GpxApi.Waypoint
 filterWaypointsByCategory filterEnabled categories waypoints =
     if not filterEnabled then
         waypoints
@@ -1099,14 +1076,14 @@ filterWaypointsByCategory filterEnabled categories waypoints =
             waypoints
 
 
-indexedFilteredWaypoints : List Waypoint -> List Waypoint -> List ( Int, Waypoint )
+indexedFilteredWaypoints : List GpxApi.Waypoint -> List GpxApi.Waypoint -> List ( Int, GpxApi.Waypoint )
 indexedFilteredWaypoints allWaypoints filtered =
     allWaypoints
         |> List.indexedMap Tuple.pair
         |> List.filter (\( _, wp ) -> List.member wp filtered)
 
 
-correctWaypointSelection : TotalDistanceDisplay -> List ( Int, Waypoint ) -> TotalDistanceDisplay
+correctWaypointSelection : TotalDistanceDisplay -> List ( Int, GpxApi.Waypoint ) -> TotalDistanceDisplay
 correctWaypointSelection display indexed =
     case display of
         ToWaypoint idx ->
@@ -1137,7 +1114,7 @@ correctWaypointSelection display indexed =
             display
 
 
-lookupWaypointByIndex : Int -> List Waypoint -> Maybe Waypoint
+lookupWaypointByIndex : Int -> List GpxApi.Waypoint -> Maybe GpxApi.Waypoint
 lookupWaypointByIndex idx waypoints =
     List.Extra.getAt idx waypoints
 
@@ -1168,7 +1145,7 @@ correctWaypointSelectionInModel model =
             { model | cuesheet = { cs | totalDistanceDisplay = corrected } }
 
 
-cuesFilterByCategory : Dict.Dict String Bool -> List Waypoint -> List Waypoint
+cuesFilterByCategory : Dict.Dict String Bool -> List GpxApi.Waypoint -> List GpxApi.Waypoint
 cuesFilterByCategory filteredCategories waypoints =
     List.filterMap
         (\w ->
@@ -1213,7 +1190,7 @@ getFinishDistance tracks =
         |> Maybe.withDefault 0
 
 
-injectStartFinish : Float -> ( Float, Float ) -> List Waypoint -> List Waypoint
+injectStartFinish : Float -> ( Float, Float ) -> List GpxApi.Waypoint -> List GpxApi.Waypoint
 injectStartFinish finishDist ( totalGain, totalLoss ) waypoints =
     let
         hasWaypointAtDistance d =
@@ -1511,7 +1488,7 @@ viewElevationProfileTab model tracks =
     Html.div [] profileViews
 
 
-profile : Track -> Float -> Float -> Float -> Float -> Int -> Float -> String -> Maybe Float -> List { distance : Float, intensity : Float } -> Html Msg
+profile : GpxApi.Track -> Float -> Float -> Float -> Float -> Int -> Float -> String -> Maybe Float -> List { distance : Float, intensity : Float } -> Html Msg
 profile track maxDistance minElevation maxElevation fontSize trackHeight trackThickness waypointStrokeColor maybePosition intensityPoints =
     let
         waypointTextHeight =
@@ -1650,7 +1627,7 @@ profile track maxDistance minElevation maxElevation fontSize trackHeight trackTh
         ]
 
 
-interpolateWaypointElevation : List TrackPoint -> Float -> Float
+interpolateWaypointElevation : List GpxApi.TrackPoint -> Float -> Float
 interpolateWaypointElevation trackPoints distance =
     case trackPoints of
         [] ->
@@ -1673,7 +1650,7 @@ interpolateWaypointElevation trackPoints distance =
                             interpolateWaypointElevation others distance
 
 
-resolveElevationProfileSVGLine : XYCalculator -> List TrackPoint -> String -> Svg.Svg msg
+resolveElevationProfileSVGLine : XYCalculator -> List GpxApi.TrackPoint -> String -> Svg.Svg msg
 resolveElevationProfileSVGLine calc profileData trackThicknessAttrValue =
     Svg.polyline
         [ Svg.Attributes.points
@@ -1688,7 +1665,7 @@ resolveElevationProfileSVGLine calc profileData trackThicknessAttrValue =
         []
 
 
-computeIntensity : Float -> List TrackPoint -> List { distance : Float, intensity : Float }
+computeIntensity : Float -> List GpxApi.TrackPoint -> List { distance : Float, intensity : Float }
 computeIntensity tau trackPoints =
     case trackPoints of
         [] ->
@@ -1848,7 +1825,7 @@ xyCalculator cfg =
 
 
 type Info
-    = InfoWaypoint Waypoint
+    = InfoWaypoint GpxApi.Waypoint
     | Ride Float ( Float, Float )
 
 
@@ -1970,7 +1947,7 @@ viewWaypointCategories idx waypointCategories allCategories newCatInput =
         ]
 
 
-cuesheetSvg : List Waypoint -> CuesheetOptions -> Float -> ( Float, Float ) -> Maybe Waypoint -> Html Msg
+cuesheetSvg : List GpxApi.Waypoint -> CuesheetOptions -> Float -> ( Float, Float ) -> Maybe GpxApi.Waypoint -> Html Msg
 cuesheetSvg waypoints cs finishDist refPointEle refWaypoint =
     let
         info =
@@ -2171,7 +2148,7 @@ cuesheetSvg waypoints cs finishDist refPointEle refWaypoint =
         ]
 
 
-waypointInfos : Float -> List Waypoint -> List Info
+waypointInfos : Float -> List GpxApi.Waypoint -> List Info
 waypointInfos position waypoints =
     List.foldl
         (\el accum ->
@@ -2261,7 +2238,6 @@ viewOptionsPanel model =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "column"
-        , Html.Attributes.style "justify-content" "center"
         , Html.Attributes.style "overflow" "auto"
         , Html.Attributes.class "narrow"
         ]
@@ -2271,12 +2247,13 @@ viewOptionsPanel model =
                 , Html.Attributes.style "transform" "rotate(90deg)"
                 , Html.Attributes.style "white-space" "nowrap"
                 , Html.Attributes.style "width" "1em"
+                , Html.Attributes.style "margin" "auto 0"
                 ]
                 [ Html.text "(show options)" ]
             ]
 
          else
-            [ Html.div [ Html.Attributes.class "options" ] <|
+            [ Html.div [ Html.Attributes.class "options", Html.Attributes.style "margin" "auto 0" ] <|
                 List.concat
                     [ -- Header
                       [ Html.h2 [] [ Html.text "Options" ]
@@ -2813,7 +2790,7 @@ viewButtonWithAttributes attrs text onClickMsg =
         [ Html.text text ]
 
 
-viewWaypointSelector : List ( Int, Waypoint ) -> Int -> Html Msg
+viewWaypointSelector : List ( Int, GpxApi.Waypoint ) -> Int -> Html Msg
 viewWaypointSelector indexed selectedIdx =
     Dropdown.dropdown
         (Dropdown.Options

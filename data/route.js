@@ -11388,7 +11388,6 @@ var $author$project$Main$viewOptionsPanel = function (model) {
 			[
 				$elm$html$Html$Attributes$class('flex-container'),
 				$elm$html$Html$Attributes$class('column'),
-				A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
 				A2($elm$html$Html$Attributes$style, 'overflow', 'auto'),
 				$elm$html$Html$Attributes$class('narrow')
 			]),
@@ -11402,7 +11401,8 @@ var $author$project$Main$viewOptionsPanel = function (model) {
 						$author$project$Main$ShowOptions(true)),
 						A2($elm$html$Html$Attributes$style, 'transform', 'rotate(90deg)'),
 						A2($elm$html$Html$Attributes$style, 'white-space', 'nowrap'),
-						A2($elm$html$Html$Attributes$style, 'width', '1em')
+						A2($elm$html$Html$Attributes$style, 'width', '1em'),
+						A2($elm$html$Html$Attributes$style, 'margin', 'auto 0')
 					]),
 				_List_fromArray(
 					[
@@ -11414,7 +11414,8 @@ var $author$project$Main$viewOptionsPanel = function (model) {
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$class('options')
+						$elm$html$Html$Attributes$class('options'),
+						A2($elm$html$Html$Attributes$style, 'margin', 'auto 0')
 					]),
 				$elm$core$List$concat(
 					_List_fromArray(
