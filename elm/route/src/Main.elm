@@ -1252,7 +1252,7 @@ viewLandingPage =
         ]
         [ Html.h2 [] [ Html.text "Route tools" ]
         , Html.br [] []
-        , viewButton "Upload GPX" OpenFileBrowser
+        , viewButton [] "Upload GPX" OpenFileBrowser
         , Html.br [] []
         , Html.h3 [] [ Html.text "Features" ]
         , Html.br [] []
@@ -1852,7 +1852,7 @@ viewWaypointsTab model tracks =
                                 , Html.Events.onInput <| WaypointNameChange i
                                 ]
                                 []
-                            , viewButtonWithAttributes [] "X" (DeleteWaypoint i)
+                            , viewButton [] "X" (DeleteWaypoint i)
                             , viewWaypointCategories i waypoint.categories allCategories (Dict.get i model.newCategoryInputs |> Maybe.withDefault "")
                             ]
                     )
@@ -1886,7 +1886,7 @@ viewWaypointCategories idx waypointCategories allCategories newCatInput =
                 , Html.Events.onInput (WaypointNewCategoryInput idx)
                 ]
                 []
-            , viewButtonWithAttributes [] "Add" (WaypointCategoryAdd idx "")
+            , viewButton [] "Add" (WaypointCategoryAdd idx "")
             ]
         ]
 
@@ -2213,7 +2213,7 @@ viewOptionsPanel model =
                             , Html.Attributes.style "align-items" "center"
                             ]
                             (List.concat
-                                [ [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "upload GPX" OpenFileBrowser ]
+                                [ [ viewButton [ Html.Attributes.style "width" "100%" ] "upload GPX" OpenFileBrowser ]
                                 , viewTrackNavigationButtons model
                                 ]
                             )
@@ -2247,12 +2247,12 @@ viewTrackNavigationButtons model =
         Loaded tracks ->
             List.concat
                 [ if not (List.isEmpty tracks.prev) then
-                    [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "PREV" NavigateToPrevious ]
+                    [ viewButton [ Html.Attributes.style "width" "100%" ] "PREV" NavigateToPrevious ]
 
                   else
                     []
                 , if not (List.isEmpty tracks.next) then
-                    [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "NEXT" NavigateToNext ]
+                    [ viewButton [ Html.Attributes.style "width" "100%" ] "NEXT" NavigateToNext ]
 
                   else
                     []
@@ -2364,7 +2364,7 @@ viewElevationProfileOptions model =
         ]
     , optionGroup "Intensity"
         (List.concat
-            [ [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ]
+            [ [ viewButton [ Html.Attributes.style "width" "100%" ]
                     (if ep.showIntensity then
                         "HIDE INTENSITY"
 
@@ -2504,7 +2504,7 @@ viewElevationProfileOptions model =
               ]
             , case ep.manualPosition of
                 Just _ ->
-                    [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "Clear position" (UpdateManualPosition Nothing) ]
+                    [ viewButton [ Html.Attributes.style "width" "100%" ] "Clear position" (UpdateManualPosition Nothing) ]
 
                 Nothing ->
                     []
@@ -2655,8 +2655,8 @@ viewLocationOptions model =
         Loaded _ ->
             List.concat
                 [ [ Html.hr [] []
-                  , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "Refresh Location" RequestLocation
-                  , viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ]
+                  , viewButton [ Html.Attributes.style "width" "100%" ] "Refresh Location" RequestLocation
+                  , viewButton [ Html.Attributes.style "width" "100%" ]
                         (if model.trackingEnabled then
                             "Stop Tracking"
 
@@ -2715,13 +2715,10 @@ viewErrorPanel error =
     Html.div [ Html.Attributes.class "error_panel" ] [ Html.text error ]
 
 
-viewButton : String -> Msg -> Html Msg
-viewButton text onClickMsg =
-    viewButtonWithAttributes [] text onClickMsg
 
 
-viewButtonWithAttributes : List (Html.Attribute Msg) -> String -> Msg -> Html Msg
-viewButtonWithAttributes attrs text onClickMsg =
+viewButton : List (Html.Attribute Msg) -> String -> Msg -> Html Msg
+viewButton attrs text onClickMsg =
     Html.button
         ([ Html.Events.onClick onClickMsg, Html.Attributes.class "button-4", Html.Attributes.style "max-width" "20em" ] ++ attrs)
         [ Html.text text ]

@@ -10001,7 +10001,7 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $author$project$Main$viewButtonWithAttributes = F3(
+var $author$project$Main$viewButton = F3(
 	function (attrs, text, onClickMsg) {
 		return A2(
 			$elm$html$Html$button,
@@ -10017,10 +10017,6 @@ var $author$project$Main$viewButtonWithAttributes = F3(
 				[
 					$elm$html$Html$text(text)
 				]));
-	});
-var $author$project$Main$viewButton = F2(
-	function (text, onClickMsg) {
-		return A3($author$project$Main$viewButtonWithAttributes, _List_Nil, text, onClickMsg);
 	});
 var $author$project$Main$viewLandingPage = A2(
 	$elm$html$Html$div,
@@ -10040,7 +10036,7 @@ var $author$project$Main$viewLandingPage = A2(
 					$elm$html$Html$text('Route tools')
 				])),
 			A2($elm$html$Html$br, _List_Nil, _List_Nil),
-			A2($author$project$Main$viewButton, 'Upload GPX', $author$project$Main$OpenFileBrowser),
+			A3($author$project$Main$viewButton, _List_Nil, 'Upload GPX', $author$project$Main$OpenFileBrowser),
 			A2($elm$html$Html$br, _List_Nil, _List_Nil),
 			A2(
 			$elm$html$Html$h3,
@@ -10866,7 +10862,7 @@ var $author$project$Main$viewElevationProfileOptions = function (model) {
 						_List_fromArray(
 						[
 							A3(
-							$author$project$Main$viewButtonWithAttributes,
+							$author$project$Main$viewButton,
 							_List_fromArray(
 								[
 									A2($elm$html$Html$Attributes$style, 'width', '100%')
@@ -11149,7 +11145,7 @@ var $author$project$Main$viewElevationProfileOptions = function (model) {
 								return _List_fromArray(
 									[
 										A3(
-										$author$project$Main$viewButtonWithAttributes,
+										$author$project$Main$viewButton,
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '100%')
@@ -11191,7 +11187,7 @@ var $author$project$Main$viewLocationOptions = function (model) {
 					[
 						A2($elm$html$Html$hr, _List_Nil, _List_Nil),
 						A3(
-						$author$project$Main$viewButtonWithAttributes,
+						$author$project$Main$viewButton,
 						_List_fromArray(
 							[
 								A2($elm$html$Html$Attributes$style, 'width', '100%')
@@ -11199,7 +11195,7 @@ var $author$project$Main$viewLocationOptions = function (model) {
 						'Refresh Location',
 						$author$project$Main$RequestLocation),
 						A3(
-						$author$project$Main$viewButtonWithAttributes,
+						$author$project$Main$viewButton,
 						_List_fromArray(
 							[
 								A2($elm$html$Html$Attributes$style, 'width', '100%')
@@ -11283,7 +11279,7 @@ var $author$project$Main$viewTrackNavigationButtons = function (model) {
 					(!$elm$core$List$isEmpty(tracks.ad)) ? _List_fromArray(
 					[
 						A3(
-						$author$project$Main$viewButtonWithAttributes,
+						$author$project$Main$viewButton,
 						_List_fromArray(
 							[
 								A2($elm$html$Html$Attributes$style, 'width', '100%')
@@ -11294,7 +11290,7 @@ var $author$project$Main$viewTrackNavigationButtons = function (model) {
 					(!$elm$core$List$isEmpty(tracks.an)) ? _List_fromArray(
 					[
 						A3(
-						$author$project$Main$viewButtonWithAttributes,
+						$author$project$Main$viewButton,
 						_List_fromArray(
 							[
 								A2($elm$html$Html$Attributes$style, 'width', '100%')
@@ -11385,7 +11381,7 @@ var $author$project$Main$viewOptionsPanel = function (model) {
 											_List_fromArray(
 											[
 												A3(
-												$author$project$Main$viewButtonWithAttributes,
+												$author$project$Main$viewButton,
 												_List_fromArray(
 													[
 														A2($elm$html$Html$Attributes$style, 'width', '100%')
@@ -11596,7 +11592,7 @@ var $author$project$Main$viewWaypointCategories = F4(
 								]),
 							_List_Nil),
 							A3(
-							$author$project$Main$viewButtonWithAttributes,
+							$author$project$Main$viewButton,
 							_List_Nil,
 							'Add',
 							A2($author$project$Main$WaypointCategoryAdd, idx, ''))
@@ -11655,7 +11651,7 @@ var $author$project$Main$viewWaypointsTab = F2(
 											]),
 										_List_Nil),
 										A3(
-										$author$project$Main$viewButtonWithAttributes,
+										$author$project$Main$viewButton,
 										_List_Nil,
 										'X',
 										$author$project$Main$DeleteWaypoint(i)),
