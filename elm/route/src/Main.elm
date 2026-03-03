@@ -831,10 +831,7 @@ splitTrackByDistance n track =
     else
         let
             totalDistance =
-                List.reverse track.trackpoints
-                    |> List.head
-                    |> Maybe.map .distance
-                    |> Maybe.withDefault 0
+                lastTrackpointDistance track.trackpoints
 
             segmentLength =
                 totalDistance / toFloat n
@@ -842,25 +839,7 @@ splitTrackByDistance n track =
         List.range 0 (n - 1)
             |> List.map
                 (\i ->
-                    let
-                        segStart =
-                            toFloat i * segmentLength
-
-                        segEnd =
-                            toFloat (i + 1) * segmentLength
-
-                        segTrackpoints =
-                            extractSegmentTrackpoints segStart segEnd track.trackpoints
-
-                        segWaypoints =
-                            track.waypoints
-                                |> List.filter (\w -> w.distance >= segStart && w.distance <= segEnd)
-                                |> List.map (\w -> { w | distance = w.distance - segStart })
-                    in
-                    { trackpoints = segTrackpoints |> List.map (\tp -> { tp | distance = tp.distance - segStart })
-                    , waypoints = segWaypoints
-                    , gainLoss = computeGainLoss segTrackpoints
-                    }
+                    buildSegment track (toFloat i * segmentLength) (toFloat (i + 1) * segmentLength)
                 )
 
 
@@ -868,34 +847,37 @@ splitTrackByWaypoints : List Float -> GpxApi.Track -> List GpxApi.Track
 splitTrackByWaypoints splitDistances track =
     let
         totalDistance =
-            List.reverse track.trackpoints
-                |> List.head
-                |> Maybe.map .distance
-                |> Maybe.withDefault 0
+            lastTrackpointDistance track.trackpoints
 
         boundaries =
             0 :: List.sort splitDistances ++ [ totalDistance ]
-
-        boundaryPairs =
-            List.map2 Tuple.pair boundaries (List.drop 1 boundaries)
     in
-    boundaryPairs
-        |> List.map
-            (\( segStart, segEnd ) ->
-                let
-                    segTrackpoints =
-                        extractSegmentTrackpoints segStart segEnd track.trackpoints
+    List.map2 (\segStart segEnd -> buildSegment track segStart segEnd) boundaries (List.drop 1 boundaries)
 
-                    segWaypoints =
-                        track.waypoints
-                            |> List.filter (\w -> w.distance >= segStart && w.distance <= segEnd)
-                            |> List.map (\w -> { w | distance = w.distance - segStart })
-                in
-                { trackpoints = segTrackpoints |> List.map (\tp -> { tp | distance = tp.distance - segStart })
-                , waypoints = segWaypoints
-                , gainLoss = computeGainLoss segTrackpoints
-                }
-            )
+
+buildSegment : GpxApi.Track -> Float -> Float -> GpxApi.Track
+buildSegment track segStart segEnd =
+    let
+        segTrackpoints =
+            extractSegmentTrackpoints segStart segEnd track.trackpoints
+
+        segWaypoints =
+            track.waypoints
+                |> List.filter (\w -> w.distance >= segStart && w.distance <= segEnd)
+                |> List.map (\w -> { w | distance = w.distance - segStart })
+    in
+    { trackpoints = segTrackpoints |> List.map (\tp -> { tp | distance = tp.distance - segStart })
+    , waypoints = segWaypoints
+    , gainLoss = computeGainLoss segTrackpoints
+    }
+
+
+lastTrackpointDistance : List GpxApi.TrackPoint -> Float
+lastTrackpointDistance trackpoints =
+    List.reverse trackpoints
+        |> List.head
+        |> Maybe.map .distance
+        |> Maybe.withDefault 0
 
 
 extractSegmentTrackpoints : Float -> Float -> List GpxApi.TrackPoint -> List GpxApi.TrackPoint
@@ -1156,10 +1138,7 @@ effectivePosition model =
 
 getFinishDistance : Zipper GpxApi.Track -> Float
 getFinishDistance tracks =
-    List.reverse tracks.current.trackpoints
-        |> List.head
-        |> Maybe.map .distance
-        |> Maybe.withDefault 0
+    lastTrackpointDistance tracks.current.trackpoints
 
 
 injectStartFinish : Float -> ( Float, Float ) -> List GpxApi.Waypoint -> List GpxApi.Waypoint

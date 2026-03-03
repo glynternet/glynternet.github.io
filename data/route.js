@@ -9123,7 +9123,7 @@ var $author$project$Main$cumulativeGainLossAtDistance = F2(
 				rest);
 		}
 	});
-var $author$project$Main$getFinishDistance = function (tracks) {
+var $author$project$Main$lastTrackpointDistance = function (trackpoints) {
 	return A2(
 		$elm$core$Maybe$withDefault,
 		0,
@@ -9133,7 +9133,10 @@ var $author$project$Main$getFinishDistance = function (tracks) {
 				return $.ai;
 			},
 			$elm$core$List$head(
-				$elm$core$List$reverse(tracks.c.bk))));
+				$elm$core$List$reverse(trackpoints))));
+};
+var $author$project$Main$getFinishDistance = function (tracks) {
+	return $author$project$Main$lastTrackpointDistance(tracks.c.bk);
 };
 var $author$project$Main$startFinishCategory = 'Start/Finish';
 var $author$project$Main$injectStartFinish = F3(
@@ -9766,70 +9769,54 @@ var $author$project$Main$extractSegmentTrackpoints = F3(
 		}();
 		return withStartAndEnd;
 	});
+var $author$project$Main$buildSegment = F3(
+	function (track, segStart, segEnd) {
+		var segWaypoints = A2(
+			$elm$core$List$map,
+			function (w) {
+				return _Utils_update(
+					w,
+					{ai: w.ai - segStart});
+			},
+			A2(
+				$elm$core$List$filter,
+				function (w) {
+					return (_Utils_cmp(w.ai, segStart) > -1) && (_Utils_cmp(w.ai, segEnd) < 1);
+				},
+				track.bm));
+		var segTrackpoints = A3($author$project$Main$extractSegmentTrackpoints, segStart, segEnd, track.bk);
+		return {
+			au: $author$project$Main$computeGainLoss(segTrackpoints),
+			bk: A2(
+				$elm$core$List$map,
+				function (tp) {
+					return _Utils_update(
+						tp,
+						{ai: tp.ai - segStart});
+				},
+				segTrackpoints),
+			bm: segWaypoints
+		};
+	});
 var $author$project$Main$splitTrackByDistance = F2(
 	function (n, track) {
 		if (n <= 1) {
 			return _List_fromArray(
 				[track]);
 		} else {
-			var totalDistance = A2(
-				$elm$core$Maybe$withDefault,
-				0,
-				A2(
-					$elm$core$Maybe$map,
-					function ($) {
-						return $.ai;
-					},
-					$elm$core$List$head(
-						$elm$core$List$reverse(track.bk))));
+			var totalDistance = $author$project$Main$lastTrackpointDistance(track.bk);
 			var segmentLength = totalDistance / n;
 			return A2(
 				$elm$core$List$map,
 				function (i) {
-					var segStart = i * segmentLength;
-					var segEnd = (i + 1) * segmentLength;
-					var segTrackpoints = A3($author$project$Main$extractSegmentTrackpoints, segStart, segEnd, track.bk);
-					var segWaypoints = A2(
-						$elm$core$List$map,
-						function (w) {
-							return _Utils_update(
-								w,
-								{ai: w.ai - segStart});
-						},
-						A2(
-							$elm$core$List$filter,
-							function (w) {
-								return (_Utils_cmp(w.ai, segStart) > -1) && (_Utils_cmp(w.ai, segEnd) < 1);
-							},
-							track.bm));
-					return {
-						au: $author$project$Main$computeGainLoss(segTrackpoints),
-						bk: A2(
-							$elm$core$List$map,
-							function (tp) {
-								return _Utils_update(
-									tp,
-									{ai: tp.ai - segStart});
-							},
-							segTrackpoints),
-						bm: segWaypoints
-					};
+					return A3($author$project$Main$buildSegment, track, i * segmentLength, (i + 1) * segmentLength);
 				},
 				A2($elm$core$List$range, 0, n - 1));
 		}
 	});
 var $author$project$Main$splitTrackByWaypoints = F2(
 	function (splitDistances, track) {
-		var totalDistance = A2(
-			$elm$core$Maybe$withDefault,
-			0,
-			A2(
-				$elm$core$Maybe$map,
-				function ($) {
-					return $.ai;
-				},
-				$elm$core$List$head(
-					$elm$core$List$reverse(track.bk))));
+		var totalDistance = $author$project$Main$lastTrackpointDistance(track.bk);
 		var boundaries = A2(
 			$elm$core$List$cons,
 			0,
@@ -9837,44 +9824,14 @@ var $author$project$Main$splitTrackByWaypoints = F2(
 				$elm$core$List$sort(splitDistances),
 				_List_fromArray(
 					[totalDistance])));
-		var boundaryPairs = A3(
+		return A3(
 			$elm$core$List$map2,
-			$elm$core$Tuple$pair,
+			F2(
+				function (segStart, segEnd) {
+					return A3($author$project$Main$buildSegment, track, segStart, segEnd);
+				}),
 			boundaries,
 			A2($elm$core$List$drop, 1, boundaries));
-		return A2(
-			$elm$core$List$map,
-			function (_v0) {
-				var segStart = _v0.a;
-				var segEnd = _v0.b;
-				var segWaypoints = A2(
-					$elm$core$List$map,
-					function (w) {
-						return _Utils_update(
-							w,
-							{ai: w.ai - segStart});
-					},
-					A2(
-						$elm$core$List$filter,
-						function (w) {
-							return (_Utils_cmp(w.ai, segStart) > -1) && (_Utils_cmp(w.ai, segEnd) < 1);
-						},
-						track.bm));
-				var segTrackpoints = A3($author$project$Main$extractSegmentTrackpoints, segStart, segEnd, track.bk);
-				return {
-					au: $author$project$Main$computeGainLoss(segTrackpoints),
-					bk: A2(
-						$elm$core$List$map,
-						function (tp) {
-							return _Utils_update(
-								tp,
-								{ai: tp.ai - segStart});
-						},
-						segTrackpoints),
-					bm: segWaypoints
-				};
-			},
-			boundaryPairs);
 	});
 var $author$project$Main$viewElevationProfileTab = F2(
 	function (model, tracks) {
