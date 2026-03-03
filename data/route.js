@@ -7307,12 +7307,6 @@ var $author$project$Main$sortWaypointIndices = F2(
 			indices);
 	});
 var $elm$file$File$toString = _File_toString;
-var $author$project$Main$trackWithWaypoints = F2(
-	function (track, waypoints) {
-		return _Utils_update(
-			track,
-			{bk: waypoints});
-	});
 var $elm_community$list_extra$List$Extra$updateAt = F3(
 	function (index, fn, list) {
 		if (index < 0) {
@@ -7335,10 +7329,11 @@ var $elm_community$list_extra$List$Extra$updateAt = F3(
 	});
 var $author$project$Main$trackUpdateWaypoint = F3(
 	function (track, i, updateWaypoint) {
-		return A2(
-			$author$project$Main$trackWithWaypoints,
+		return _Utils_update(
 			track,
-			A3($elm_community$list_extra$List$Extra$updateAt, i, updateWaypoint, track.bk));
+			{
+				bk: A3($elm_community$list_extra$List$Extra$updateAt, i, updateWaypoint, track.bk)
+			});
 	});
 var $elm$core$String$trim = _String_trim;
 var $author$project$Zipper$updateCurrent = F2(
@@ -8066,10 +8061,11 @@ var $author$project$Main$update = F2(
 									A2(
 										$author$project$Zipper$updateCurrent,
 										function (current) {
-											return A2(
-												$author$project$Main$trackWithWaypoints,
+											return _Utils_update(
 												current,
-												A2($elm_community$list_extra$List$Extra$removeAt, i, current.bk));
+												{
+													bk: A2($elm_community$list_extra$List$Extra$removeAt, i, current.bk)
+												});
 										},
 										tracks))
 							}));
@@ -9199,10 +9195,6 @@ var $author$project$Main$injectStartFinish = F3(
 					totalLoss)
 				]));
 	});
-var $author$project$Main$lookupWaypointByIndex = F2(
-	function (idx, waypoints) {
-		return A2($elm_community$list_extra$List$Extra$getAt, idx, waypoints);
-	});
 var $author$project$Main$viewCuesheetTab = F2(
 	function (model, tracks) {
 		var currentFinishDistance = $author$project$Main$getFinishDistance(tracks);
@@ -9212,10 +9204,10 @@ var $author$project$Main$viewCuesheetTab = F2(
 			switch (_v1.$) {
 				case 3:
 					var idx = _v1.a;
-					return A2($author$project$Main$lookupWaypointByIndex, idx, tracks.c.bk);
+					return A2($elm_community$list_extra$List$Extra$getAt, idx, tracks.c.bk);
 				case 4:
 					var idx = _v1.a;
-					return A2($author$project$Main$lookupWaypointByIndex, idx, tracks.c.bk);
+					return A2($elm_community$list_extra$List$Extra$getAt, idx, tracks.c.bk);
 				default:
 					return $elm$core$Maybe$Nothing;
 			}
@@ -11344,9 +11336,6 @@ var $author$project$Main$viewLocationOptions = function (model) {
 };
 var $author$project$Main$NavigateToNext = {$: 7};
 var $author$project$Main$NavigateToPrevious = {$: 6};
-var $author$project$Main$listPopulated = function (list) {
-	return $elm$core$List$length(list) > 0;
-};
 var $author$project$Main$viewTrackNavigationButtons = function (model) {
 	var _v0 = model.b;
 	if (_v0.$ === 3) {
@@ -11354,7 +11343,7 @@ var $author$project$Main$viewTrackNavigationButtons = function (model) {
 		return $elm$core$List$concat(
 			_List_fromArray(
 				[
-					$author$project$Main$listPopulated(tracks.ab) ? _List_fromArray(
+					(!$elm$core$List$isEmpty(tracks.ab)) ? _List_fromArray(
 					[
 						A3(
 						$author$project$Main$viewButtonWithAttributes,
@@ -11365,7 +11354,7 @@ var $author$project$Main$viewTrackNavigationButtons = function (model) {
 						'PREV',
 						$author$project$Main$NavigateToPrevious)
 					]) : _List_Nil,
-					$author$project$Main$listPopulated(tracks.al) ? _List_fromArray(
+					(!$elm$core$List$isEmpty(tracks.al)) ? _List_fromArray(
 					[
 						A3(
 						$author$project$Main$viewButtonWithAttributes,

@@ -507,7 +507,7 @@ update msg model =
                             | tracks =
                                 Loaded <|
                                     Zipper.updateCurrent
-                                        (\current -> trackWithWaypoints current (List.Extra.removeAt i current.waypoints))
+                                        (\current -> { current | waypoints = List.Extra.removeAt i current.waypoints })
                                         tracks
                         }
 
@@ -818,14 +818,9 @@ updateModel model =
 -- HELPERS
 
 
-trackWithWaypoints : GpxApi.Track -> List GpxApi.Waypoint -> GpxApi.Track
-trackWithWaypoints track waypoints =
-    { track | waypoints = waypoints }
-
-
 trackUpdateWaypoint : GpxApi.Track -> Int -> (GpxApi.Waypoint -> GpxApi.Waypoint) -> GpxApi.Track
 trackUpdateWaypoint track i updateWaypoint =
-    trackWithWaypoints track <| List.Extra.updateAt i updateWaypoint track.waypoints
+    { track | waypoints = List.Extra.updateAt i updateWaypoint track.waypoints }
 
 
 splitTrackByDistance : Int -> GpxApi.Track -> List GpxApi.Track
@@ -1113,10 +1108,6 @@ correctWaypointSelection display indexed =
         _ ->
             display
 
-
-lookupWaypointByIndex : Int -> List GpxApi.Waypoint -> Maybe GpxApi.Waypoint
-lookupWaypointByIndex idx waypoints =
-    List.Extra.getAt idx waypoints
 
 
 correctWaypointSelectionInModel : Model -> Model
@@ -1855,10 +1846,10 @@ viewCuesheetTab model tracks =
         refWaypoint =
             case cs.totalDistanceDisplay of
                 ToWaypoint idx ->
-                    lookupWaypointByIndex idx tracks.current.waypoints
+                    List.Extra.getAt idx tracks.current.waypoints
 
                 FromWaypoint idx ->
-                    lookupWaypointByIndex idx tracks.current.waypoints
+                    List.Extra.getAt idx tracks.current.waypoints
 
                 _ ->
                     Nothing
@@ -2302,12 +2293,12 @@ viewTrackNavigationButtons model =
     case model.tracks of
         Loaded tracks ->
             List.concat
-                [ if listPopulated tracks.prev then
+                [ if not (List.isEmpty tracks.prev) then
                     [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "PREV" NavigateToPrevious ]
 
                   else
                     []
-                , if listPopulated tracks.next then
+                , if not (List.isEmpty tracks.next) then
                     [ viewButtonWithAttributes [ Html.Attributes.style "width" "100%" ] "NEXT" NavigateToNext ]
 
                   else
@@ -3101,6 +3092,3 @@ maybeFromloadableResource resource =
             Nothing
 
 
-listPopulated : List a -> Bool
-listPopulated list =
-    List.length list > 0
