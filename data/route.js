@@ -11167,60 +11167,64 @@ var $author$project$Main$viewWaypointsTab = F2(
 					$elm$html$Html$div,
 					_List_Nil,
 					A2(
-						$elm$core$List$indexedMap,
-						F2(
-							function (i, waypoint) {
-								return A2(
-									$elm$html$Html$div,
-									_List_Nil,
-									_List_fromArray(
-										[
-											A2(
-											$elm$html$Html$input,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$type_('number'),
-													$elm$html$Html$Attributes$min('0'),
-													A3($elm$core$Basics$composeR, $elm$core$String$fromFloat, $elm$html$Html$Attributes$max, maxDistance),
-													$elm$html$Html$Attributes$value(
-													$elm$core$String$fromFloat(waypoint.ag)),
-													$elm$html$Html$Events$onInput(
+						$elm$core$List$map,
+						function (_v0) {
+							var i = _v0.a;
+							var waypoint = _v0.b;
+							return A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$input,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$type_('number'),
+												$elm$html$Html$Attributes$min('0'),
+												A3($elm$core$Basics$composeR, $elm$core$String$fromFloat, $elm$html$Html$Attributes$max, maxDistance),
+												$elm$html$Html$Attributes$value(
+												$elm$core$String$fromFloat(waypoint.ag)),
+												$elm$html$Html$Events$onInput(
+												A2(
+													$elm$core$Basics$composeR,
+													$elm$core$String$toFloat,
 													A2(
 														$elm$core$Basics$composeR,
-														$elm$core$String$toFloat,
-														A2(
-															$elm$core$Basics$composeR,
-															$elm$core$Maybe$withDefault(1000),
-															$author$project$Main$WaypointDistanceChange(i))))
-												]),
-											_List_Nil),
-											A2(
-											$elm$html$Html$textarea,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$placeholder('Waypoint name...'),
-													$elm$html$Html$Attributes$value(waypoint.aZ),
-													$elm$html$Html$Events$onInput(
-													$author$project$Main$WaypointNameChange(i))
-												]),
-											_List_Nil),
-											A3(
-											$author$project$Main$viewButtonWithAttributes,
-											_List_Nil,
-											'X',
-											$author$project$Main$DeleteWaypoint(i)),
-											A4(
-											$author$project$Main$viewWaypointCategories,
-											i,
-											waypoint.aG,
-											allCategories,
-											A2(
-												$elm$core$Maybe$withDefault,
-												'',
-												A2($elm$core$Dict$get, i, model.M)))
-										]));
-							}),
-						tracks.e.bi))
+														$elm$core$Maybe$withDefault(1000),
+														$author$project$Main$WaypointDistanceChange(i))))
+											]),
+										_List_Nil),
+										A2(
+										$elm$html$Html$textarea,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$placeholder('Waypoint name...'),
+												$elm$html$Html$Attributes$value(waypoint.aZ),
+												$elm$html$Html$Events$onInput(
+												$author$project$Main$WaypointNameChange(i))
+											]),
+										_List_Nil),
+										A3(
+										$author$project$Main$viewButtonWithAttributes,
+										_List_Nil,
+										'X',
+										$author$project$Main$DeleteWaypoint(i)),
+										A4(
+										$author$project$Main$viewWaypointCategories,
+										i,
+										waypoint.aG,
+										allCategories,
+										A2(
+											$elm$core$Maybe$withDefault,
+											'',
+											A2($elm$core$Dict$get, i, model.M)))
+									]));
+						},
+						A2(
+							$author$project$Main$indexedFilteredWaypoints,
+							tracks.e.bi,
+							A3($author$project$Main$filterWaypointsByCategory, model.m, model.c, tracks.e.bi))))
 				]));
 	});
 var $author$project$Main$view = function (model) {

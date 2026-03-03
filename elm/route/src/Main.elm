@@ -1738,12 +1738,15 @@ viewWaypointsTab model tracks =
 
         allCategories =
             Dict.keys model.filteredCategories
+
     in
     Html.div []
         [ Html.div []
             (tracks.current.waypoints
-                |> List.indexedMap
-                    (\i waypoint ->
+                |> filterWaypointsByCategory model.categoryFilterEnabled model.filteredCategories
+                |> indexedFilteredWaypoints tracks.current.waypoints
+                |> List.map
+                    (\( i, waypoint ) ->
                         Html.div []
                             [ Html.input
                                 [ Html.Attributes.type_ "number"
