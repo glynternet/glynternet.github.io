@@ -1041,9 +1041,9 @@ initialFilteredCategories =
            )
 
 
-filterWaypointsByCategory : Bool -> Dict.Dict String Bool -> List GpxApi.Waypoint -> List GpxApi.Waypoint
-filterWaypointsByCategory filterEnabled categories waypoints =
-    if not filterEnabled then
+filterWaypointsByCategory : { filterEnabled : Bool, trimCategories : Bool } -> Dict.Dict String Bool -> List GpxApi.Waypoint -> List GpxApi.Waypoint
+filterWaypointsByCategory opts categories waypoints =
+    if not opts.filterEnabled then
         waypoints
 
     else
@@ -1062,11 +1062,18 @@ filterWaypointsByCategory filterEnabled categories waypoints =
                             Nothing
 
                     cats ->
-                        if List.any includeCategory cats then
-                            Just w
+                        let
+                            matching =
+                                List.filter includeCategory cats
+                        in
+                        if List.isEmpty matching then
+                            Nothing
+
+                        else if opts.trimCategories then
+                            Just { w | categories = matching }
 
                         else
-                            Nothing
+                            Just w
             )
             waypoints
 
@@ -1122,7 +1129,7 @@ correctWaypointSelectionInModel model =
                     tracks.current.waypoints
 
                 filtered =
-                    filterWaypointsByCategory model.categoryFilterEnabled model.filteredCategories allWaypoints
+                    filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = False } model.filteredCategories allWaypoints
 
                 indexed =
                     indexedFilteredWaypoints allWaypoints filtered
@@ -1135,32 +1142,6 @@ correctWaypointSelectionInModel model =
             in
             { model | cuesheet = { cs | totalDistanceDisplay = corrected } }
 
-
-cuesFilterByCategory : Dict.Dict String Bool -> List GpxApi.Waypoint -> List GpxApi.Waypoint
-cuesFilterByCategory filteredCategories waypoints =
-    List.filterMap
-        (\w ->
-            let
-                includeCategory cat =
-                    Dict.get cat filteredCategories |> Maybe.withDefault True
-            in
-            case w.categories of
-                [] ->
-                    if includeCategory unknownCategory then
-                        Just w
-
-                    else
-                        Nothing
-
-                cats ->
-                    case List.filter includeCategory cats of
-                        [] ->
-                            Nothing
-
-                        some ->
-                            Just { w | categories = some }
-        )
-        waypoints
 
 
 effectivePosition : Model -> Maybe Float
@@ -1407,7 +1388,7 @@ viewElevationProfileTab model tracks =
             Maybe.withDefault 1 <| List.minimum <| List.map .elevation tracks.current.trackpoints
 
         filteredWaypoints =
-            filterWaypointsByCategory model.categoryFilterEnabled model.filteredCategories tracks.current.waypoints
+            filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = False } model.filteredCategories tracks.current.waypoints
 
         pos =
             effectivePosition model
@@ -1837,11 +1818,7 @@ viewCuesheetTab model tracks =
                 tracks.current.waypoints
 
         filteredWaypoints =
-            if model.categoryFilterEnabled then
-                cuesFilterByCategory model.filteredCategories waypointsWithStartFinish
-
-            else
-                waypointsWithStartFinish
+            filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = True } model.filteredCategories waypointsWithStartFinish
 
         refWaypoint =
             case cs.totalDistanceDisplay of
@@ -1880,7 +1857,7 @@ viewWaypointsTab model tracks =
     Html.div []
         [ Html.div []
             (tracks.current.waypoints
-                |> filterWaypointsByCategory model.categoryFilterEnabled model.filteredCategories
+                |> filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = False } model.filteredCategories
                 |> indexedFilteredWaypoints tracks.current.waypoints
                 |> List.map
                     (\( i, waypoint ) ->
@@ -2581,20 +2558,13 @@ viewCuesheetOptionsPanel model =
             maybeTracks
                 |> Maybe.map
                     (\ts ->
-                        if model.categoryFilterEnabled then
-                            cuesFilterByCategory model.filteredCategories
-                                (if cs.showStartFinish then
-                                    injectStartFinish (getFinishDistance ts) ts.current.gainLoss ts.current.waypoints
-
-                                 else
-                                    ts.current.waypoints
-                                )
-
-                        else if cs.showStartFinish then
+                        (if cs.showStartFinish then
                             injectStartFinish (getFinishDistance ts) ts.current.gainLoss ts.current.waypoints
 
-                        else
+                         else
                             ts.current.waypoints
+                        )
+                            |> filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = True } model.filteredCategories
                     )
                 |> Maybe.withDefault []
 
