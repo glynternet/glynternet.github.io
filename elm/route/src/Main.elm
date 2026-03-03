@@ -1136,9 +1136,6 @@ effectivePosition model =
             model.location |> Maybe.map .matchedDistance
 
 
-getFinishDistance : Zipper GpxApi.Track -> Float
-getFinishDistance tracks =
-    lastTrackpointDistance tracks.current.trackpoints
 
 
 injectStartFinish : Float -> ( Float, Float ) -> List GpxApi.Waypoint -> List GpxApi.Waypoint
@@ -1787,7 +1784,7 @@ viewCuesheetTab model tracks =
             model.cuesheet
 
         currentFinishDistance =
-            getFinishDistance tracks
+            lastTrackpointDistance tracks.current.trackpoints
 
         waypointsWithStartFinish =
             if cs.showStartFinish then
@@ -1827,7 +1824,7 @@ viewWaypointsTab : Model -> Zipper GpxApi.Track -> Html Msg
 viewWaypointsTab model tracks =
     let
         maxDistance =
-            getFinishDistance tracks
+            lastTrackpointDistance tracks.current.trackpoints
 
         allCategories =
             Dict.keys model.filteredCategories
@@ -2525,7 +2522,7 @@ viewCuesheetOptionsPanel model =
 
         maxDistance =
             maybeFromloadableResource model.tracks
-                |> Maybe.map (\ts -> getFinishDistance ts)
+                |> Maybe.map (\ts -> lastTrackpointDistance ts.current.trackpoints)
 
         maybeTracks =
             maybeFromloadableResource model.tracks
@@ -2538,7 +2535,7 @@ viewCuesheetOptionsPanel model =
                 |> Maybe.map
                     (\ts ->
                         (if cs.showStartFinish then
-                            injectStartFinish (getFinishDistance ts) ts.current.gainLoss ts.current.waypoints
+                            injectStartFinish (lastTrackpointDistance ts.current.trackpoints) ts.current.gainLoss ts.current.waypoints
 
                          else
                             ts.current.waypoints

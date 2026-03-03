@@ -9123,21 +9123,6 @@ var $author$project$Main$cumulativeGainLossAtDistance = F2(
 				rest);
 		}
 	});
-var $author$project$Main$lastTrackpointDistance = function (trackpoints) {
-	return A2(
-		$elm$core$Maybe$withDefault,
-		0,
-		A2(
-			$elm$core$Maybe$map,
-			function ($) {
-				return $.ai;
-			},
-			$elm$core$List$head(
-				$elm$core$List$reverse(trackpoints))));
-};
-var $author$project$Main$getFinishDistance = function (tracks) {
-	return $author$project$Main$lastTrackpointDistance(tracks.c.bk);
-};
 var $author$project$Main$startFinishCategory = 'Start/Finish';
 var $author$project$Main$injectStartFinish = F3(
 	function (finishDist, _v0, waypoints) {
@@ -9176,9 +9161,21 @@ var $author$project$Main$injectStartFinish = F3(
 					totalLoss)
 				]));
 	});
+var $author$project$Main$lastTrackpointDistance = function (trackpoints) {
+	return A2(
+		$elm$core$Maybe$withDefault,
+		0,
+		A2(
+			$elm$core$Maybe$map,
+			function ($) {
+				return $.ai;
+			},
+			$elm$core$List$head(
+				$elm$core$List$reverse(trackpoints))));
+};
 var $author$project$Main$viewCuesheetTab = F2(
 	function (model, tracks) {
-		var currentFinishDistance = $author$project$Main$getFinishDistance(tracks);
+		var currentFinishDistance = $author$project$Main$lastTrackpointDistance(tracks.c.bk);
 		var cs = model.e;
 		var refWaypoint = function () {
 			var _v1 = cs.j;
@@ -10459,7 +10456,7 @@ var $author$project$Main$viewCuesheetOptionsPanel = function (model) {
 	var maxDistance = A2(
 		$elm$core$Maybe$map,
 		function (ts) {
-			return $author$project$Main$getFinishDistance(ts);
+			return $author$project$Main$lastTrackpointDistance(ts.c.bk);
 		},
 		$author$project$Main$maybeFromloadableResource(model.b));
 	var cs = model.e;
@@ -10475,7 +10472,7 @@ var $author$project$Main$viewCuesheetOptionsPanel = function (model) {
 					model.d,
 					cs.q ? A3(
 						$author$project$Main$injectStartFinish,
-						$author$project$Main$getFinishDistance(ts),
+						$author$project$Main$lastTrackpointDistance(ts.c.bk),
 						ts.c.au,
 						ts.c.bm) : ts.c.bm);
 			},
@@ -11608,7 +11605,7 @@ var $author$project$Main$viewWaypointCategories = F4(
 	});
 var $author$project$Main$viewWaypointsTab = F2(
 	function (model, tracks) {
-		var maxDistance = $author$project$Main$getFinishDistance(tracks);
+		var maxDistance = $author$project$Main$lastTrackpointDistance(tracks.c.bk);
 		var allCategories = $elm$core$Dict$keys(model.d);
 		return A2(
 			$elm$html$Html$div,
