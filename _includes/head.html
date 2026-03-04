@@ -18,18 +18,5 @@
         }
     </script>
     {% endif %}
-    {% for script in page.scripts %}
-    <script src="/data/{{ script }}.js"></script>
-    {% endfor %}
-    {% if page.wasm %}
-    <script src="/data/go-wasm-exec.js"></script>
-    <script>
-        const go = new Go();
-        {% for wasm in page.wasm_scripts %}
-        WebAssembly.instantiateStreaming(fetch("/data/{{ wasm }}.wasm"), go.importObject).then((result) => {
-            go.run(result.instance);
-        });
-        {% endfor %}
-    </script>
-    {% endif %}
+
 </head>

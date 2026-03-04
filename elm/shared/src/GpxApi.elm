@@ -1,9 +1,11 @@
 module GpxApi exposing
-    ( Track
+    ( SplitResult
+    , Track
     , TrackPoint
     , Waypoint
     , decodeElevationProfileDataResponse
     , decodeResult
+    , decodeSplitResult
     , decodeTrack
     , decodeTrackpoints
     , decodeWaypoints
@@ -138,4 +140,30 @@ encodeWaypoints =
                 , ( "gain", Json.Encode.float waypoint.gain )
                 , ( "loss", Json.Encode.float waypoint.loss )
                 ]
+        )
+
+
+
+-- SPLIT RESULT
+
+
+type alias SplitResult =
+    { segments : List Track
+    , boundaries : List ( Float, Float )
+    }
+
+
+decodeSplitResult : Json.Decode.Decoder SplitResult
+decodeSplitResult =
+    Json.Decode.map2 SplitResult
+        (Json.Decode.field "segments" (Json.Decode.list decodeTrack))
+        (Json.Decode.field "boundaries" decodeBoundaries)
+
+
+decodeBoundaries : Json.Decode.Decoder (List ( Float, Float ))
+decodeBoundaries =
+    Json.Decode.list
+        (Json.Decode.map2 Tuple.pair
+            (Json.Decode.index 0 Json.Decode.float)
+            (Json.Decode.index 1 Json.Decode.float)
         )

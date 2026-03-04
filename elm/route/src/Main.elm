@@ -49,6 +49,7 @@ subscriptions model =
           else
             Sub.none
         , receiveElevationProfileData WasmResponseReceived
+        , receiveSplitProfile SplitProfileReceived
         ]
 
 
@@ -80,6 +81,7 @@ type alias Model =
 
     -- Transient (never persisted)
     , stateDecodeError : Maybe String
+    , splitSegments : Maybe GpxApi.SplitResult
     }
 
 
@@ -178,6 +180,7 @@ defaultModel =
     , elevationProfile = defaultElevationProfileOptions
     , cuesheet = defaultCuesheetOptions
     , stateDecodeError = Nothing
+    , splitSegments = Nothing
     }
 
 
@@ -190,7 +193,7 @@ init maybeState _ _ =
         Just stateValue ->
             case Json.Decode.decodeValue modelDecoder stateValue of
                 Ok model ->
-                    ( model, Cmd.none )
+                    ( model, requestSplitCmd model )
 
                 Err err ->
                     let
@@ -215,6 +218,7 @@ type Msg
     | FileUploaded File.File
     | GPXStringed String
     | WasmResponseReceived String
+    | SplitProfileReceived String
     | NavigateToPrevious
     | NavigateToNext
     | SwitchTab Tab
@@ -339,6 +343,23 @@ update msg model =
                                             _ ->
                                                 model.elevationProfile
                                 }
+
+        SplitProfileReceived string ->
+            case Json.Decode.decodeString (GpxApi.decodeResult GpxApi.decodeSplitResult) string of
+                Err errMsg ->
+                    ( { model | splitSegments = Nothing }
+                    , logError ("parsing split profile response: " ++ Json.Decode.errorToString errMsg)
+                    )
+
+                Ok typedResult ->
+                    case typedResult of
+                        Err errMsg ->
+                            ( { model | splitSegments = Nothing }
+                            , logError ("splitting profile: " ++ errMsg)
+                            )
+
+                        Ok splitResult ->
+                            ( { model | splitSegments = Just splitResult }, Cmd.none )
 
         NavigateToPrevious ->
             case model.tracks of
@@ -778,7 +799,50 @@ update msg model =
 
 updateModel : Model -> ( Model, Cmd Msg )
 updateModel model =
-    ( model, storeState (encodeSavedState model) )
+    ( model, Cmd.batch [ storeState (encodeSavedState model), requestSplitCmd model ] )
+
+
+requestSplitCmd : Model -> Cmd Msg
+requestSplitCmd model =
+    case model.tracks of
+        Loaded tracks ->
+            let
+                filteredWaypoints =
+                    filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = False } model.filteredCategories tracks.current.waypoints
+
+                track =
+                    GpxApi.Track tracks.current.trackpoints filteredWaypoints tracks.current.gainLoss
+
+                ep =
+                    model.elevationProfile
+            in
+            requestSplitProfile
+                (Json.Encode.encode 0
+                    (Json.Encode.object
+                        ([ ( "track", GpxApi.encodeTrack track ) ]
+                            ++ (case ep.splitMode of
+                                    SplitEquidistant n ->
+                                        [ ( "mode", Json.Encode.string "equidistant" )
+                                        , ( "count", Json.Encode.int n )
+                                        ]
+
+                                    SplitByWaypoints indices ->
+                                        let
+                                            distances =
+                                                indices
+                                                    |> List.filterMap (\i -> List.Extra.getAt i tracks.current.waypoints |> Maybe.map .distance)
+                                                    |> List.sort
+                                        in
+                                        [ ( "mode", Json.Encode.string "waypoints" )
+                                        , ( "distances", Json.Encode.list Json.Encode.float distances )
+                                        ]
+                               )
+                        )
+                    )
+                )
+
+        _ ->
+            Cmd.none
 
 
 
@@ -790,151 +854,11 @@ trackUpdateWaypoint track i updateWaypoint =
     { track | waypoints = List.Extra.updateAt i updateWaypoint track.waypoints }
 
 
-splitTrackByDistance : Int -> GpxApi.Track -> List GpxApi.Track
-splitTrackByDistance n track =
-    if n <= 1 then
-        [ track ]
-
-    else
-        let
-            totalDistance =
-                lastTrackpointDistance track.trackpoints
-
-            segmentLength =
-                totalDistance / toFloat n
-        in
-        List.range 0 (n - 1)
-            |> List.map
-                (\i ->
-                    buildSegment track (toFloat i * segmentLength) (toFloat (i + 1) * segmentLength)
-                )
-
-
-splitTrackByWaypoints : List Float -> GpxApi.Track -> List GpxApi.Track
-splitTrackByWaypoints splitDistances track =
-    let
-        totalDistance =
-            lastTrackpointDistance track.trackpoints
-
-        boundaries =
-            0 :: List.sort splitDistances ++ [ totalDistance ]
-    in
-    List.map2 (\segStart segEnd -> buildSegment track segStart segEnd) boundaries (List.drop 1 boundaries)
-
-
-buildSegment : GpxApi.Track -> Float -> Float -> GpxApi.Track
-buildSegment track segStart segEnd =
-    let
-        segTrackpoints =
-            extractSegmentTrackpoints segStart segEnd track.trackpoints
-
-        segWaypoints =
-            track.waypoints
-                |> List.filter (\w -> w.distance >= segStart && w.distance <= segEnd)
-                |> List.map (\w -> { w | distance = w.distance - segStart })
-    in
-    { trackpoints = segTrackpoints |> List.map (\tp -> { tp | distance = tp.distance - segStart })
-    , waypoints = segWaypoints
-    , gainLoss =
-        case ( List.head segTrackpoints, List.Extra.last segTrackpoints ) of
-            ( Just first, Just last ) ->
-                ( last.gain - first.gain, last.loss - first.loss )
-
-            _ ->
-                ( 0, 0 )
-    }
-
-
 lastTrackpointDistance : List GpxApi.TrackPoint -> Float
 lastTrackpointDistance trackpoints =
     List.Extra.last trackpoints
         |> Maybe.map .distance
         |> Maybe.withDefault 0
-
-
-extractSegmentTrackpoints : Float -> Float -> List GpxApi.TrackPoint -> List GpxApi.TrackPoint
-extractSegmentTrackpoints segStart segEnd trackpoints =
-    let
-        pointsInRange =
-            trackpoints
-                |> List.filter (\tp -> tp.distance >= segStart && tp.distance <= segEnd)
-
-        startPoint =
-            interpolateTrackpointAt segStart trackpoints
-
-        endPoint =
-            interpolateTrackpointAt segEnd trackpoints
-
-        withStart =
-            case ( startPoint, List.head pointsInRange ) of
-                ( Just sp, Just first ) ->
-                    if first.distance > segStart then
-                        sp :: pointsInRange
-
-                    else
-                        pointsInRange
-
-                ( Just sp, Nothing ) ->
-                    [ sp ]
-
-                _ ->
-                    pointsInRange
-
-        withStartAndEnd =
-            case ( endPoint, List.reverse withStart |> List.head ) of
-                ( Just ep, Just lastPt ) ->
-                    if lastPt.distance < segEnd then
-                        withStart ++ [ ep ]
-
-                    else
-                        withStart
-
-                ( Just ep, Nothing ) ->
-                    [ ep ]
-
-                _ ->
-                    withStart
-    in
-    withStartAndEnd
-
-
-interpolateTrackpointAt : Float -> List GpxApi.TrackPoint -> Maybe GpxApi.TrackPoint
-interpolateTrackpointAt dist trackpoints =
-    case trackpoints of
-        [] ->
-            Nothing
-
-        [ only ] ->
-            if only.distance == dist then
-                Just only
-
-            else
-                Nothing
-
-        a :: b :: rest ->
-            if a.distance == dist then
-                Just a
-
-            else if a.distance < dist && b.distance >= dist then
-                let
-                    t =
-                        if b.distance == a.distance then
-                            0
-
-                        else
-                            (dist - a.distance) / (b.distance - a.distance)
-                in
-                Just
-                    { distance = dist
-                    , elevation = a.elevation + t * (b.elevation - a.elevation)
-                    , lat = a.lat + t * (b.lat - a.lat)
-                    , lon = a.lon + t * (b.lon - a.lon)
-                    , gain = a.gain + t * (b.gain - a.gain)
-                    , loss = a.loss + t * (b.loss - a.loss)
-                    }
-
-            else
-                interpolateTrackpointAt dist (b :: rest)
 
 
 unknownCategory : String
@@ -1343,9 +1267,6 @@ viewElevationProfileTab model tracks =
         trackMinElevation =
             Maybe.withDefault 1 <| List.minimum <| List.map .elevation tracks.current.trackpoints
 
-        filteredWaypoints =
-            filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = False } model.filteredCategories tracks.current.waypoints
-
         pos =
             effectivePosition model
 
@@ -1355,65 +1276,45 @@ viewElevationProfileTab model tracks =
 
             else
                 []
-
-        ( segments, boundaryPairs ) =
-            case ep.splitMode of
-                SplitEquidistant n ->
-                    let
-                        segLen =
-                            maxDistance / toFloat (max 1 n)
-                    in
-                    ( splitTrackByDistance n (GpxApi.Track tracks.current.trackpoints filteredWaypoints tracks.current.gainLoss)
-                    , List.range 0 (max 1 n - 1)
-                        |> List.map (\i -> ( toFloat i * segLen, toFloat (i + 1) * segLen ))
-                    )
-
-                SplitByWaypoints indices ->
-                    let
-                        waypointDistances =
-                            indices
-                                |> List.filterMap (\i -> List.Extra.getAt i tracks.current.waypoints |> Maybe.map .distance)
-                                |> List.sort
-
-                        boundaries =
-                            0 :: waypointDistances ++ [ maxDistance ]
-                    in
-                    ( splitTrackByWaypoints waypointDistances (GpxApi.Track tracks.current.trackpoints filteredWaypoints tracks.current.gainLoss)
-                    , List.map2 Tuple.pair boundaries (List.drop 1 boundaries)
-                    )
-
-        profileViews =
-            List.map2
-                (\( segStart, segEnd ) seg ->
-                    let
-                        segMaxDistance =
-                            List.reverse seg.trackpoints
-                                |> List.head
-                                |> Maybe.map .distance
-                                |> Maybe.withDefault (segEnd - segStart)
-
-                        segPosition =
-                            pos
-                                |> Maybe.andThen
-                                    (\p ->
-                                        if p >= segStart && p <= segEnd then
-                                            Just (p - segStart)
-
-                                        else
-                                            Nothing
-                                    )
-
-                        segIntensity =
-                            fullIntensity
-                                |> List.filter (\pt -> pt.distance >= segStart && pt.distance <= segEnd)
-                                |> List.map (\pt -> { pt | distance = pt.distance - segStart })
-                    in
-                    profile seg segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.waypointStrokeColor segPosition segIntensity
-                )
-                boundaryPairs
-                segments
     in
-    Html.div [] profileViews
+    case model.splitSegments of
+        Nothing ->
+            Html.text ""
+
+        Just splitResult ->
+            let
+                profileViews =
+                    List.map2
+                        (\( segStart, segEnd ) seg ->
+                            let
+                                segMaxDistance =
+                                    List.reverse seg.trackpoints
+                                        |> List.head
+                                        |> Maybe.map .distance
+                                        |> Maybe.withDefault (segEnd - segStart)
+
+                                segPosition =
+                                    pos
+                                        |> Maybe.andThen
+                                            (\p ->
+                                                if p >= segStart && p <= segEnd then
+                                                    Just (p - segStart)
+
+                                                else
+                                                    Nothing
+                                            )
+
+                                segIntensity =
+                                    fullIntensity
+                                        |> List.filter (\pt -> pt.distance >= segStart && pt.distance <= segEnd)
+                                        |> List.map (\pt -> { pt | distance = pt.distance - segStart })
+                            in
+                            profile seg segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.waypointStrokeColor segPosition segIntensity
+                        )
+                        splitResult.boundaries
+                        splitResult.segments
+            in
+            Html.div [] profileViews
 
 
 profile : GpxApi.Track -> Float -> Float -> Float -> Float -> Int -> Float -> String -> Maybe Float -> List { distance : Float, intensity : Float } -> Html Msg
@@ -2948,6 +2849,7 @@ modelDecoder =
                 , showStartFinish = showStartFinish |> Maybe.withDefault defCs.showStartFinish
                 }
             , stateDecodeError = Nothing
+            , splitSegments = Nothing
             }
         )
         |> andMap (maybeField "tracks" (Zipper.decoder GpxApi.decodeTrack))
@@ -2992,6 +2894,12 @@ port calculateElevationProfileData : String -> Cmd msg
 
 
 port receiveElevationProfileData : (String -> msg) -> Sub msg
+
+
+port requestSplitProfile : String -> Cmd msg
+
+
+port receiveSplitProfile : (String -> msg) -> Sub msg
 
 
 port requestLocation : () -> Cmd msg

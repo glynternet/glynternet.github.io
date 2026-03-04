@@ -10,30 +10,36 @@ layout: default
 		{% if page.title != 'Home' %}
 			{% include comment.html %}
 		{% endif %}
+		<script src="/data/route.js"></script>
+		<script src="/data/go-wasm-exec.js"></script>
 		<script>
-			try {
-				const storedState = localStorage.getItem("appState");
-				const app = Elm.Main.init({
-					// TODO: can I initialise on a node here or best to just take whole page?
-					flags: JSON.parse(storedState)
-				});
-				app.ports.storeState.subscribe(state => {
-					localStorage.setItem("appState", state);
-					console.log("Stored state");
-				});
-				if (app.ports.logError) {
+			const go = new Go();
+			// Init Elm app after WASM is ready, since Elm may immediately call WASM functions (e.g. splitProfile) when restoring stored state.
+			WebAssembly.instantiateStreaming(fetch("/data/gpx.wasm"), go.importObject).then((result) => {
+				go.run(result.instance);
+				initApp();
+			});
+
+			function initApp() {
+				try {
+					const storedState = localStorage.getItem("appState");
+					const app = Elm.Main.init({
+						flags: JSON.parse(storedState)
+					});
+					app.ports.storeState.subscribe(state => {
+						localStorage.setItem("appState", state);
+					});
 					app.ports.logError.subscribe(msg => {
 						console.error(msg);
 					});
-				}
-					if (app.ports.calculateElevationProfileData) {
 					app.ports.calculateElevationProfileData.subscribe(gpxData => {
-						let profileData = elevationProfileData(gpxData);
-						console.log(JSON.parse(profileData));
+						const profileData = elevationProfileData(gpxData);
 						app.ports.receiveElevationProfileData.send(profileData);
 					});
-				}
-				if (app.ports.requestLocation) {
+					app.ports.requestSplitProfile.subscribe(params => {
+						const result = splitProfile(params);
+						app.ports.receiveSplitProfile.send(result);
+					});
 					app.ports.requestLocation.subscribe(function() {
 						if (!navigator.geolocation) {
 							app.ports.receiveLocation.send({ error: "position_unavailable" });
@@ -57,12 +63,12 @@ layout: default
 						);
 					});
 				}
-			}
-			catch(err) {
-				console.error(err);
-				if (window.confirm("Error initialising app, please see console.\nWould you like to start a fresh?")) {
-					localStorage.removeItem("appState");
-					location.reload();
+				catch(err) {
+					console.error(err);
+					if (window.confirm("Error initialising app, please see console.\nWould you like to start a fresh?")) {
+						localStorage.removeItem("appState");
+						location.reload();
+					}
 				}
 			}
 		</script>

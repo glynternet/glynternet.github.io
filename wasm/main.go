@@ -12,6 +12,7 @@ import (
 func main() {
 	fmt.Println("Profile wasm started")
 	js.Global().Set("elevationProfileData", jsonResultFunc1(elevationProfileData))
+	js.Global().Set("splitProfile", jsonResultFunc1(splitProfile))
 	select {}
 }
 
@@ -36,6 +37,21 @@ func jsonResultFunc1[T any](fn func(js.Value) (T, error)) js.Func {
 		})
 		return string(marshal)
 	})
+}
+
+func splitProfile(arg js.Value) (elevation.SplitResult, error) {
+	var req elevation.SplitRequest
+	if err := json.Unmarshal([]byte(arg.String()), &req); err != nil {
+		return elevation.SplitResult{}, fmt.Errorf("parsing split request: %w", err)
+	}
+	switch req.Mode {
+	case "equidistant":
+		return elevation.SplitByDistance(req.Track, req.Count), nil
+	case "waypoints":
+		return elevation.SplitByWaypoints(req.Track, req.Distances), nil
+	default:
+		return elevation.SplitResult{}, fmt.Errorf("unknown split mode: %q", req.Mode)
+	}
 }
 
 func elevationProfileData(arg js.Value) ([]elevation.Profile, error) {
