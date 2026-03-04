@@ -868,7 +868,13 @@ buildSegment track segStart segEnd =
     in
     { trackpoints = segTrackpoints |> List.map (\tp -> { tp | distance = tp.distance - segStart })
     , waypoints = segWaypoints
-    , gainLoss = computeGainLoss segTrackpoints
+    , gainLoss =
+        case ( List.head segTrackpoints, List.Extra.last segTrackpoints ) of
+            ( Just first, Just last ) ->
+                ( last.gain - first.gain, last.loss - first.loss )
+
+            _ ->
+                ( 0, 0 )
     }
 
 
@@ -926,33 +932,6 @@ extractSegmentTrackpoints segStart segEnd trackpoints =
     withStartAndEnd
 
 
-computeGainLoss : List GpxApi.TrackPoint -> ( Float, Float )
-computeGainLoss trackpoints =
-    case trackpoints of
-        [] ->
-            ( 0, 0 )
-
-        first :: rest ->
-            computeGainLossHelper first.elevation ( 0, 0 ) rest
-
-
-computeGainLossHelper : Float -> ( Float, Float ) -> List GpxApi.TrackPoint -> ( Float, Float )
-computeGainLossHelper prevEle ( gain, loss ) remaining =
-    case remaining of
-        [] ->
-            ( gain, loss )
-
-        tp :: rest ->
-            let
-                delta =
-                    tp.elevation - prevEle
-            in
-            if delta > 0 then
-                computeGainLossHelper tp.elevation ( gain + delta, loss ) rest
-
-            else
-                computeGainLossHelper tp.elevation ( gain, loss - delta ) rest
-
 
 interpolateTrackpointAt : Float -> List GpxApi.TrackPoint -> Maybe GpxApi.TrackPoint
 interpolateTrackpointAt dist trackpoints =
@@ -985,6 +964,8 @@ interpolateTrackpointAt dist trackpoints =
                     , elevation = a.elevation + t * (b.elevation - a.elevation)
                     , lat = a.lat + t * (b.lat - a.lat)
                     , lon = a.lon + t * (b.lon - a.lon)
+                    , gain = a.gain + t * (b.gain - a.gain)
+                    , loss = a.loss + t * (b.loss - a.loss)
                     }
 
             else
@@ -1814,6 +1795,7 @@ viewCuesheetTab model tracks =
 
                 Nothing ->
                     cumulativeGainLossAtDistance cs.referencePoint tracks.current.trackpoints
+                        |> Result.withDefault ( 0, 0 )
     in
     Html.div []
         [ cuesheetSvg filteredWaypoints cs currentFinishDistance refPointEle refWaypoint
@@ -2138,39 +2120,21 @@ formatEleGainLoss gain loss =
     "↑" ++ formatM gain ++ " ↓" ++ formatM loss
 
 
-cumulativeGainLossAtDistance : Float -> List GpxApi.TrackPoint -> ( Float, Float )
+cumulativeGainLossAtDistance : Float -> List GpxApi.TrackPoint -> Result String ( Float, Float )
 cumulativeGainLossAtDistance dist trackpoints =
-    case trackpoints of
-        [] ->
-            ( 0, 0 )
+    -- TODO: interpolate between bracketing trackpoints when dist falls between two points,
+    -- rather than snapping to the next one (could use interpolateTrackpointAt)
+    case List.Extra.find (\tp -> tp.distance >= dist) trackpoints of
+        Just tp ->
+            Ok ( tp.gain, tp.loss )
 
-        first :: rest ->
-            cumulativeGainLossHelper dist first.elevation ( 0, 0 ) rest
+        Nothing ->
+            case List.Extra.last trackpoints of
+                Just tp ->
+                    Ok ( tp.gain, tp.loss )
 
-
-cumulativeGainLossHelper : Float -> Float -> ( Float, Float ) -> List GpxApi.TrackPoint -> ( Float, Float )
-cumulativeGainLossHelper dist prevEle ( gain, loss ) remaining =
-    case remaining of
-        [] ->
-            ( gain, loss )
-
-        tp :: rest ->
-            let
-                delta =
-                    tp.elevation - prevEle
-
-                newGainLoss =
-                    if delta > 0 then
-                        ( gain + delta, loss )
-
-                    else
-                        ( gain, loss - delta )
-            in
-            if tp.distance >= dist then
-                newGainLoss
-
-            else
-                cumulativeGainLossHelper dist tp.elevation newGainLoss rest
+                Nothing ->
+                    Err "no trackpoints found for gain/loss lookup"
 
 
 

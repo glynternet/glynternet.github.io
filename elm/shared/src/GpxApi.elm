@@ -26,6 +26,8 @@ type alias TrackPoint =
     , elevation : Float
     , lat : Float
     , lon : Float
+    , gain : Float
+    , loss : Float
     }
 
 
@@ -61,11 +63,13 @@ decodeTrack =
 decodeTrackpoints : Json.Decode.Decoder (List TrackPoint)
 decodeTrackpoints =
     Json.Decode.list
-        (Json.Decode.map4 TrackPoint
+        (Json.Decode.map6 TrackPoint
             (Json.Decode.field "dist" Json.Decode.float)
             (Json.Decode.field "ele" Json.Decode.float)
             (Json.Decode.field "lat" Json.Decode.float)
             (Json.Decode.field "lon" Json.Decode.float)
+            (Json.Decode.field "gain" Json.Decode.float)
+            (Json.Decode.field "loss" Json.Decode.float)
         )
 
 
@@ -117,6 +121,8 @@ encodeTrackpoints =
                 , ( "ele", Json.Encode.float point.elevation )
                 , ( "lat", Json.Encode.float point.lat )
                 , ( "lon", Json.Encode.float point.lon )
+                , ( "gain", Json.Encode.float point.gain )
+                , ( "loss", Json.Encode.float point.loss )
                 ]
         )
 
