@@ -9075,8 +9075,7 @@ var $author$project$Main$lastTrackpointDistance = function (trackpoints) {
 			function ($) {
 				return $.aj;
 			},
-			$elm$core$List$head(
-				$elm$core$List$reverse(trackpoints))));
+			$elm_community$list_extra$List$Extra$last(trackpoints)));
 };
 var $elm$core$Result$withDefault = F2(
 	function (def, result) {

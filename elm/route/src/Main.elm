@@ -125,7 +125,6 @@ type TotalDistanceDisplay
     | None
 
 
-
 defaultElevationProfileOptions : ElevationProfileOptions
 defaultElevationProfileOptions =
     { fontSize = 15
@@ -482,8 +481,10 @@ update msg model =
                             if add then
                                 if List.member cat w.categories then
                                     w
+
                                 else
                                     { w | categories = w.categories ++ [ cat ] }
+
                             else
                                 { w | categories = List.filter (\c -> c /= cat) w.categories }
 
@@ -496,8 +497,10 @@ update msg model =
                             if add then
                                 if Dict.member cat model.filteredCategories then
                                     model.filteredCategories
+
                                 else
                                     Dict.insert cat True model.filteredCategories
+
                             else
                                 let
                                     allWaypoints =
@@ -508,6 +511,7 @@ update msg model =
                                 in
                                 if catStillUsed then
                                     model.filteredCategories
+
                                 else
                                     Dict.remove cat model.filteredCategories
                     in
@@ -530,6 +534,7 @@ update msg model =
             in
             if String.isEmpty trimmed then
                 ( model, Cmd.none )
+
             else
                 case model.tracks of
                     Loaded tracks ->
@@ -537,12 +542,14 @@ update msg model =
                             updateCats w =
                                 if List.member trimmed w.categories then
                                     w
+
                                 else
                                     { w | categories = w.categories ++ [ trimmed ] }
 
                             newFilteredCategories =
                                 if Dict.member trimmed model.filteredCategories then
                                     model.filteredCategories
+
                                 else
                                     Dict.insert trimmed True model.filteredCategories
                         in
@@ -840,8 +847,7 @@ buildSegment track segStart segEnd =
 
 lastTrackpointDistance : List GpxApi.TrackPoint -> Float
 lastTrackpointDistance trackpoints =
-    List.reverse trackpoints
-        |> List.head
+    List.Extra.last trackpoints
         |> Maybe.map .distance
         |> Maybe.withDefault 0
 
@@ -890,7 +896,6 @@ extractSegmentTrackpoints segStart segEnd trackpoints =
                     withStart
     in
     withStartAndEnd
-
 
 
 interpolateTrackpointAt : Float -> List GpxApi.TrackPoint -> Maybe GpxApi.TrackPoint
@@ -1039,7 +1044,6 @@ correctWaypointSelection display indexed =
             display
 
 
-
 correctWaypointSelectionInModel : Model -> Model
 correctWaypointSelectionInModel model =
     case maybeFromloadableResource model.tracks of
@@ -1066,7 +1070,6 @@ correctWaypointSelectionInModel model =
             { model | cuesheet = { cs | totalDistanceDisplay = corrected } }
 
 
-
 effectivePosition : Model -> Maybe Float
 effectivePosition model =
     case model.elevationProfile.manualPosition of
@@ -1075,8 +1078,6 @@ effectivePosition model =
 
         Nothing ->
             model.location |> Maybe.map .matchedDistance
-
-
 
 
 injectStartFinish : Float -> ( Float, Float ) -> List GpxApi.Waypoint -> List GpxApi.Waypoint
@@ -1114,74 +1115,75 @@ view model =
             ]
             (viewStateDecodeError model.stateDecodeError
                 ++ (case model.tracks of
-                NotLoaded ->
-                    [ viewOptionsPanel model
-                    , Html.div
-                        [ Html.Attributes.class "flex-container"
-                        , Html.Attributes.class "column"
-                        , Html.Attributes.class "wide"
-                        , Html.Attributes.style "height" "100%"
-                        , Html.Attributes.style "overflow" "auto"
-                        ]
-                        [ viewLandingPage ]
-                    ]
+                        NotLoaded ->
+                            [ viewOptionsPanel model
+                            , Html.div
+                                [ Html.Attributes.class "flex-container"
+                                , Html.Attributes.class "column"
+                                , Html.Attributes.class "wide"
+                                , Html.Attributes.style "height" "100%"
+                                , Html.Attributes.style "overflow" "auto"
+                                ]
+                                [ viewLandingPage ]
+                            ]
 
-                Loading ->
-                    [ viewOptionsPanel model
-                    , Html.div
-                        [ Html.Attributes.class "flex-container"
-                        , Html.Attributes.class "column"
-                        , Html.Attributes.class "wide"
-                        , Html.Attributes.style "height" "100%"
-                        , Html.Attributes.style "overflow" "auto"
-                        ]
-                        [ Html.p [] [ Html.text "Loading..." ] ]
-                    ]
+                        Loading ->
+                            [ viewOptionsPanel model
+                            , Html.div
+                                [ Html.Attributes.class "flex-container"
+                                , Html.Attributes.class "column"
+                                , Html.Attributes.class "wide"
+                                , Html.Attributes.style "height" "100%"
+                                , Html.Attributes.style "overflow" "auto"
+                                ]
+                                [ Html.p [] [ Html.text "Loading..." ] ]
+                            ]
 
-                Error err ->
-                    [ viewOptionsPanel model
-                    , Html.div
-                        [ Html.Attributes.class "flex-container"
-                        , Html.Attributes.class "column"
-                        , Html.Attributes.class "wide"
-                        , Html.Attributes.style "height" "100%"
-                        , Html.Attributes.style "overflow" "auto"
-                        ]
-                        [ viewErrorPanel <|
-                            ("There was an error processing your file. Please fix any error and try again.\n\nError: "
-                                ++ (if String.length err > 1000 then
-                                        String.left 500 err ++ "...\n\n..." ++ String.right 500 err
+                        Error err ->
+                            [ viewOptionsPanel model
+                            , Html.div
+                                [ Html.Attributes.class "flex-container"
+                                , Html.Attributes.class "column"
+                                , Html.Attributes.class "wide"
+                                , Html.Attributes.style "height" "100%"
+                                , Html.Attributes.style "overflow" "auto"
+                                ]
+                                [ viewErrorPanel <|
+                                    ("There was an error processing your file. Please fix any error and try again.\n\nError: "
+                                        ++ (if String.length err > 1000 then
+                                                String.left 500 err ++ "...\n\n..." ++ String.right 500 err
 
-                                    else
-                                        err
-                                   )
-                            )
-                        ]
-                    ]
+                                            else
+                                                err
+                                           )
+                                    )
+                                ]
+                            ]
 
-                Loaded tracks ->
-                    [ viewOptionsPanel model
-                    , Html.div
-                        [ Html.Attributes.class "flex-container"
-                        , Html.Attributes.class "column"
-                        , Html.Attributes.class "wide"
-                        , Html.Attributes.style "height" "100%"
-                        , Html.Attributes.style "overflow" "auto"
-                        ]
-                        [ viewTabBar model.activeTab
-                        , viewTrackNavigation tracks
-                        , case model.activeTab of
-                            ElevationProfileTab ->
-                                viewElevationProfileTab model tracks
+                        Loaded tracks ->
+                            [ viewOptionsPanel model
+                            , Html.div
+                                [ Html.Attributes.class "flex-container"
+                                , Html.Attributes.class "column"
+                                , Html.Attributes.class "wide"
+                                , Html.Attributes.style "height" "100%"
+                                , Html.Attributes.style "overflow" "auto"
+                                ]
+                                [ viewTabBar model.activeTab
+                                , viewTrackNavigation tracks
+                                , case model.activeTab of
+                                    ElevationProfileTab ->
+                                        viewElevationProfileTab model tracks
 
-                            CuesheetTab ->
-                                viewCuesheetTab model tracks
+                                    CuesheetTab ->
+                                        viewCuesheetTab model tracks
 
-                            WaypointsTab ->
-                                viewWaypointsTab model tracks
-                        ]
-                    ]
-            ))
+                                    WaypointsTab ->
+                                        viewWaypointsTab model tracks
+                                ]
+                            ]
+                   )
+            )
         ]
 
 
@@ -1807,7 +1809,6 @@ viewWaypointsTab model tracks =
 
         allCategories =
             Dict.keys model.filteredCategories
-
     in
     Html.div []
         [ Html.div []
@@ -2676,8 +2677,6 @@ viewErrorPanel error =
     Html.div [ Html.Attributes.class "error_panel" ] [ Html.text error ]
 
 
-
-
 viewButton : List (Html.Attribute Msg) -> String -> Msg -> Html Msg
 viewButton attrs text onClickMsg =
     Html.button
@@ -3025,5 +3024,3 @@ maybeFromloadableResource resource =
 
         _ ->
             Nothing
-
-
