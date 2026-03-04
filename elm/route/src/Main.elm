@@ -77,6 +77,9 @@ type alias Model =
     -- View-specific options
     , elevationProfile : ElevationProfileOptions
     , cuesheet : CuesheetOptions
+
+    -- Transient (never persisted)
+    , stateDecodeError : Maybe String
     }
 
 
@@ -158,93 +161,46 @@ defaultDistanceDetail =
 
 
 
--- STORED STATE
+-- DEFAULT MODEL
 
 
-type alias StoredState =
-    { tracks : Maybe (Zipper GpxApi.Track)
-    , activeTab : Maybe String
-    , showOptions : Maybe Bool
-    , trackingIntervalSec : Maybe Int
-    , categoryFilterEnabled : Maybe Bool
-    , filteredCategories : Maybe (Dict.Dict String Bool)
-
-    -- Elevation profile
-    , fontSize : Maybe Float
-    , trackHeight : Maybe Int
-    , trackThickness : Maybe Float
-    , waypointStrokeColor : Maybe String
-    , showIntensity : Maybe Bool
-    , intensityTau : Maybe Float
-    , manualPosition : Maybe Float
-    , splitMode : Maybe String
-    , splitEquidistantCount : Maybe Int
-    , splitWaypointIndices : Maybe (List Int)
-
-    -- Cuesheet
-    , totalDistanceDisplay : Maybe String
-    , referencePoint : Maybe Float
-    , itemSpacing : Maybe Int
-    , distanceDetail : Maybe Int
-    , showStartFinish : Maybe Bool
-    }
-
-
-storedStateModel : StoredState -> Model
-storedStateModel state =
-    { tracks = loadableResourceFromMaybe state.tracks
-    , showOptions = state.showOptions |> Maybe.withDefault True
-    , activeTab = state.activeTab |> Maybe.andThen parseTab |> Maybe.withDefault ElevationProfileTab
+defaultModel : Model
+defaultModel =
+    { tracks = NotLoaded
+    , showOptions = True
+    , activeTab = ElevationProfileTab
     , location = Nothing
     , locationError = Nothing
     , trackingEnabled = False
-    , trackingIntervalSec = state.trackingIntervalSec |> Maybe.withDefault 60
-    , categoryFilterEnabled = state.categoryFilterEnabled |> Maybe.withDefault False
-    , filteredCategories = state.filteredCategories |> Maybe.withDefault Dict.empty
+    , trackingIntervalSec = 60
+    , categoryFilterEnabled = False
+    , filteredCategories = Dict.empty
     , newCategoryInputs = Dict.empty
-    , elevationProfile =
-        { fontSize = state.fontSize |> Maybe.withDefault defaultElevationProfileOptions.fontSize
-        , trackHeight = state.trackHeight |> Maybe.withDefault defaultElevationProfileOptions.trackHeight
-        , trackThickness = state.trackThickness |> Maybe.withDefault defaultElevationProfileOptions.trackThickness
-        , waypointStrokeColor = state.waypointStrokeColor |> Maybe.withDefault defaultElevationProfileOptions.waypointStrokeColor
-        , showIntensity = state.showIntensity |> Maybe.withDefault defaultElevationProfileOptions.showIntensity
-        , intensityTau = state.intensityTau |> Maybe.withDefault defaultElevationProfileOptions.intensityTau
-        , manualPosition = state.manualPosition
-        , splitMode =
-            case state.splitMode of
-                Just "waypoints" ->
-                    SplitByWaypoints (state.splitWaypointIndices |> Maybe.withDefault [])
-
-                _ ->
-                    SplitEquidistant (state.splitEquidistantCount |> Maybe.withDefault 1)
-        }
-    , cuesheet =
-        { totalDistanceDisplay = state.totalDistanceDisplay |> Maybe.andThen parseTotalDistanceDisplay |> Maybe.withDefault defaultCuesheetOptions.totalDistanceDisplay
-        , referencePoint = state.referencePoint |> Maybe.withDefault defaultCuesheetOptions.referencePoint
-        , position = 0
-        , itemSpacing = state.itemSpacing |> Maybe.withDefault defaultCuesheetOptions.itemSpacing
-        , distanceDetail = state.distanceDetail |> Maybe.withDefault defaultCuesheetOptions.distanceDetail
-        , showStartFinish = state.showStartFinish |> Maybe.withDefault defaultCuesheetOptions.showStartFinish
-        }
+    , elevationProfile = defaultElevationProfileOptions
+    , cuesheet = defaultCuesheetOptions
+    , stateDecodeError = Nothing
     }
-
-
-defaultStoredState : StoredState
-defaultStoredState =
-    StoredState Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
 init maybeState _ _ =
-    ( maybeState
-        |> Maybe.map
-            (Json.Decode.decodeValue storedStateDecoder
-                >> Result.withDefault defaultStoredState
-                >> storedStateModel
-            )
-        |> Maybe.withDefault (storedStateModel defaultStoredState)
-    , Cmd.none
-    )
+    case maybeState of
+        Nothing ->
+            ( defaultModel, Cmd.none )
+
+        Just stateValue ->
+            case Json.Decode.decodeValue modelDecoder stateValue of
+                Ok model ->
+                    ( model, Cmd.none )
+
+                Err err ->
+                    let
+                        errorMsg =
+                            Json.Decode.errorToString err
+                    in
+                    ( { defaultModel | stateDecodeError = Just errorMsg }
+                    , logError ("Failed to decode stored state: " ++ errorMsg)
+                    )
 
 
 
@@ -253,6 +209,7 @@ init maybeState _ _ =
 
 type Msg
     = Ignore
+    | DismissStateDecodeError
       -- Shared
     | ShowOptions Bool
     | OpenFileBrowser
@@ -322,6 +279,9 @@ update msg model =
     case msg of
         Ignore ->
             ( model, Cmd.none )
+
+        DismissStateDecodeError ->
+            ( { model | stateDecodeError = Nothing }, Cmd.none )
 
         ShowOptions show ->
             ( { model | showOptions = show }, Cmd.none )
@@ -1152,7 +1112,8 @@ view model =
             , Html.Attributes.class "page"
             , Html.Attributes.style "height" "100%"
             ]
-            (case model.tracks of
+            (viewStateDecodeError model.stateDecodeError
+                ++ (case model.tracks of
                 NotLoaded ->
                     [ viewOptionsPanel model
                     , Html.div
@@ -1220,8 +1181,44 @@ view model =
                                 viewWaypointsTab model tracks
                         ]
                     ]
-            )
+            ))
         ]
+
+
+viewStateDecodeError : Maybe String -> List (Html Msg)
+viewStateDecodeError maybeError =
+    case maybeError of
+        Nothing ->
+            []
+
+        Just error ->
+            [ Html.div
+                [ Html.Attributes.style "background" "#fff3cd"
+                , Html.Attributes.style "color" "#856404"
+                , Html.Attributes.style "padding" "0.75em 1em"
+                , Html.Attributes.style "margin" "0.5em"
+                , Html.Attributes.style "border-radius" "4px"
+                , Html.Attributes.style "display" "flex"
+                , Html.Attributes.style "justify-content" "space-between"
+                , Html.Attributes.style "align-items" "flex-start"
+                , Html.Attributes.style "gap" "1em"
+                , Html.Attributes.style "width" "100%"
+                ]
+                [ Html.div []
+                    [ Html.strong [] [ Html.text "Failed to restore saved state: " ]
+                    , Html.text (String.left 500 error)
+                    ]
+                , Html.button
+                    [ Html.Events.onClick DismissStateDecodeError
+                    , Html.Attributes.style "background" "none"
+                    , Html.Attributes.style "border" "none"
+                    , Html.Attributes.style "cursor" "pointer"
+                    , Html.Attributes.style "font-size" "1.2em"
+                    , Html.Attributes.style "color" "#856404"
+                    ]
+                    [ Html.text "×" ]
+                ]
+            ]
 
 
 viewLandingPage : Html Msg
@@ -2842,111 +2839,139 @@ formatTab tab =
 -- ENCODE/DECODE STATE
 
 
-storedStateFromModel : Model -> StoredState
-storedStateFromModel model =
-    { tracks = maybeFromloadableResource model.tracks
-    , activeTab = Just (formatTab model.activeTab)
-    , showOptions = Just model.showOptions
-    , trackingIntervalSec = Just model.trackingIntervalSec
-    , categoryFilterEnabled = Just model.categoryFilterEnabled
-    , filteredCategories = Just model.filteredCategories
-    , fontSize = Just model.elevationProfile.fontSize
-    , trackHeight = Just model.elevationProfile.trackHeight
-    , trackThickness = Just model.elevationProfile.trackThickness
-    , waypointStrokeColor = Just model.elevationProfile.waypointStrokeColor
-    , showIntensity = Just model.elevationProfile.showIntensity
-    , intensityTau = Just model.elevationProfile.intensityTau
-    , manualPosition = model.elevationProfile.manualPosition
-    , splitMode =
-        Just
-            (case model.elevationProfile.splitMode of
-                SplitEquidistant _ ->
-                    "equidistant"
-
-                SplitByWaypoints _ ->
-                    "waypoints"
-            )
-    , splitEquidistantCount =
-        case model.elevationProfile.splitMode of
-            SplitEquidistant n ->
-                Just n
-
-            _ ->
-                Nothing
-    , splitWaypointIndices =
-        case model.elevationProfile.splitMode of
-            SplitByWaypoints indices ->
-                Just indices
-
-            _ ->
-                Nothing
-    , totalDistanceDisplay = Just (formatTotalDistanceDisplay model.cuesheet.totalDistanceDisplay)
-    , referencePoint = Just model.cuesheet.referencePoint
-    , itemSpacing = Just model.cuesheet.itemSpacing
-    , distanceDetail = Just model.cuesheet.distanceDetail
-    , showStartFinish = Just model.cuesheet.showStartFinish
-    }
-
-
 encodeSavedState : Model -> String
 encodeSavedState model =
     let
-        state =
-            storedStateFromModel model
+        ep =
+            model.elevationProfile
+
+        cs =
+            model.cuesheet
     in
     Json.Encode.object
         (List.filterMap
             identity
-            [ state.tracks |> Maybe.map (\tracks -> ( "tracks", Zipper.encode GpxApi.encodeTrack tracks ))
-            , state.activeTab |> Maybe.map (\tab -> ( "activeTab", Json.Encode.string tab ))
-            , state.showOptions |> Maybe.map (\show -> ( "showOptions", Json.Encode.bool show ))
-            , state.trackingIntervalSec |> Maybe.map (\interval -> ( "trackingIntervalSec", Json.Encode.int interval ))
-            , state.categoryFilterEnabled |> Maybe.map (\enabled -> ( "categoryFilterEnabled", Json.Encode.bool enabled ))
-            , state.filteredCategories |> Maybe.map (\cats -> ( "filteredCategories", Json.Encode.dict identity Json.Encode.bool cats ))
-            , state.fontSize |> Maybe.map (\size -> ( "fontSize", Json.Encode.float size ))
-            , state.trackHeight |> Maybe.map (\height -> ( "trackHeight", Json.Encode.int height ))
-            , state.trackThickness |> Maybe.map (\thickness -> ( "trackThickness", Json.Encode.float thickness ))
-            , state.waypointStrokeColor |> Maybe.map (\colour -> ( "waypointStrokeColor", Json.Encode.string colour ))
-            , state.showIntensity |> Maybe.map (\show -> ( "showIntensity", Json.Encode.bool show ))
-            , state.intensityTau |> Maybe.map (\tau -> ( "intensityTau", Json.Encode.float tau ))
-            , state.manualPosition |> Maybe.map (\pos -> ( "manualPosition", Json.Encode.float pos ))
-            , state.splitMode |> Maybe.map (\mode -> ( "splitMode", Json.Encode.string mode ))
-            , state.splitEquidistantCount |> Maybe.map (\n -> ( "splitEquidistantCount", Json.Encode.int n ))
-            , state.splitWaypointIndices |> Maybe.map (\indices -> ( "splitWaypointIndices", Json.Encode.list Json.Encode.int indices ))
-            , state.totalDistanceDisplay |> Maybe.map (\tdd -> ( "totalDistanceDisplay", Json.Encode.string tdd ))
-            , state.referencePoint |> Maybe.map (\point -> ( "referencePoint", Json.Encode.float point ))
-            , state.itemSpacing |> Maybe.map (\spacing -> ( "itemSpacing", Json.Encode.int spacing ))
-            , state.distanceDetail |> Maybe.map (\detail -> ( "distanceDetail", Json.Encode.int detail ))
-            , state.showStartFinish |> Maybe.map (\show -> ( "showStartFinish", Json.Encode.bool show ))
+            [ maybeFromloadableResource model.tracks |> Maybe.map (\tracks -> ( "tracks", Zipper.encode GpxApi.encodeTrack tracks ))
+            , Just ( "activeTab", Json.Encode.string (formatTab model.activeTab) )
+            , Just ( "showOptions", Json.Encode.bool model.showOptions )
+            , Just ( "trackingIntervalSec", Json.Encode.int model.trackingIntervalSec )
+            , Just ( "categoryFilterEnabled", Json.Encode.bool model.categoryFilterEnabled )
+            , Just ( "filteredCategories", Json.Encode.dict identity Json.Encode.bool model.filteredCategories )
+            , Just ( "fontSize", Json.Encode.float ep.fontSize )
+            , Just ( "trackHeight", Json.Encode.int ep.trackHeight )
+            , Just ( "trackThickness", Json.Encode.float ep.trackThickness )
+            , Just ( "waypointStrokeColor", Json.Encode.string ep.waypointStrokeColor )
+            , Just ( "showIntensity", Json.Encode.bool ep.showIntensity )
+            , Just ( "intensityTau", Json.Encode.float ep.intensityTau )
+            , ep.manualPosition |> Maybe.map (\pos -> ( "manualPosition", Json.Encode.float pos ))
+            , Just
+                ( "splitMode"
+                , Json.Encode.string
+                    (case ep.splitMode of
+                        SplitEquidistant _ ->
+                            "equidistant"
+
+                        SplitByWaypoints _ ->
+                            "waypoints"
+                    )
+                )
+            , case ep.splitMode of
+                SplitEquidistant n ->
+                    Just ( "splitEquidistantCount", Json.Encode.int n )
+
+                _ ->
+                    Nothing
+            , case ep.splitMode of
+                SplitByWaypoints indices ->
+                    Just ( "splitWaypointIndices", Json.Encode.list Json.Encode.int indices )
+
+                _ ->
+                    Nothing
+            , Just ( "totalDistanceDisplay", Json.Encode.string (formatTotalDistanceDisplay cs.totalDistanceDisplay) )
+            , Just ( "referencePoint", Json.Encode.float cs.referencePoint )
+            , Just ( "itemSpacing", Json.Encode.int cs.itemSpacing )
+            , Just ( "distanceDetail", Json.Encode.int cs.distanceDetail )
+            , Just ( "showStartFinish", Json.Encode.bool cs.showStartFinish )
             ]
         )
         |> Json.Encode.encode 0
 
 
-storedStateDecoder : Json.Decode.Decoder StoredState
-storedStateDecoder =
-    Json.Decode.map5 StoredState
-        (Json.Decode.maybe (Json.Decode.field "tracks" (Zipper.decoder GpxApi.decodeTrack)))
-        (Json.Decode.maybe (Json.Decode.field "activeTab" Json.Decode.string))
-        (Json.Decode.maybe (Json.Decode.field "showOptions" Json.Decode.bool))
-        (Json.Decode.maybe (Json.Decode.field "trackingIntervalSec" Json.Decode.int))
-        (Json.Decode.maybe (Json.Decode.field "categoryFilterEnabled" Json.Decode.bool))
-        |> andMap (Json.Decode.maybe (Json.Decode.field "filteredCategories" (Json.Decode.dict Json.Decode.bool)))
-        |> andMap (Json.Decode.maybe (Json.Decode.field "fontSize" Json.Decode.float))
-        |> andMap (Json.Decode.maybe (Json.Decode.field "trackHeight" Json.Decode.int))
-        |> andMap (Json.Decode.maybe (Json.Decode.field "trackThickness" Json.Decode.float))
-        |> andMap (Json.Decode.maybe (Json.Decode.field "waypointStrokeColor" Json.Decode.string))
-        |> andMap (Json.Decode.maybe (Json.Decode.field "showIntensity" Json.Decode.bool))
-        |> andMap (Json.Decode.maybe (Json.Decode.field "intensityTau" Json.Decode.float))
-        |> andMap (Json.Decode.maybe (Json.Decode.field "manualPosition" Json.Decode.float))
-        |> andMap (Json.Decode.maybe (Json.Decode.field "splitMode" Json.Decode.string))
-        |> andMap (Json.Decode.maybe (Json.Decode.field "splitEquidistantCount" Json.Decode.int))
-        |> andMap (Json.Decode.maybe (Json.Decode.field "splitWaypointIndices" (Json.Decode.list Json.Decode.int)))
-        |> andMap (Json.Decode.maybe (Json.Decode.field "totalDistanceDisplay" Json.Decode.string))
-        |> andMap (Json.Decode.maybe (Json.Decode.field "referencePoint" Json.Decode.float))
-        |> andMap (Json.Decode.maybe (Json.Decode.field "itemSpacing" Json.Decode.int))
-        |> andMap (Json.Decode.maybe (Json.Decode.field "distanceDetail" Json.Decode.int))
-        |> andMap (Json.Decode.maybe (Json.Decode.field "showStartFinish" Json.Decode.bool))
+modelDecoder : Json.Decode.Decoder Model
+modelDecoder =
+    let
+        maybeField name decoder =
+            Json.Decode.maybe (Json.Decode.field name decoder)
+
+        def =
+            defaultModel
+
+        defEp =
+            defaultElevationProfileOptions
+
+        defCs =
+            defaultCuesheetOptions
+    in
+    Json.Decode.succeed
+        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness waypointStrokeColor showIntensity intensityTau manualPosition splitMode splitEquidistantCount splitWaypointIndices totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish ->
+            { tracks = loadableResourceFromMaybe tracks
+            , showOptions = showOptions |> Maybe.withDefault def.showOptions
+            , activeTab = activeTab |> Maybe.andThen parseTab |> Maybe.withDefault def.activeTab
+            , location = Nothing
+            , locationError = Nothing
+            , trackingEnabled = False
+            , trackingIntervalSec = trackingIntervalSec |> Maybe.withDefault def.trackingIntervalSec
+            , categoryFilterEnabled = categoryFilterEnabled |> Maybe.withDefault def.categoryFilterEnabled
+            , filteredCategories = filteredCategories |> Maybe.withDefault def.filteredCategories
+            , newCategoryInputs = Dict.empty
+            , elevationProfile =
+                { fontSize = fontSize |> Maybe.withDefault defEp.fontSize
+                , trackHeight = trackHeight |> Maybe.withDefault defEp.trackHeight
+                , trackThickness = trackThickness |> Maybe.withDefault defEp.trackThickness
+                , waypointStrokeColor = waypointStrokeColor |> Maybe.withDefault defEp.waypointStrokeColor
+                , showIntensity = showIntensity |> Maybe.withDefault defEp.showIntensity
+                , intensityTau = intensityTau |> Maybe.withDefault defEp.intensityTau
+                , manualPosition = manualPosition
+                , splitMode =
+                    case splitMode of
+                        Just "waypoints" ->
+                            SplitByWaypoints (splitWaypointIndices |> Maybe.withDefault [])
+
+                        _ ->
+                            SplitEquidistant (splitEquidistantCount |> Maybe.withDefault 1)
+                }
+            , cuesheet =
+                { totalDistanceDisplay = totalDistanceDisplay |> Maybe.andThen parseTotalDistanceDisplay |> Maybe.withDefault defCs.totalDistanceDisplay
+                , referencePoint = referencePoint |> Maybe.withDefault defCs.referencePoint
+                , position = 0
+                , itemSpacing = itemSpacing |> Maybe.withDefault defCs.itemSpacing
+                , distanceDetail = distanceDetail |> Maybe.withDefault defCs.distanceDetail
+                , showStartFinish = showStartFinish |> Maybe.withDefault defCs.showStartFinish
+                }
+            , stateDecodeError = Nothing
+            }
+        )
+        |> andMap (maybeField "tracks" (Zipper.decoder GpxApi.decodeTrack))
+        |> andMap (maybeField "activeTab" Json.Decode.string)
+        |> andMap (maybeField "showOptions" Json.Decode.bool)
+        |> andMap (maybeField "trackingIntervalSec" Json.Decode.int)
+        |> andMap (maybeField "categoryFilterEnabled" Json.Decode.bool)
+        |> andMap (maybeField "filteredCategories" (Json.Decode.dict Json.Decode.bool))
+        |> andMap (maybeField "fontSize" Json.Decode.float)
+        |> andMap (maybeField "trackHeight" Json.Decode.int)
+        |> andMap (maybeField "trackThickness" Json.Decode.float)
+        |> andMap (maybeField "waypointStrokeColor" Json.Decode.string)
+        |> andMap (maybeField "showIntensity" Json.Decode.bool)
+        |> andMap (maybeField "intensityTau" Json.Decode.float)
+        |> andMap (maybeField "manualPosition" Json.Decode.float)
+        |> andMap (maybeField "splitMode" Json.Decode.string)
+        |> andMap (maybeField "splitEquidistantCount" Json.Decode.int)
+        |> andMap (maybeField "splitWaypointIndices" (Json.Decode.list Json.Decode.int))
+        |> andMap (maybeField "totalDistanceDisplay" Json.Decode.string)
+        |> andMap (maybeField "referencePoint" Json.Decode.float)
+        |> andMap (maybeField "itemSpacing" Json.Decode.int)
+        |> andMap (maybeField "distanceDetail" Json.Decode.int)
+        |> andMap (maybeField "showStartFinish" Json.Decode.bool)
 
 
 andMap : Json.Decode.Decoder a -> Json.Decode.Decoder (a -> b) -> Json.Decode.Decoder b
@@ -2956,6 +2981,9 @@ andMap =
 
 
 -- PORTS
+
+
+port logError : String -> Cmd msg
 
 
 port storeState : String -> Cmd msg
