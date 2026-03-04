@@ -8310,22 +8310,22 @@ var $author$project$Main$update = F2(
 					var updateCats = function (ew) {
 						var o = ew.l;
 						var currentCats = A2($elm$core$Maybe$withDefault, ew.y.aQ, ew.l.aQ);
-						var newCats = add ? (A2($elm$core$List$member, cat, currentCats) ? currentCats : _Utils_ap(
-							currentCats,
-							_List_fromArray(
-								[cat]))) : A2(
-							$elm$core$List$filter,
-							function (c) {
-								return !_Utils_eq(c, cat);
-							},
-							currentCats);
 						return _Utils_update(
 							ew,
 							{
 								l: _Utils_update(
 									o,
 									{
-										aQ: $elm$core$Maybe$Just(newCats)
+										aQ: $elm$core$Maybe$Just(
+											add ? (A2($elm$core$List$member, cat, currentCats) ? currentCats : _Utils_ap(
+												currentCats,
+												_List_fromArray(
+													[cat]))) : A2(
+												$elm$core$List$filter,
+												function (c) {
+													return !_Utils_eq(c, cat);
+												},
+												currentCats))
 									})
 							});
 					};
@@ -9599,6 +9599,8 @@ var $author$project$Main$interpolateWaypointElevation = F2(
 	});
 var $elm$svg$Svg$Attributes$opacity = _VirtualDom_attribute('opacity');
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var $elm$svg$Svg$defs = $elm$svg$Svg$trustedNode('defs');
+var $elm$svg$Svg$Attributes$id = _VirtualDom_attribute('id');
 var $elm$core$Basics$clamp = F3(
 	function (low, high, number) {
 		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
@@ -9612,13 +9614,14 @@ var $author$project$Main$intensityColor = function (t) {
 		(clamped < 0.5) ? ((255 * clamped) * 2) : 255);
 	return 'rgb(' + ($elm$core$String$fromInt(r) + (',' + ($elm$core$String$fromInt(g) + ',0)')));
 };
+var $elm$svg$Svg$linearGradient = $elm$svg$Svg$trustedNode('linearGradient');
+var $elm$svg$Svg$Attributes$offset = _VirtualDom_attribute('offset');
 var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
-var $author$project$Main$renderIntensityShading = F4(
-	function (svgWidth, maxDistance, trackHeightFloat, intensityPoints) {
-		var svgWidthPerDistanceUnit = svgWidth / maxDistance;
-		var xFloat = function (distance) {
-			return distance * svgWidthPerDistanceUnit;
-		};
+var $elm$svg$Svg$stop = $elm$svg$Svg$trustedNode('stop');
+var $elm$svg$Svg$Attributes$stopColor = _VirtualDom_attribute('stop-color');
+var $elm$svg$Svg$Attributes$stopOpacity = _VirtualDom_attribute('stop-opacity');
+var $author$project$Main$renderIntensityShading = F5(
+	function (segmentIndex, svgWidth, maxDistance, trackHeightFloat, intensityPoints) {
 		var intensities = A2(
 			$elm$core$List$map,
 			function ($) {
@@ -9634,35 +9637,60 @@ var $author$project$Main$renderIntensityShading = F4(
 			0,
 			$elm$core$List$minimum(intensities));
 		var intensityRange = maxIntensity - minIntensity;
+		var stops = A2(
+			$elm$core$List$map,
+			function (point) {
+				var offsetPct = (maxDistance > 0) ? ($elm$core$String$fromFloat((point.ao / maxDistance) * 100) + '%') : '0%';
+				var normalized = (intensityRange > 0) ? ((point.as - minIntensity) / intensityRange) : 0;
+				return A2(
+					$elm$svg$Svg$stop,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$offset(offsetPct),
+							$elm$svg$Svg$Attributes$stopColor(
+							$author$project$Main$intensityColor(normalized)),
+							$elm$svg$Svg$Attributes$stopOpacity('0.3')
+						]),
+					_List_Nil);
+			},
+			intensityPoints);
+		var gradientId = 'intensity-gradient-' + $elm$core$String$fromInt(segmentIndex);
 		return A2(
 			$elm$svg$Svg$g,
 			_List_Nil,
-			A3(
-				$elm$core$List$map2,
-				F2(
-					function (a, b) {
-						var x2 = xFloat(b.ao);
-						var x1 = xFloat(a.ao);
-						var normalized = (intensityRange > 0) ? ((b.as - minIntensity) / intensityRange) : 0;
-						return A2(
-							$elm$svg$Svg$rect,
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$defs,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							$elm$svg$Svg$linearGradient,
 							_List_fromArray(
 								[
-									$elm$svg$Svg$Attributes$x(
-									$elm$core$String$fromFloat(x1)),
-									$elm$svg$Svg$Attributes$y('0'),
-									$elm$svg$Svg$Attributes$width(
-									$elm$core$String$fromFloat(x2 - x1)),
-									$elm$svg$Svg$Attributes$height(
-									$elm$core$String$fromFloat(trackHeightFloat)),
-									$elm$svg$Svg$Attributes$fill(
-									$author$project$Main$intensityColor(normalized)),
-									$elm$svg$Svg$Attributes$opacity('0.3')
+									$elm$svg$Svg$Attributes$id(gradientId),
+									$elm$svg$Svg$Attributes$x1('0'),
+									$elm$svg$Svg$Attributes$y1('0'),
+									$elm$svg$Svg$Attributes$x2('1'),
+									$elm$svg$Svg$Attributes$y2('0')
 								]),
-							_List_Nil);
-					}),
-				intensityPoints,
-				A2($elm$core$List$drop, 1, intensityPoints)));
+							stops)
+						])),
+					A2(
+					$elm$svg$Svg$rect,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x('0'),
+							$elm$svg$Svg$Attributes$y('0'),
+							$elm$svg$Svg$Attributes$width(
+							$elm$core$String$fromFloat(svgWidth)),
+							$elm$svg$Svg$Attributes$height(
+							$elm$core$String$fromFloat(trackHeightFloat)),
+							$elm$svg$Svg$Attributes$fill('url(#' + (gradientId + ')'))
+						]),
+					_List_Nil)
+				]));
 	});
 var $elm$svg$Svg$Attributes$points = _VirtualDom_attribute('points');
 var $elm$svg$Svg$polyline = $elm$svg$Svg$trustedNode('polyline');
@@ -9708,192 +9736,194 @@ var $author$project$Main$xyCalculator = function (cfg) {
 				cfg.aK - (cfg.aK * normaliseElevation(elevation)));
 		});
 };
-var $author$project$Main$profile = function (track) {
-	return function (maxDistance) {
-		return function (minElevation) {
-			return function (maxElevation) {
-				return function (fontSize) {
-					return function (trackHeight) {
-						return function (trackThickness) {
-							return function (waypointStrokeColor) {
-								return function (maybePosition) {
-									return function (intensityPoints) {
-										var waypointTextHeight = 100;
-										var svgWidth = 500;
-										var svgHeight = trackHeight + waypointTextHeight;
-										var calc = $author$project$Main$xyCalculator(
-											{a1: maxDistance, a2: maxElevation, aE: minElevation, aK: trackHeight, bl: svgWidth});
-										return A2(
-											$elm$html$Html$div,
-											_List_fromArray(
-												[
-													A2($elm$html$Html$Attributes$style, 'margin-top', '16px'),
-													A2($elm$html$Html$Attributes$style, 'padding', '0 8px')
-												]),
-											_List_fromArray(
-												[
-													function () {
-													var _v0 = track.aA;
-													var gain = _v0.a;
-													var loss = _v0.b;
-													return A2(
-														$elm$html$Html$div,
+var $author$project$Main$profile = function (segmentIndex) {
+	return function (track) {
+		return function (maxDistance) {
+			return function (minElevation) {
+				return function (maxElevation) {
+					return function (fontSize) {
+						return function (trackHeight) {
+							return function (trackThickness) {
+								return function (waypointStrokeColor) {
+									return function (maybePosition) {
+										return function (intensityPoints) {
+											var waypointTextHeight = 100;
+											var svgWidth = 500;
+											var svgHeight = trackHeight + waypointTextHeight;
+											var calc = $author$project$Main$xyCalculator(
+												{a1: maxDistance, a2: maxElevation, aE: minElevation, aK: trackHeight, bl: svgWidth});
+											return A2(
+												$elm$html$Html$div,
+												_List_fromArray(
+													[
+														A2($elm$html$Html$Attributes$style, 'margin-top', '16px'),
+														A2($elm$html$Html$Attributes$style, 'padding', '0 8px')
+													]),
+												_List_fromArray(
+													[
+														function () {
+														var _v0 = track.aA;
+														var gain = _v0.a;
+														var loss = _v0.b;
+														return A2(
+															$elm$html$Html$div,
+															_List_fromArray(
+																[
+																	A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+																	A2($elm$html$Html$Attributes$style, 'font-size', '1em'),
+																	A2($elm$html$Html$Attributes$style, 'padding', '4px 0')
+																]),
+															_List_fromArray(
+																[
+																	$elm$html$Html$text(
+																	A2($author$project$Main$formatKm, 1, maxDistance) + (' ' + A2($author$project$Main$formatEleGainLoss, gain, loss)))
+																]));
+													}(),
+														A2(
+														$elm$svg$Svg$svg,
 														_List_fromArray(
 															[
-																A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
-																A2($elm$html$Html$Attributes$style, 'font-size', '1em'),
-																A2($elm$html$Html$Attributes$style, 'padding', '4px 0')
+																$elm$svg$Svg$Attributes$viewBox(
+																'-5 -5 ' + ($elm$core$String$fromInt(svgWidth + 10) + (' ' + $elm$core$String$fromInt(svgHeight + 10))))
 															]),
 														_List_fromArray(
 															[
-																$elm$html$Html$text(
-																A2($author$project$Main$formatKm, 1, maxDistance) + (' ' + A2($author$project$Main$formatEleGainLoss, gain, loss)))
-															]));
-												}(),
-													A2(
-													$elm$svg$Svg$svg,
-													_List_fromArray(
-														[
-															$elm$svg$Svg$Attributes$viewBox(
-															'-5 -5 ' + ($elm$core$String$fromInt(svgWidth + 10) + (' ' + $elm$core$String$fromInt(svgHeight + 10))))
-														]),
-													_List_fromArray(
-														[
-															$elm$core$List$isEmpty(intensityPoints) ? A2($elm$svg$Svg$g, _List_Nil, _List_Nil) : A4($author$project$Main$renderIntensityShading, svgWidth, maxDistance, trackHeight, intensityPoints),
-															A2(
-															$elm$svg$Svg$g,
-															_List_Nil,
-															function () {
-																var svgBottom = $elm$core$String$fromInt(svgHeight);
-																var paddedWaypointTextY = $elm$core$String$fromInt(trackHeight + 5);
-																return A2(
-																	$elm$core$List$concatMap,
-																	function (waypoint) {
-																		var y = calc.ay(
-																			A2($author$project$Main$interpolateWaypointElevation, track.bo, waypoint.ao) - 5);
-																		var x = calc.ax(waypoint.ao);
-																		return _List_fromArray(
+																$elm$core$List$isEmpty(intensityPoints) ? A2($elm$svg$Svg$g, _List_Nil, _List_Nil) : A5($author$project$Main$renderIntensityShading, segmentIndex, svgWidth, maxDistance, trackHeight, intensityPoints),
+																A2(
+																$elm$svg$Svg$g,
+																_List_Nil,
+																function () {
+																	var svgBottom = $elm$core$String$fromInt(svgHeight);
+																	var paddedWaypointTextY = $elm$core$String$fromInt(trackHeight + 5);
+																	return A2(
+																		$elm$core$List$concatMap,
+																		function (waypoint) {
+																			var y = calc.ay(
+																				A2($author$project$Main$interpolateWaypointElevation, track.bo, waypoint.ao) - 5);
+																			var x = calc.ax(waypoint.ao);
+																			return _List_fromArray(
+																				[
+																					A2(
+																					$elm$svg$Svg$line,
+																					_List_fromArray(
+																						[
+																							$elm$svg$Svg$Attributes$x1(x),
+																							$elm$svg$Svg$Attributes$y1(svgBottom),
+																							$elm$svg$Svg$Attributes$x2(x),
+																							$elm$svg$Svg$Attributes$y2(y),
+																							$elm$svg$Svg$Attributes$stroke(waypointStrokeColor),
+																							$elm$svg$Svg$Attributes$strokeWidth('1')
+																						]),
+																					_List_Nil),
+																					A2(
+																					$elm$svg$Svg$text_,
+																					_List_fromArray(
+																						[
+																							$elm$svg$Svg$Attributes$fontSize(
+																							$elm$core$String$fromFloat(fontSize)),
+																							$elm$svg$Svg$Attributes$dominantBaseline('text-top'),
+																							$elm$svg$Svg$Attributes$transform('translate(' + (x + (', ' + (paddedWaypointTextY + ') rotate(90)'))))
+																						]),
+																					_List_fromArray(
+																						[
+																							$elm$svg$Svg$text(waypoint.a5)
+																						]))
+																				]);
+																		},
+																		track.bq);
+																}()),
+																A3(
+																$author$project$Main$resolveElevationProfileSVGLine,
+																calc,
+																track.bo,
+																$elm$core$String$fromFloat(trackThickness)),
+																function () {
+																if (!maybePosition.$) {
+																	var posDistance = maybePosition.a;
+																	var yPos = calc.ay(
+																		A2($author$project$Main$interpolateWaypointElevation, track.bo, posDistance));
+																	var xPos = calc.ax(posDistance);
+																	return A2(
+																		$elm$svg$Svg$g,
+																		_List_Nil,
+																		_List_fromArray(
 																			[
 																				A2(
 																				$elm$svg$Svg$line,
 																				_List_fromArray(
 																					[
-																						$elm$svg$Svg$Attributes$x1(x),
-																						$elm$svg$Svg$Attributes$y1(svgBottom),
-																						$elm$svg$Svg$Attributes$x2(x),
-																						$elm$svg$Svg$Attributes$y2(y),
-																						$elm$svg$Svg$Attributes$stroke(waypointStrokeColor),
-																						$elm$svg$Svg$Attributes$strokeWidth('1')
+																						$elm$svg$Svg$Attributes$x1(xPos),
+																						$elm$svg$Svg$Attributes$y1('0'),
+																						$elm$svg$Svg$Attributes$x2(xPos),
+																						$elm$svg$Svg$Attributes$y2(
+																						$elm$core$String$fromInt(trackHeight)),
+																						$elm$svg$Svg$Attributes$stroke('dodgerblue'),
+																						$elm$svg$Svg$Attributes$strokeWidth('2'),
+																						$elm$svg$Svg$Attributes$opacity('0.7')
 																					]),
 																				_List_Nil),
 																				A2(
-																				$elm$svg$Svg$text_,
+																				$elm$svg$Svg$circle,
 																				_List_fromArray(
 																					[
-																						$elm$svg$Svg$Attributes$fontSize(
-																						$elm$core$String$fromFloat(fontSize)),
-																						$elm$svg$Svg$Attributes$dominantBaseline('text-top'),
-																						$elm$svg$Svg$Attributes$transform('translate(' + (x + (', ' + (paddedWaypointTextY + ') rotate(90)'))))
+																						$elm$svg$Svg$Attributes$cx(xPos),
+																						$elm$svg$Svg$Attributes$cy(yPos),
+																						$elm$svg$Svg$Attributes$r('3.5'),
+																						$elm$svg$Svg$Attributes$fill('dodgerblue')
 																					]),
-																				_List_fromArray(
-																					[
-																						$elm$svg$Svg$text(waypoint.a5)
-																					]))
-																			]);
-																	},
-																	track.bq);
-															}()),
-															A3(
-															$author$project$Main$resolveElevationProfileSVGLine,
-															calc,
-															track.bo,
-															$elm$core$String$fromFloat(trackThickness)),
-															function () {
-															if (!maybePosition.$) {
-																var posDistance = maybePosition.a;
-																var yPos = calc.ay(
-																	A2($author$project$Main$interpolateWaypointElevation, track.bo, posDistance));
-																var xPos = calc.ax(posDistance);
-																return A2(
-																	$elm$svg$Svg$g,
-																	_List_Nil,
-																	_List_fromArray(
-																		[
-																			A2(
+																				_List_Nil)
+																			]));
+																} else {
+																	return A2($elm$svg$Svg$g, _List_Nil, _List_Nil);
+																}
+															}(),
+																A2(
+																$elm$svg$Svg$g,
+																_List_Nil,
+																A2(
+																	$elm$core$List$map,
+																	function (_v2) {
+																		var _v3 = _v2.a;
+																		var y1 = _v3.a;
+																		var x1 = _v3.b;
+																		var _v4 = _v2.b;
+																		var y2 = _v4.a;
+																		var x2 = _v4.b;
+																		return A2(
 																			$elm$svg$Svg$line,
 																			_List_fromArray(
 																				[
-																					$elm$svg$Svg$Attributes$x1(xPos),
-																					$elm$svg$Svg$Attributes$y1('0'),
-																					$elm$svg$Svg$Attributes$x2(xPos),
+																					$elm$svg$Svg$Attributes$x1(
+																					$elm$core$String$fromInt(x1)),
+																					$elm$svg$Svg$Attributes$y1(
+																					$elm$core$String$fromInt(y1)),
+																					$elm$svg$Svg$Attributes$x2(
+																					$elm$core$String$fromInt(x2)),
 																					$elm$svg$Svg$Attributes$y2(
-																					$elm$core$String$fromInt(trackHeight)),
-																					$elm$svg$Svg$Attributes$stroke('dodgerblue'),
-																					$elm$svg$Svg$Attributes$strokeWidth('2'),
-																					$elm$svg$Svg$Attributes$opacity('0.7')
+																					$elm$core$String$fromInt(y2)),
+																					$elm$svg$Svg$Attributes$stroke('grey'),
+																					$elm$svg$Svg$Attributes$strokeWidth('1')
 																				]),
-																			_List_Nil),
-																			A2(
-																			$elm$svg$Svg$circle,
-																			_List_fromArray(
-																				[
-																					$elm$svg$Svg$Attributes$cx(xPos),
-																					$elm$svg$Svg$Attributes$cy(yPos),
-																					$elm$svg$Svg$Attributes$r('3.5'),
-																					$elm$svg$Svg$Attributes$fill('dodgerblue')
-																				]),
-																			_List_Nil)
-																		]));
-															} else {
-																return A2($elm$svg$Svg$g, _List_Nil, _List_Nil);
-															}
-														}(),
-															A2(
-															$elm$svg$Svg$g,
-															_List_Nil,
-															A2(
-																$elm$core$List$map,
-																function (_v2) {
-																	var _v3 = _v2.a;
-																	var y1 = _v3.a;
-																	var x1 = _v3.b;
-																	var _v4 = _v2.b;
-																	var y2 = _v4.a;
-																	var x2 = _v4.b;
-																	return A2(
-																		$elm$svg$Svg$line,
-																		_List_fromArray(
-																			[
-																				$elm$svg$Svg$Attributes$x1(
-																				$elm$core$String$fromInt(x1)),
-																				$elm$svg$Svg$Attributes$y1(
-																				$elm$core$String$fromInt(y1)),
-																				$elm$svg$Svg$Attributes$x2(
-																				$elm$core$String$fromInt(x2)),
-																				$elm$svg$Svg$Attributes$y2(
-																				$elm$core$String$fromInt(y2)),
-																				$elm$svg$Svg$Attributes$stroke('grey'),
-																				$elm$svg$Svg$Attributes$strokeWidth('1')
-																			]),
-																		_List_Nil);
-																},
-																_List_fromArray(
-																	[
-																		_Utils_Tuple2(
-																		_Utils_Tuple2(0, 0),
-																		_Utils_Tuple2(trackHeight, 0)),
-																		_Utils_Tuple2(
-																		_Utils_Tuple2(0, 0),
-																		_Utils_Tuple2(0, svgWidth)),
-																		_Utils_Tuple2(
-																		_Utils_Tuple2(trackHeight, svgWidth),
-																		_Utils_Tuple2(trackHeight, 0)),
-																		_Utils_Tuple2(
-																		_Utils_Tuple2(trackHeight, svgWidth),
-																		_Utils_Tuple2(0, svgWidth))
-																	])))
-														]))
-												]));
+																			_List_Nil);
+																	},
+																	_List_fromArray(
+																		[
+																			_Utils_Tuple2(
+																			_Utils_Tuple2(0, 0),
+																			_Utils_Tuple2(trackHeight, 0)),
+																			_Utils_Tuple2(
+																			_Utils_Tuple2(0, 0),
+																			_Utils_Tuple2(0, svgWidth)),
+																			_Utils_Tuple2(
+																			_Utils_Tuple2(trackHeight, svgWidth),
+																			_Utils_Tuple2(trackHeight, 0)),
+																			_Utils_Tuple2(
+																			_Utils_Tuple2(trackHeight, svgWidth),
+																			_Utils_Tuple2(0, svgWidth))
+																		])))
+															]))
+													]));
+										};
 									};
 								};
 							};
@@ -9934,12 +9964,14 @@ var $author$project$Main$viewElevationProfileTab = F2(
 			return $elm$html$Html$text('');
 		} else {
 			var splitResult = _v0.a;
-			var profileViews = A3(
-				$elm$core$List$map2,
+			var profileViews = A2(
+				$elm$core$List$indexedMap,
 				F2(
-					function (_v1, seg) {
-						var segStart = _v1.a;
-						var segEnd = _v1.b;
+					function (segIndex, _v1) {
+						var _v2 = _v1.a;
+						var segStart = _v2.a;
+						var segEnd = _v2.b;
+						var seg = _v1.b;
 						var segPosition = A2(
 							$elm$core$Maybe$andThen,
 							function (p) {
@@ -9969,10 +10001,9 @@ var $author$project$Main$viewElevationProfileTab = F2(
 									return (_Utils_cmp(pt.ao, segStart) > -1) && (_Utils_cmp(pt.ao, segEnd) < 1);
 								},
 								fullIntensity));
-						return $author$project$Main$profile(seg)(segMaxDistance)(trackMinElevation)(trackMaxElevation)(ep.N)(ep.Q)(ep.R)(ep.T)(segPosition)(segIntensity);
+						return $author$project$Main$profile(segIndex)(seg)(segMaxDistance)(trackMinElevation)(trackMaxElevation)(ep.N)(ep.Q)(ep.R)(ep.T)(segPosition)(segIntensity);
 					}),
-				splitResult.bw,
-				splitResult.bR);
+				A3($elm$core$List$map2, $elm$core$Tuple$pair, splitResult.bw, splitResult.bR));
 			return A2($elm$html$Html$div, _List_Nil, profileViews);
 		}
 	});

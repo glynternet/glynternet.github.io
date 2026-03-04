@@ -1408,41 +1408,40 @@ viewElevationProfileTab model tracks =
         Just splitResult ->
             let
                 profileViews =
-                    List.map2
-                        (\( segStart, segEnd ) seg ->
-                            let
-                                segMaxDistance =
-                                    List.reverse seg.trackpoints
-                                        |> List.head
-                                        |> Maybe.map .distance
-                                        |> Maybe.withDefault (segEnd - segStart)
+                    List.map2 Tuple.pair splitResult.boundaries splitResult.segments
+                        |> List.indexedMap
+                            (\segIndex ( ( segStart, segEnd ), seg ) ->
+                                let
+                                    segMaxDistance =
+                                        List.reverse seg.trackpoints
+                                            |> List.head
+                                            |> Maybe.map .distance
+                                            |> Maybe.withDefault (segEnd - segStart)
 
-                                segPosition =
-                                    pos
-                                        |> Maybe.andThen
-                                            (\p ->
-                                                if p >= segStart && p <= segEnd then
-                                                    Just (p - segStart)
+                                    segPosition =
+                                        pos
+                                            |> Maybe.andThen
+                                                (\p ->
+                                                    if p >= segStart && p <= segEnd then
+                                                        Just (p - segStart)
 
-                                                else
-                                                    Nothing
-                                            )
+                                                    else
+                                                        Nothing
+                                                )
 
-                                segIntensity =
-                                    fullIntensity
-                                        |> List.filter (\pt -> pt.distance >= segStart && pt.distance <= segEnd)
-                                        |> List.map (\pt -> { pt | distance = pt.distance - segStart })
-                            in
-                            profile seg segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.waypointStrokeColor segPosition segIntensity
-                        )
-                        splitResult.boundaries
-                        splitResult.segments
+                                    segIntensity =
+                                        fullIntensity
+                                            |> List.filter (\pt -> pt.distance >= segStart && pt.distance <= segEnd)
+                                            |> List.map (\pt -> { pt | distance = pt.distance - segStart })
+                                in
+                                profile segIndex seg segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.waypointStrokeColor segPosition segIntensity
+                            )
             in
             Html.div [] profileViews
 
 
-profile : GpxApi.Track -> Float -> Float -> Float -> Float -> Int -> Float -> String -> Maybe Float -> List { distance : Float, intensity : Float } -> Html Msg
-profile track maxDistance minElevation maxElevation fontSize trackHeight trackThickness waypointStrokeColor maybePosition intensityPoints =
+profile : Int -> GpxApi.Track -> Float -> Float -> Float -> Float -> Int -> Float -> String -> Maybe Float -> List { distance : Float, intensity : Float } -> Html Msg
+profile segmentIndex track maxDistance minElevation maxElevation fontSize trackHeight trackThickness waypointStrokeColor maybePosition intensityPoints =
     let
         waypointTextHeight =
             100
@@ -1484,7 +1483,7 @@ profile track maxDistance minElevation maxElevation fontSize trackHeight trackTh
                 Svg.g [] []
 
               else
-                renderIntensityShading (toFloat svgWidth) maxDistance (toFloat trackHeight) intensityPoints
+                renderIntensityShading segmentIndex (toFloat svgWidth) maxDistance (toFloat trackHeight) intensityPoints
             , -- waypoints
               Svg.g []
                 (let
@@ -1659,8 +1658,8 @@ computeIntensity tau trackPoints =
             List.reverse result
 
 
-renderIntensityShading : Float -> Float -> Float -> List { distance : Float, intensity : Float } -> Svg.Svg msg
-renderIntensityShading svgWidth maxDistance trackHeightFloat intensityPoints =
+renderIntensityShading : Int -> Float -> Float -> Float -> List { distance : Float, intensity : Float } -> Svg.Svg msg
+renderIntensityShading segmentIndex svgWidth maxDistance trackHeightFloat intensityPoints =
     let
         intensities =
             List.map .intensity intensityPoints
@@ -1674,42 +1673,56 @@ renderIntensityShading svgWidth maxDistance trackHeightFloat intensityPoints =
         intensityRange =
             maxIntensity - minIntensity
 
-        svgWidthPerDistanceUnit =
-            svgWidth / maxDistance
+        gradientId =
+            "intensity-gradient-" ++ String.fromInt segmentIndex
 
-        xFloat distance =
-            distance * svgWidthPerDistanceUnit
+        stops =
+            List.map
+                (\point ->
+                    let
+                        normalized =
+                            if intensityRange > 0 then
+                                (point.intensity - minIntensity) / intensityRange
+
+                            else
+                                0
+
+                        offsetPct =
+                            if maxDistance > 0 then
+                                String.fromFloat (point.distance / maxDistance * 100) ++ "%"
+
+                            else
+                                "0%"
+                    in
+                    Svg.stop
+                        [ Svg.Attributes.offset offsetPct
+                        , Svg.Attributes.stopColor (intensityColor normalized)
+                        , Svg.Attributes.stopOpacity "0.3"
+                        ]
+                        []
+                )
+                intensityPoints
     in
     Svg.g []
-        (List.map2
-            (\a b ->
-                let
-                    normalized =
-                        if intensityRange > 0 then
-                            (b.intensity - minIntensity) / intensityRange
-
-                        else
-                            0
-
-                    x1 =
-                        xFloat a.distance
-
-                    x2 =
-                        xFloat b.distance
-                in
-                Svg.rect
-                    [ Svg.Attributes.x (String.fromFloat x1)
-                    , Svg.Attributes.y "0"
-                    , Svg.Attributes.width (String.fromFloat (x2 - x1))
-                    , Svg.Attributes.height (String.fromFloat trackHeightFloat)
-                    , Svg.Attributes.fill (intensityColor normalized)
-                    , Svg.Attributes.opacity "0.3"
-                    ]
-                    []
-            )
-            intensityPoints
-            (List.drop 1 intensityPoints)
-        )
+        [ Svg.defs []
+            [ Svg.linearGradient
+                [ Svg.Attributes.id gradientId
+                , Svg.Attributes.x1 "0"
+                , Svg.Attributes.y1 "0"
+                , Svg.Attributes.x2 "1"
+                , Svg.Attributes.y2 "0"
+                ]
+                stops
+            ]
+        , Svg.rect
+            [ Svg.Attributes.x "0"
+            , Svg.Attributes.y "0"
+            , Svg.Attributes.width (String.fromFloat svgWidth)
+            , Svg.Attributes.height (String.fromFloat trackHeightFloat)
+            , Svg.Attributes.fill ("url(#" ++ gradientId ++ ")")
+            ]
+            []
+        ]
 
 
 intensityColor : Float -> String
