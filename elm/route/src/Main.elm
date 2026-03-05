@@ -1431,7 +1431,7 @@ viewElevationProfileTab model tracks =
                                         fullIntensity
                                             |> List.filter (\pt -> pt.distance >= segStart && pt.distance <= segEnd)
                                             |> List.map (\pt -> { pt | distance = pt.distance - segStart })
-                                            |> downsample (profileSvgWidth // 5)
+                                            |> downsample (profileSvgWidth // 1)
 
                                     downsampledSeg =
                                         { seg | trackpoints = downsample profileSvgWidth seg.trackpoints }
@@ -1445,6 +1445,38 @@ viewElevationProfileTab model tracks =
 profileSvgWidth : Int
 profileSvgWidth =
     500
+
+
+elevationTicks : Float -> Float -> List Float
+elevationTicks minElev maxElev =
+    let
+        range =
+            maxElev - minElev
+
+        interval =
+            if range > 1000 then
+                500
+
+            else if range > 300 then
+                100
+
+            else if range > 100 then
+                50
+
+            else
+                25
+
+        firstTick =
+            toFloat (ceiling (minElev / interval)) * interval
+
+        buildTicks current acc =
+            if current > maxElev then
+                List.reverse acc
+
+            else
+                buildTicks (current + interval) (current :: acc)
+    in
+    buildTicks firstTick []
 
 
 profile : Int -> GpxApi.Track -> List GpxApi.TrackPoint -> Float -> Float -> Float -> Float -> Int -> Float -> String -> Maybe Float -> List { distance : Float, intensity : Float } -> Html Msg
@@ -1480,7 +1512,7 @@ profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation
             ]
             [ Html.text <| formatKm 1 maxDistance ++ " " ++ formatEleGainLoss gain loss ]
         , Svg.svg
-            [ Svg.Attributes.viewBox <| "-5 -5 " ++ String.fromInt (profileSvgWidth + 10) ++ " " ++ (String.fromInt <| svgHeight + 10)
+            [ Svg.Attributes.viewBox <| "-50 -5 " ++ String.fromInt (profileSvgWidth + 55) ++ " " ++ (String.fromInt <| svgHeight + 10)
             ]
             [ -- intensity shading
               if List.isEmpty intensityPoints then
@@ -1488,6 +1520,36 @@ profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation
 
               else
                 renderIntensityShading segmentIndex (toFloat profileSvgWidth) maxDistance (toFloat trackHeight) intensityPoints
+            , -- elevation ticks
+              Svg.g []
+                (elevationTicks minElevation maxElevation
+                    |> List.concatMap
+                        (\tickElev ->
+                            let
+                                y =
+                                    calc.y tickElev
+                            in
+                            [ Svg.line
+                                [ Svg.Attributes.x1 "-5"
+                                , Svg.Attributes.y1 y
+                                , Svg.Attributes.x2 "0"
+                                , Svg.Attributes.y2 y
+                                , Svg.Attributes.stroke "grey"
+                                , Svg.Attributes.strokeWidth "1"
+                                ]
+                                []
+                            , Svg.text_
+                                [ Svg.Attributes.x "-8"
+                                , Svg.Attributes.y y
+                                , Svg.Attributes.textAnchor "end"
+                                , Svg.Attributes.dominantBaseline "central"
+                                , Svg.Attributes.fontSize "10"
+                                , Svg.Attributes.fill "grey"
+                                ]
+                                [ Svg.text (String.fromInt (round tickElev)) ]
+                            ]
+                        )
+                )
             , -- waypoints
               Svg.g []
                 (let
