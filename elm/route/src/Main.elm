@@ -91,9 +91,9 @@ type Tab
     | WaypointsTab
 
 
-type SplitMode
-    = SplitEquidistant Int
-    | SplitByWaypoints (List Int)
+type ActiveSplitMode
+    = EquidistantMode
+    | WaypointsMode
 
 
 type alias EditableTrack =
@@ -175,7 +175,9 @@ type alias ElevationProfileOptions =
     , showIntensity : Bool
     , intensityTau : Float
     , manualPosition : Maybe Float
-    , splitMode : SplitMode
+    , activeSplitMode : ActiveSplitMode
+    , splitEquidistantCount : Int
+    , splitWaypointIndices : List Int
     }
 
 
@@ -207,7 +209,9 @@ defaultElevationProfileOptions =
     , showIntensity = False
     , intensityTau = 500
     , manualPosition = Nothing
-    , splitMode = SplitEquidistant 1
+    , activeSplitMode = EquidistantMode
+    , splitEquidistantCount = 1
+    , splitWaypointIndices = []
     }
 
 
@@ -320,7 +324,7 @@ type Msg
     | UpdateIntensityTau Float
     | UpdateManualPosition (Maybe Float)
     | UpdateSplits Int
-    | SetSplitMode SplitMode
+    | SetSplitMode ActiveSplitMode
     | AddSplitWaypoint
     | UpdateSplitWaypoint Int Int
     | RemoveSplitWaypoint Int
@@ -404,16 +408,11 @@ update msg model =
                                                 Loaded positionalTracks
                                     , filteredCategories = initialFilteredCategories (List.concatMap .waypoints gpxTracks)
                                     , elevationProfile =
-                                        case model.elevationProfile.splitMode of
-                                            SplitByWaypoints _ ->
-                                                let
-                                                    ep =
-                                                        model.elevationProfile
-                                                in
-                                                { ep | splitMode = SplitByWaypoints [] }
-
-                                            _ ->
+                                        let
+                                            ep =
                                                 model.elevationProfile
+                                        in
+                                        { ep | splitWaypointIndices = [] }
                                 }
 
         SplitProfileReceived string ->
@@ -554,6 +553,10 @@ update msg model =
         WaypointDeleted i deleted ->
             case model.tracks of
                 Loaded tracks ->
+                    let
+                        ep =
+                            model.elevationProfile
+                    in
                     updateModel
                         { model
                             | tracks =
@@ -561,6 +564,16 @@ update msg model =
                                     Zipper.updateCurrent
                                         (\current -> updateEditableWaypoint current i (\ew -> { ew | deleted = deleted }))
                                         tracks
+                            , elevationProfile =
+                                { ep
+                                    | splitWaypointIndices =
+                                        if deleted then
+                                            -- remove split waypoint if it no longer exists
+                                            List.filter (\idx -> idx /= i) ep.splitWaypointIndices
+
+                                        else
+                                            ep.splitWaypointIndices
+                                }
                         }
 
                 _ ->
@@ -759,14 +772,14 @@ update msg model =
                 ep =
                     model.elevationProfile
             in
-            updateModel { model | elevationProfile = { ep | splitMode = SplitEquidistant n } }
+            updateModel { model | elevationProfile = { ep | splitEquidistantCount = n } }
 
         SetSplitMode mode ->
             let
                 ep =
                     model.elevationProfile
             in
-            updateModel { model | elevationProfile = { ep | splitMode = mode } }
+            updateModel { model | elevationProfile = { ep | activeSplitMode = mode } }
 
         AddSplitWaypoint ->
             let
@@ -780,71 +793,56 @@ update msg model =
 
                 availableIndices =
                     indexedEffectiveWaypoints editableWps |> List.map Tuple.first
+
+                indices =
+                    ep.splitWaypointIndices
+
+                firstAvailable =
+                    availableIndices
+                        |> List.filter (\i -> not (List.member i indices))
+                        |> List.head
             in
-            case ep.splitMode of
-                SplitByWaypoints indices ->
+            case firstAvailable of
+                Just idx ->
                     let
-                        firstAvailable =
-                            availableIndices
-                                |> List.filter (\i -> not (List.member i indices))
-                                |> List.head
+                        newIndices =
+                            sortWaypointIndices editableWps (idx :: indices)
                     in
-                    case firstAvailable of
-                        Just idx ->
-                            let
-                                newIndices =
-                                    sortWaypointIndices editableWps (idx :: indices)
-                            in
-                            updateModel { model | elevationProfile = { ep | splitMode = SplitByWaypoints newIndices } }
+                    updateModel { model | elevationProfile = { ep | splitWaypointIndices = newIndices } }
 
-                        Nothing ->
-                            ( model, Cmd.none )
-
-                _ ->
+                Nothing ->
                     ( model, Cmd.none )
 
-        -- SplitByWaypoints holds a list of waypoint indices (into editableWaypoints).
+        -- splitWaypointIndices holds a list of waypoint indices (into editableWaypoints).
         -- splitListPos is a position within that list; newWaypointIdx is an editableWaypoints index.
         UpdateSplitWaypoint splitListPos newWaypointIdx ->
             let
                 ep =
                     model.elevationProfile
-            in
-            case ep.splitMode of
-                SplitByWaypoints waypointIndices ->
-                    let
-                        newIndices =
-                            maybeFromloadableResource model.tracks
-                                |> Maybe.map
-                                    (.current
-                                        >> .editableWaypoints
-                                        >> (\editableWaypoints ->
-                                                List.Extra.setAt splitListPos newWaypointIdx waypointIndices
-                                                    |> sortWaypointIndices editableWaypoints
-                                           )
-                                    )
-                                |> Maybe.withDefault []
-                    in
-                    updateModel { model | elevationProfile = { ep | splitMode = SplitByWaypoints newIndices } }
 
-                _ ->
-                    ( model, Cmd.none )
+                newIndices =
+                    maybeFromloadableResource model.tracks
+                        |> Maybe.map
+                            (.current
+                                >> .editableWaypoints
+                                >> (\editableWaypoints ->
+                                        List.Extra.setAt splitListPos newWaypointIdx ep.splitWaypointIndices
+                                            |> sortWaypointIndices editableWaypoints
+                                   )
+                            )
+                        |> Maybe.withDefault []
+            in
+            updateModel { model | elevationProfile = { ep | splitWaypointIndices = newIndices } }
 
         RemoveSplitWaypoint splitListPos ->
             let
                 ep =
                     model.elevationProfile
-            in
-            case ep.splitMode of
-                SplitByWaypoints waypointIndices ->
-                    let
-                        newIndices =
-                            List.Extra.removeAt splitListPos waypointIndices
-                    in
-                    updateModel { model | elevationProfile = { ep | splitMode = SplitByWaypoints newIndices } }
 
-                _ ->
-                    ( model, Cmd.none )
+                newIndices =
+                    List.Extra.removeAt splitListPos ep.splitWaypointIndices
+            in
+            updateModel { model | elevationProfile = { ep | splitWaypointIndices = newIndices } }
 
         -- Cuesheet options
         UpdateTotalDistanceDisplay maybeSelection ->
@@ -931,16 +929,16 @@ requestSplitCmd model =
                 (Json.Encode.encode 0
                     (Json.Encode.object
                         ([ ( "track", GpxApi.encodeTrack <| GpxApi.Track tracks.current.trackpoints filteredWaypoints tracks.current.gainLoss ) ]
-                            ++ (case model.elevationProfile.splitMode of
-                                    SplitEquidistant n ->
+                            ++ (case model.elevationProfile.activeSplitMode of
+                                    EquidistantMode ->
                                         [ ( "mode", Json.Encode.string "equidistant" )
-                                        , ( "count", Json.Encode.int n )
+                                        , ( "count", Json.Encode.int model.elevationProfile.splitEquidistantCount )
                                         ]
 
-                                    SplitByWaypoints indices ->
+                                    WaypointsMode ->
                                         let
                                             distances =
-                                                indices
+                                                model.elevationProfile.splitWaypointIndices
                                                     |> List.filterMap
                                                         (\i ->
                                                             List.Extra.getAt i tracks.current.editableWaypoints
@@ -2484,53 +2482,42 @@ viewElevationProfileOptions model =
                     [ Html.Events.onInput
                         (\v ->
                             if v == "waypoints" then
-                                SetSplitMode (SplitByWaypoints [])
+                                SetSplitMode WaypointsMode
 
                             else
-                                SetSplitMode (SplitEquidistant 1)
+                                SetSplitMode EquidistantMode
                         )
                     ]
                     [ Html.option
                         [ Html.Attributes.value "equidistant"
-                        , Html.Attributes.selected
-                            (case ep.splitMode of
-                                SplitEquidistant _ ->
-                                    True
-
-                                _ ->
-                                    False
-                            )
+                        , Html.Attributes.selected (ep.activeSplitMode == EquidistantMode)
                         ]
                         [ Html.text "Equidistant" ]
                     , Html.option
                         [ Html.Attributes.value "waypoints"
-                        , Html.Attributes.selected
-                            (case ep.splitMode of
-                                SplitByWaypoints _ ->
-                                    True
-
-                                _ ->
-                                    False
-                            )
+                        , Html.Attributes.selected (ep.activeSplitMode == WaypointsMode)
                         ]
                         [ Html.text "By waypoints" ]
                     ]
               ]
-            , case ep.splitMode of
-                SplitEquidistant n ->
+            , case ep.activeSplitMode of
+                EquidistantMode ->
                     [ Html.input
                         [ Html.Attributes.type_ "range"
                         , Html.Attributes.min "1"
                         , Html.Attributes.max "10"
-                        , Html.Attributes.value <| String.fromInt n
+                        , Html.Attributes.value <| String.fromInt ep.splitEquidistantCount
                         , Html.Events.onInput (String.toInt >> Maybe.map (clamp 1 10) >> Maybe.withDefault 1 >> UpdateSplits)
                         ]
                         []
-                    , Html.text (String.fromInt n)
+                    , Html.text (String.fromInt ep.splitEquidistantCount)
                     ]
 
-                SplitByWaypoints selectedIndices ->
+                WaypointsMode ->
                     let
+                        selectedIndices =
+                            ep.splitWaypointIndices
+
                         indexed =
                             maybeFromloadableResource model.tracks
                                 |> Maybe.map (.current >> .editableWaypoints >> indexedEffectiveWaypoints)
@@ -3047,26 +3034,16 @@ encodeSavedState model =
             , Just
                 ( "splitMode"
                 , Json.Encode.string
-                    (case ep.splitMode of
-                        SplitEquidistant _ ->
+                    (case ep.activeSplitMode of
+                        EquidistantMode ->
                             "equidistant"
 
-                        SplitByWaypoints _ ->
+                        WaypointsMode ->
                             "waypoints"
                     )
                 )
-            , case ep.splitMode of
-                SplitEquidistant n ->
-                    Just ( "splitEquidistantCount", Json.Encode.int n )
-
-                _ ->
-                    Nothing
-            , case ep.splitMode of
-                SplitByWaypoints indices ->
-                    Just ( "splitWaypointIndices", Json.Encode.list Json.Encode.int indices )
-
-                _ ->
-                    Nothing
+            , Just ( "splitEquidistantCount", Json.Encode.int ep.splitEquidistantCount )
+            , Just ( "splitWaypointIndices", Json.Encode.list Json.Encode.int ep.splitWaypointIndices )
             , Just ( "totalDistanceDisplay", Json.Encode.string (formatTotalDistanceDisplay cs.totalDistanceDisplay) )
             , Just ( "referencePoint", Json.Encode.float cs.referencePoint )
             , Just ( "itemSpacing", Json.Encode.int cs.itemSpacing )
@@ -3112,13 +3089,15 @@ modelDecoder =
                 , showIntensity = showIntensity |> Maybe.withDefault defEp.showIntensity
                 , intensityTau = intensityTau |> Maybe.withDefault defEp.intensityTau
                 , manualPosition = manualPosition
-                , splitMode =
+                , activeSplitMode =
                     case splitMode of
                         Just "waypoints" ->
-                            SplitByWaypoints (splitWaypointIndices |> Maybe.withDefault [])
+                            WaypointsMode
 
                         _ ->
-                            SplitEquidistant (splitEquidistantCount |> Maybe.withDefault 1)
+                            EquidistantMode
+                , splitEquidistantCount = splitEquidistantCount |> Maybe.withDefault 1
+                , splitWaypointIndices = splitWaypointIndices |> Maybe.withDefault []
                 }
             , cuesheet =
                 { totalDistanceDisplay = totalDistanceDisplay |> Maybe.andThen parseTotalDistanceDisplay |> Maybe.withDefault defCs.totalDistanceDisplay
