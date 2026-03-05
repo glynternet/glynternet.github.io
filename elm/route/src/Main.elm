@@ -1513,6 +1513,12 @@ viewElevationProfileTab model tracks =
 
             else
                 []
+
+        ( trackMinIntensity, trackMaxIntensity ) =
+            List.foldl
+                (\pt ( mn, mx ) -> ( min mn pt.intensity, max mx pt.intensity ))
+                ( 1 / 0, -(1 / 0) )
+                fullIntensity
     in
     case model.splitSegments of
         Nothing ->
@@ -1551,7 +1557,7 @@ viewElevationProfileTab model tracks =
                                     downsampledSeg =
                                         { seg | trackpoints = downsample profileSvgWidth seg.trackpoints }
                                 in
-                                profile segIndex downsampledSeg seg.trackpoints segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.waypointStrokeColor segPosition segIntensity
+                                profile segIndex downsampledSeg seg.trackpoints segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.waypointStrokeColor segPosition segIntensity trackMinIntensity trackMaxIntensity
                             )
             in
             Html.div [] profileViews
@@ -1594,8 +1600,8 @@ elevationTicks minElev maxElev =
     buildTicks firstTick []
 
 
-profile : Int -> GpxApi.Track -> List GpxApi.TrackPoint -> Float -> Float -> Float -> Float -> Int -> Float -> String -> Maybe Float -> List { distance : Float, intensity : Float } -> Html Msg
-profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation fontSize trackHeight trackThickness waypointStrokeColor maybePosition intensityPoints =
+profile : Int -> GpxApi.Track -> List GpxApi.TrackPoint -> Float -> Float -> Float -> Float -> Int -> Float -> String -> Maybe Float -> List { distance : Float, intensity : Float } -> Float -> Float -> Html Msg
+profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation fontSize trackHeight trackThickness waypointStrokeColor maybePosition intensityPoints minIntensity maxIntensity =
     let
         waypointTextHeight =
             100
@@ -1634,7 +1640,7 @@ profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation
                 Svg.g [] []
 
               else
-                renderIntensityShading segmentIndex (toFloat profileSvgWidth) maxDistance (toFloat trackHeight) intensityPoints
+                renderIntensityShading segmentIndex (toFloat profileSvgWidth) maxDistance (toFloat trackHeight) intensityPoints minIntensity maxIntensity
             , -- elevation ticks
               Svg.g []
                 (elevationTicks minElevation maxElevation
@@ -1877,18 +1883,9 @@ computeIntensity tau trackPoints =
             List.reverse result
 
 
-renderIntensityShading : Int -> Float -> Float -> Float -> List { distance : Float, intensity : Float } -> Svg.Svg msg
-renderIntensityShading segmentIndex svgWidth maxDistance trackHeightFloat intensityPoints =
+renderIntensityShading : Int -> Float -> Float -> Float -> List { distance : Float, intensity : Float } -> Float -> Float -> Svg.Svg msg
+renderIntensityShading segmentIndex svgWidth maxDistance trackHeightFloat intensityPoints minIntensity maxIntensity =
     let
-        intensities =
-            List.map .intensity intensityPoints
-
-        minIntensity =
-            List.minimum intensities |> Maybe.withDefault 0
-
-        maxIntensity =
-            List.maximum intensities |> Maybe.withDefault 0
-
         intensityRange =
             maxIntensity - minIntensity
 
