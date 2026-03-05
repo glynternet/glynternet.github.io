@@ -94,6 +94,7 @@ type Tab
 type ActiveSplitMode
     = EquidistantMode
     | WaypointsMode
+    | LiveMode
 
 
 type alias EditableTrack =
@@ -178,6 +179,8 @@ type alias ElevationProfileOptions =
     , activeSplitMode : ActiveSplitMode
     , splitEquidistantCount : Int
     , splitWaypointIndices : List Int
+    , liveLookahead : Float
+    , liveLookbehind : Float
     }
 
 
@@ -212,6 +215,8 @@ defaultElevationProfileOptions =
     , activeSplitMode = EquidistantMode
     , splitEquidistantCount = 1
     , splitWaypointIndices = []
+    , liveLookahead = 5000
+    , liveLookbehind = 2000
     }
 
 
@@ -267,7 +272,11 @@ init maybeState _ _ =
 
         Just stateValue ->
             case Json.Decode.decodeValue modelDecoder stateValue of
-                Ok model ->
+                Ok decoded ->
+                    let
+                        model =
+                            withLiveSplit decoded
+                    in
                     ( model, requestSplitCmd model )
 
                 Err err ->
@@ -328,6 +337,8 @@ type Msg
     | AddSplitWaypoint
     | UpdateSplitWaypoint Int Int
     | RemoveSplitWaypoint Int
+    | UpdateLiveLookahead Float
+    | UpdateLiveLookbehind Float
       -- Cuesheet
     | UpdateTotalDistanceDisplay (Maybe TotalDistanceDisplay)
     | UpdatePosition Float
@@ -487,11 +498,12 @@ update msg model =
                                 cs =
                                     model.cuesheet
                             in
-                            ( { model
-                                | location = Just (Location.LocationState gpsPos pos.accuracy matchedDist)
-                                , locationError = Nothing
-                                , cuesheet = { cs | position = matchedDist }
-                              }
+                            ( withLiveSplit
+                                { model
+                                    | location = Just (Location.LocationState gpsPos pos.accuracy matchedDist)
+                                    , locationError = Nothing
+                                    , cuesheet = { cs | position = matchedDist }
+                                }
                             , Cmd.none
                             )
 
@@ -844,6 +856,20 @@ update msg model =
             in
             updateModel { model | elevationProfile = { ep | splitWaypointIndices = newIndices } }
 
+        UpdateLiveLookahead val ->
+            let
+                ep =
+                    model.elevationProfile
+            in
+            updateModel { model | elevationProfile = { ep | liveLookahead = val } }
+
+        UpdateLiveLookbehind val ->
+            let
+                ep =
+                    model.elevationProfile
+            in
+            updateModel { model | elevationProfile = { ep | liveLookbehind = val } }
+
         -- Cuesheet options
         UpdateTotalDistanceDisplay maybeSelection ->
             maybeSelection
@@ -913,11 +939,25 @@ update msg model =
 
 updateModel : Model -> ( Model, Cmd Msg )
 updateModel model =
-    ( model, Cmd.batch [ storeState (encodeSavedState model), requestSplitCmd model ] )
+    let
+        m =
+            withLiveSplit model
+    in
+    ( m, Cmd.batch [ storeState (encodeSavedState m), requestSplitCmd m ] )
 
 
 requestSplitCmd : Model -> Cmd Msg
 requestSplitCmd model =
+    case model.elevationProfile.activeSplitMode of
+        LiveMode ->
+            Cmd.none
+
+        _ ->
+            requestSplitCmdWasm model
+
+
+requestSplitCmdWasm : Model -> Cmd Msg
+requestSplitCmdWasm model =
     case model.tracks of
         Loaded tracks ->
             let
@@ -956,6 +996,10 @@ requestSplitCmd model =
                                         [ ( "mode", Json.Encode.string "waypoints" )
                                         , ( "distances", Json.Encode.list Json.Encode.float distances )
                                         ]
+
+                                    LiveMode ->
+                                        -- Live mode splits are computed in Elm, no WASM needed
+                                        []
                                )
                         )
                     )
@@ -963,6 +1007,77 @@ requestSplitCmd model =
 
         _ ->
             Cmd.none
+
+
+computeLiveSplitFromModel : Model -> Maybe GpxApi.SplitResult
+computeLiveSplitFromModel model =
+    case model.tracks of
+        Loaded tracks ->
+            let
+                tps =
+                    tracks.current.trackpoints
+
+                maxDist =
+                    List.reverse tps |> List.head |> Maybe.map .distance |> Maybe.withDefault 0
+
+                ep =
+                    model.elevationProfile
+
+                ( rangeStart, rangeEnd ) =
+                    case effectivePosition model of
+                        Just p ->
+                            ( max 0 (p - ep.liveLookbehind), min maxDist (p + ep.liveLookahead) )
+
+                        Nothing ->
+                            ( 0, maxDist )
+
+                segTps =
+                    tps |> List.filter (\tp -> tp.distance >= rangeStart && tp.distance <= rangeEnd)
+
+                segWps =
+                    effectiveWaypoints tracks.current.editableWaypoints
+                        |> filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = False } model.filteredCategories
+                        |> List.filter (\wp -> wp.distance >= rangeStart && wp.distance <= rangeEnd)
+
+                shift record =
+                    { record | distance = record.distance - rangeStart }
+            in
+            Just
+                { segments =
+                    [ { trackpoints = List.map shift segTps
+                      , waypoints = List.map shift segWps
+                      , gainLoss = computeGainLoss segTps
+                      }
+                    ]
+                , boundaries = [ ( rangeStart, rangeEnd ) ]
+                }
+
+        _ ->
+            Nothing
+
+
+computeGainLoss : List GpxApi.TrackPoint -> ( Float, Float )
+computeGainLoss tps =
+    case List.reverse tps of
+        last :: _ ->
+            case tps of
+                first :: _ ->
+                    ( last.gain - first.gain, last.loss - first.loss )
+
+                [] ->
+                    ( 0, 0 )
+
+        [] ->
+            ( 0, 0 )
+
+
+withLiveSplit : Model -> Model
+withLiveSplit model =
+    if model.elevationProfile.activeSplitMode == LiveMode then
+        { model | splitSegments = computeLiveSplitFromModel model }
+
+    else
+        model
 
 
 
@@ -2543,11 +2658,15 @@ viewElevationProfileOptions model =
             [ [ Html.select
                     [ Html.Events.onInput
                         (\v ->
-                            if v == "waypoints" then
-                                SetSplitMode WaypointsMode
+                            case v of
+                                "waypoints" ->
+                                    SetSplitMode WaypointsMode
 
-                            else
-                                SetSplitMode EquidistantMode
+                                "live" ->
+                                    SetSplitMode LiveMode
+
+                                _ ->
+                                    SetSplitMode EquidistantMode
                         )
                     ]
                     [ Html.option
@@ -2560,6 +2679,11 @@ viewElevationProfileOptions model =
                         , Html.Attributes.selected (ep.activeSplitMode == WaypointsMode)
                         ]
                         [ Html.text "By waypoints" ]
+                    , Html.option
+                        [ Html.Attributes.value "live"
+                        , Html.Attributes.selected (ep.activeSplitMode == LiveMode)
+                        ]
+                        [ Html.text "Live" ]
                     ]
               ]
             , case ep.activeSplitMode of
@@ -2620,6 +2744,29 @@ viewElevationProfileOptions model =
                                 ]
                                 [ Html.text "Add" ]
                            ]
+
+                LiveMode ->
+                    [ Html.text ("Lookbehind: " ++ formatKm 1 ep.liveLookbehind)
+                    , Html.input
+                        [ Html.Attributes.type_ "range"
+                        , Html.Attributes.min "0"
+                        , Html.Attributes.max "50000"
+                        , Html.Attributes.step "500"
+                        , Html.Attributes.value <| String.fromFloat ep.liveLookbehind
+                        , Html.Events.onInput (String.toFloat >> Maybe.withDefault 2000 >> UpdateLiveLookbehind)
+                        ]
+                        []
+                    , Html.text ("Lookahead: " ++ formatKm 1 ep.liveLookahead)
+                    , Html.input
+                        [ Html.Attributes.type_ "range"
+                        , Html.Attributes.min "0"
+                        , Html.Attributes.max "200000"
+                        , Html.Attributes.step "500"
+                        , Html.Attributes.value <| String.fromFloat ep.liveLookahead
+                        , Html.Events.onInput (String.toFloat >> Maybe.withDefault 5000 >> UpdateLiveLookahead)
+                        ]
+                        []
+                    ]
             ]
         )
     , optionGroup "Position"
@@ -2635,14 +2782,19 @@ viewElevationProfileOptions model =
                     , Html.Attributes.min "0"
                     , Html.Attributes.max (String.fromFloat maxDist)
                     , Html.Attributes.step "100"
-                    , Html.Attributes.value (ep.manualPosition |> Maybe.map String.fromFloat |> Maybe.withDefault "0")
+                    , Html.Attributes.value (String.fromFloat (effectivePosition model |> Maybe.withDefault 0))
                     , Html.Events.onInput (String.toFloat >> Maybe.map Just >> Maybe.withDefault Nothing >> UpdateManualPosition)
+                    , Html.Attributes.disabled model.trackingEnabled
                     ]
                     []
               ]
             , case ep.manualPosition of
                 Just _ ->
-                    [ viewButton [ Html.Attributes.style "width" "100%" ] "Clear position" (UpdateManualPosition Nothing) ]
+                    if model.trackingEnabled then
+                        []
+
+                    else
+                        [ viewButton [ Html.Attributes.style "width" "100%" ] "Clear position" (UpdateManualPosition Nothing) ]
 
                 Nothing ->
                     []
@@ -2801,7 +2953,6 @@ viewLocationOptions model =
         Loaded _ ->
             List.concat
                 [ [ Html.hr [] []
-                  , viewButton [ Html.Attributes.style "width" "100%" ] "Refresh Location" RequestLocation
                   , viewButton [ Html.Attributes.style "width" "100%" ]
                         (if model.trackingEnabled then
                             "Stop Tracking"
@@ -2810,6 +2961,7 @@ viewLocationOptions model =
                             "Start Tracking"
                         )
                         ToggleTracking
+                  , viewButton [ Html.Attributes.style "width" "100%" ] "Refresh Location" RequestLocation
                   ]
                 , if model.trackingEnabled then
                     [ optionGroup ("Interval: " ++ String.fromInt model.trackingIntervalSec ++ "s")
@@ -3102,10 +3254,15 @@ encodeSavedState model =
 
                         WaypointsMode ->
                             "waypoints"
+
+                        LiveMode ->
+                            "live"
                     )
                 )
             , Just ( "splitEquidistantCount", Json.Encode.int ep.splitEquidistantCount )
             , Just ( "splitWaypointIndices", Json.Encode.list Json.Encode.int ep.splitWaypointIndices )
+            , Just ( "liveLookahead", Json.Encode.float ep.liveLookahead )
+            , Just ( "liveLookbehind", Json.Encode.float ep.liveLookbehind )
             , Just ( "totalDistanceDisplay", Json.Encode.string (formatTotalDistanceDisplay cs.totalDistanceDisplay) )
             , Just ( "referencePoint", Json.Encode.float cs.referencePoint )
             , Just ( "itemSpacing", Json.Encode.int cs.itemSpacing )
@@ -3132,7 +3289,7 @@ modelDecoder =
             defaultCuesheetOptions
     in
     Json.Decode.succeed
-        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness waypointStrokeColor showIntensity intensityTau manualPosition splitMode splitEquidistantCount splitWaypointIndices totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish ->
+        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness waypointStrokeColor showIntensity intensityTau manualPosition splitMode splitEquidistantCount splitWaypointIndices liveLookahead liveLookbehind totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish ->
             { tracks = loadableResourceFromMaybe tracks
             , showOptions = showOptions |> Maybe.withDefault def.showOptions
             , activeTab = activeTab |> Maybe.andThen parseTab |> Maybe.withDefault def.activeTab
@@ -3156,10 +3313,15 @@ modelDecoder =
                         Just "waypoints" ->
                             WaypointsMode
 
+                        Just "live" ->
+                            LiveMode
+
                         _ ->
                             EquidistantMode
                 , splitEquidistantCount = splitEquidistantCount |> Maybe.withDefault 1
                 , splitWaypointIndices = splitWaypointIndices |> Maybe.withDefault []
+                , liveLookahead = liveLookahead |> Maybe.withDefault defEp.liveLookahead
+                , liveLookbehind = liveLookbehind |> Maybe.withDefault defEp.liveLookbehind
                 }
             , cuesheet =
                 { totalDistanceDisplay = totalDistanceDisplay |> Maybe.andThen parseTotalDistanceDisplay |> Maybe.withDefault defCs.totalDistanceDisplay
@@ -3189,6 +3351,8 @@ modelDecoder =
         |> andMap (maybeField "splitMode" Json.Decode.string)
         |> andMap (maybeField "splitEquidistantCount" Json.Decode.int)
         |> andMap (maybeField "splitWaypointIndices" (Json.Decode.list Json.Decode.int))
+        |> andMap (maybeField "liveLookahead" Json.Decode.float)
+        |> andMap (maybeField "liveLookbehind" Json.Decode.float)
         |> andMap (maybeField "totalDistanceDisplay" Json.Decode.string)
         |> andMap (maybeField "referencePoint" Json.Decode.float)
         |> andMap (maybeField "itemSpacing" Json.Decode.int)
