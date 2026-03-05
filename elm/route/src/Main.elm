@@ -58,7 +58,7 @@ subscriptions model =
 
 
 type alias Model =
-    { tracks : LoadableResource (Zipper GpxApi.Track)
+    { tracks : LoadableResource (Zipper EditableTrack)
     , showOptions : Bool
     , activeTab : Tab
 
@@ -94,6 +94,77 @@ type Tab
 type SplitMode
     = SplitEquidistant Int
     | SplitByWaypoints (List Int)
+
+
+type alias EditableTrack =
+    { trackpoints : List GpxApi.TrackPoint
+    , editableWaypoints : List EditableWaypoint
+    , gainLoss : ( Float, Float )
+    }
+
+
+type alias EditableWaypoint =
+    { original : GpxApi.Waypoint
+    , deleted : Bool
+    , overrides : WaypointOverrides
+    }
+
+
+type alias WaypointOverrides =
+    { name : Maybe String
+    , distance : Maybe Float
+    , categories : Maybe (List String)
+    }
+
+
+emptyOverrides : WaypointOverrides
+emptyOverrides =
+    WaypointOverrides Nothing Nothing Nothing
+
+
+editableTrackFromGpxTrack : GpxApi.Track -> EditableTrack
+editableTrackFromGpxTrack track =
+    { trackpoints = track.trackpoints
+    , editableWaypoints = List.map (\w -> EditableWaypoint w False emptyOverrides) track.waypoints
+    , gainLoss = track.gainLoss
+    }
+
+
+effectiveWaypoint : EditableWaypoint -> GpxApi.Waypoint
+effectiveWaypoint ew =
+    { distance = Maybe.withDefault ew.original.distance ew.overrides.distance
+    , name = Maybe.withDefault ew.original.name ew.overrides.name
+    , categories = Maybe.withDefault ew.original.categories ew.overrides.categories
+    , gain = ew.original.gain
+    , loss = ew.original.loss
+    }
+
+
+effectiveWaypoints : List EditableWaypoint -> List GpxApi.Waypoint
+effectiveWaypoints =
+    List.filterMap
+        (\ew ->
+            if ew.deleted then
+                Nothing
+
+            else
+                Just (effectiveWaypoint ew)
+        )
+
+
+{-| Pairs each non-deleted waypoint with its stable index in the editableWaypoints list.
+-}
+indexedEffectiveWaypoints : List EditableWaypoint -> List ( Int, GpxApi.Waypoint )
+indexedEffectiveWaypoints =
+    List.indexedMap Tuple.pair
+        >> List.filterMap
+            (\( i, ew ) ->
+                if ew.deleted then
+                    Nothing
+
+                else
+                    Just ( i, effectiveWaypoint ew )
+            )
 
 
 type alias ElevationProfileOptions =
@@ -235,10 +306,11 @@ type Msg
       -- Waypoint editing
     | WaypointDistanceChange Int Float
     | WaypointNameChange Int String
-    | DeleteWaypoint Int
+    | WaypointDeleted Int Bool
     | WaypointCategoryToggle Int String Bool
     | WaypointCategoryAdd Int String
     | WaypointNewCategoryInput Int String
+    | ResetWaypoints
       -- Elevation profile
     | UpdateFontSize Float
     | UpdateTrackHeight Int
@@ -266,12 +338,12 @@ type Msg
 -- UPDATE
 
 
-sortWaypointIndices : List { a | distance : Float } -> List Int -> List Int
-sortWaypointIndices waypoints indices =
+sortWaypointIndices : List EditableWaypoint -> List Int -> List Int
+sortWaypointIndices editableWps indices =
     List.sortBy
         (\idx ->
-            List.Extra.getAt idx waypoints
-                |> Maybe.map .distance
+            List.Extra.getAt idx editableWps
+                |> Maybe.map (effectiveWaypoint >> .distance)
                 |> Maybe.withDefault 0
         )
         indices
@@ -320,17 +392,17 @@ update msg model =
                             updateModel
                                 { model | tracks = Error ("getting profile data from GPX: " ++ errMsg) }
 
-                        Ok tracks ->
+                        Ok gpxTracks ->
                             updateModel
                                 { model
                                     | tracks =
-                                        case Zipper.fromList tracks of
+                                        case Zipper.fromList <| List.map editableTrackFromGpxTrack gpxTracks of
                                             Nothing ->
                                                 Error "No tracks available in uploaded GPX"
 
                                             Just positionalTracks ->
                                                 Loaded positionalTracks
-                                    , filteredCategories = initialFilteredCategories (List.concatMap .waypoints tracks)
+                                    , filteredCategories = initialFilteredCategories (List.concatMap .waypoints gpxTracks)
                                     , elevationProfile =
                                         case model.elevationProfile.splitMode of
                                             SplitByWaypoints _ ->
@@ -457,7 +529,7 @@ update msg model =
                             | tracks =
                                 Loaded <|
                                     Zipper.updateCurrent
-                                        (\current -> trackUpdateWaypoint current i (\w -> { w | name = name }))
+                                        (\current -> updateEditableWaypoint current i (\ew -> updateOverrides (\o -> { o | name = Just name }) ew))
                                         tracks
                         }
 
@@ -472,14 +544,14 @@ update msg model =
                             | tracks =
                                 Loaded <|
                                     Zipper.updateCurrent
-                                        (\current -> trackUpdateWaypoint current i (\w -> { w | distance = dist }))
+                                        (\current -> updateEditableWaypoint current i (\ew -> updateOverrides (\o -> { o | distance = Just dist }) ew))
                                         tracks
                         }
 
                 _ ->
                     ( model, Cmd.none )
 
-        DeleteWaypoint i ->
+        WaypointDeleted i deleted ->
             case model.tracks of
                 Loaded tracks ->
                     updateModel
@@ -487,7 +559,7 @@ update msg model =
                             | tracks =
                                 Loaded <|
                                     Zipper.updateCurrent
-                                        (\current -> { current | waypoints = List.Extra.removeAt i current.waypoints })
+                                        (\current -> updateEditableWaypoint current i (\ew -> { ew | deleted = deleted }))
                                         tracks
                         }
 
@@ -498,21 +570,39 @@ update msg model =
             case model.tracks of
                 Loaded tracks ->
                     let
-                        updateCats w =
-                            if add then
-                                if List.member cat w.categories then
-                                    w
+                        updateCats ew =
+                            let
+                                currentCats =
+                                    Maybe.withDefault ew.original.categories ew.overrides.categories
 
-                                else
-                                    { w | categories = w.categories ++ [ cat ] }
+                                o =
+                                    ew.overrides
+                            in
+                            { ew
+                                | overrides =
+                                    { o
+                                        | categories =
+                                            Just
+                                                (if add then
+                                                    if List.member cat currentCats then
+                                                        currentCats
 
-                            else
-                                { w | categories = List.filter (\c -> c /= cat) w.categories }
+                                                    else
+                                                        currentCats ++ [ cat ]
+
+                                                 else
+                                                    List.filter (\c -> c /= cat) currentCats
+                                                )
+                                    }
+                            }
 
                         newTracks =
                             Zipper.updateCurrent
-                                (\current -> trackUpdateWaypoint current i updateCats)
+                                (\current -> updateEditableWaypoint current i updateCats)
                                 tracks
+
+                        allEffectiveWaypoints =
+                            List.concatMap (.editableWaypoints >> effectiveWaypoints) (newTracks.prev ++ [ newTracks.current ] ++ newTracks.next)
 
                         newFilteredCategories =
                             if add then
@@ -524,11 +614,8 @@ update msg model =
 
                             else
                                 let
-                                    allWaypoints =
-                                        List.concatMap .waypoints (newTracks.prev ++ [ newTracks.current ] ++ newTracks.next)
-
                                     catStillUsed =
-                                        List.any (\w -> List.member cat w.categories) allWaypoints
+                                        List.any (\w -> List.member cat w.categories) allEffectiveWaypoints
                                 in
                                 if catStillUsed then
                                     model.filteredCategories
@@ -560,12 +647,19 @@ update msg model =
                 case model.tracks of
                     Loaded tracks ->
                         let
-                            updateCats w =
-                                if List.member trimmed w.categories then
-                                    w
+                            updateCats ew =
+                                let
+                                    currentCats =
+                                        Maybe.withDefault ew.original.categories ew.overrides.categories
+
+                                    o =
+                                        ew.overrides
+                                in
+                                if List.member trimmed currentCats then
+                                    ew
 
                                 else
-                                    { w | categories = w.categories ++ [ trimmed ] }
+                                    { ew | overrides = { o | categories = Just (currentCats ++ [ trimmed ]) } }
 
                             newFilteredCategories =
                                 if Dict.member trimmed model.filteredCategories then
@@ -579,7 +673,7 @@ update msg model =
                                 | tracks =
                                     Loaded <|
                                         Zipper.updateCurrent
-                                            (\current -> trackUpdateWaypoint current i updateCats)
+                                            (\current -> updateEditableWaypoint current i updateCats)
                                             tracks
                                 , filteredCategories = newFilteredCategories
                                 , newCategoryInputs = Dict.remove i model.newCategoryInputs
@@ -587,6 +681,28 @@ update msg model =
 
                     _ ->
                         ( model, Cmd.none )
+
+        ResetWaypoints ->
+            case model.tracks of
+                Loaded tracks ->
+                    updateModel
+                        { model
+                            | tracks =
+                                Loaded <|
+                                    Zipper.updateCurrent
+                                        (\current ->
+                                            { current
+                                                | editableWaypoints =
+                                                    List.map
+                                                        (\ew -> { ew | deleted = False, overrides = emptyOverrides })
+                                                        current.editableWaypoints
+                                            }
+                                        )
+                                        tracks
+                        }
+
+                _ ->
+                    ( model, Cmd.none )
 
         -- Elevation profile options
         UpdateFontSize size ->
@@ -657,16 +773,19 @@ update msg model =
                 ep =
                     model.elevationProfile
 
-                allWaypoints =
+                editableWps =
                     maybeFromloadableResource model.tracks
-                        |> Maybe.map (.current >> .waypoints)
+                        |> Maybe.map (.current >> .editableWaypoints)
                         |> Maybe.withDefault []
+
+                availableIndices =
+                    indexedEffectiveWaypoints editableWps |> List.map Tuple.first
             in
             case ep.splitMode of
                 SplitByWaypoints indices ->
                     let
                         firstAvailable =
-                            List.range 0 (List.length allWaypoints - 1)
+                            availableIndices
                                 |> List.filter (\i -> not (List.member i indices))
                                 |> List.head
                     in
@@ -674,7 +793,7 @@ update msg model =
                         Just idx ->
                             let
                                 newIndices =
-                                    sortWaypointIndices allWaypoints (idx :: indices)
+                                    sortWaypointIndices editableWps (idx :: indices)
                             in
                             updateModel { model | elevationProfile = { ep | splitMode = SplitByWaypoints newIndices } }
 
@@ -684,46 +803,43 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
-        UpdateSplitWaypoint pos newIdx ->
+        -- SplitByWaypoints holds a list of waypoint indices (into editableWaypoints).
+        -- splitListPos is a position within that list; newWaypointIdx is an editableWaypoints index.
+        UpdateSplitWaypoint splitListPos newWaypointIdx ->
             let
                 ep =
                     model.elevationProfile
-
-                allWaypoints =
-                    maybeFromloadableResource model.tracks
-                        |> Maybe.map (.current >> .waypoints)
-                        |> Maybe.withDefault []
             in
             case ep.splitMode of
-                SplitByWaypoints indices ->
+                SplitByWaypoints waypointIndices ->
                     let
                         newIndices =
-                            indices
-                                |> List.indexedMap
-                                    (\i idx ->
-                                        if i == pos then
-                                            newIdx
-
-                                        else
-                                            idx
+                            maybeFromloadableResource model.tracks
+                                |> Maybe.map
+                                    (.current
+                                        >> .editableWaypoints
+                                        >> (\editableWaypoints ->
+                                                List.Extra.setAt splitListPos newWaypointIdx waypointIndices
+                                                    |> sortWaypointIndices editableWaypoints
+                                           )
                                     )
-                                |> sortWaypointIndices allWaypoints
+                                |> Maybe.withDefault []
                     in
                     updateModel { model | elevationProfile = { ep | splitMode = SplitByWaypoints newIndices } }
 
                 _ ->
                     ( model, Cmd.none )
 
-        RemoveSplitWaypoint pos ->
+        RemoveSplitWaypoint splitListPos ->
             let
                 ep =
                     model.elevationProfile
             in
             case ep.splitMode of
-                SplitByWaypoints indices ->
+                SplitByWaypoints waypointIndices ->
                     let
                         newIndices =
-                            List.Extra.removeAt pos indices
+                            List.Extra.removeAt splitListPos waypointIndices
                     in
                     updateModel { model | elevationProfile = { ep | splitMode = SplitByWaypoints newIndices } }
 
@@ -808,19 +924,14 @@ requestSplitCmd model =
         Loaded tracks ->
             let
                 filteredWaypoints =
-                    filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = False } model.filteredCategories tracks.current.waypoints
-
-                track =
-                    GpxApi.Track tracks.current.trackpoints filteredWaypoints tracks.current.gainLoss
-
-                ep =
-                    model.elevationProfile
+                    effectiveWaypoints tracks.current.editableWaypoints
+                        |> filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = False } model.filteredCategories
             in
             requestSplitProfile
                 (Json.Encode.encode 0
                     (Json.Encode.object
-                        ([ ( "track", GpxApi.encodeTrack track ) ]
-                            ++ (case ep.splitMode of
+                        ([ ( "track", GpxApi.encodeTrack <| GpxApi.Track tracks.current.trackpoints filteredWaypoints tracks.current.gainLoss ) ]
+                            ++ (case model.elevationProfile.splitMode of
                                     SplitEquidistant n ->
                                         [ ( "mode", Json.Encode.string "equidistant" )
                                         , ( "count", Json.Encode.int n )
@@ -830,7 +941,18 @@ requestSplitCmd model =
                                         let
                                             distances =
                                                 indices
-                                                    |> List.filterMap (\i -> List.Extra.getAt i tracks.current.waypoints |> Maybe.map .distance)
+                                                    |> List.filterMap
+                                                        (\i ->
+                                                            List.Extra.getAt i tracks.current.editableWaypoints
+                                                                |> Maybe.andThen
+                                                                    (\ew ->
+                                                                        if ew.deleted then
+                                                                            Nothing
+
+                                                                        else
+                                                                            Just (effectiveWaypoint ew).distance
+                                                                    )
+                                                        )
                                                     |> List.sort
                                         in
                                         [ ( "mode", Json.Encode.string "waypoints" )
@@ -849,9 +971,14 @@ requestSplitCmd model =
 -- HELPERS
 
 
-trackUpdateWaypoint : GpxApi.Track -> Int -> (GpxApi.Waypoint -> GpxApi.Waypoint) -> GpxApi.Track
-trackUpdateWaypoint track i updateWaypoint =
-    { track | waypoints = List.Extra.updateAt i updateWaypoint track.waypoints }
+updateEditableWaypoint : EditableTrack -> Int -> (EditableWaypoint -> EditableWaypoint) -> EditableTrack
+updateEditableWaypoint track i fn =
+    { track | editableWaypoints = List.Extra.updateAt i fn track.editableWaypoints }
+
+
+updateOverrides : (WaypointOverrides -> WaypointOverrides) -> EditableWaypoint -> EditableWaypoint
+updateOverrides fn ew =
+    { ew | overrides = fn ew.overrides }
 
 
 lastTrackpointDistance : List GpxApi.TrackPoint -> Float
@@ -977,7 +1104,7 @@ correctWaypointSelectionInModel model =
         Just tracks ->
             let
                 allWaypoints =
-                    tracks.current.waypoints
+                    effectiveWaypoints tracks.current.editableWaypoints
 
                 filtered =
                     filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = False } model.filteredCategories allWaypoints
@@ -1215,7 +1342,7 @@ viewTabBar activeTab =
         ]
 
 
-viewTrackNavigation : Zipper GpxApi.Track -> Html Msg
+viewTrackNavigation : Zipper EditableTrack -> Html Msg
 viewTrackNavigation tracks =
     let
         hasPrev =
@@ -1252,14 +1379,11 @@ viewTrackNavigation tracks =
 -- ELEVATION PROFILE VIEW
 
 
-viewElevationProfileTab : Model -> Zipper GpxApi.Track -> Html Msg
+viewElevationProfileTab : Model -> Zipper EditableTrack -> Html Msg
 viewElevationProfileTab model tracks =
     let
         ep =
             model.elevationProfile
-
-        maxDistance =
-            Maybe.withDefault 1 <| List.maximum <| List.map .distance tracks.current.trackpoints
 
         trackMaxElevation =
             Maybe.withDefault 1 <| List.maximum <| List.map .elevation tracks.current.trackpoints
@@ -1658,21 +1782,24 @@ type Info
     | Ride Float ( Float, Float )
 
 
-viewCuesheetTab : Model -> Zipper GpxApi.Track -> Html Msg
+viewCuesheetTab : Model -> Zipper EditableTrack -> Html Msg
 viewCuesheetTab model tracks =
     let
         cs =
             model.cuesheet
+
+        currentEffectiveWaypoints =
+            effectiveWaypoints tracks.current.editableWaypoints
 
         currentFinishDistance =
             lastTrackpointDistance tracks.current.trackpoints
 
         waypointsWithStartFinish =
             if cs.showStartFinish then
-                injectStartFinish currentFinishDistance tracks.current.gainLoss tracks.current.waypoints
+                injectStartFinish currentFinishDistance tracks.current.gainLoss currentEffectiveWaypoints
 
             else
-                tracks.current.waypoints
+                currentEffectiveWaypoints
 
         filteredWaypoints =
             filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = True } model.filteredCategories waypointsWithStartFinish
@@ -1680,10 +1807,10 @@ viewCuesheetTab model tracks =
         refWaypoint =
             case cs.totalDistanceDisplay of
                 ToWaypoint idx ->
-                    List.Extra.getAt idx tracks.current.waypoints
+                    List.Extra.getAt idx currentEffectiveWaypoints
 
                 FromWaypoint idx ->
-                    List.Extra.getAt idx tracks.current.waypoints
+                    List.Extra.getAt idx currentEffectiveWaypoints
 
                 _ ->
                     Nothing
@@ -1702,42 +1829,83 @@ viewCuesheetTab model tracks =
         ]
 
 
-viewWaypointsTab : Model -> Zipper GpxApi.Track -> Html Msg
+viewWaypointsTab : Model -> Zipper EditableTrack -> Html Msg
 viewWaypointsTab model tracks =
     let
         maxDistance =
             lastTrackpointDistance tracks.current.trackpoints
 
-        allCategories =
-            Dict.keys model.filteredCategories
+        anyWaypointEdited =
+            List.any
+                (\ew -> ew.deleted || ew.overrides /= emptyOverrides)
+                tracks.current.editableWaypoints
     in
     Html.div []
-        [ Html.div []
-            (tracks.current.waypoints
-                |> filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = False } model.filteredCategories
-                |> indexedFilteredWaypoints tracks.current.waypoints
-                |> List.map
-                    (\( i, waypoint ) ->
-                        Html.div []
-                            [ Html.input
-                                [ Html.Attributes.type_ "number"
-                                , Html.Attributes.min "0"
-                                , maxDistance |> (String.fromFloat >> Html.Attributes.max)
-                                , Html.Attributes.value <| String.fromFloat waypoint.distance
-                                , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1000 >> WaypointDistanceChange i)
-                                ]
-                                []
-                            , Html.textarea
-                                [ Html.Attributes.placeholder "Waypoint name..."
-                                , Html.Attributes.value waypoint.name
-                                , Html.Events.onInput <| WaypointNameChange i
-                                ]
-                                []
-                            , viewButton [] "X" (DeleteWaypoint i)
-                            , viewWaypointCategories i waypoint.categories allCategories (Dict.get i model.newCategoryInputs |> Maybe.withDefault "")
-                            ]
+        [ if anyWaypointEdited then
+            viewButton [] "Reset Waypoints" ResetWaypoints
+
+          else
+            Html.text ""
+        , Html.div []
+            (tracks.current.editableWaypoints
+                |> List.indexedMap Tuple.pair
+                |> List.filterMap
+                    (\( i, ew ) ->
+                        if ew.deleted then
+                            Just (viewDeletedWaypoint i ew)
+
+                        else
+                            let
+                                wp =
+                                    effectiveWaypoint ew
+
+                                passesFilter =
+                                    not model.categoryFilterEnabled
+                                        || (case wp.categories of
+                                                [] ->
+                                                    Dict.get unknownCategory model.filteredCategories |> Maybe.withDefault True
+
+                                                cats ->
+                                                    List.any (\cat -> Dict.get cat model.filteredCategories |> Maybe.withDefault True) cats
+                                           )
+                            in
+                            if passesFilter then
+                                Just
+                                    (Html.div []
+                                        [ Html.input
+                                            [ Html.Attributes.type_ "number"
+                                            , Html.Attributes.min "0"
+                                            , maxDistance |> (String.fromFloat >> Html.Attributes.max)
+                                            , Html.Attributes.value <| String.fromFloat wp.distance
+                                            , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1000 >> WaypointDistanceChange i)
+                                            ]
+                                            []
+                                        , Html.textarea
+                                            [ Html.Attributes.placeholder "Waypoint name..."
+                                            , Html.Attributes.value wp.name
+                                            , Html.Events.onInput <| WaypointNameChange i
+                                            ]
+                                            []
+                                        , viewButton [] "X" (WaypointDeleted i True)
+                                        , viewWaypointCategories i wp.categories (Dict.keys model.filteredCategories) (Dict.get i model.newCategoryInputs |> Maybe.withDefault "")
+                                        ]
+                                    )
+
+                            else
+                                Nothing
                     )
             )
+        ]
+
+
+viewDeletedWaypoint : Int -> EditableWaypoint -> Html Msg
+viewDeletedWaypoint i ew =
+    Html.div
+        [ Html.Attributes.style "opacity" "0.5"
+        , Html.Attributes.style "text-decoration" "line-through"
+        ]
+        [ Html.text ew.original.name
+        , viewButton [] "Undo" (WaypointDeleted i False)
         ]
 
 
@@ -2306,17 +2474,18 @@ viewElevationProfileOptions model =
 
                 SplitByWaypoints selectedIndices ->
                     let
-                        allWaypoints =
+                        indexed =
                             maybeFromloadableResource model.tracks
-                                |> Maybe.map (.current >> .waypoints)
+                                |> Maybe.map (.current >> .editableWaypoints >> indexedEffectiveWaypoints)
                                 |> Maybe.withDefault []
 
-                        dropdownRow pos selectedIdx =
+                        -- splitListPos = position in the splits list; selectedWaypointIdx = editableWaypoints index at that position
+                        dropdownRow splitListPos selectedWaypointIdx =
                             let
-                                waypointOption idx wp =
+                                waypointOption ( waypointIdx, wp ) =
                                     Html.option
-                                        [ Html.Attributes.value (String.fromInt idx)
-                                        , Html.Attributes.selected (idx == selectedIdx)
+                                        [ Html.Attributes.value (String.fromInt waypointIdx)
+                                        , Html.Attributes.selected (waypointIdx == selectedWaypointIdx)
                                         ]
                                         [ Html.text (wp.name ++ " (" ++ formatKm 1 wp.distance ++ ")") ]
                             in
@@ -2325,13 +2494,13 @@ viewElevationProfileOptions model =
                                     [ Html.Events.onInput
                                         (\val ->
                                             String.toInt val
-                                                |> Maybe.map (UpdateSplitWaypoint pos)
+                                                |> Maybe.map (UpdateSplitWaypoint splitListPos)
                                                 |> Maybe.withDefault Ignore
                                         )
                                     ]
-                                    (List.indexedMap waypointOption allWaypoints)
+                                    (List.map waypointOption indexed)
                                 , Html.button
-                                    [ Html.Events.onClick (RemoveSplitWaypoint pos)
+                                    [ Html.Events.onClick (RemoveSplitWaypoint splitListPos)
                                     , Html.Attributes.class "button-4"
                                     ]
                                     [ Html.text "Remove" ]
@@ -2341,7 +2510,7 @@ viewElevationProfileOptions model =
                         ++ [ Html.button
                                 [ Html.Events.onClick AddSplitWaypoint
                                 , Html.Attributes.class "button-4"
-                                , Html.Attributes.disabled (List.length selectedIndices >= List.length allWaypoints)
+                                , Html.Attributes.disabled (List.length selectedIndices >= List.length indexed)
                                 ]
                                 [ Html.text "Add" ]
                            ]
@@ -2390,25 +2559,33 @@ viewCuesheetOptionsPanel model =
         maybeTracks =
             maybeFromloadableResource model.tracks
 
-        allWaypoints =
-            maybeTracks |> Maybe.map (\ts -> ts.current.waypoints) |> Maybe.withDefault []
-
         filteredWps =
             maybeTracks
                 |> Maybe.map
                     (\ts ->
+                        let
+                            currentEffective =
+                                effectiveWaypoints ts.current.editableWaypoints
+                        in
                         (if cs.showStartFinish then
-                            injectStartFinish (lastTrackpointDistance ts.current.trackpoints) ts.current.gainLoss ts.current.waypoints
+                            injectStartFinish (lastTrackpointDistance ts.current.trackpoints) ts.current.gainLoss currentEffective
 
                          else
-                            ts.current.waypoints
+                            currentEffective
                         )
                             |> filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = True } model.filteredCategories
                     )
                 |> Maybe.withDefault []
 
         indexedFiltered =
-            indexedFilteredWaypoints allWaypoints filteredWps
+            maybeTracks
+                |> Maybe.map
+                    (.current
+                        >> .editableWaypoints
+                        >> effectiveWaypoints
+                        >> (\waypoints -> indexedFilteredWaypoints waypoints filteredWps)
+                    )
+                |> Maybe.withDefault []
 
         parseModeDropdown maybeStr =
             case maybeStr of
@@ -2739,6 +2916,52 @@ formatTab tab =
 -- ENCODE/DECODE STATE
 
 
+encodeEditableTrack : EditableTrack -> Json.Encode.Value
+encodeEditableTrack track =
+    Json.Encode.object
+        [ ( "trackpoints", GpxApi.encodeTrackpoints track.trackpoints )
+        , ( "editableWaypoints", Json.Encode.list encodeEditableWaypoint track.editableWaypoints )
+        , ( "gain", Json.Encode.float (Tuple.first track.gainLoss) )
+        , ( "loss", Json.Encode.float (Tuple.second track.gainLoss) )
+        ]
+
+
+encodeEditableWaypoint : EditableWaypoint -> Json.Encode.Value
+encodeEditableWaypoint ew =
+    Json.Encode.object
+        (List.filterMap identity
+            [ Just ( "original", GpxApi.encodeWaypoint ew.original )
+            , Just ( "deleted", Json.Encode.bool ew.deleted )
+            , ew.overrides.name |> Maybe.map (\n -> ( "name", Json.Encode.string n ))
+            , ew.overrides.distance |> Maybe.map (\d -> ( "distance", Json.Encode.float d ))
+            , ew.overrides.categories |> Maybe.map (\cats -> ( "categories", Json.Encode.list Json.Encode.string cats ))
+            ]
+        )
+
+
+editableTrackDecoder : Json.Decode.Decoder EditableTrack
+editableTrackDecoder =
+    Json.Decode.map3 EditableTrack
+        (Json.Decode.field "trackpoints" GpxApi.decodeTrackpoints)
+        (Json.Decode.field "editableWaypoints" (Json.Decode.list editableWaypointDecoder))
+        (Json.Decode.map2 Tuple.pair
+            (Json.Decode.field "gain" Json.Decode.float)
+            (Json.Decode.field "loss" Json.Decode.float)
+        )
+
+
+editableWaypointDecoder : Json.Decode.Decoder EditableWaypoint
+editableWaypointDecoder =
+    Json.Decode.map3 EditableWaypoint
+        (Json.Decode.field "original" GpxApi.decodeWaypoint)
+        (Json.Decode.field "deleted" Json.Decode.bool)
+        (Json.Decode.map3 WaypointOverrides
+            (Json.Decode.maybe (Json.Decode.field "name" Json.Decode.string))
+            (Json.Decode.maybe (Json.Decode.field "distance" Json.Decode.float))
+            (Json.Decode.maybe (Json.Decode.field "categories" (Json.Decode.list Json.Decode.string)))
+        )
+
+
 encodeSavedState : Model -> String
 encodeSavedState model =
     let
@@ -2751,7 +2974,7 @@ encodeSavedState model =
     Json.Encode.object
         (List.filterMap
             identity
-            [ maybeFromloadableResource model.tracks |> Maybe.map (\tracks -> ( "tracks", Zipper.encode GpxApi.encodeTrack tracks ))
+            [ maybeFromloadableResource model.tracks |> Maybe.map (\tracks -> ( "tracks", Zipper.encode encodeEditableTrack tracks ))
             , Just ( "activeTab", Json.Encode.string (formatTab model.activeTab) )
             , Just ( "showOptions", Json.Encode.bool model.showOptions )
             , Just ( "trackingIntervalSec", Json.Encode.int model.trackingIntervalSec )
@@ -2852,7 +3075,7 @@ modelDecoder =
             , splitSegments = Nothing
             }
         )
-        |> andMap (maybeField "tracks" (Zipper.decoder GpxApi.decodeTrack))
+        |> andMap (maybeField "tracks" (Zipper.decoder editableTrackDecoder))
         |> andMap (maybeField "activeTab" Json.Decode.string)
         |> andMap (maybeField "showOptions" Json.Decode.bool)
         |> andMap (maybeField "trackingIntervalSec" Json.Decode.int)

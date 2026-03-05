@@ -6,10 +6,11 @@ module GpxApi exposing
     , decodeElevationProfileDataResponse
     , decodeResult
     , decodeSplitResult
-    , decodeTrack
     , decodeTrackpoints
-    , decodeWaypoints
+    , decodeWaypoint
     , encodeTrack
+    , encodeTrackpoints
+    , encodeWaypoint
     )
 
 import Json.Decode
@@ -55,7 +56,7 @@ decodeTrack : Json.Decode.Decoder Track
 decodeTrack =
     Json.Decode.map3 Track
         (Json.Decode.field "track" decodeTrackpoints)
-        (Json.Decode.field "waypoints" (Json.Decode.oneOf [ decodeWaypoints, Json.Decode.null [] ]))
+        (Json.Decode.field "waypoints" (Json.Decode.oneOf [ Json.Decode.list decodeWaypoint, Json.Decode.null [] ]))
         (Json.Decode.map2 Tuple.pair
             (Json.Decode.field "gain" Json.Decode.float)
             (Json.Decode.field "loss" Json.Decode.float)
@@ -75,16 +76,14 @@ decodeTrackpoints =
         )
 
 
-decodeWaypoints : Json.Decode.Decoder (List Waypoint)
-decodeWaypoints =
-    Json.Decode.list
-        (Json.Decode.map5 Waypoint
-            (Json.Decode.field "dist" Json.Decode.float)
-            (Json.Decode.field "name" Json.Decode.string)
-            (Json.Decode.field "categories" <| jsonDecodeNullableList Json.Decode.string)
-            (Json.Decode.oneOf [ Json.Decode.field "gain" Json.Decode.float, Json.Decode.succeed 0 ])
-            (Json.Decode.oneOf [ Json.Decode.field "loss" Json.Decode.float, Json.Decode.succeed 0 ])
-        )
+decodeWaypoint : Json.Decode.Decoder Waypoint
+decodeWaypoint =
+    Json.Decode.map5 Waypoint
+        (Json.Decode.field "dist" Json.Decode.float)
+        (Json.Decode.field "name" Json.Decode.string)
+        (Json.Decode.field "categories" <| jsonDecodeNullableList Json.Decode.string)
+        (Json.Decode.oneOf [ Json.Decode.field "gain" Json.Decode.float, Json.Decode.succeed 0 ])
+        (Json.Decode.oneOf [ Json.Decode.field "loss" Json.Decode.float, Json.Decode.succeed 0 ])
 
 
 decodeResult : Json.Decode.Decoder a -> Json.Decode.Decoder (Result String a)
@@ -108,7 +107,7 @@ encodeTrack : Track -> Json.Encode.Value
 encodeTrack track =
     Json.Encode.object
         [ ( "track", encodeTrackpoints track.trackpoints )
-        , ( "waypoints", encodeWaypoints track.waypoints )
+        , ( "waypoints", Json.Encode.list encodeWaypoint track.waypoints )
         , ( "gain", Json.Encode.float (Tuple.first track.gainLoss) )
         , ( "loss", Json.Encode.float (Tuple.second track.gainLoss) )
         ]
@@ -129,18 +128,15 @@ encodeTrackpoints =
         )
 
 
-encodeWaypoints : List Waypoint -> Json.Encode.Value
-encodeWaypoints =
-    Json.Encode.list
-        (\waypoint ->
-            Json.Encode.object
-                [ ( "dist", Json.Encode.float waypoint.distance )
-                , ( "name", Json.Encode.string waypoint.name )
-                , ( "categories", Json.Encode.list Json.Encode.string waypoint.categories )
-                , ( "gain", Json.Encode.float waypoint.gain )
-                , ( "loss", Json.Encode.float waypoint.loss )
-                ]
-        )
+encodeWaypoint : Waypoint -> Json.Encode.Value
+encodeWaypoint waypoint =
+    Json.Encode.object
+        [ ( "dist", Json.Encode.float waypoint.distance )
+        , ( "name", Json.Encode.string waypoint.name )
+        , ( "categories", Json.Encode.list Json.Encode.string waypoint.categories )
+        , ( "gain", Json.Encode.float waypoint.gain )
+        , ( "loss", Json.Encode.float waypoint.loss )
+        ]
 
 
 
