@@ -1433,15 +1433,24 @@ viewElevationProfileTab model tracks =
                                         fullIntensity
                                             |> List.filter (\pt -> pt.distance >= segStart && pt.distance <= segEnd)
                                             |> List.map (\pt -> { pt | distance = pt.distance - segStart })
+                                            |> downsample (profileSvgWidth // 5)
+
+                                    downsampledSeg =
+                                        { seg | trackpoints = downsample profileSvgWidth seg.trackpoints }
                                 in
-                                profile segIndex seg segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.waypointStrokeColor segPosition segIntensity
+                                profile segIndex downsampledSeg seg.trackpoints segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.waypointStrokeColor segPosition segIntensity
                             )
             in
             Html.div [] profileViews
 
 
-profile : Int -> GpxApi.Track -> Float -> Float -> Float -> Float -> Int -> Float -> String -> Maybe Float -> List { distance : Float, intensity : Float } -> Html Msg
-profile segmentIndex track maxDistance minElevation maxElevation fontSize trackHeight trackThickness waypointStrokeColor maybePosition intensityPoints =
+profileSvgWidth : Int
+profileSvgWidth =
+    500
+
+
+profile : Int -> GpxApi.Track -> List GpxApi.TrackPoint -> Float -> Float -> Float -> Float -> Int -> Float -> String -> Maybe Float -> List { distance : Float, intensity : Float } -> Html Msg
+profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation fontSize trackHeight trackThickness waypointStrokeColor maybePosition intensityPoints =
     let
         waypointTextHeight =
             100
@@ -1449,13 +1458,10 @@ profile segmentIndex track maxDistance minElevation maxElevation fontSize trackH
         svgHeight =
             trackHeight + waypointTextHeight
 
-        svgWidth =
-            500
-
         calc =
             xyCalculator
                 { svgHeight = toFloat trackHeight
-                , svgWidth = toFloat svgWidth
+                , svgWidth = toFloat profileSvgWidth
                 , maxDistance = maxDistance
                 , minElevation = minElevation
                 , maxElevation = maxElevation
@@ -1476,14 +1482,14 @@ profile segmentIndex track maxDistance minElevation maxElevation fontSize trackH
             ]
             [ Html.text <| formatKm 1 maxDistance ++ " " ++ formatEleGainLoss gain loss ]
         , Svg.svg
-            [ Svg.Attributes.viewBox <| "-5 -5 " ++ String.fromInt (svgWidth + 10) ++ " " ++ (String.fromInt <| svgHeight + 10)
+            [ Svg.Attributes.viewBox <| "-5 -5 " ++ String.fromInt (profileSvgWidth + 10) ++ " " ++ (String.fromInt <| svgHeight + 10)
             ]
             [ -- intensity shading
               if List.isEmpty intensityPoints then
                 Svg.g [] []
 
               else
-                renderIntensityShading segmentIndex (toFloat svgWidth) maxDistance (toFloat trackHeight) intensityPoints
+                renderIntensityShading segmentIndex (toFloat profileSvgWidth) maxDistance (toFloat trackHeight) intensityPoints
             , -- waypoints
               Svg.g []
                 (let
@@ -1501,7 +1507,7 @@ profile segmentIndex track maxDistance minElevation maxElevation fontSize trackH
                                     calc.x waypoint.distance
 
                                 y =
-                                    calc.y <| interpolateWaypointElevation track.trackpoints waypoint.distance - 5
+                                    calc.y <| interpolateWaypointElevation fullTrackpoints waypoint.distance - 5
                             in
                             [ Svg.line
                                 [ Svg.Attributes.x1 <| x
@@ -1531,7 +1537,7 @@ profile segmentIndex track maxDistance minElevation maxElevation fontSize trackH
                             calc.x posDistance
 
                         yPos =
-                            calc.y (interpolateWaypointElevation track.trackpoints posDistance)
+                            calc.y (interpolateWaypointElevation fullTrackpoints posDistance)
                     in
                     Svg.g []
                         [ Svg.line
@@ -1558,9 +1564,9 @@ profile segmentIndex track maxDistance minElevation maxElevation fontSize trackH
             , -- track border
               Svg.g []
                 ([ ( ( 0, 0 ), ( trackHeight, 0 ) )
-                 , ( ( 0, 0 ), ( 0, svgWidth ) )
-                 , ( ( trackHeight, svgWidth ), ( trackHeight, 0 ) )
-                 , ( ( trackHeight, svgWidth ), ( 0, svgWidth ) )
+                 , ( ( 0, 0 ), ( 0, profileSvgWidth ) )
+                 , ( ( trackHeight, profileSvgWidth ), ( trackHeight, 0 ) )
+                 , ( ( trackHeight, profileSvgWidth ), ( 0, profileSvgWidth ) )
                  ]
                     |> List.map
                         (\( ( y1, x1 ), ( y2, x2 ) ) ->
@@ -1577,6 +1583,44 @@ profile segmentIndex track maxDistance minElevation maxElevation fontSize trackH
                 )
             ]
         ]
+
+
+downsample : Int -> List a -> List a
+downsample maxPoints list =
+    let
+        len =
+            List.length list
+    in
+    if len <= maxPoints then
+        list
+
+    else
+        let
+            stride =
+                toFloat (len - 1) / toFloat (maxPoints - 1)
+
+            keepIndices =
+                List.range 0 (maxPoints - 1)
+                    |> List.map (\i -> round (toFloat i * stride))
+                    |> List.sort
+        in
+        list
+            |> List.indexedMap Tuple.pair
+            |> List.foldl
+                (\( idx, item ) ( remaining, result ) ->
+                    case remaining of
+                        [] ->
+                            ( remaining, result )
+
+                        keepIdx :: restKeep ->
+                            if idx == keepIdx then
+                                ( restKeep, item :: result )
+
+                            else
+                                ( remaining, result )
+                )
+                ( keepIndices, [] )
+            |> (\( _, result ) -> List.reverse result)
 
 
 interpolateWaypointElevation : List GpxApi.TrackPoint -> Float -> Float
