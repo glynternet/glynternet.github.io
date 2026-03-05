@@ -79,6 +79,11 @@ type alias Model =
     , elevationProfile : ElevationProfileOptions
     , cuesheet : CuesheetOptions
 
+    -- Off-route
+    , offRouteThreshold : Float
+    , showOffRouteWaypoints : Bool
+    , showOffRouteDistance : Bool
+
     -- Transient (never persisted)
     , stateDecodeError : Maybe String
     , splitSegments : Maybe GpxApi.SplitResult
@@ -138,6 +143,7 @@ effectiveWaypoint ew =
     , categories = Maybe.withDefault ew.original.categories ew.overrides.categories
     , gain = ew.original.gain
     , loss = ew.original.loss
+    , offRoute = ew.original.offRoute
     }
 
 
@@ -259,6 +265,9 @@ defaultModel =
     , newCategoryInputs = Dict.empty
     , elevationProfile = defaultElevationProfileOptions
     , cuesheet = defaultCuesheetOptions
+    , offRouteThreshold = 100
+    , showOffRouteWaypoints = True
+    , showOffRouteDistance = False
     , stateDecodeError = Nothing
     , splitSegments = Nothing
     }
@@ -346,7 +355,10 @@ type Msg
     | UpdateItemSpacing Int
     | UpdateDistanceDetail Int
     | UpdateShowStartFinish Bool
+    | UpdateShowOffRouteDistance Bool
     | UpdateSelectedWaypoint Int
+    | UpdateOffRouteThreshold Float
+    | UpdateShowOffRouteWaypoints Bool
 
 
 
@@ -918,6 +930,9 @@ update msg model =
             in
             updateModel { model | cuesheet = { cs | showStartFinish = show } }
 
+        UpdateShowOffRouteDistance show ->
+            updateModel { model | showOffRouteDistance = show }
+
         UpdateSelectedWaypoint idx ->
             let
                 cs =
@@ -935,6 +950,12 @@ update msg model =
                             other
             in
             updateModel { model | cuesheet = { cs | totalDistanceDisplay = newDisplay } }
+
+        UpdateOffRouteThreshold threshold ->
+            updateModel { model | offRouteThreshold = threshold }
+
+        UpdateShowOffRouteWaypoints show ->
+            updateModel { model | showOffRouteWaypoints = show }
 
 
 updateModel : Model -> ( Model, Cmd Msg )
@@ -963,7 +984,7 @@ requestSplitCmdWasm model =
             let
                 filteredWaypoints =
                     effectiveWaypoints tracks.current.editableWaypoints
-                        |> filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = False } model.filteredCategories
+                        |> filterWaypoints (waypointPredicates model)
             in
             requestSplitProfile
                 (Json.Encode.encode 0
@@ -1036,7 +1057,7 @@ computeLiveSplitFromModel model =
 
                 segWps =
                     effectiveWaypoints tracks.current.editableWaypoints
-                        |> filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = False } model.filteredCategories
+                        |> filterWaypoints (waypointPredicates model)
                         |> List.filter (\wp -> wp.distance >= rangeStart && wp.distance <= rangeEnd)
 
                 shift record =
@@ -1133,41 +1154,57 @@ initialFilteredCategories =
            )
 
 
-filterWaypointsByCategory : { filterEnabled : Bool, trimCategories : Bool } -> Dict.Dict String Bool -> List GpxApi.Waypoint -> List GpxApi.Waypoint
-filterWaypointsByCategory opts categories waypoints =
-    if not opts.filterEnabled then
-        waypoints
+filterWaypoints : List (GpxApi.Waypoint -> Bool) -> List GpxApi.Waypoint -> List GpxApi.Waypoint
+filterWaypoints filters =
+    List.filter (\waypoint -> List.all (\filter -> filter waypoint) filters)
 
-    else
-        List.filterMap
-            (\w ->
-                let
-                    includeCategory cat =
-                        Dict.get cat categories |> Maybe.withDefault True
-                in
-                case w.categories of
-                    [] ->
-                        if includeCategory unknownCategory then
-                            Just w
 
-                        else
-                            Nothing
+waypointPredicates : Model -> List (GpxApi.Waypoint -> Bool)
+waypointPredicates model =
+    List.filterMap identity
+        [ if model.categoryFilterEnabled then
+            Just (categoryPredicate model.filteredCategories)
 
-                    cats ->
-                        let
-                            matching =
-                                List.filter includeCategory cats
-                        in
-                        if List.isEmpty matching then
-                            Nothing
+          else
+            Nothing
+        , if model.showOffRouteWaypoints then
+            Nothing
 
-                        else if opts.trimCategories then
-                            Just { w | categories = matching }
+          else
+            Just (offRoutePredicate model.offRouteThreshold)
+        ]
 
-                        else
-                            Just w
-            )
-            waypoints
+
+categoryPredicate : Dict.Dict String Bool -> GpxApi.Waypoint -> Bool
+categoryPredicate categories w =
+    let
+        includeCategory cat =
+            Dict.get cat categories |> Maybe.withDefault True
+    in
+    case w.categories of
+        [] ->
+            includeCategory unknownCategory
+
+        cats ->
+            List.any includeCategory cats
+
+
+trimWaypointCategories : Dict.Dict String Bool -> List GpxApi.Waypoint -> List GpxApi.Waypoint
+trimWaypointCategories categories =
+    List.map
+        (\w ->
+            case w.categories of
+                [] ->
+                    w
+
+                cats ->
+                    { w | categories = List.filter (\cat -> Dict.get cat categories |> Maybe.withDefault True) cats }
+        )
+
+
+offRoutePredicate : Float -> GpxApi.Waypoint -> Bool
+offRoutePredicate threshold w =
+    w.offRoute <= threshold
 
 
 indexedFilteredWaypoints : List GpxApi.Waypoint -> List GpxApi.Waypoint -> List ( Int, GpxApi.Waypoint )
@@ -1220,7 +1257,7 @@ correctWaypointSelectionInModel model =
                     effectiveWaypoints tracks.current.editableWaypoints
 
                 filtered =
-                    filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = False } model.filteredCategories allWaypoints
+                    filterWaypoints (waypointPredicates model) allWaypoints
 
                 indexed =
                     indexedFilteredWaypoints allWaypoints filtered
@@ -1255,13 +1292,13 @@ injectStartFinish finishDist ( totalGain, totalLoss ) waypoints =
                 waypoints
 
             else
-                GpxApi.Waypoint 0 "Start" [ startFinishCategory ] 0 0 :: waypoints
+                GpxApi.Waypoint 0 "Start" [ startFinishCategory ] 0 0 0 :: waypoints
     in
     if hasWaypointAtDistance finishDist then
         withStart
 
     else
-        withStart ++ [ GpxApi.Waypoint finishDist "Finish" [ startFinishCategory ] totalGain totalLoss ]
+        withStart ++ [ GpxApi.Waypoint finishDist "Finish" [ startFinishCategory ] totalGain totalLoss 0 ]
 
 
 
@@ -1557,7 +1594,7 @@ viewElevationProfileTab model tracks =
                                     downsampledSeg =
                                         { seg | trackpoints = downsample profileSvgWidth seg.trackpoints }
                                 in
-                                profile segIndex downsampledSeg seg.trackpoints segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.waypointStrokeColor segPosition segIntensity trackMinIntensity trackMaxIntensity
+                                profile segIndex downsampledSeg seg.trackpoints segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.waypointStrokeColor model.offRouteThreshold segPosition segIntensity trackMinIntensity trackMaxIntensity
                             )
             in
             Html.div [] profileViews
@@ -1600,8 +1637,8 @@ elevationTicks minElev maxElev =
     buildTicks firstTick []
 
 
-profile : Int -> GpxApi.Track -> List GpxApi.TrackPoint -> Float -> Float -> Float -> Float -> Int -> Float -> String -> Maybe Float -> List { distance : Float, intensity : Float } -> Float -> Float -> Html Msg
-profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation fontSize trackHeight trackThickness waypointStrokeColor maybePosition intensityPoints minIntensity maxIntensity =
+profile : Int -> GpxApi.Track -> List GpxApi.TrackPoint -> Float -> Float -> Float -> Float -> Int -> Float -> String -> Float -> Maybe Float -> List { distance : Float, intensity : Float } -> Float -> Float -> Html Msg
+profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation fontSize trackHeight trackThickness waypointStrokeColor offRouteThreshold maybePosition intensityPoints minIntensity maxIntensity =
     let
         waypointTextHeight =
             100
@@ -1689,21 +1726,38 @@ profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation
 
                                 y =
                                     calc.y <| interpolateWaypointElevation fullTrackpoints waypoint.distance - 5
+
+                                isOffRoute =
+                                    waypoint.offRoute > offRouteThreshold
+
+                                strokeColor =
+                                    if isOffRoute then
+                                        "orange"
+
+                                    else
+                                        waypointStrokeColor
                             in
                             [ Svg.line
                                 [ Svg.Attributes.x1 <| x
                                 , Svg.Attributes.y1 <| svgBottom
                                 , Svg.Attributes.x2 <| x
                                 , Svg.Attributes.y2 <| y
-                                , Svg.Attributes.stroke waypointStrokeColor
+                                , Svg.Attributes.stroke strokeColor
                                 , Svg.Attributes.strokeWidth "1"
                                 ]
                                 []
                             , Svg.text_
-                                [ Svg.Attributes.fontSize <| String.fromFloat fontSize
-                                , Svg.Attributes.dominantBaseline "text-top"
-                                , Svg.Attributes.transform <| "translate(" ++ x ++ ", " ++ paddedWaypointTextY ++ ") rotate(90)"
-                                ]
+                                ([ Svg.Attributes.fontSize <| String.fromFloat fontSize
+                                 , Svg.Attributes.dominantBaseline "text-top"
+                                 , Svg.Attributes.transform <| "translate(" ++ x ++ ", " ++ paddedWaypointTextY ++ ") rotate(90)"
+                                 ]
+                                    ++ (if isOffRoute then
+                                            [ Svg.Attributes.fill "orange" ]
+
+                                        else
+                                            []
+                                       )
+                                )
                                 [ Svg.text waypoint.name ]
                             ]
                         )
@@ -2031,7 +2085,8 @@ viewCuesheetTab model tracks =
                 currentEffectiveWaypoints
 
         filteredWaypoints =
-            filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = True } model.filteredCategories waypointsWithStartFinish
+            filterWaypoints (waypointPredicates model) waypointsWithStartFinish
+                |> trimWaypointCategories model.filteredCategories
 
         refWaypoint =
             case cs.totalDistanceDisplay of
@@ -2054,7 +2109,7 @@ viewCuesheetTab model tracks =
                         |> Result.withDefault ( 0, 0 )
     in
     Html.div []
-        [ cuesheetSvg filteredWaypoints cs currentFinishDistance refPointEle refWaypoint
+        [ cuesheetSvg model.offRouteThreshold model.showOffRouteDistance filteredWaypoints cs currentFinishDistance refPointEle refWaypoint
         ]
 
 
@@ -2087,18 +2142,8 @@ viewWaypointsTab model tracks =
                             let
                                 wp =
                                     effectiveWaypoint ew
-
-                                passesFilter =
-                                    not model.categoryFilterEnabled
-                                        || (case wp.categories of
-                                                [] ->
-                                                    Dict.get unknownCategory model.filteredCategories |> Maybe.withDefault True
-
-                                                cats ->
-                                                    List.any (\cat -> Dict.get cat model.filteredCategories |> Maybe.withDefault True) cats
-                                           )
                             in
-                            if passesFilter then
+                            if List.all (\f -> f wp) (waypointPredicates model) then
                                 Just
                                     (Html.div []
                                         [ Html.input
@@ -2169,8 +2214,8 @@ viewWaypointCategories idx waypointCategories allCategories newCatInput =
         ]
 
 
-cuesheetSvg : List GpxApi.Waypoint -> CuesheetOptions -> Float -> ( Float, Float ) -> Maybe GpxApi.Waypoint -> Html Msg
-cuesheetSvg waypoints cs finishDist refPointEle refWaypoint =
+cuesheetSvg : Float -> Bool -> List GpxApi.Waypoint -> CuesheetOptions -> Float -> ( Float, Float ) -> Maybe GpxApi.Waypoint -> Html Msg
+cuesheetSvg offRouteThreshold showOffRouteDistance waypoints cs finishDist refPointEle refWaypoint =
     let
         info =
             waypointInfos cs.position waypoints
@@ -2269,6 +2314,12 @@ cuesheetSvg waypoints cs finishDist refPointEle refWaypoint =
                                                                 (waypoint.loss - rw.loss)
                                                         )
 
+                                    isOffRoute =
+                                        waypoint.offRoute > offRouteThreshold
+
+                                    offRouteLabel =
+                                        String.fromInt (round waypoint.offRoute) ++ "m off"
+
                                     waypointInfo =
                                         List.filterMap identity
                                             [ waypointDistance
@@ -2279,6 +2330,14 @@ cuesheetSvg waypoints cs finishDist refPointEle refWaypoint =
 
                                                 cats ->
                                                     Just <| String.join ", " cats
+                                            , if isOffRoute then
+                                                Just <| "⚠ " ++ offRouteLabel
+
+                                              else if showOffRouteDistance && waypoint.offRoute > 0 then
+                                                Just offRouteLabel
+
+                                              else
+                                                Nothing
                                             ]
 
                                     waypointInfoLines =
@@ -2290,10 +2349,17 @@ cuesheetSvg waypoints cs finishDist refPointEle refWaypoint =
                                 in
                                 Svg.g [ translate ]
                                     (Svg.text_
-                                        [ Svg.Attributes.x (String.fromInt <| svgContentLeftStart + 10)
-                                        , Svg.Attributes.dominantBaseline "middle"
-                                        , Svg.Attributes.y <| String.fromInt (cs.itemSpacing // 2)
-                                        ]
+                                        ([ Svg.Attributes.x (String.fromInt <| svgContentLeftStart + 10)
+                                         , Svg.Attributes.dominantBaseline "middle"
+                                         , Svg.Attributes.y <| String.fromInt (cs.itemSpacing // 2)
+                                         ]
+                                            ++ (if isOffRoute then
+                                                    [ Svg.Attributes.fill "orange" ]
+
+                                                else
+                                                    []
+                                               )
+                                        )
                                         [ Svg.text waypoint.name ]
                                         :: (waypointInfoLines
                                                 |> List.indexedMap
@@ -2573,6 +2639,19 @@ viewCategoryFilterOptions model =
                     []
                )
         )
+    , optionGroup ("Off-route threshold: " ++ String.fromInt (round model.offRouteThreshold) ++ "m")
+        [ Html.input
+            [ Html.Attributes.type_ "range"
+            , Html.Attributes.min "0"
+            , Html.Attributes.max "1000"
+            , Html.Attributes.step "10"
+            , Html.Attributes.value <| String.fromFloat model.offRouteThreshold
+            , Html.Events.onInput (String.toFloat >> Maybe.withDefault 100 >> UpdateOffRouteThreshold)
+            ]
+            []
+        , checkbox model.showOffRouteWaypoints (UpdateShowOffRouteWaypoints (not model.showOffRouteWaypoints)) "Show off-route waypoints"
+        , checkbox model.showOffRouteDistance (UpdateShowOffRouteDistance (not model.showOffRouteDistance)) "Show off-route distance"
+        ]
     , Html.hr [] []
     ]
 
@@ -2828,7 +2907,8 @@ viewCuesheetOptionsPanel model =
                          else
                             currentEffective
                         )
-                            |> filterWaypointsByCategory { filterEnabled = model.categoryFilterEnabled, trimCategories = True } model.filteredCategories
+                            |> filterWaypoints (waypointPredicates model)
+                            |> trimWaypointCategories model.filteredCategories
                     )
                 |> Maybe.withDefault []
 
@@ -3265,6 +3345,9 @@ encodeSavedState model =
             , Just ( "itemSpacing", Json.Encode.int cs.itemSpacing )
             , Just ( "distanceDetail", Json.Encode.int cs.distanceDetail )
             , Just ( "showStartFinish", Json.Encode.bool cs.showStartFinish )
+            , Just ( "offRouteThreshold", Json.Encode.float model.offRouteThreshold )
+            , Just ( "showOffRouteWaypoints", Json.Encode.bool model.showOffRouteWaypoints )
+            , Just ( "showOffRouteDistance", Json.Encode.bool model.showOffRouteDistance )
             ]
         )
         |> Json.Encode.encode 0
@@ -3286,7 +3369,7 @@ modelDecoder =
             defaultCuesheetOptions
     in
     Json.Decode.succeed
-        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness waypointStrokeColor showIntensity intensityTau manualPosition splitMode splitEquidistantCount splitWaypointIndices liveLookahead liveLookbehind totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish ->
+        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness waypointStrokeColor showIntensity intensityTau manualPosition splitMode splitEquidistantCount splitWaypointIndices liveLookahead liveLookbehind totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints ->
             { tracks = loadableResourceFromMaybe tracks
             , showOptions = showOptions |> Maybe.withDefault def.showOptions
             , activeTab = activeTab |> Maybe.andThen parseTab |> Maybe.withDefault def.activeTab
@@ -3297,6 +3380,9 @@ modelDecoder =
             , categoryFilterEnabled = categoryFilterEnabled |> Maybe.withDefault def.categoryFilterEnabled
             , filteredCategories = filteredCategories |> Maybe.withDefault def.filteredCategories
             , newCategoryInputs = Dict.empty
+            , offRouteThreshold = offRouteThreshold |> Maybe.withDefault def.offRouteThreshold
+            , showOffRouteWaypoints = showOffRouteWaypoints |> Maybe.withDefault def.showOffRouteWaypoints
+            , showOffRouteDistance = showOffRouteDistance |> Maybe.withDefault def.showOffRouteDistance
             , elevationProfile =
                 { fontSize = fontSize |> Maybe.withDefault defEp.fontSize
                 , trackHeight = trackHeight |> Maybe.withDefault defEp.trackHeight
@@ -3355,6 +3441,9 @@ modelDecoder =
         |> andMap (maybeField "itemSpacing" Json.Decode.int)
         |> andMap (maybeField "distanceDetail" Json.Decode.int)
         |> andMap (maybeField "showStartFinish" Json.Decode.bool)
+        |> andMap (maybeField "showOffRouteDistance" Json.Decode.bool)
+        |> andMap (maybeField "offRouteThreshold" Json.Decode.float)
+        |> andMap (maybeField "showOffRouteWaypoints" Json.Decode.bool)
 
 
 andMap : Json.Decode.Decoder a -> Json.Decode.Decoder (a -> b) -> Json.Decode.Decoder b

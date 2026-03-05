@@ -40,6 +40,7 @@ type alias Waypoint =
     , categories : List String
     , gain : Float
     , loss : Float
+    , offRoute : Float
     }
 
 
@@ -78,12 +79,15 @@ decodeTrackpoints =
 
 decodeWaypoint : Json.Decode.Decoder Waypoint
 decodeWaypoint =
-    Json.Decode.map5 Waypoint
-        (Json.Decode.field "dist" Json.Decode.float)
-        (Json.Decode.field "name" Json.Decode.string)
-        (Json.Decode.field "categories" <| jsonDecodeNullableList Json.Decode.string)
-        (Json.Decode.oneOf [ Json.Decode.field "gain" Json.Decode.float, Json.Decode.succeed 0 ])
-        (Json.Decode.oneOf [ Json.Decode.field "loss" Json.Decode.float, Json.Decode.succeed 0 ])
+    Json.Decode.map2 (\f offRoute -> f offRoute)
+        (Json.Decode.map5 Waypoint
+            (Json.Decode.field "dist" Json.Decode.float)
+            (Json.Decode.field "name" Json.Decode.string)
+            (Json.Decode.field "categories" <| jsonDecodeNullableList Json.Decode.string)
+            (Json.Decode.oneOf [ Json.Decode.field "gain" Json.Decode.float, Json.Decode.succeed 0 ])
+            (Json.Decode.oneOf [ Json.Decode.field "loss" Json.Decode.float, Json.Decode.succeed 0 ])
+        )
+        (Json.Decode.field "offRoute" Json.Decode.float)
 
 
 decodeResult : Json.Decode.Decoder a -> Json.Decode.Decoder (Result String a)
@@ -136,6 +140,7 @@ encodeWaypoint waypoint =
         , ( "categories", Json.Encode.list Json.Encode.string waypoint.categories )
         , ( "gain", Json.Encode.float waypoint.gain )
         , ( "loss", Json.Encode.float waypoint.loss )
+        , ( "offRoute", Json.Encode.float waypoint.offRoute )
         ]
 
 
