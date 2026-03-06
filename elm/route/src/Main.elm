@@ -10,6 +10,7 @@ import GpxApi
 import Html exposing (Attribute, Html)
 import Html.Attributes
 import Html.Events
+import Http
 import Json.Decode
 import Json.Encode
 import List.Extra
@@ -274,28 +275,56 @@ defaultModel =
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
-init maybeState _ _ =
-    case maybeState of
+init maybeState url _ =
+    case extractQueryParam "state" url of
+        Just stateUrl ->
+            ( defaultModel, Http.get { url = stateUrl, expect = Http.expectString StateUrlFetched } )
+
         Nothing ->
-            ( defaultModel, Cmd.none )
+            case maybeState of
+                Nothing ->
+                    ( defaultModel, Cmd.none )
 
-        Just stateValue ->
-            case Json.Decode.decodeValue modelDecoder stateValue of
-                Ok decoded ->
-                    let
-                        model =
-                            withLiveSplit decoded
-                    in
-                    ( model, requestSplitCmd model )
+                Just stateValue ->
+                    case Json.Decode.decodeValue modelDecoder stateValue of
+                        Ok decoded ->
+                            let
+                                model =
+                                    withLiveSplit decoded
+                            in
+                            ( model, requestSplitCmd model )
 
-                Err err ->
-                    let
-                        errorMsg =
-                            Json.Decode.errorToString err
-                    in
-                    ( { defaultModel | stateDecodeError = Just errorMsg }
-                    , logError ("Failed to decode stored state: " ++ errorMsg)
-                    )
+                        Err err ->
+                            let
+                                errorMsg =
+                                    Json.Decode.errorToString err
+                            in
+                            ( { defaultModel | stateDecodeError = Just errorMsg }
+                            , logError ("Failed to decode stored state: " ++ errorMsg)
+                            )
+
+
+extractQueryParam : String -> Url.Url -> Maybe String
+extractQueryParam key url =
+    url.query
+        |> Maybe.andThen
+            (\query ->
+                String.split "&" query
+                    |> List.filterMap
+                        (\param ->
+                            case String.split "=" param of
+                                [ k, v ] ->
+                                    if k == key then
+                                        Just (Url.percentDecode v |> Maybe.withDefault v)
+
+                                    else
+                                        Nothing
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
 
 
 
@@ -359,6 +388,13 @@ type Msg
     | UpdateSelectedWaypoint Int
     | UpdateOffRouteThreshold Float
     | UpdateShowOffRouteWaypoints Bool
+      -- State export/import
+    | ExportState
+    | ImportStateFromFile
+    | StateFileSelected File.File
+    | StateFileRead String
+    | ImportStateFromUrl String
+    | StateUrlFetched (Result Http.Error String)
 
 
 
@@ -956,6 +992,64 @@ update msg model =
 
         UpdateShowOffRouteWaypoints show ->
             updateModel { model | showOffRouteWaypoints = show }
+
+        ExportState ->
+            ( model, downloadState (encodeSavedState model) )
+
+        ImportStateFromFile ->
+            ( model, File.Select.file [ "application/json" ] StateFileSelected )
+
+        StateFileSelected file ->
+            ( model, Task.perform StateFileRead (File.toString file) )
+
+        StateFileRead jsonString ->
+            restoreState jsonString model
+
+        ImportStateFromUrl url ->
+            ( model, Http.get { url = url, expect = Http.expectString StateUrlFetched } )
+
+        StateUrlFetched (Ok jsonString) ->
+            restoreState jsonString model
+
+        StateUrlFetched (Err err) ->
+            ( { model
+                | stateDecodeError =
+                    Just
+                        ("Failed to fetch state from URL: "
+                            ++ (case err of
+                                    Http.BadUrl u ->
+                                        "Bad URL: " ++ u
+
+                                    Http.Timeout ->
+                                        "Request timed out"
+
+                                    Http.NetworkError ->
+                                        "Network error (check CORS headers)"
+
+                                    Http.BadStatus status ->
+                                        "HTTP " ++ String.fromInt status
+
+                                    Http.BadBody body ->
+                                        "Bad response: " ++ body
+                               )
+                        )
+              }
+            , Cmd.none
+            )
+
+
+restoreState : String -> Model -> ( Model, Cmd Msg )
+restoreState jsonString model =
+    case Json.Decode.decodeString modelDecoder jsonString of
+        Ok decoded ->
+            let
+                restored =
+                    withLiveSplit decoded
+            in
+            ( restored, Cmd.batch [ storeState (encodeSavedState restored), requestSplitCmd restored ] )
+
+        Err err ->
+            ( { model | stateDecodeError = Just (Json.Decode.errorToString err) }, Cmd.none )
 
 
 updateModel : Model -> ( Model, Cmd Msg )
@@ -2545,6 +2639,8 @@ viewOptionsPanel model =
                             )
                       , Html.hr [] []
                       ]
+                    , viewStateExportImport
+                    , [ Html.hr [] [] ]
 
                     -- Shared: Category filtering
                     , viewCategoryFilterOptions model
@@ -2565,6 +2661,44 @@ viewOptionsPanel model =
                     ]
             ]
         )
+
+
+viewStateExportImport : List (Html Msg)
+viewStateExportImport =
+    [ Html.div
+        [ Html.Attributes.class "flex-container"
+        , Html.Attributes.class "column"
+        , Html.Attributes.style "align-items" "center"
+        , Html.Attributes.style "gap" "0.25em"
+        ]
+        [ Html.div
+            [ Html.Attributes.class "flex-container"
+            , Html.Attributes.style "gap" "0.25em"
+            , Html.Attributes.style "width" "100%"
+            ]
+            [ viewButton [ Html.Attributes.style "flex" "1" ] "export state" ExportState
+            , viewButton [ Html.Attributes.style "flex" "1" ] "import state" ImportStateFromFile
+            ]
+        , Html.form
+            [ Html.Events.preventDefaultOn "submit"
+                (Json.Decode.at [ "target", "0", "value" ] Json.Decode.string
+                    |> Json.Decode.map (\url -> ( ImportStateFromUrl url, True ))
+                )
+            , Html.Attributes.class "flex-container"
+            , Html.Attributes.style "width" "100%"
+            , Html.Attributes.style "gap" "0.25em"
+            ]
+            [ Html.input
+                [ Html.Attributes.type_ "url"
+                , Html.Attributes.placeholder "state URL"
+                , Html.Attributes.style "flex" "1"
+                , Html.Attributes.style "min-width" "0"
+                ]
+                []
+            , Html.button [ Html.Attributes.type_ "submit" ] [ Html.text "fetch" ]
+            ]
+        ]
+    ]
 
 
 viewTrackNavigationButtons : Model -> List (Html Msg)
@@ -3459,6 +3593,9 @@ port logError : String -> Cmd msg
 
 
 port storeState : String -> Cmd msg
+
+
+port downloadState : String -> Cmd msg
 
 
 port calculateElevationProfileData : String -> Cmd msg

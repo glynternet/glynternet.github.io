@@ -146,3 +146,7 @@ The site includes a service worker (`sw.js`) that provides offline support for t
 - Jekyll plugins: jemoji, jekyll-sitemap
 - Site URL: https://www.glyn.io
 - CI/CD: GitHub Actions deploys to GitHub Pages on push to `develop`
+
+## Code style
+- Avoid single-use variables; inline instead. Function, method and other variable names should support easily understanding what the result of an operation is.
+

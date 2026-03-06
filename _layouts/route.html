@@ -32,6 +32,15 @@ layout: default
 					app.ports.logError.subscribe(msg => {
 						console.error(msg);
 					});
+					app.ports.downloadState.subscribe(state => {
+						const blob = new Blob([state], { type: 'application/json' });
+						const url = URL.createObjectURL(blob);
+						const a = document.createElement('a');
+						a.href = url;
+						a.download = 'route-state.json';
+						a.click();
+						URL.revokeObjectURL(url);
+					});
 					app.ports.calculateElevationProfileData.subscribe(gpxData => {
 						const profileData = elevationProfileData(gpxData);
 						app.ports.receiveElevationProfileData.send(profileData);
