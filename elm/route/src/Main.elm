@@ -179,7 +179,6 @@ type alias ElevationProfileOptions =
     { fontSize : Float
     , trackHeight : Int
     , trackThickness : Float
-    , waypointStrokeColor : String
     , showIntensity : Bool
     , intensityTau : Float
     , manualPosition : Maybe Float
@@ -215,7 +214,6 @@ defaultElevationProfileOptions =
     { fontSize = 15
     , trackHeight = 200
     , trackThickness = 1
-    , waypointStrokeColor = "lightgray"
     , showIntensity = False
     , intensityTau = 500
     , manualPosition = Nothing
@@ -366,7 +364,6 @@ type Msg
     | UpdateFontSize Float
     | UpdateTrackHeight Int
     | UpdateTrackThickness Float
-    | WaypointStrokeColourChange String
     | ShowIntensity Bool
     | UpdateIntensityTau Float
     | UpdateManualPosition (Maybe Float)
@@ -798,13 +795,6 @@ update msg model =
                     model.elevationProfile
             in
             updateModel { model | elevationProfile = { ep | trackThickness = thickness } }
-
-        WaypointStrokeColourChange colour ->
-            let
-                ep =
-                    model.elevationProfile
-            in
-            updateModel { model | elevationProfile = { ep | waypointStrokeColor = colour } }
 
         ShowIntensity show ->
             let
@@ -1688,7 +1678,7 @@ viewElevationProfileTab model tracks =
                                     downsampledSeg =
                                         { seg | trackpoints = downsample profileSvgWidth seg.trackpoints }
                                 in
-                                profile segIndex downsampledSeg seg.trackpoints segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.waypointStrokeColor model.offRouteThreshold segPosition segIntensity trackMinIntensity trackMaxIntensity
+                                profile segIndex downsampledSeg seg.trackpoints segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness model.offRouteThreshold segPosition segIntensity trackMinIntensity trackMaxIntensity
                             )
             in
             Html.div [] profileViews
@@ -1731,8 +1721,8 @@ elevationTicks minElev maxElev =
     buildTicks firstTick []
 
 
-profile : Int -> GpxApi.Track -> List GpxApi.TrackPoint -> Float -> Float -> Float -> Float -> Int -> Float -> String -> Float -> Maybe Float -> List { distance : Float, intensity : Float } -> Float -> Float -> Html Msg
-profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation fontSize trackHeight trackThickness waypointStrokeColor offRouteThreshold maybePosition intensityPoints minIntensity maxIntensity =
+profile : Int -> GpxApi.Track -> List GpxApi.TrackPoint -> Float -> Float -> Float -> Float -> Int -> Float -> Float -> Maybe Float -> List { distance : Float, intensity : Float } -> Float -> Float -> Html Msg
+profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation fontSize trackHeight trackThickness offRouteThreshold maybePosition intensityPoints minIntensity maxIntensity =
     let
         waypointTextHeight =
             100
@@ -1829,7 +1819,7 @@ profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation
                                         "orange"
 
                                     else
-                                        waypointStrokeColor
+                                        "lightgray"
                             in
                             [ Svg.line
                                 [ Svg.Attributes.x1 <| x
@@ -2827,14 +2817,6 @@ viewElevationProfileOptions model =
             ]
             []
         ]
-    , optionGroup "Waypoint stroke colour"
-        [ Html.textarea
-            [ Html.Attributes.placeholder "Waypoint stroke colour..."
-            , Html.Attributes.value ep.waypointStrokeColor
-            , Html.Events.onInput <| WaypointStrokeColourChange
-            ]
-            []
-        ]
     , optionGroup "Intensity"
         (List.concat
             [ [ viewButton [ Html.Attributes.style "width" "100%" ]
@@ -3452,7 +3434,6 @@ encodeSavedState model =
             , Just ( "fontSize", Json.Encode.float ep.fontSize )
             , Just ( "trackHeight", Json.Encode.int ep.trackHeight )
             , Just ( "trackThickness", Json.Encode.float ep.trackThickness )
-            , Just ( "waypointStrokeColor", Json.Encode.string ep.waypointStrokeColor )
             , Just ( "showIntensity", Json.Encode.bool ep.showIntensity )
             , Just ( "intensityTau", Json.Encode.float ep.intensityTau )
             , ep.manualPosition |> Maybe.map (\pos -> ( "manualPosition", Json.Encode.float pos ))
@@ -3503,7 +3484,7 @@ modelDecoder =
             defaultCuesheetOptions
     in
     Json.Decode.succeed
-        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness waypointStrokeColor showIntensity intensityTau manualPosition splitMode splitEquidistantCount splitWaypointIndices liveLookahead liveLookbehind totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints ->
+        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau manualPosition splitMode splitEquidistantCount splitWaypointIndices liveLookahead liveLookbehind totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints ->
             { tracks = loadableResourceFromMaybe tracks
             , showOptions = showOptions |> Maybe.withDefault def.showOptions
             , activeTab = activeTab |> Maybe.andThen parseTab |> Maybe.withDefault def.activeTab
@@ -3521,7 +3502,6 @@ modelDecoder =
                 { fontSize = fontSize |> Maybe.withDefault defEp.fontSize
                 , trackHeight = trackHeight |> Maybe.withDefault defEp.trackHeight
                 , trackThickness = trackThickness |> Maybe.withDefault defEp.trackThickness
-                , waypointStrokeColor = waypointStrokeColor |> Maybe.withDefault defEp.waypointStrokeColor
                 , showIntensity = showIntensity |> Maybe.withDefault defEp.showIntensity
                 , intensityTau = intensityTau |> Maybe.withDefault defEp.intensityTau
                 , manualPosition = manualPosition
@@ -3561,7 +3541,6 @@ modelDecoder =
         |> andMap (maybeField "fontSize" Json.Decode.float)
         |> andMap (maybeField "trackHeight" Json.Decode.int)
         |> andMap (maybeField "trackThickness" Json.Decode.float)
-        |> andMap (maybeField "waypointStrokeColor" Json.Decode.string)
         |> andMap (maybeField "showIntensity" Json.Decode.bool)
         |> andMap (maybeField "intensityTau" Json.Decode.float)
         |> andMap (maybeField "manualPosition" Json.Decode.float)
