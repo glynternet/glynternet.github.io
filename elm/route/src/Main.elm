@@ -984,7 +984,7 @@ update msg model =
             updateModel { model | showOffRouteWaypoints = show }
 
         ExportState ->
-            ( model, downloadState (encodeSavedState model) )
+            ( model, downloadState (encodeSavedState { model | showOptions = False }) )
 
         ImportStateFromFile ->
             ( model, File.Select.file [ "application/json" ] StateFileSelected )
