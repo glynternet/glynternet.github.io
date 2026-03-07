@@ -199,6 +199,7 @@ type alias ElevationProfileOptions =
     , splitWaypointIndices : List Int
     , liveLookahead : Float
     , liveLookbehind : Float
+    , labelHeightGain : Float
     }
 
 
@@ -234,6 +235,7 @@ defaultElevationProfileOptions =
     , splitWaypointIndices = []
     , liveLookahead = 5000
     , liveLookbehind = 2000
+    , labelHeightGain = 1.0
     }
 
 
@@ -383,6 +385,7 @@ type Msg
     | UpdateFontSize Float
     | UpdateTrackHeight Int
     | UpdateTrackThickness Float
+    | UpdateLabelHeightGain Float
     | ShowIntensity Bool
     | UpdateIntensityTau Float
     | UpdateManualPosition (Maybe Float)
@@ -837,6 +840,13 @@ update msg model =
                     s.elevationProfile
             in
             updateAndStoreModel (updateState { s | elevationProfile = { ep | trackThickness = thickness } })
+
+        UpdateLabelHeightGain gain ->
+            let
+                ep =
+                    s.elevationProfile
+            in
+            updateAndStoreModel (updateState { s | elevationProfile = { ep | labelHeightGain = gain } })
 
         ShowIntensity show ->
             let
@@ -1726,7 +1736,7 @@ viewElevationProfileTab state tracks =
                                     downsampledSeg =
                                         { seg | trackpoints = downsample profileSvgWidth seg.trackpoints }
                                 in
-                                profile segIndex downsampledSeg seg.trackpoints segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness state.offRouteThreshold segPosition segIntensity trackMinIntensity trackMaxIntensity
+                                profile segIndex downsampledSeg seg.trackpoints segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.labelHeightGain state.offRouteThreshold segPosition segIntensity trackMinIntensity trackMaxIntensity
                             )
             in
             Html.div [] profileViews
@@ -1769,11 +1779,15 @@ elevationTicks minElev maxElev =
     buildTicks firstTick []
 
 
-profile : Int -> GpxApi.Track -> List GpxApi.TrackPoint -> Float -> Float -> Float -> Float -> Int -> Float -> Float -> Maybe Float -> List { distance : Float, intensity : Float } -> Float -> Float -> Html Msg
-profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation fontSize trackHeight trackThickness offRouteThreshold maybePosition intensityPoints minIntensity maxIntensity =
+profile : Int -> GpxApi.Track -> List GpxApi.TrackPoint -> Float -> Float -> Float -> Float -> Int -> Float -> Float -> Float -> Maybe Float -> List { distance : Float, intensity : Float } -> Float -> Float -> Html Msg
+profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation fontSize trackHeight trackThickness labelHeightGain offRouteThreshold maybePosition intensityPoints minIntensity maxIntensity =
     let
         waypointTextHeight =
-            100
+            track.waypoints
+                |> List.map (\w -> String.length w.name)
+                |> List.maximum
+                |> Maybe.withDefault 0
+                |> (\len -> max 100 (round (toFloat len * 0.6 * fontSize * labelHeightGain)))
 
         svgHeight =
             trackHeight + waypointTextHeight
@@ -2865,6 +2879,17 @@ viewElevationProfileOptions state =
             ]
             []
         ]
+    , optionGroup "Label height"
+        [ Html.input
+            [ Html.Attributes.type_ "range"
+            , Html.Attributes.min "0.5"
+            , Html.Attributes.max "3"
+            , Html.Attributes.step "0.1"
+            , Html.Attributes.value <| String.fromFloat ep.labelHeightGain
+            , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1 >> UpdateLabelHeightGain)
+            ]
+            []
+        ]
     , optionGroup "Intensity"
         (List.concat
             [ [ viewButton [ Html.Attributes.style "width" "100%" ]
@@ -3503,6 +3528,7 @@ encodeSavedState state =
             , Just ( "splitWaypointIndices", Json.Encode.list Json.Encode.int ep.splitWaypointIndices )
             , Just ( "liveLookahead", Json.Encode.float ep.liveLookahead )
             , Just ( "liveLookbehind", Json.Encode.float ep.liveLookbehind )
+            , Just ( "labelHeightGain", Json.Encode.float ep.labelHeightGain )
             , Just ( "totalDistanceDisplay", Json.Encode.string (formatTotalDistanceDisplay cs.totalDistanceDisplay) )
             , Just ( "referencePoint", Json.Encode.float cs.referencePoint )
             , Just ( "itemSpacing", Json.Encode.int cs.itemSpacing )
@@ -3529,7 +3555,7 @@ stateDecoder =
             defaultCuesheetOptions
     in
     Json.Decode.succeed
-        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau manualPosition splitMode splitEquidistantCount splitWaypointIndices liveLookahead liveLookbehind totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints ->
+        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau manualPosition splitMode splitEquidistantCount splitWaypointIndices liveLookahead liveLookbehind labelHeightGain totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints ->
             { tracks = loadableResourceFromMaybe tracks
             , showOptions = showOptions |> Maybe.withDefault defaultState.showOptions
             , activeTab = activeTab |> Maybe.andThen parseTab |> Maybe.withDefault defaultState.activeTab
@@ -3564,6 +3590,7 @@ stateDecoder =
                 , splitWaypointIndices = splitWaypointIndices |> Maybe.withDefault []
                 , liveLookahead = liveLookahead |> Maybe.withDefault defEp.liveLookahead
                 , liveLookbehind = liveLookbehind |> Maybe.withDefault defEp.liveLookbehind
+                , labelHeightGain = labelHeightGain |> Maybe.withDefault defEp.labelHeightGain
                 }
             , cuesheet =
                 { totalDistanceDisplay = totalDistanceDisplay |> Maybe.andThen parseTotalDistanceDisplay |> Maybe.withDefault defCs.totalDistanceDisplay
@@ -3594,6 +3621,7 @@ stateDecoder =
         |> andMap (maybeField "splitWaypointIndices" (Json.Decode.list Json.Decode.int))
         |> andMap (maybeField "liveLookahead" Json.Decode.float)
         |> andMap (maybeField "liveLookbehind" Json.Decode.float)
+        |> andMap (maybeField "labelHeightGain" Json.Decode.float)
         |> andMap (maybeField "totalDistanceDisplay" Json.Decode.string)
         |> andMap (maybeField "referencePoint" Json.Decode.float)
         |> andMap (maybeField "itemSpacing" Json.Decode.int)
