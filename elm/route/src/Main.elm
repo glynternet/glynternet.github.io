@@ -41,11 +41,11 @@ main =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions { state } =
     Sub.batch
         [ receiveLocation LocationReceived
-        , if model.trackingEnabled then
-            Time.every (toFloat model.trackingIntervalSec * 1000) Tick
+        , if state.trackingEnabled then
+            Time.every (toFloat state.trackingIntervalSec * 1000) Tick
 
           else
             Sub.none
@@ -58,7 +58,13 @@ subscriptions model =
 -- MODEL
 
 
-type alias Model =
+type alias Navigation =
+    { key : Browser.Navigation.Key
+    , basePath : String
+    }
+
+
+type alias State =
     { tracks : LoadableResource (Zipper EditableTrack)
     , showOptions : Bool
     , activeTab : Tab
@@ -88,6 +94,12 @@ type alias Model =
     -- Transient (never persisted)
     , stateDecodeError : Maybe String
     , splitSegments : Maybe GpxApi.SplitResult
+    }
+
+
+type alias Model =
+    { nav : Navigation
+    , state : State
     }
 
 
@@ -250,8 +262,8 @@ defaultDistanceDetail =
 -- DEFAULT MODEL
 
 
-defaultModel : Model
-defaultModel =
+defaultState : State
+defaultState =
     { tracks = NotLoaded
     , showOptions = True
     , activeTab = ElevationProfileTab
@@ -273,31 +285,38 @@ defaultModel =
 
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
-init maybeState url _ =
+init maybeState url key =
+    let
+        nav =
+            Navigation key url.path
+
+        base =
+            Model nav defaultState
+    in
     case extractQueryParam "state" url of
         Just stateUrl ->
-            ( defaultModel, Http.get { url = stateUrl, expect = Http.expectString StateUrlFetched } )
+            ( base, Http.get { url = stateUrl, expect = Http.expectString StateUrlFetched } )
 
         Nothing ->
             case maybeState of
                 Nothing ->
-                    ( defaultModel, Cmd.none )
+                    ( base, Cmd.none )
 
                 Just stateValue ->
-                    case Json.Decode.decodeValue modelDecoder stateValue of
+                    case Json.Decode.decodeValue stateDecoder stateValue of
                         Ok decoded ->
                             let
-                                model =
+                                state =
                                     withLiveSplit decoded
                             in
-                            ( model, requestSplitCmd model )
+                            ( Model nav state, requestSplitCmd state )
 
                         Err err ->
                             let
                                 errorMsg =
                                     Json.Decode.errorToString err
                             in
-                            ( { defaultModel | stateDecodeError = Just errorMsg }
+                            ( { base | state = { defaultState | stateDecodeError = Just errorMsg } }
                             , logError ("Failed to decode stored state: " ++ errorMsg)
                             )
 
@@ -411,24 +430,31 @@ sortWaypointIndices editableWps indices =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    let
+        s =
+            model.state
+
+        updateState newState =
+            { model | state = newState }
+    in
     case msg of
         Ignore ->
             ( model, Cmd.none )
 
         DismissStateDecodeError ->
-            ( { model | stateDecodeError = Nothing }, Cmd.none )
+            ( updateState { s | stateDecodeError = Nothing }, Cmd.none )
 
         ShowOptions show ->
-            ( { model | showOptions = show }, Cmd.none )
+            ( updateState { s | showOptions = show }, Cmd.none )
 
         SwitchTab tab ->
-            updateModel { model | activeTab = tab }
+            updateAndStoreModel (updateState { s | activeTab = tab })
 
         OpenFileBrowser ->
             ( model, File.Select.file [ "application/gpx+xml" ] FileUploaded )
 
         FileUploaded file ->
-            updateModel { model | tracks = Loading }
+            updateAndStoreModel (updateState { s | tracks = Loading })
                 |> Tuple.mapSecond
                     (\cmd ->
                         Cmd.batch
@@ -443,63 +469,65 @@ update msg model =
         WasmResponseReceived string ->
             case Json.Decode.decodeString (GpxApi.decodeResult GpxApi.decodeElevationProfileDataResponse) string of
                 Err errMsg ->
-                    updateModel
-                        { model | tracks = Error ("parsing result from GPX response: " ++ Json.Decode.errorToString errMsg) }
+                    updateAndStoreModel
+                        (updateState { s | tracks = Error ("parsing result from GPX response: " ++ Json.Decode.errorToString errMsg) })
 
                 Ok typedResult ->
                     case typedResult of
                         Err errMsg ->
-                            updateModel
-                                { model | tracks = Error ("getting profile data from GPX: " ++ errMsg) }
+                            updateAndStoreModel
+                                (updateState { s | tracks = Error ("getting profile data from GPX: " ++ errMsg) })
 
                         Ok gpxTracks ->
-                            updateModel
-                                { model
-                                    | tracks =
-                                        case Zipper.fromList <| List.map editableTrackFromGpxTrack gpxTracks of
-                                            Nothing ->
-                                                Error "No tracks available in uploaded GPX"
+                            updateAndStoreModel
+                                (updateState
+                                    { s
+                                        | tracks =
+                                            case Zipper.fromList <| List.map editableTrackFromGpxTrack gpxTracks of
+                                                Nothing ->
+                                                    Error "No tracks available in uploaded GPX"
 
-                                            Just positionalTracks ->
-                                                Loaded positionalTracks
-                                    , filteredCategories = initialFilteredCategories (List.concatMap .waypoints gpxTracks)
-                                    , elevationProfile =
-                                        let
-                                            ep =
-                                                model.elevationProfile
-                                        in
-                                        { ep | splitWaypointIndices = [] }
-                                }
+                                                Just positionalTracks ->
+                                                    Loaded positionalTracks
+                                        , filteredCategories = initialFilteredCategories (List.concatMap .waypoints gpxTracks)
+                                        , elevationProfile =
+                                            let
+                                                ep =
+                                                    s.elevationProfile
+                                            in
+                                            { ep | splitWaypointIndices = [] }
+                                    }
+                                )
 
         SplitProfileReceived string ->
             case Json.Decode.decodeString (GpxApi.decodeResult GpxApi.decodeSplitResult) string of
                 Err errMsg ->
-                    ( { model | splitSegments = Nothing }
+                    ( updateState { s | splitSegments = Nothing }
                     , logError ("parsing split profile response: " ++ Json.Decode.errorToString errMsg)
                     )
 
                 Ok typedResult ->
                     case typedResult of
                         Err errMsg ->
-                            ( { model | splitSegments = Nothing }
+                            ( updateState { s | splitSegments = Nothing }
                             , logError ("splitting profile: " ++ errMsg)
                             )
 
                         Ok splitResult ->
-                            ( { model | splitSegments = Just splitResult }, Cmd.none )
+                            ( updateState { s | splitSegments = Just splitResult }, Cmd.none )
 
         NavigateToPrevious ->
-            case model.tracks of
+            case s.tracks of
                 Loaded tracks ->
-                    updateModel { model | tracks = Loaded (Zipper.navigatePrevious tracks) }
+                    updateAndStoreModel (updateState { s | tracks = Loaded (Zipper.navigatePrevious tracks) })
 
                 _ ->
                     ( model, Cmd.none )
 
         NavigateToNext ->
-            case model.tracks of
+            case s.tracks of
                 Loaded tracks ->
-                    updateModel { model | tracks = Loaded (Zipper.navigateNext tracks) }
+                    updateAndStoreModel (updateState { s | tracks = Loaded (Zipper.navigateNext tracks) })
 
                 _ ->
                     ( model, Cmd.none )
@@ -511,17 +539,17 @@ update msg model =
         ToggleTracking ->
             let
                 nowEnabled =
-                    not model.trackingEnabled
+                    not s.trackingEnabled
             in
             if nowEnabled then
-                updateModel { model | trackingEnabled = True }
+                updateAndStoreModel (updateState { s | trackingEnabled = True })
                     |> Tuple.mapSecond (\cmd -> Cmd.batch [ cmd, requestLocation () ])
 
             else
-                updateModel { model | trackingEnabled = False }
+                updateAndStoreModel (updateState { s | trackingEnabled = False })
 
         SetTrackingInterval interval ->
-            updateModel { model | trackingIntervalSec = interval }
+            updateAndStoreModel (updateState { s | trackingIntervalSec = interval })
 
         Tick _ ->
             ( model, requestLocation () )
@@ -529,7 +557,7 @@ update msg model =
         LocationReceived value ->
             case Json.Decode.decodeValue Location.decodeLocationResult value of
                 Ok (Ok pos) ->
-                    case model.tracks of
+                    case s.tracks of
                         Loaded tracks ->
                             let
                                 gpsPos =
@@ -541,103 +569,111 @@ update msg model =
                                         |> Maybe.withDefault 0
 
                                 cs =
-                                    model.cuesheet
+                                    s.cuesheet
                             in
-                            ( withLiveSplit
-                                { model
-                                    | location = Just (Location.LocationState gpsPos pos.accuracy matchedDist)
-                                    , locationError = Nothing
-                                    , cuesheet = { cs | position = matchedDist }
-                                }
+                            ( updateState
+                                (withLiveSplit
+                                    { s
+                                        | location = Just (Location.LocationState gpsPos pos.accuracy matchedDist)
+                                        , locationError = Nothing
+                                        , cuesheet = { cs | position = matchedDist }
+                                    }
+                                )
                             , Cmd.none
                             )
 
                         _ ->
-                            ( { model | locationError = Nothing }, Cmd.none )
+                            ( updateState { s | locationError = Nothing }, Cmd.none )
 
                 Ok (Err locErr) ->
-                    ( { model | locationError = Just locErr }, Cmd.none )
+                    ( updateState { s | locationError = Just locErr }, Cmd.none )
 
                 -- JSON decode failure; treat as unavailable
                 Err _ ->
-                    ( { model | locationError = Just Location.PositionUnavailable }, Cmd.none )
+                    ( updateState { s | locationError = Just Location.PositionUnavailable }, Cmd.none )
 
         -- Category filtering
         CategoryEnabled category enabled ->
             let
                 newCategories =
-                    Dict.insert category enabled model.filteredCategories
+                    Dict.insert category enabled s.filteredCategories
             in
-            updateModel (correctWaypointSelectionInModel { model | filteredCategories = newCategories })
+            updateAndStoreModel (updateState <| correctWaypointSelectionInState { s | filteredCategories = newCategories })
 
         UpdateCategoryFilterEnabled enabled ->
-            updateModel (correctWaypointSelectionInModel { model | categoryFilterEnabled = enabled })
+            updateAndStoreModel (updateState <| correctWaypointSelectionInState { s | categoryFilterEnabled = enabled })
 
         SetAllCategoriesEnabled enabled ->
-            updateModel (correctWaypointSelectionInModel { model | filteredCategories = Dict.map (\_ _ -> enabled) model.filteredCategories })
+            updateAndStoreModel (updateState <| correctWaypointSelectionInState { s | filteredCategories = Dict.map (\_ _ -> enabled) s.filteredCategories })
 
         -- Waypoint editing
         WaypointNameChange i name ->
-            case model.tracks of
+            case s.tracks of
                 Loaded tracks ->
-                    updateModel
-                        { model
-                            | tracks =
-                                Loaded <|
-                                    Zipper.updateCurrent
-                                        (\current -> updateEditableWaypoint current i (\ew -> updateOverrides (\o -> { o | name = Just name }) ew))
-                                        tracks
-                        }
+                    updateAndStoreModel
+                        (updateState
+                            { s
+                                | tracks =
+                                    Loaded <|
+                                        Zipper.updateCurrent
+                                            (\current -> updateEditableWaypoint current i (\ew -> updateOverrides (\o -> { o | name = Just name }) ew))
+                                            tracks
+                            }
+                        )
 
                 _ ->
                     ( model, Cmd.none )
 
         WaypointDistanceChange i dist ->
-            case model.tracks of
+            case s.tracks of
                 Loaded tracks ->
-                    updateModel
-                        { model
-                            | tracks =
-                                Loaded <|
-                                    Zipper.updateCurrent
-                                        (\current -> updateEditableWaypoint current i (\ew -> updateOverrides (\o -> { o | distance = Just dist }) ew))
-                                        tracks
-                        }
+                    updateAndStoreModel
+                        (updateState
+                            { s
+                                | tracks =
+                                    Loaded <|
+                                        Zipper.updateCurrent
+                                            (\current -> updateEditableWaypoint current i (\ew -> updateOverrides (\o -> { o | distance = Just dist }) ew))
+                                            tracks
+                            }
+                        )
 
                 _ ->
                     ( model, Cmd.none )
 
         WaypointDeleted i deleted ->
-            case model.tracks of
+            case s.tracks of
                 Loaded tracks ->
                     let
                         ep =
-                            model.elevationProfile
+                            s.elevationProfile
                     in
-                    updateModel
-                        { model
-                            | tracks =
-                                Loaded <|
-                                    Zipper.updateCurrent
-                                        (\current -> updateEditableWaypoint current i (\ew -> { ew | deleted = deleted }))
-                                        tracks
-                            , elevationProfile =
-                                { ep
-                                    | splitWaypointIndices =
-                                        if deleted then
-                                            -- remove split waypoint if it no longer exists
-                                            List.filter (\idx -> idx /= i) ep.splitWaypointIndices
+                    updateAndStoreModel
+                        (updateState
+                            { s
+                                | tracks =
+                                    Loaded <|
+                                        Zipper.updateCurrent
+                                            (\current -> updateEditableWaypoint current i (\ew -> { ew | deleted = deleted }))
+                                            tracks
+                                , elevationProfile =
+                                    { ep
+                                        | splitWaypointIndices =
+                                            if deleted then
+                                                -- remove split waypoint if it no longer exists
+                                                List.filter (\idx -> idx /= i) ep.splitWaypointIndices
 
-                                        else
-                                            ep.splitWaypointIndices
-                                }
-                        }
+                                            else
+                                                ep.splitWaypointIndices
+                                    }
+                            }
+                        )
 
                 _ ->
                     ( model, Cmd.none )
 
         WaypointCategoryToggle i cat add ->
-            case model.tracks of
+            case s.tracks of
                 Loaded tracks ->
                     let
                         updateCats ew =
@@ -676,11 +712,11 @@ update msg model =
 
                         newFilteredCategories =
                             if add then
-                                if Dict.member cat model.filteredCategories then
-                                    model.filteredCategories
+                                if Dict.member cat s.filteredCategories then
+                                    s.filteredCategories
 
                                 else
-                                    Dict.insert cat True model.filteredCategories
+                                    Dict.insert cat True s.filteredCategories
 
                             else
                                 let
@@ -688,33 +724,35 @@ update msg model =
                                         List.any (\w -> List.member cat w.categories) allEffectiveWaypoints
                                 in
                                 if catStillUsed then
-                                    model.filteredCategories
+                                    s.filteredCategories
 
                                 else
-                                    Dict.remove cat model.filteredCategories
+                                    Dict.remove cat s.filteredCategories
                     in
-                    updateModel
-                        { model
-                            | tracks = Loaded newTracks
-                            , filteredCategories = newFilteredCategories
-                        }
+                    updateAndStoreModel
+                        (updateState
+                            { s
+                                | tracks = Loaded newTracks
+                                , filteredCategories = newFilteredCategories
+                            }
+                        )
 
                 _ ->
                     ( model, Cmd.none )
 
         WaypointNewCategoryInput i value ->
-            ( { model | newCategoryInputs = Dict.insert i value model.newCategoryInputs }, Cmd.none )
+            ( updateState { s | newCategoryInputs = Dict.insert i value s.newCategoryInputs }, Cmd.none )
 
         WaypointCategoryAdd i _ ->
             let
                 trimmed =
-                    String.trim (Dict.get i model.newCategoryInputs |> Maybe.withDefault "")
+                    String.trim (Dict.get i s.newCategoryInputs |> Maybe.withDefault "")
             in
             if String.isEmpty trimmed then
                 ( model, Cmd.none )
 
             else
-                case model.tracks of
+                case s.tracks of
                     Loaded tracks ->
                         let
                             updateCats ew =
@@ -732,44 +770,48 @@ update msg model =
                                     { ew | overrides = { o | categories = Just (currentCats ++ [ trimmed ]) } }
 
                             newFilteredCategories =
-                                if Dict.member trimmed model.filteredCategories then
-                                    model.filteredCategories
+                                if Dict.member trimmed s.filteredCategories then
+                                    s.filteredCategories
 
                                 else
-                                    Dict.insert trimmed True model.filteredCategories
+                                    Dict.insert trimmed True s.filteredCategories
                         in
-                        updateModel
-                            { model
-                                | tracks =
-                                    Loaded <|
-                                        Zipper.updateCurrent
-                                            (\current -> updateEditableWaypoint current i updateCats)
-                                            tracks
-                                , filteredCategories = newFilteredCategories
-                                , newCategoryInputs = Dict.remove i model.newCategoryInputs
-                            }
+                        updateAndStoreModel
+                            (updateState
+                                { s
+                                    | tracks =
+                                        Loaded <|
+                                            Zipper.updateCurrent
+                                                (\current -> updateEditableWaypoint current i updateCats)
+                                                tracks
+                                    , filteredCategories = newFilteredCategories
+                                    , newCategoryInputs = Dict.remove i s.newCategoryInputs
+                                }
+                            )
 
                     _ ->
                         ( model, Cmd.none )
 
         ResetWaypoints ->
-            case model.tracks of
+            case s.tracks of
                 Loaded tracks ->
-                    updateModel
-                        { model
-                            | tracks =
-                                Loaded <|
-                                    Zipper.updateCurrent
-                                        (\current ->
-                                            { current
-                                                | editableWaypoints =
-                                                    List.map
-                                                        (\ew -> { ew | deleted = False, overrides = emptyOverrides })
-                                                        current.editableWaypoints
-                                            }
-                                        )
-                                        tracks
-                        }
+                    updateAndStoreModel
+                        (updateState
+                            { s
+                                | tracks =
+                                    Loaded <|
+                                        Zipper.updateCurrent
+                                            (\current ->
+                                                { current
+                                                    | editableWaypoints =
+                                                        List.map
+                                                            (\ew -> { ew | deleted = False, overrides = emptyOverrides })
+                                                            current.editableWaypoints
+                                                }
+                                            )
+                                            tracks
+                            }
+                        )
 
                 _ ->
                     ( model, Cmd.none )
@@ -778,66 +820,66 @@ update msg model =
         UpdateFontSize size ->
             let
                 ep =
-                    model.elevationProfile
+                    s.elevationProfile
             in
-            updateModel { model | elevationProfile = { ep | fontSize = size } }
+            updateAndStoreModel (updateState { s | elevationProfile = { ep | fontSize = size } })
 
         UpdateTrackHeight height ->
             let
                 ep =
-                    model.elevationProfile
+                    s.elevationProfile
             in
-            updateModel { model | elevationProfile = { ep | trackHeight = height } }
+            updateAndStoreModel (updateState { s | elevationProfile = { ep | trackHeight = height } })
 
         UpdateTrackThickness thickness ->
             let
                 ep =
-                    model.elevationProfile
+                    s.elevationProfile
             in
-            updateModel { model | elevationProfile = { ep | trackThickness = thickness } }
+            updateAndStoreModel (updateState { s | elevationProfile = { ep | trackThickness = thickness } })
 
         ShowIntensity show ->
             let
                 ep =
-                    model.elevationProfile
+                    s.elevationProfile
             in
-            updateModel { model | elevationProfile = { ep | showIntensity = show } }
+            updateAndStoreModel (updateState { s | elevationProfile = { ep | showIntensity = show } })
 
         UpdateIntensityTau tau ->
             let
                 ep =
-                    model.elevationProfile
+                    s.elevationProfile
             in
-            updateModel { model | elevationProfile = { ep | intensityTau = tau } }
+            updateAndStoreModel (updateState { s | elevationProfile = { ep | intensityTau = tau } })
 
         UpdateManualPosition pos ->
             let
                 ep =
-                    model.elevationProfile
+                    s.elevationProfile
             in
-            updateModel { model | elevationProfile = { ep | manualPosition = pos } }
+            updateAndStoreModel (updateState { s | elevationProfile = { ep | manualPosition = pos } })
 
         UpdateSplits n ->
             let
                 ep =
-                    model.elevationProfile
+                    s.elevationProfile
             in
-            updateModel { model | elevationProfile = { ep | splitEquidistantCount = n } }
+            updateAndStoreModel (updateState { s | elevationProfile = { ep | splitEquidistantCount = n } })
 
         SetSplitMode mode ->
             let
                 ep =
-                    model.elevationProfile
+                    s.elevationProfile
             in
-            updateModel { model | elevationProfile = { ep | activeSplitMode = mode } }
+            updateAndStoreModel (updateState { s | elevationProfile = { ep | activeSplitMode = mode } })
 
         AddSplitWaypoint ->
             let
                 ep =
-                    model.elevationProfile
+                    s.elevationProfile
 
                 editableWps =
-                    maybeFromloadableResource model.tracks
+                    maybeFromloadableResource s.tracks
                         |> Maybe.map (.current >> .editableWaypoints)
                         |> Maybe.withDefault []
 
@@ -858,7 +900,7 @@ update msg model =
                         newIndices =
                             sortWaypointIndices editableWps (idx :: indices)
                     in
-                    updateModel { model | elevationProfile = { ep | splitWaypointIndices = newIndices } }
+                    updateAndStoreModel (updateState { s | elevationProfile = { ep | splitWaypointIndices = newIndices } })
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -868,10 +910,10 @@ update msg model =
         UpdateSplitWaypoint splitListPos newWaypointIdx ->
             let
                 ep =
-                    model.elevationProfile
+                    s.elevationProfile
 
                 newIndices =
-                    maybeFromloadableResource model.tracks
+                    maybeFromloadableResource s.tracks
                         |> Maybe.map
                             (.current
                                 >> .editableWaypoints
@@ -882,31 +924,31 @@ update msg model =
                             )
                         |> Maybe.withDefault []
             in
-            updateModel { model | elevationProfile = { ep | splitWaypointIndices = newIndices } }
+            updateAndStoreModel (updateState { s | elevationProfile = { ep | splitWaypointIndices = newIndices } })
 
         RemoveSplitWaypoint splitListPos ->
             let
                 ep =
-                    model.elevationProfile
+                    s.elevationProfile
 
                 newIndices =
                     List.Extra.removeAt splitListPos ep.splitWaypointIndices
             in
-            updateModel { model | elevationProfile = { ep | splitWaypointIndices = newIndices } }
+            updateAndStoreModel (updateState { s | elevationProfile = { ep | splitWaypointIndices = newIndices } })
 
         UpdateLiveLookahead val ->
             let
                 ep =
-                    model.elevationProfile
+                    s.elevationProfile
             in
-            updateModel { model | elevationProfile = { ep | liveLookahead = val } }
+            updateAndStoreModel (updateState { s | elevationProfile = { ep | liveLookahead = val } })
 
         UpdateLiveLookbehind val ->
             let
                 ep =
-                    model.elevationProfile
+                    s.elevationProfile
             in
-            updateModel { model | elevationProfile = { ep | liveLookbehind = val } }
+            updateAndStoreModel (updateState { s | elevationProfile = { ep | liveLookbehind = val } })
 
         -- Cuesheet options
         UpdateTotalDistanceDisplay maybeSelection ->
@@ -915,54 +957,54 @@ update msg model =
                     (\selection ->
                         let
                             cs =
-                                model.cuesheet
+                                s.cuesheet
                         in
-                        updateModel { model | cuesheet = { cs | totalDistanceDisplay = selection } }
+                        updateAndStoreModel (updateState { s | cuesheet = { cs | totalDistanceDisplay = selection } })
                     )
                 |> Maybe.withDefault ( model, Cmd.none )
 
         UpdatePosition position ->
             let
                 cs =
-                    model.cuesheet
+                    s.cuesheet
             in
-            updateModel { model | cuesheet = { cs | position = position } }
+            updateAndStoreModel (updateState { s | cuesheet = { cs | position = position } })
 
         UpdateReferencePoint point ->
             let
                 cs =
-                    model.cuesheet
+                    s.cuesheet
             in
-            updateModel { model | cuesheet = { cs | referencePoint = point } }
+            updateAndStoreModel (updateState { s | cuesheet = { cs | referencePoint = point } })
 
         UpdateItemSpacing spacing ->
             let
                 cs =
-                    model.cuesheet
+                    s.cuesheet
             in
-            updateModel { model | cuesheet = { cs | itemSpacing = spacing } }
+            updateAndStoreModel (updateState { s | cuesheet = { cs | itemSpacing = spacing } })
 
         UpdateDistanceDetail detail ->
             let
                 cs =
-                    model.cuesheet
+                    s.cuesheet
             in
-            updateModel { model | cuesheet = { cs | distanceDetail = detail } }
+            updateAndStoreModel (updateState { s | cuesheet = { cs | distanceDetail = detail } })
 
         UpdateShowStartFinish show ->
             let
                 cs =
-                    model.cuesheet
+                    s.cuesheet
             in
-            updateModel { model | cuesheet = { cs | showStartFinish = show } }
+            updateAndStoreModel (updateState { s | cuesheet = { cs | showStartFinish = show } })
 
         UpdateShowOffRouteDistance show ->
-            updateModel { model | showOffRouteDistance = show }
+            updateAndStoreModel (updateState { s | showOffRouteDistance = show })
 
         UpdateSelectedWaypoint idx ->
             let
                 cs =
-                    model.cuesheet
+                    s.cuesheet
 
                 newDisplay =
                     case cs.totalDistanceDisplay of
@@ -975,16 +1017,16 @@ update msg model =
                         other ->
                             other
             in
-            updateModel { model | cuesheet = { cs | totalDistanceDisplay = newDisplay } }
+            updateAndStoreModel (updateState { s | cuesheet = { cs | totalDistanceDisplay = newDisplay } })
 
         UpdateOffRouteThreshold threshold ->
-            updateModel { model | offRouteThreshold = threshold }
+            updateAndStoreModel (updateState { s | offRouteThreshold = threshold })
 
         UpdateShowOffRouteWaypoints show ->
-            updateModel { model | showOffRouteWaypoints = show }
+            updateAndStoreModel (updateState { s | showOffRouteWaypoints = show })
 
         ExportState ->
-            ( model, downloadState (encodeSavedState { model | showOptions = False }) )
+            ( model, downloadState (encodeSavedState { s | showOptions = False }) )
 
         ImportStateFromFile ->
             ( model, File.Select.file [ "application/json" ] StateFileSelected )
@@ -1000,90 +1042,96 @@ update msg model =
 
         StateUrlFetched (Ok jsonString) ->
             restoreState jsonString model
+                |> Tuple.mapSecond (\cmd -> Cmd.batch [ cmd, Browser.Navigation.replaceUrl model.nav.key model.nav.basePath ])
 
         StateUrlFetched (Err err) ->
-            ( { model
-                | stateDecodeError =
-                    Just
-                        ("Failed to fetch state from URL: "
-                            ++ (case err of
-                                    Http.BadUrl u ->
-                                        "Bad URL: " ++ u
+            ( updateState
+                { s
+                    | stateDecodeError =
+                        Just
+                            ("Failed to fetch state from URL: "
+                                ++ (case err of
+                                        Http.BadUrl u ->
+                                            "Bad URL: " ++ u
 
-                                    Http.Timeout ->
-                                        "Request timed out"
+                                        Http.Timeout ->
+                                            "Request timed out"
 
-                                    Http.NetworkError ->
-                                        "Network error (check CORS headers)"
+                                        Http.NetworkError ->
+                                            "Network error (check CORS headers)"
 
-                                    Http.BadStatus status ->
-                                        "HTTP " ++ String.fromInt status
+                                        Http.BadStatus status ->
+                                            "HTTP " ++ String.fromInt status
 
-                                    Http.BadBody body ->
-                                        "Bad response: " ++ body
-                               )
-                        )
-              }
+                                        Http.BadBody body ->
+                                            "Bad response: " ++ body
+                                   )
+                            )
+                }
             , Cmd.none
             )
 
 
 restoreState : String -> Model -> ( Model, Cmd Msg )
 restoreState jsonString model =
-    case Json.Decode.decodeString modelDecoder jsonString of
+    case Json.Decode.decodeString stateDecoder jsonString of
         Ok decoded ->
             let
                 restored =
-                    withLiveSplit decoded
+                    { model | state = withLiveSplit decoded }
             in
-            ( restored, Cmd.batch [ storeState (encodeSavedState restored), requestSplitCmd restored ] )
+            ( restored, Cmd.batch [ storeState (encodeSavedState restored.state), requestSplitCmd restored.state ] )
 
         Err err ->
-            ( { model | stateDecodeError = Just (Json.Decode.errorToString err) }, Cmd.none )
+            let
+                s =
+                    model.state
+            in
+            ( { model | state = { s | stateDecodeError = Just (Json.Decode.errorToString err) } }, Cmd.none )
 
 
-updateModel : Model -> ( Model, Cmd Msg )
-updateModel model =
+updateAndStoreModel : Model -> ( Model, Cmd Msg )
+updateAndStoreModel model =
     let
-        m =
-            withLiveSplit model
+        state =
+            withLiveSplit model.state
     in
-    ( m, Cmd.batch [ storeState (encodeSavedState m), requestSplitCmd m ] )
+    ( { model | state = state }, Cmd.batch [ storeState (encodeSavedState state), requestSplitCmd state ] )
 
 
-requestSplitCmd : Model -> Cmd Msg
-requestSplitCmd model =
-    case model.elevationProfile.activeSplitMode of
+requestSplitCmd : State -> Cmd Msg
+requestSplitCmd state =
+    case state.elevationProfile.activeSplitMode of
         LiveMode ->
             Cmd.none
 
         _ ->
-            requestSplitCmdWasm model
+            requestSplitCmdWasm state
 
 
-requestSplitCmdWasm : Model -> Cmd Msg
-requestSplitCmdWasm model =
-    case model.tracks of
+requestSplitCmdWasm : State -> Cmd Msg
+requestSplitCmdWasm state =
+    case state.tracks of
         Loaded tracks ->
             let
                 filteredWaypoints =
                     effectiveWaypoints tracks.current.editableWaypoints
-                        |> filterWaypoints (waypointPredicates model)
+                        |> filterWaypoints (waypointPredicates state)
             in
             requestSplitProfile
                 (Json.Encode.encode 0
                     (Json.Encode.object
                         ([ ( "track", GpxApi.encodeTrack <| GpxApi.Track tracks.current.trackpoints filteredWaypoints tracks.current.gainLoss ) ]
-                            ++ (case model.elevationProfile.activeSplitMode of
+                            ++ (case state.elevationProfile.activeSplitMode of
                                     EquidistantMode ->
                                         [ ( "mode", Json.Encode.string "equidistant" )
-                                        , ( "count", Json.Encode.int model.elevationProfile.splitEquidistantCount )
+                                        , ( "count", Json.Encode.int state.elevationProfile.splitEquidistantCount )
                                         ]
 
                                     WaypointsMode ->
                                         let
                                             distances =
-                                                model.elevationProfile.splitWaypointIndices
+                                                state.elevationProfile.splitWaypointIndices
                                                     |> List.filterMap
                                                         (\i ->
                                                             List.Extra.getAt i tracks.current.editableWaypoints
@@ -1114,9 +1162,9 @@ requestSplitCmdWasm model =
             Cmd.none
 
 
-computeLiveSplitFromModel : Model -> Maybe GpxApi.SplitResult
-computeLiveSplitFromModel model =
-    case model.tracks of
+computeLiveSplitFromState : State -> Maybe GpxApi.SplitResult
+computeLiveSplitFromState state =
+    case state.tracks of
         Loaded tracks ->
             let
                 tps =
@@ -1126,10 +1174,10 @@ computeLiveSplitFromModel model =
                     List.reverse tps |> List.head |> Maybe.map .distance |> Maybe.withDefault 0
 
                 ep =
-                    model.elevationProfile
+                    state.elevationProfile
 
                 ( rangeStart, rangeEnd ) =
-                    case effectivePosition model of
+                    case effectivePosition state of
                         Just p ->
                             ( max 0 (p - ep.liveLookbehind), min maxDist (p + ep.liveLookahead) )
 
@@ -1141,7 +1189,7 @@ computeLiveSplitFromModel model =
 
                 segWps =
                     effectiveWaypoints tracks.current.editableWaypoints
-                        |> filterWaypoints (waypointPredicates model)
+                        |> filterWaypoints (waypointPredicates state)
                         |> List.filter (\wp -> wp.distance >= rangeStart && wp.distance <= rangeEnd)
 
                 shift record =
@@ -1176,13 +1224,13 @@ computeGainLoss tps =
             ( 0, 0 )
 
 
-withLiveSplit : Model -> Model
-withLiveSplit model =
-    if model.elevationProfile.activeSplitMode == LiveMode then
-        { model | splitSegments = computeLiveSplitFromModel model }
+withLiveSplit : State -> State
+withLiveSplit state =
+    if state.elevationProfile.activeSplitMode == LiveMode then
+        { state | splitSegments = computeLiveSplitFromState state }
 
     else
-        model
+        state
 
 
 
@@ -1243,19 +1291,19 @@ filterWaypoints filters =
     List.filter (\waypoint -> List.all (\filter -> filter waypoint) filters)
 
 
-waypointPredicates : Model -> List (GpxApi.Waypoint -> Bool)
-waypointPredicates model =
+waypointPredicates : State -> List (GpxApi.Waypoint -> Bool)
+waypointPredicates state =
     List.filterMap identity
-        [ if model.categoryFilterEnabled then
-            Just (categoryPredicate model.filteredCategories)
+        [ if state.categoryFilterEnabled then
+            Just (categoryPredicate state.filteredCategories)
 
           else
             Nothing
-        , if model.showOffRouteWaypoints then
+        , if state.showOffRouteWaypoints then
             Nothing
 
           else
-            Just (offRoutePredicate model.offRouteThreshold)
+            Just (offRoutePredicate state.offRouteThreshold)
         ]
 
 
@@ -1329,11 +1377,11 @@ correctWaypointSelection display indexed =
             display
 
 
-correctWaypointSelectionInModel : Model -> Model
-correctWaypointSelectionInModel model =
-    case maybeFromloadableResource model.tracks of
+correctWaypointSelectionInState : State -> State
+correctWaypointSelectionInState s =
+    case maybeFromloadableResource s.tracks of
         Nothing ->
-            model
+            s
 
         Just tracks ->
             let
@@ -1341,28 +1389,28 @@ correctWaypointSelectionInModel model =
                     effectiveWaypoints tracks.current.editableWaypoints
 
                 filtered =
-                    filterWaypoints (waypointPredicates model) allWaypoints
+                    filterWaypoints (waypointPredicates s) allWaypoints
 
                 indexed =
                     indexedFilteredWaypoints allWaypoints filtered
 
                 cs =
-                    model.cuesheet
+                    s.cuesheet
 
                 corrected =
                     correctWaypointSelection cs.totalDistanceDisplay indexed
             in
-            { model | cuesheet = { cs | totalDistanceDisplay = corrected } }
+            { s | cuesheet = { cs | totalDistanceDisplay = corrected } }
 
 
-effectivePosition : Model -> Maybe Float
-effectivePosition model =
-    case model.elevationProfile.manualPosition of
+effectivePosition : State -> Maybe Float
+effectivePosition state =
+    case state.elevationProfile.manualPosition of
         Just _ ->
-            model.elevationProfile.manualPosition
+            state.elevationProfile.manualPosition
 
         Nothing ->
-            model.location |> Maybe.map .matchedDistance
+            state.location |> Maybe.map .matchedDistance
 
 
 injectStartFinish : Float -> ( Float, Float ) -> List GpxApi.Waypoint -> List GpxApi.Waypoint
@@ -1390,7 +1438,7 @@ injectStartFinish finishDist ( totalGain, totalLoss ) waypoints =
 
 
 view : Model -> Browser.Document Msg
-view model =
+view { state } =
     Browser.Document "Route"
         [ Html.div
             [ Html.Attributes.class "flex-container"
@@ -1398,10 +1446,10 @@ view model =
             , Html.Attributes.class "page"
             , Html.Attributes.style "height" "100%"
             ]
-            (viewStateDecodeError model.stateDecodeError
-                ++ (case model.tracks of
+            (viewStateDecodeError state.stateDecodeError
+                ++ (case state.tracks of
                         NotLoaded ->
-                            [ viewOptionsPanel model
+                            [ viewOptionsPanel state
                             , Html.div
                                 [ Html.Attributes.class "flex-container"
                                 , Html.Attributes.class "column"
@@ -1413,7 +1461,7 @@ view model =
                             ]
 
                         Loading ->
-                            [ viewOptionsPanel model
+                            [ viewOptionsPanel state
                             , Html.div
                                 [ Html.Attributes.class "flex-container"
                                 , Html.Attributes.class "column"
@@ -1425,7 +1473,7 @@ view model =
                             ]
 
                         Error err ->
-                            [ viewOptionsPanel model
+                            [ viewOptionsPanel state
                             , Html.div
                                 [ Html.Attributes.class "flex-container"
                                 , Html.Attributes.class "column"
@@ -1446,7 +1494,7 @@ view model =
                             ]
 
                         Loaded tracks ->
-                            [ viewOptionsPanel model
+                            [ viewOptionsPanel state
                             , Html.div
                                 [ Html.Attributes.class "flex-container"
                                 , Html.Attributes.class "column"
@@ -1454,17 +1502,17 @@ view model =
                                 , Html.Attributes.style "height" "100%"
                                 , Html.Attributes.style "overflow" "auto"
                                 ]
-                                [ viewTabBar model.activeTab
+                                [ viewTabBar state.activeTab
                                 , viewTrackNavigation tracks
-                                , case model.activeTab of
+                                , case state.activeTab of
                                     ElevationProfileTab ->
-                                        viewElevationProfileTab model tracks
+                                        viewElevationProfileTab state tracks
 
                                     CuesheetTab ->
-                                        viewCuesheetTab model tracks
+                                        viewCuesheetTab state tracks
 
                                     WaypointsTab ->
-                                        viewWaypointsTab model tracks
+                                        viewWaypointsTab state tracks
                                 ]
                             ]
                    )
@@ -1613,11 +1661,11 @@ viewTrackNavigation tracks =
 -- ELEVATION PROFILE VIEW
 
 
-viewElevationProfileTab : Model -> Zipper EditableTrack -> Html Msg
-viewElevationProfileTab model tracks =
+viewElevationProfileTab : State -> Zipper EditableTrack -> Html Msg
+viewElevationProfileTab state tracks =
     let
         ep =
-            model.elevationProfile
+            state.elevationProfile
 
         trackMaxElevation =
             Maybe.withDefault 1 <| List.maximum <| List.map .elevation tracks.current.trackpoints
@@ -1626,7 +1674,7 @@ viewElevationProfileTab model tracks =
             Maybe.withDefault 1 <| List.minimum <| List.map .elevation tracks.current.trackpoints
 
         pos =
-            effectivePosition model
+            effectivePosition state
 
         fullIntensity =
             if ep.showIntensity then
@@ -1641,7 +1689,7 @@ viewElevationProfileTab model tracks =
                 ( 1 / 0, -(1 / 0) )
                 fullIntensity
     in
-    case model.splitSegments of
+    case state.splitSegments of
         Nothing ->
             Html.text ""
 
@@ -1678,7 +1726,7 @@ viewElevationProfileTab model tracks =
                                     downsampledSeg =
                                         { seg | trackpoints = downsample profileSvgWidth seg.trackpoints }
                                 in
-                                profile segIndex downsampledSeg seg.trackpoints segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness model.offRouteThreshold segPosition segIntensity trackMinIntensity trackMaxIntensity
+                                profile segIndex downsampledSeg seg.trackpoints segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness state.offRouteThreshold segPosition segIntensity trackMinIntensity trackMaxIntensity
                             )
             in
             Html.div [] profileViews
@@ -2149,11 +2197,11 @@ type Info
     | Ride Float ( Float, Float )
 
 
-viewCuesheetTab : Model -> Zipper EditableTrack -> Html Msg
-viewCuesheetTab model tracks =
+viewCuesheetTab : State -> Zipper EditableTrack -> Html Msg
+viewCuesheetTab state tracks =
     let
         cs =
-            model.cuesheet
+            state.cuesheet
 
         currentEffectiveWaypoints =
             effectiveWaypoints tracks.current.editableWaypoints
@@ -2169,8 +2217,8 @@ viewCuesheetTab model tracks =
                 currentEffectiveWaypoints
 
         filteredWaypoints =
-            filterWaypoints (waypointPredicates model) waypointsWithStartFinish
-                |> trimWaypointCategories model.filteredCategories
+            filterWaypoints (waypointPredicates state) waypointsWithStartFinish
+                |> trimWaypointCategories state.filteredCategories
 
         refWaypoint =
             case cs.totalDistanceDisplay of
@@ -2193,12 +2241,12 @@ viewCuesheetTab model tracks =
                         |> Result.withDefault ( 0, 0 )
     in
     Html.div []
-        [ cuesheetSvg model.offRouteThreshold model.showOffRouteDistance filteredWaypoints cs currentFinishDistance refPointEle refWaypoint
+        [ cuesheetSvg state.offRouteThreshold state.showOffRouteDistance filteredWaypoints cs currentFinishDistance refPointEle refWaypoint
         ]
 
 
-viewWaypointsTab : Model -> Zipper EditableTrack -> Html Msg
-viewWaypointsTab model tracks =
+viewWaypointsTab : State -> Zipper EditableTrack -> Html Msg
+viewWaypointsTab state tracks =
     let
         maxDistance =
             lastTrackpointDistance tracks.current.trackpoints
@@ -2227,7 +2275,7 @@ viewWaypointsTab model tracks =
                                 wp =
                                     effectiveWaypoint ew
                             in
-                            if List.all (\f -> f wp) (waypointPredicates model) then
+                            if List.all (\f -> f wp) (waypointPredicates state) then
                                 Just
                                     (Html.div []
                                         [ Html.input
@@ -2245,7 +2293,7 @@ viewWaypointsTab model tracks =
                                             ]
                                             []
                                         , viewButton [] "X" (WaypointDeleted i True)
-                                        , viewWaypointCategories i wp.categories (Dict.keys model.filteredCategories) (Dict.get i model.newCategoryInputs |> Maybe.withDefault "")
+                                        , viewWaypointCategories i wp.categories (Dict.keys state.filteredCategories) (Dict.get i state.newCategoryInputs |> Maybe.withDefault "")
                                         ]
                                     )
 
@@ -2587,15 +2635,15 @@ cumulativeGainLossAtDistance dist trackpoints =
 -- OPTIONS PANEL
 
 
-viewOptionsPanel : Model -> Html Msg
-viewOptionsPanel model =
+viewOptionsPanel : State -> Html Msg
+viewOptionsPanel state =
     Html.div
         [ Html.Attributes.class "flex-container"
         , Html.Attributes.class "column"
         , Html.Attributes.style "overflow" "auto"
         , Html.Attributes.class "narrow"
         ]
-        (if not model.showOptions then
+        (if not state.showOptions then
             [ Html.p
                 [ Html.Events.onClick <| ShowOptions True
                 , Html.Attributes.style "transform" "rotate(90deg)"
@@ -2624,7 +2672,7 @@ viewOptionsPanel model =
                             ]
                             (List.concat
                                 [ [ viewButton [ Html.Attributes.style "width" "100%" ] "upload GPX" OpenFileBrowser ]
-                                , viewTrackNavigationButtons model
+                                , viewTrackNavigationButtons state
                                 ]
                             )
                       , Html.hr [] []
@@ -2633,21 +2681,21 @@ viewOptionsPanel model =
                     , [ Html.hr [] [] ]
 
                     -- Shared: Category filtering
-                    , viewCategoryFilterOptions model
+                    , viewCategoryFilterOptions state
 
                     -- Tab-specific options
-                    , case model.activeTab of
+                    , case state.activeTab of
                         ElevationProfileTab ->
-                            viewElevationProfileOptions model
+                            viewElevationProfileOptions state
 
                         CuesheetTab ->
-                            viewCuesheetOptionsPanel model
+                            viewCuesheetOptionsPanel state
 
                         WaypointsTab ->
                             []
 
                     -- Location tracking
-                    , viewLocationOptions model
+                    , viewLocationOptions state
                     ]
             ]
         )
@@ -2691,9 +2739,9 @@ viewStateExportImport =
     ]
 
 
-viewTrackNavigationButtons : Model -> List (Html Msg)
-viewTrackNavigationButtons model =
-    case model.tracks of
+viewTrackNavigationButtons : State -> List (Html Msg)
+viewTrackNavigationButtons state =
+    case state.tracks of
         Loaded tracks ->
             List.concat
                 [ if not (List.isEmpty tracks.prev) then
@@ -2712,8 +2760,8 @@ viewTrackNavigationButtons model =
             []
 
 
-viewCategoryFilterOptions : Model -> List (Html Msg)
-viewCategoryFilterOptions model =
+viewCategoryFilterOptions : State -> List (Html Msg)
+viewCategoryFilterOptions state =
     [ optionGroup "Waypoint categories"
         (Html.select
             [ Html.Events.onInput
@@ -2728,18 +2776,18 @@ viewCategoryFilterOptions model =
             ]
             [ Html.option
                 [ Html.Attributes.value "all"
-                , Html.Attributes.selected (not model.categoryFilterEnabled)
+                , Html.Attributes.selected (not state.categoryFilterEnabled)
                 ]
                 [ Html.text "all" ]
             , Html.option
                 [ Html.Attributes.value "filtered"
-                , Html.Attributes.selected model.categoryFilterEnabled
+                , Html.Attributes.selected state.categoryFilterEnabled
                 ]
                 [ Html.text "filtered" ]
             ]
-            :: (if model.categoryFilterEnabled then
+            :: (if state.categoryFilterEnabled then
                     [ Html.fieldset []
-                        ((model.filteredCategories
+                        ((state.filteredCategories
                             |> Dict.toList
                             |> List.map
                                 (\( cat, included ) ->
@@ -2763,28 +2811,28 @@ viewCategoryFilterOptions model =
                     []
                )
         )
-    , optionGroup ("Off-route threshold: " ++ String.fromInt (round model.offRouteThreshold) ++ "m")
+    , optionGroup ("Off-route threshold: " ++ String.fromInt (round state.offRouteThreshold) ++ "m")
         [ Html.input
             [ Html.Attributes.type_ "range"
             , Html.Attributes.min "0"
             , Html.Attributes.max "1000"
             , Html.Attributes.step "10"
-            , Html.Attributes.value <| String.fromFloat model.offRouteThreshold
+            , Html.Attributes.value <| String.fromFloat state.offRouteThreshold
             , Html.Events.onInput (String.toFloat >> Maybe.withDefault 100 >> UpdateOffRouteThreshold)
             ]
             []
-        , checkbox model.showOffRouteWaypoints (UpdateShowOffRouteWaypoints (not model.showOffRouteWaypoints)) "Show off-route waypoints"
-        , checkbox model.showOffRouteDistance (UpdateShowOffRouteDistance (not model.showOffRouteDistance)) "Show off-route distance"
+        , checkbox state.showOffRouteWaypoints (UpdateShowOffRouteWaypoints (not state.showOffRouteWaypoints)) "Show off-route waypoints"
+        , checkbox state.showOffRouteDistance (UpdateShowOffRouteDistance (not state.showOffRouteDistance)) "Show off-route distance"
         ]
     , Html.hr [] []
     ]
 
 
-viewElevationProfileOptions : Model -> List (Html Msg)
-viewElevationProfileOptions model =
+viewElevationProfileOptions : State -> List (Html Msg)
+viewElevationProfileOptions state =
     let
         ep =
-            model.elevationProfile
+            state.elevationProfile
     in
     [ optionGroup "Font size"
         [ Html.input
@@ -2897,7 +2945,7 @@ viewElevationProfileOptions model =
                             ep.splitWaypointIndices
 
                         indexed =
-                            maybeFromloadableResource model.tracks
+                            maybeFromloadableResource state.tracks
                                 |> Maybe.map (.current >> .editableWaypoints >> indexedEffectiveWaypoints)
                                 |> Maybe.withDefault []
 
@@ -2964,7 +3012,7 @@ viewElevationProfileOptions model =
     , optionGroup "Position"
         (let
             maxDist =
-                maybeFromloadableResource model.tracks
+                maybeFromloadableResource state.tracks
                     |> Maybe.andThen (\ts -> List.maximum (List.map .distance ts.current.trackpoints))
                     |> Maybe.withDefault 1
          in
@@ -2974,15 +3022,15 @@ viewElevationProfileOptions model =
                     , Html.Attributes.min "0"
                     , Html.Attributes.max (String.fromFloat maxDist)
                     , Html.Attributes.step "100"
-                    , Html.Attributes.value (String.fromFloat (effectivePosition model |> Maybe.withDefault 0))
+                    , Html.Attributes.value (String.fromFloat (effectivePosition state |> Maybe.withDefault 0))
                     , Html.Events.onInput (String.toFloat >> Maybe.map Just >> Maybe.withDefault Nothing >> UpdateManualPosition)
-                    , Html.Attributes.disabled model.trackingEnabled
+                    , Html.Attributes.disabled state.trackingEnabled
                     ]
                     []
               ]
             , case ep.manualPosition of
                 Just _ ->
-                    if model.trackingEnabled then
+                    if state.trackingEnabled then
                         []
 
                     else
@@ -2996,18 +3044,18 @@ viewElevationProfileOptions model =
     ]
 
 
-viewCuesheetOptionsPanel : Model -> List (Html Msg)
-viewCuesheetOptionsPanel model =
+viewCuesheetOptionsPanel : State -> List (Html Msg)
+viewCuesheetOptionsPanel state =
     let
         cs =
-            model.cuesheet
+            state.cuesheet
 
         maxDistance =
-            maybeFromloadableResource model.tracks
+            maybeFromloadableResource state.tracks
                 |> Maybe.map (\ts -> lastTrackpointDistance ts.current.trackpoints)
 
         maybeTracks =
-            maybeFromloadableResource model.tracks
+            maybeFromloadableResource state.tracks
 
         filteredWps =
             maybeTracks
@@ -3023,8 +3071,8 @@ viewCuesheetOptionsPanel model =
                          else
                             currentEffective
                         )
-                            |> filterWaypoints (waypointPredicates model)
-                            |> trimWaypointCategories model.filteredCategories
+                            |> filterWaypoints (waypointPredicates state)
+                            |> trimWaypointCategories state.filteredCategories
                     )
                 |> Maybe.withDefault []
 
@@ -3140,14 +3188,14 @@ viewCuesheetOptionsPanel model =
     ]
 
 
-viewLocationOptions : Model -> List (Html Msg)
-viewLocationOptions model =
-    case model.tracks of
+viewLocationOptions : State -> List (Html Msg)
+viewLocationOptions state =
+    case state.tracks of
         Loaded _ ->
             List.concat
                 [ [ Html.hr [] []
                   , viewButton [ Html.Attributes.style "width" "100%" ]
-                        (if model.trackingEnabled then
+                        (if state.trackingEnabled then
                             "Stop Tracking"
 
                          else
@@ -3156,14 +3204,14 @@ viewLocationOptions model =
                         ToggleTracking
                   , viewButton [ Html.Attributes.style "width" "100%" ] "Refresh Location" RequestLocation
                   ]
-                , if model.trackingEnabled then
-                    [ optionGroup ("Interval: " ++ String.fromInt model.trackingIntervalSec ++ "s")
+                , if state.trackingEnabled then
+                    [ optionGroup ("Interval: " ++ String.fromInt state.trackingIntervalSec ++ "s")
                         [ Html.input
                             [ Html.Attributes.type_ "range"
                             , Html.Attributes.min "10"
                             , Html.Attributes.max "300"
                             , Html.Attributes.step "10"
-                            , Html.Attributes.value <| String.fromInt model.trackingIntervalSec
+                            , Html.Attributes.value <| String.fromInt state.trackingIntervalSec
                             , Html.Events.onInput (String.toInt >> Maybe.withDefault 60 >> SetTrackingInterval)
                             ]
                             []
@@ -3177,12 +3225,12 @@ viewLocationOptions model =
                         , Html.Attributes.style "margin" "0.5em 0"
                         ]
                         [ Html.text
-                            (case model.locationError of
+                            (case state.locationError of
                                 Just err ->
                                     Location.locationErrorToString err
 
                                 Nothing ->
-                                    case model.location of
+                                    case state.location of
                                         Just loc ->
                                             "Accuracy: " ++ String.fromFloat (toFloat (round (loc.accuracy * 10)) / 10) ++ "m"
 
@@ -3413,24 +3461,24 @@ editableWaypointDecoder =
         )
 
 
-encodeSavedState : Model -> String
-encodeSavedState model =
+encodeSavedState : State -> String
+encodeSavedState state =
     let
         ep =
-            model.elevationProfile
+            state.elevationProfile
 
         cs =
-            model.cuesheet
+            state.cuesheet
     in
     Json.Encode.object
         (List.filterMap
             identity
-            [ maybeFromloadableResource model.tracks |> Maybe.map (\tracks -> ( "tracks", Zipper.encode encodeEditableTrack tracks ))
-            , Just ( "activeTab", Json.Encode.string (formatTab model.activeTab) )
-            , Just ( "showOptions", Json.Encode.bool model.showOptions )
-            , Just ( "trackingIntervalSec", Json.Encode.int model.trackingIntervalSec )
-            , Just ( "categoryFilterEnabled", Json.Encode.bool model.categoryFilterEnabled )
-            , Just ( "filteredCategories", Json.Encode.dict identity Json.Encode.bool model.filteredCategories )
+            [ maybeFromloadableResource state.tracks |> Maybe.map (\tracks -> ( "tracks", Zipper.encode encodeEditableTrack tracks ))
+            , Just ( "activeTab", Json.Encode.string (formatTab state.activeTab) )
+            , Just ( "showOptions", Json.Encode.bool state.showOptions )
+            , Just ( "trackingIntervalSec", Json.Encode.int state.trackingIntervalSec )
+            , Just ( "categoryFilterEnabled", Json.Encode.bool state.categoryFilterEnabled )
+            , Just ( "filteredCategories", Json.Encode.dict identity Json.Encode.bool state.filteredCategories )
             , Just ( "fontSize", Json.Encode.float ep.fontSize )
             , Just ( "trackHeight", Json.Encode.int ep.trackHeight )
             , Just ( "trackThickness", Json.Encode.float ep.trackThickness )
@@ -3460,22 +3508,19 @@ encodeSavedState model =
             , Just ( "itemSpacing", Json.Encode.int cs.itemSpacing )
             , Just ( "distanceDetail", Json.Encode.int cs.distanceDetail )
             , Just ( "showStartFinish", Json.Encode.bool cs.showStartFinish )
-            , Just ( "offRouteThreshold", Json.Encode.float model.offRouteThreshold )
-            , Just ( "showOffRouteWaypoints", Json.Encode.bool model.showOffRouteWaypoints )
-            , Just ( "showOffRouteDistance", Json.Encode.bool model.showOffRouteDistance )
+            , Just ( "offRouteThreshold", Json.Encode.float state.offRouteThreshold )
+            , Just ( "showOffRouteWaypoints", Json.Encode.bool state.showOffRouteWaypoints )
+            , Just ( "showOffRouteDistance", Json.Encode.bool state.showOffRouteDistance )
             ]
         )
         |> Json.Encode.encode 0
 
 
-modelDecoder : Json.Decode.Decoder Model
-modelDecoder =
+stateDecoder : Json.Decode.Decoder State
+stateDecoder =
     let
         maybeField name decoder =
             Json.Decode.maybe (Json.Decode.field name decoder)
-
-        def =
-            defaultModel
 
         defEp =
             defaultElevationProfileOptions
@@ -3486,18 +3531,18 @@ modelDecoder =
     Json.Decode.succeed
         (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau manualPosition splitMode splitEquidistantCount splitWaypointIndices liveLookahead liveLookbehind totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints ->
             { tracks = loadableResourceFromMaybe tracks
-            , showOptions = showOptions |> Maybe.withDefault def.showOptions
-            , activeTab = activeTab |> Maybe.andThen parseTab |> Maybe.withDefault def.activeTab
+            , showOptions = showOptions |> Maybe.withDefault defaultState.showOptions
+            , activeTab = activeTab |> Maybe.andThen parseTab |> Maybe.withDefault defaultState.activeTab
             , location = Nothing
             , locationError = Nothing
             , trackingEnabled = False
-            , trackingIntervalSec = trackingIntervalSec |> Maybe.withDefault def.trackingIntervalSec
-            , categoryFilterEnabled = categoryFilterEnabled |> Maybe.withDefault def.categoryFilterEnabled
-            , filteredCategories = filteredCategories |> Maybe.withDefault def.filteredCategories
+            , trackingIntervalSec = trackingIntervalSec |> Maybe.withDefault defaultState.trackingIntervalSec
+            , categoryFilterEnabled = categoryFilterEnabled |> Maybe.withDefault defaultState.categoryFilterEnabled
+            , filteredCategories = filteredCategories |> Maybe.withDefault defaultState.filteredCategories
             , newCategoryInputs = Dict.empty
-            , offRouteThreshold = offRouteThreshold |> Maybe.withDefault def.offRouteThreshold
-            , showOffRouteWaypoints = showOffRouteWaypoints |> Maybe.withDefault def.showOffRouteWaypoints
-            , showOffRouteDistance = showOffRouteDistance |> Maybe.withDefault def.showOffRouteDistance
+            , offRouteThreshold = offRouteThreshold |> Maybe.withDefault defaultState.offRouteThreshold
+            , showOffRouteWaypoints = showOffRouteWaypoints |> Maybe.withDefault defaultState.showOffRouteWaypoints
+            , showOffRouteDistance = showOffRouteDistance |> Maybe.withDefault defaultState.showOffRouteDistance
             , elevationProfile =
                 { fontSize = fontSize |> Maybe.withDefault defEp.fontSize
                 , trackHeight = trackHeight |> Maybe.withDefault defEp.trackHeight
