@@ -82,6 +82,9 @@ type alias State =
     -- Waypoint editing
     , newCategoryInputs : Dict.Dict Int String
 
+    -- View mode
+    , viewMode : ViewMode
+
     -- View-specific options
     , elevationProfile : ElevationProfileOptions
     , cuesheet : CuesheetOptions
@@ -198,7 +201,6 @@ type alias ElevationProfileOptions =
     , showIntensity : Bool
     , intensityTau : Float
     , manualPosition : Maybe Float
-    , viewMode : ViewMode
     , activeSplitMode : ActiveSplitMode
     , splitEquidistantCount : Int
     , splitWaypointIndices : List Int
@@ -235,7 +237,6 @@ defaultElevationProfileOptions =
     , showIntensity = False
     , intensityTau = 500
     , manualPosition = Nothing
-    , viewMode = StaticView
     , activeSplitMode = EquidistantMode
     , splitEquidistantCount = 1
     , splitWaypointIndices = []
@@ -282,6 +283,7 @@ defaultState =
     , categoryFilterEnabled = False
     , filteredCategories = Dict.empty
     , newCategoryInputs = Dict.empty
+    , viewMode = StaticView
     , elevationProfile = defaultElevationProfileOptions
     , cuesheet = defaultCuesheetOptions
     , offRouteThreshold = 100
@@ -884,11 +886,7 @@ update msg model =
             updateAndStoreModel (updateState { s | elevationProfile = { ep | splitEquidistantCount = n } })
 
         SetViewMode mode ->
-            let
-                ep =
-                    s.elevationProfile
-            in
-            updateAndStoreModel (updateState { s | elevationProfile = { ep | viewMode = mode } })
+            updateAndStoreModel (updateState { s | viewMode = mode })
 
         SetSplitMode mode ->
             let
@@ -1125,7 +1123,7 @@ updateAndStoreModel model =
 
 requestSplitCmd : State -> Cmd Msg
 requestSplitCmd state =
-    case state.elevationProfile.viewMode of
+    case state.viewMode of
         LiveView ->
             Cmd.none
 
@@ -1246,7 +1244,7 @@ computeGainLoss tps =
 
 withLiveSplit : State -> State
 withLiveSplit state =
-    if state.elevationProfile.viewMode == LiveView then
+    if state.viewMode == LiveView then
         { state | splitSegments = computeLiveSplitFromState state }
 
     else
@@ -1324,6 +1322,16 @@ waypointPredicates state =
 
           else
             Just (offRoutePredicate state.offRouteThreshold)
+        , case ( state.viewMode, effectivePosition state ) of
+            ( LiveView, Just pos ) ->
+                let
+                    ep =
+                        state.elevationProfile
+                in
+                Just (\wp -> wp.distance >= pos - ep.liveLookbehind && wp.distance <= pos + ep.liveLookahead)
+
+            _ ->
+                Nothing
         ]
 
 
@@ -2218,6 +2226,7 @@ xyCalculator cfg =
 
 type Info
     = InfoWaypoint GpxApi.Waypoint
+    | InfoPosition GpxApi.Waypoint
     | Ride Float ( Float, Float )
 
 
@@ -2244,6 +2253,24 @@ viewCuesheetTab state tracks =
             filterWaypoints (waypointPredicates state) waypointsWithStartFinish
                 |> trimWaypointCategories state.filteredCategories
 
+        positionWaypoint =
+            case ( effectivePosition state, state.viewMode ) of
+                ( Just pos, LiveView ) ->
+                    cumulativeGainLossAtDistance pos tracks.current.trackpoints
+                        |> Result.toMaybe
+                        |> Maybe.map (\( g, l ) -> GpxApi.Waypoint pos "Current position" [] g l 0)
+
+                _ ->
+                    Nothing
+
+        waypointsWithPosition =
+            case positionWaypoint of
+                Just pw ->
+                    List.sortBy .distance (pw :: filteredWaypoints)
+
+                Nothing ->
+                    filteredWaypoints
+
         refWaypoint =
             case cs.totalDistanceDisplay of
                 ToWaypoint idx ->
@@ -2265,7 +2292,7 @@ viewCuesheetTab state tracks =
                         |> Result.withDefault ( 0, 0 )
     in
     Html.div []
-        [ cuesheetSvg state.offRouteThreshold state.showOffRouteDistance filteredWaypoints cs currentFinishDistance refPointEle refWaypoint
+        [ cuesheetSvg state.offRouteThreshold state.showOffRouteDistance (Maybe.map .distance positionWaypoint) waypointsWithPosition cs currentFinishDistance refPointEle refWaypoint
         ]
 
 
@@ -2300,57 +2327,59 @@ viewWaypointsTab state tracks =
                 |> List.indexedMap Tuple.pair
                 |> List.filterMap
                     (\( i, ew ) ->
-                        if ew.deleted then
+                        let
+                            wp =
+                                effectiveWaypoint ew
+
+                            predicates =
+                                waypointPredicates state
+                        in
+                        if not (List.all (\f -> f wp) predicates) then
+                            Nothing
+
+                        else if ew.deleted then
                             Just (viewDeletedWaypoint i ew)
 
                         else
-                            let
-                                wp =
-                                    effectiveWaypoint ew
-                            in
-                            if List.all (\f -> f wp) (waypointPredicates state) then
-                                Just
-                                    (Html.div
-                                        [ Html.Attributes.style "border" "1px solid #ddd"
-                                        , Html.Attributes.style "border-radius" "6px"
-                                        , Html.Attributes.style "padding" "0.5em"
-                                        , Html.Attributes.style "display" "flex"
-                                        , Html.Attributes.style "flex-direction" "column"
+                            Just
+                                (Html.div
+                                    [ Html.Attributes.style "border" "1px solid #ddd"
+                                    , Html.Attributes.style "border-radius" "6px"
+                                    , Html.Attributes.style "padding" "0.5em"
+                                    , Html.Attributes.style "display" "flex"
+                                    , Html.Attributes.style "flex-direction" "column"
+                                    , Html.Attributes.style "gap" "0.4em"
+                                    , Html.Attributes.style "background" "#fafafa"
+                                    ]
+                                    [ Html.div
+                                        [ Html.Attributes.style "display" "flex"
                                         , Html.Attributes.style "gap" "0.4em"
-                                        , Html.Attributes.style "background" "#fafafa"
+                                        , Html.Attributes.style "align-items" "center"
                                         ]
-                                        [ Html.div
-                                            [ Html.Attributes.style "display" "flex"
-                                            , Html.Attributes.style "gap" "0.4em"
-                                            , Html.Attributes.style "align-items" "center"
+                                        [ Html.input
+                                            [ Html.Attributes.type_ "number"
+                                            , Html.Attributes.min "0"
+                                            , maxDistance |> (String.fromFloat >> Html.Attributes.max)
+                                            , Html.Attributes.value <| String.fromFloat wp.distance
+                                            , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1000 >> WaypointDistanceChange i)
+                                            , Html.Attributes.style "width" "7em"
+                                            , Html.Attributes.style "flex-shrink" "0"
                                             ]
-                                            [ Html.input
-                                                [ Html.Attributes.type_ "number"
-                                                , Html.Attributes.min "0"
-                                                , maxDistance |> (String.fromFloat >> Html.Attributes.max)
-                                                , Html.Attributes.value <| String.fromFloat wp.distance
-                                                , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1000 >> WaypointDistanceChange i)
-                                                , Html.Attributes.style "width" "7em"
-                                                , Html.Attributes.style "flex-shrink" "0"
-                                                ]
-                                                []
-                                            , Html.input
-                                                [ Html.Attributes.type_ "text"
-                                                , Html.Attributes.placeholder "Waypoint name..."
-                                                , Html.Attributes.value wp.name
-                                                , Html.Events.onInput <| WaypointNameChange i
-                                                , Html.Attributes.style "flex" "1"
-                                                , Html.Attributes.style "min-width" "0"
-                                                ]
-                                                []
-                                            , viewButton [] "X" (WaypointDeleted i True)
+                                            []
+                                        , Html.input
+                                            [ Html.Attributes.type_ "text"
+                                            , Html.Attributes.placeholder "Waypoint name..."
+                                            , Html.Attributes.value wp.name
+                                            , Html.Events.onInput <| WaypointNameChange i
+                                            , Html.Attributes.style "flex" "1"
+                                            , Html.Attributes.style "min-width" "0"
                                             ]
-                                        , viewWaypointCategories i wp.categories (List.filter (\c -> c /= unknownCategory) (Dict.keys state.filteredCategories)) (Dict.get i state.newCategoryInputs |> Maybe.withDefault "")
+                                            []
+                                        , viewButton [] "X" (WaypointDeleted i True)
                                         ]
-                                    )
-
-                            else
-                                Nothing
+                                    , viewWaypointCategories i wp.categories (List.filter (\c -> c /= unknownCategory) (Dict.keys state.filteredCategories)) (Dict.get i state.newCategoryInputs |> Maybe.withDefault "")
+                                    ]
+                                )
                     )
             )
         ]
@@ -2442,11 +2471,11 @@ viewWaypointCategories idx waypointCategories allCategories newCatInput =
         ]
 
 
-cuesheetSvg : Float -> Bool -> List GpxApi.Waypoint -> CuesheetOptions -> Float -> ( Float, Float ) -> Maybe GpxApi.Waypoint -> Html Msg
-cuesheetSvg offRouteThreshold showOffRouteDistance waypoints cs finishDist refPointEle refWaypoint =
+cuesheetSvg : Float -> Bool -> Maybe Float -> List GpxApi.Waypoint -> CuesheetOptions -> Float -> ( Float, Float ) -> Maybe GpxApi.Waypoint -> Html Msg
+cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance waypoints cs finishDist refPointEle refWaypoint =
     let
         info =
-            waypointInfos cs.position waypoints
+            waypointInfos positionDistance cs.position waypoints
 
         lastWaypoint =
             List.reverse waypoints |> List.head
@@ -2475,8 +2504,8 @@ cuesheetSvg offRouteThreshold showOffRouteDistance waypoints cs finishDist refPo
                             translate =
                                 Svg.Attributes.transform <| "translate(0," ++ (String.fromInt <| i * cs.itemSpacing) ++ ")"
                         in
-                        case item of
-                            InfoWaypoint waypoint ->
+                        let
+                            renderWaypointItem fillAttrs waypoint =
                                 let
                                     waypointDistance =
                                         case cs.totalDistanceDisplay of
@@ -2581,12 +2610,7 @@ cuesheetSvg offRouteThreshold showOffRouteDistance waypoints cs finishDist refPo
                                          , Svg.Attributes.dominantBaseline "middle"
                                          , Svg.Attributes.y <| String.fromInt (cs.itemSpacing // 2)
                                          ]
-                                            ++ (if isOffRoute then
-                                                    [ Svg.Attributes.fill "orange" ]
-
-                                                else
-                                                    []
-                                               )
+                                            ++ fillAttrs
                                         )
                                         [ Svg.text waypoint.name ]
                                         :: (waypointInfoLines
@@ -2604,6 +2628,20 @@ cuesheetSvg offRouteThreshold showOffRouteDistance waypoints cs finishDist refPo
                                                     )
                                            )
                                     )
+                        in
+                        case item of
+                            InfoWaypoint waypoint ->
+                                renderWaypointItem
+                                    (if waypoint.offRoute > offRouteThreshold then
+                                        [ Svg.Attributes.fill "orange" ]
+
+                                     else
+                                        []
+                                    )
+                                    waypoint
+
+                            InfoPosition waypoint ->
+                                renderWaypointItem [ Svg.Attributes.fill "steelblue" ] waypoint
 
                             Ride dist ( gain, loss ) ->
                                 let
@@ -2664,8 +2702,16 @@ cuesheetSvg offRouteThreshold showOffRouteDistance waypoints cs finishDist refPo
         ]
 
 
-waypointInfos : Float -> List GpxApi.Waypoint -> List Info
-waypointInfos position waypoints =
+waypointInfos : Maybe Float -> Float -> List GpxApi.Waypoint -> List Info
+waypointInfos positionDistance position waypoints =
+    let
+        infoConstructor wp =
+            if Just wp.distance == positionDistance then
+                InfoPosition wp
+
+            else
+                InfoWaypoint wp
+    in
     List.foldl
         (\el accum ->
             if el.distance < position then
@@ -2673,7 +2719,7 @@ waypointInfos position waypoints =
 
             else
                 ( Just el
-                , (InfoWaypoint el
+                , (infoConstructor el
                     :: (Tuple.first accum
                             |> Maybe.map
                                 (\previous ->
@@ -2779,6 +2825,65 @@ viewOptionsPanel state =
 
                     -- Shared: Category filtering
                     , viewCategoryFilterOptions state
+
+                    -- Shared: View mode
+                    , [ optionGroup "View"
+                            [ Html.select
+                                [ Html.Events.onInput
+                                    (\v ->
+                                        case v of
+                                            "live" ->
+                                                SetViewMode LiveView
+
+                                            _ ->
+                                                SetViewMode StaticView
+                                    )
+                                ]
+                                [ Html.option
+                                    [ Html.Attributes.value "static"
+                                    , Html.Attributes.selected (state.viewMode == StaticView)
+                                    ]
+                                    [ Html.text "Static" ]
+                                , Html.option
+                                    [ Html.Attributes.value "live"
+                                    , Html.Attributes.selected (state.viewMode == LiveView)
+                                    ]
+                                    [ Html.text "Live" ]
+                                ]
+                            ]
+                      ]
+                    , case state.viewMode of
+                        LiveView ->
+                            let
+                                ep =
+                                    state.elevationProfile
+                            in
+                            [ optionGroup "Live window"
+                                [ Html.text ("Lookbehind: " ++ formatKm 1 ep.liveLookbehind)
+                                , Html.input
+                                    [ Html.Attributes.type_ "range"
+                                    , Html.Attributes.min "0"
+                                    , Html.Attributes.max "50000"
+                                    , Html.Attributes.step "500"
+                                    , Html.Attributes.value <| String.fromFloat ep.liveLookbehind
+                                    , Html.Events.onInput (String.toFloat >> Maybe.withDefault 2000 >> UpdateLiveLookbehind)
+                                    ]
+                                    []
+                                , Html.text ("Lookahead: " ++ formatKm 1 ep.liveLookahead)
+                                , Html.input
+                                    [ Html.Attributes.type_ "range"
+                                    , Html.Attributes.min "0"
+                                    , Html.Attributes.max "200000"
+                                    , Html.Attributes.step "500"
+                                    , Html.Attributes.value <| String.fromFloat ep.liveLookahead
+                                    , Html.Events.onInput (String.toFloat >> Maybe.withDefault 5000 >> UpdateLiveLookahead)
+                                    ]
+                                    []
+                                ]
+                            ]
+
+                        StaticView ->
+                            []
 
                     -- Tab-specific options
                     , case state.activeTab of
@@ -3001,57 +3106,7 @@ viewElevationProfileOptions state =
                 []
             ]
         )
-    , optionGroup "View"
-        [ Html.select
-            [ Html.Events.onInput
-                (\v ->
-                    case v of
-                        "live" ->
-                            SetViewMode LiveView
-
-                        _ ->
-                            SetViewMode StaticView
-                )
-            ]
-            [ Html.option
-                [ Html.Attributes.value "static"
-                , Html.Attributes.selected (ep.viewMode == StaticView)
-                ]
-                [ Html.text "Static" ]
-            , Html.option
-                [ Html.Attributes.value "live"
-                , Html.Attributes.selected (ep.viewMode == LiveView)
-                ]
-                [ Html.text "Live" ]
-            ]
-        ]
-    , case ep.viewMode of
-        LiveView ->
-            optionGroup "Live window"
-                [ Html.text ("Lookbehind: " ++ formatKm 1 ep.liveLookbehind)
-                , Html.input
-                    [ Html.Attributes.type_ "range"
-                    , Html.Attributes.min "0"
-                    , Html.Attributes.max "50000"
-                    , Html.Attributes.step "500"
-                    , Html.Attributes.value <| String.fromFloat ep.liveLookbehind
-                    , Html.Events.onInput (String.toFloat >> Maybe.withDefault 2000 >> UpdateLiveLookbehind)
-                    ]
-                    []
-                , Html.text ("Lookahead: " ++ formatKm 1 ep.liveLookahead)
-                , Html.input
-                    [ Html.Attributes.type_ "range"
-                    , Html.Attributes.min "0"
-                    , Html.Attributes.max "200000"
-                    , Html.Attributes.step "500"
-                    , Html.Attributes.value <| String.fromFloat ep.liveLookahead
-                    , Html.Events.onInput (String.toFloat >> Maybe.withDefault 5000 >> UpdateLiveLookahead)
-                    ]
-                    []
-                ]
-
-        StaticView ->
-            optionGroup "Splits"
+    , optionGroup "Splits"
                 (List.concat
                     [ [ Html.select
                             [ Html.Events.onInput
@@ -3615,7 +3670,7 @@ encodeSavedState state =
             , Just
                 ( "viewMode"
                 , Json.Encode.string
-                    (case ep.viewMode of
+                    (case state.viewMode of
                         LiveView ->
                             "live"
 
@@ -3676,6 +3731,13 @@ stateDecoder =
             , categoryFilterEnabled = categoryFilterEnabled |> Maybe.withDefault defaultState.categoryFilterEnabled
             , filteredCategories = filteredCategories |> Maybe.withDefault defaultState.filteredCategories
             , newCategoryInputs = Dict.empty
+            , viewMode =
+                case viewMode of
+                    Just "live" ->
+                        LiveView
+
+                    _ ->
+                        StaticView
             , offRouteThreshold = offRouteThreshold |> Maybe.withDefault defaultState.offRouteThreshold
             , showOffRouteWaypoints = showOffRouteWaypoints |> Maybe.withDefault defaultState.showOffRouteWaypoints
             , showOffRouteDistance = showOffRouteDistance |> Maybe.withDefault defaultState.showOffRouteDistance
@@ -3686,13 +3748,6 @@ stateDecoder =
                 , showIntensity = showIntensity |> Maybe.withDefault defEp.showIntensity
                 , intensityTau = intensityTau |> Maybe.withDefault defEp.intensityTau
                 , manualPosition = manualPosition
-                , viewMode =
-                    case viewMode of
-                        Just "live" ->
-                            LiveView
-
-                        _ ->
-                            StaticView
                 , activeSplitMode =
                     case splitMode of
                         Just "waypoints" ->
