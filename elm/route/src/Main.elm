@@ -2270,13 +2270,22 @@ viewWaypointsTab state tracks =
                 (\ew -> ew.deleted || ew.overrides /= emptyOverrides)
                 tracks.current.editableWaypoints
     in
-    Html.div []
+    Html.div
+        [ Html.Attributes.style "display" "flex"
+        , Html.Attributes.style "flex-direction" "column"
+        , Html.Attributes.style "gap" "0.5em"
+        , Html.Attributes.style "padding" "0.5em"
+        ]
         [ if anyWaypointEdited then
             viewButton [] "Reset Waypoints" ResetWaypoints
 
           else
             Html.text ""
-        , Html.div []
+        , Html.div
+            [ Html.Attributes.style "display" "flex"
+            , Html.Attributes.style "flex-direction" "column"
+            , Html.Attributes.style "gap" "0.5em"
+            ]
             (tracks.current.editableWaypoints
                 |> List.indexedMap Tuple.pair
                 |> List.filterMap
@@ -2291,22 +2300,41 @@ viewWaypointsTab state tracks =
                             in
                             if List.all (\f -> f wp) (waypointPredicates state) then
                                 Just
-                                    (Html.div []
-                                        [ Html.input
-                                            [ Html.Attributes.type_ "number"
-                                            , Html.Attributes.min "0"
-                                            , maxDistance |> (String.fromFloat >> Html.Attributes.max)
-                                            , Html.Attributes.value <| String.fromFloat wp.distance
-                                            , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1000 >> WaypointDistanceChange i)
+                                    (Html.div
+                                        [ Html.Attributes.style "border" "1px solid #ddd"
+                                        , Html.Attributes.style "border-radius" "6px"
+                                        , Html.Attributes.style "padding" "0.5em"
+                                        , Html.Attributes.style "display" "flex"
+                                        , Html.Attributes.style "flex-direction" "column"
+                                        , Html.Attributes.style "gap" "0.4em"
+                                        , Html.Attributes.style "background" "#fafafa"
+                                        ]
+                                        [ Html.div
+                                            [ Html.Attributes.style "display" "flex"
+                                            , Html.Attributes.style "gap" "0.4em"
+                                            , Html.Attributes.style "align-items" "center"
                                             ]
-                                            []
-                                        , Html.textarea
-                                            [ Html.Attributes.placeholder "Waypoint name..."
-                                            , Html.Attributes.value wp.name
-                                            , Html.Events.onInput <| WaypointNameChange i
+                                            [ Html.input
+                                                [ Html.Attributes.type_ "number"
+                                                , Html.Attributes.min "0"
+                                                , maxDistance |> (String.fromFloat >> Html.Attributes.max)
+                                                , Html.Attributes.value <| String.fromFloat wp.distance
+                                                , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1000 >> WaypointDistanceChange i)
+                                                , Html.Attributes.style "width" "7em"
+                                                , Html.Attributes.style "flex-shrink" "0"
+                                                ]
+                                                []
+                                            , Html.input
+                                                [ Html.Attributes.type_ "text"
+                                                , Html.Attributes.placeholder "Waypoint name..."
+                                                , Html.Attributes.value wp.name
+                                                , Html.Events.onInput <| WaypointNameChange i
+                                                , Html.Attributes.style "flex" "1"
+                                                , Html.Attributes.style "min-width" "0"
+                                                ]
+                                                []
+                                            , viewButton [] "X" (WaypointDeleted i True)
                                             ]
-                                            []
-                                        , viewButton [] "X" (WaypointDeleted i True)
                                         , viewWaypointCategories i wp.categories (Dict.keys state.filteredCategories) (Dict.get i state.newCategoryInputs |> Maybe.withDefault "")
                                         ]
                                     )
@@ -2321,38 +2349,82 @@ viewWaypointsTab state tracks =
 viewDeletedWaypoint : Int -> EditableWaypoint -> Html Msg
 viewDeletedWaypoint i ew =
     Html.div
-        [ Html.Attributes.style "opacity" "0.5"
-        , Html.Attributes.style "text-decoration" "line-through"
+        [ Html.Attributes.style "border" "1px solid #eee"
+        , Html.Attributes.style "border-radius" "6px"
+        , Html.Attributes.style "padding" "0.5em"
+        , Html.Attributes.style "opacity" "0.5"
+        , Html.Attributes.style "display" "flex"
+        , Html.Attributes.style "align-items" "center"
+        , Html.Attributes.style "justify-content" "space-between"
+        , Html.Attributes.style "gap" "0.5em"
         ]
-        [ Html.text ew.original.name
+        [ Html.span
+            [ Html.Attributes.style "text-decoration" "line-through" ]
+            [ Html.text ew.original.name ]
         , viewButton [] "Undo" (WaypointDeleted i False)
         ]
 
 
 viewWaypointCategories : Int -> List String -> List String -> String -> Html Msg
 viewWaypointCategories idx waypointCategories allCategories newCatInput =
-    Html.div []
-        [ Html.div []
+    Html.div
+        [ Html.Attributes.style "display" "flex"
+        , Html.Attributes.style "flex-direction" "column"
+        , Html.Attributes.style "gap" "0.4em"
+        ]
+        [ Html.div
+            [ Html.Attributes.style "display" "flex"
+            , Html.Attributes.style "flex-wrap" "wrap"
+            , Html.Attributes.style "gap" "0.25em"
+            ]
             (allCategories
                 |> List.map
                     (\cat ->
-                        Html.label []
+                        let
+                            isChecked =
+                                List.member cat waypointCategories
+                        in
+                        Html.label
+                            [ Html.Attributes.style "display" "inline-flex"
+                            , Html.Attributes.style "align-items" "center"
+                            , Html.Attributes.style "gap" "0.15em"
+                            , Html.Attributes.style "padding" "0.15em 0.4em"
+                            , Html.Attributes.style "border-radius" "4px"
+                            , Html.Attributes.style "border" "1px solid #ccc"
+                            , Html.Attributes.style "font-size" "0.85em"
+                            , Html.Attributes.style "cursor" "pointer"
+                            , Html.Attributes.style "background"
+                                (if isChecked then
+                                    "#e0edff"
+
+                                 else
+                                    "#fff"
+                                )
+                            , Html.Attributes.style "white-space" "nowrap"
+                            ]
                             [ Html.input
                                 [ Html.Attributes.type_ "checkbox"
-                                , Html.Attributes.checked (List.member cat waypointCategories)
+                                , Html.Attributes.checked isChecked
                                 , Html.Events.onCheck (WaypointCategoryToggle idx cat)
+                                , Html.Attributes.style "margin" "0"
                                 ]
                                 []
                             , Html.text cat
                             ]
                     )
             )
-        , Html.div []
+        , Html.div
+            [ Html.Attributes.style "display" "flex"
+            , Html.Attributes.style "gap" "0.25em"
+            , Html.Attributes.style "align-items" "center"
+            ]
             [ Html.input
                 [ Html.Attributes.type_ "text"
                 , Html.Attributes.placeholder "New category..."
                 , Html.Attributes.value newCatInput
                 , Html.Events.onInput (WaypointNewCategoryInput idx)
+                , Html.Attributes.style "flex" "1"
+                , Html.Attributes.style "min-width" "0"
                 ]
                 []
             , viewButton [] "Add" (WaypointCategoryAdd idx "")

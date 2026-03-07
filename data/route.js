@@ -12912,19 +12912,34 @@ var $author$project$Main$WaypointNameChange = F2(
 	function (a, b) {
 		return {$: 20, a: a, b: b};
 	});
-var $elm$html$Html$textarea = _VirtualDom_node('textarea');
+var $elm$html$Html$span = _VirtualDom_node('span');
 var $author$project$Main$viewDeletedWaypoint = F2(
 	function (i, ew) {
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
+					A2($elm$html$Html$Attributes$style, 'border', '1px solid #eee'),
+					A2($elm$html$Html$Attributes$style, 'border-radius', '6px'),
+					A2($elm$html$Html$Attributes$style, 'padding', '0.5em'),
 					A2($elm$html$Html$Attributes$style, 'opacity', '0.5'),
-					A2($elm$html$Html$Attributes$style, 'text-decoration', 'line-through')
+					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+					A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
+					A2($elm$html$Html$Attributes$style, 'justify-content', 'space-between'),
+					A2($elm$html$Html$Attributes$style, 'gap', '0.5em')
 				]),
 			_List_fromArray(
 				[
-					$elm$html$Html$text(ew.x.be),
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'text-decoration', 'line-through')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(ew.x.be)
+						])),
 					A3(
 					$author$project$Main$viewButton,
 					_List_Nil,
@@ -12959,18 +12974,44 @@ var $author$project$Main$viewWaypointCategories = F4(
 	function (idx, waypointCategories, allCategories, newCatInput) {
 		return A2(
 			$elm$html$Html$div,
-			_List_Nil,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+					A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+					A2($elm$html$Html$Attributes$style, 'gap', '0.4em')
+				]),
 			_List_fromArray(
 				[
 					A2(
 					$elm$html$Html$div,
-					_List_Nil,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+							A2($elm$html$Html$Attributes$style, 'flex-wrap', 'wrap'),
+							A2($elm$html$Html$Attributes$style, 'gap', '0.25em')
+						]),
 					A2(
 						$elm$core$List$map,
 						function (cat) {
+							var isChecked = A2($elm$core$List$member, cat, waypointCategories);
 							return A2(
 								$elm$html$Html$label,
-								_List_Nil,
+								_List_fromArray(
+									[
+										A2($elm$html$Html$Attributes$style, 'display', 'inline-flex'),
+										A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
+										A2($elm$html$Html$Attributes$style, 'gap', '0.15em'),
+										A2($elm$html$Html$Attributes$style, 'padding', '0.15em 0.4em'),
+										A2($elm$html$Html$Attributes$style, 'border-radius', '4px'),
+										A2($elm$html$Html$Attributes$style, 'border', '1px solid #ccc'),
+										A2($elm$html$Html$Attributes$style, 'font-size', '0.85em'),
+										A2($elm$html$Html$Attributes$style, 'cursor', 'pointer'),
+										A2(
+										$elm$html$Html$Attributes$style,
+										'background',
+										isChecked ? '#e0edff' : '#fff'),
+										A2($elm$html$Html$Attributes$style, 'white-space', 'nowrap')
+									]),
 								_List_fromArray(
 									[
 										A2(
@@ -12978,10 +13019,10 @@ var $author$project$Main$viewWaypointCategories = F4(
 										_List_fromArray(
 											[
 												$elm$html$Html$Attributes$type_('checkbox'),
-												$elm$html$Html$Attributes$checked(
-												A2($elm$core$List$member, cat, waypointCategories)),
+												$elm$html$Html$Attributes$checked(isChecked),
 												$elm$html$Html$Events$onCheck(
-												A2($author$project$Main$WaypointCategoryToggle, idx, cat))
+												A2($author$project$Main$WaypointCategoryToggle, idx, cat)),
+												A2($elm$html$Html$Attributes$style, 'margin', '0')
 											]),
 										_List_Nil),
 										$elm$html$Html$text(cat)
@@ -12990,7 +13031,12 @@ var $author$project$Main$viewWaypointCategories = F4(
 						allCategories)),
 					A2(
 					$elm$html$Html$div,
-					_List_Nil,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+							A2($elm$html$Html$Attributes$style, 'gap', '0.25em'),
+							A2($elm$html$Html$Attributes$style, 'align-items', 'center')
+						]),
 					_List_fromArray(
 						[
 							A2(
@@ -13001,7 +13047,9 @@ var $author$project$Main$viewWaypointCategories = F4(
 									$elm$html$Html$Attributes$placeholder('New category...'),
 									$elm$html$Html$Attributes$value(newCatInput),
 									$elm$html$Html$Events$onInput(
-									$author$project$Main$WaypointNewCategoryInput(idx))
+									$author$project$Main$WaypointNewCategoryInput(idx)),
+									A2($elm$html$Html$Attributes$style, 'flex', '1'),
+									A2($elm$html$Html$Attributes$style, 'min-width', '0')
 								]),
 							_List_Nil),
 							A3(
@@ -13023,13 +13071,24 @@ var $author$project$Main$viewWaypointsTab = F2(
 			tracks.c.f);
 		return A2(
 			$elm$html$Html$div,
-			_List_Nil,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+					A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+					A2($elm$html$Html$Attributes$style, 'gap', '0.5em'),
+					A2($elm$html$Html$Attributes$style, 'padding', '0.5em')
+				]),
 			_List_fromArray(
 				[
 					anyWaypointEdited ? A3($author$project$Main$viewButton, _List_Nil, 'Reset Waypoints', $author$project$Main$ResetWaypoints) : $elm$html$Html$text(''),
 					A2(
 					$elm$html$Html$div,
-					_List_Nil,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+							A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+							A2($elm$html$Html$Attributes$style, 'gap', '0.5em')
+						]),
 					A2(
 						$elm$core$List$filterMap,
 						function (_v0) {
@@ -13048,43 +13107,68 @@ var $author$project$Main$viewWaypointsTab = F2(
 									$author$project$Main$waypointPredicates(state)) ? $elm$core$Maybe$Just(
 									A2(
 										$elm$html$Html$div,
-										_List_Nil,
+										_List_fromArray(
+											[
+												A2($elm$html$Html$Attributes$style, 'border', '1px solid #ddd'),
+												A2($elm$html$Html$Attributes$style, 'border-radius', '6px'),
+												A2($elm$html$Html$Attributes$style, 'padding', '0.5em'),
+												A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+												A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+												A2($elm$html$Html$Attributes$style, 'gap', '0.4em'),
+												A2($elm$html$Html$Attributes$style, 'background', '#fafafa')
+											]),
 										_List_fromArray(
 											[
 												A2(
-												$elm$html$Html$input,
+												$elm$html$Html$div,
 												_List_fromArray(
 													[
-														$elm$html$Html$Attributes$type_('number'),
-														$elm$html$Html$Attributes$min('0'),
-														A3($elm$core$Basics$composeR, $elm$core$String$fromFloat, $elm$html$Html$Attributes$max, maxDistance),
-														$elm$html$Html$Attributes$value(
-														$elm$core$String$fromFloat(wp.av)),
-														$elm$html$Html$Events$onInput(
+														A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+														A2($elm$html$Html$Attributes$style, 'gap', '0.4em'),
+														A2($elm$html$Html$Attributes$style, 'align-items', 'center')
+													]),
+												_List_fromArray(
+													[
 														A2(
-															$elm$core$Basics$composeR,
-															$elm$core$String$toFloat,
-															A2(
-																$elm$core$Basics$composeR,
-																$elm$core$Maybe$withDefault(1000),
-																$author$project$Main$WaypointDistanceChange(i))))
-													]),
-												_List_Nil),
-												A2(
-												$elm$html$Html$textarea,
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$placeholder('Waypoint name...'),
-														$elm$html$Html$Attributes$value(wp.be),
-														$elm$html$Html$Events$onInput(
-														$author$project$Main$WaypointNameChange(i))
-													]),
-												_List_Nil),
-												A3(
-												$author$project$Main$viewButton,
-												_List_Nil,
-												'X',
-												A2($author$project$Main$WaypointDeleted, i, true)),
+														$elm$html$Html$input,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$type_('number'),
+																$elm$html$Html$Attributes$min('0'),
+																A3($elm$core$Basics$composeR, $elm$core$String$fromFloat, $elm$html$Html$Attributes$max, maxDistance),
+																$elm$html$Html$Attributes$value(
+																$elm$core$String$fromFloat(wp.av)),
+																$elm$html$Html$Events$onInput(
+																A2(
+																	$elm$core$Basics$composeR,
+																	$elm$core$String$toFloat,
+																	A2(
+																		$elm$core$Basics$composeR,
+																		$elm$core$Maybe$withDefault(1000),
+																		$author$project$Main$WaypointDistanceChange(i)))),
+																A2($elm$html$Html$Attributes$style, 'width', '7em'),
+																A2($elm$html$Html$Attributes$style, 'flex-shrink', '0')
+															]),
+														_List_Nil),
+														A2(
+														$elm$html$Html$input,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$type_('text'),
+																$elm$html$Html$Attributes$placeholder('Waypoint name...'),
+																$elm$html$Html$Attributes$value(wp.be),
+																$elm$html$Html$Events$onInput(
+																$author$project$Main$WaypointNameChange(i)),
+																A2($elm$html$Html$Attributes$style, 'flex', '1'),
+																A2($elm$html$Html$Attributes$style, 'min-width', '0')
+															]),
+														_List_Nil),
+														A3(
+														$author$project$Main$viewButton,
+														_List_Nil,
+														'X',
+														A2($author$project$Main$WaypointDeleted, i, true))
+													])),
 												A4(
 												$author$project$Main$viewWaypointCategories,
 												i,
