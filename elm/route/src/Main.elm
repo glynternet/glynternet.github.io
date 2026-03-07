@@ -448,6 +448,13 @@ update msg model =
 
         updateState newState =
             { model | state = newState }
+
+        updateSplitAndStore newModel =
+            let
+                state =
+                    withLiveSplit newModel.state
+            in
+            ( { newModel | state = state }, Cmd.batch [ storeState (encodeSavedState state), requestSplitCmd state ] )
     in
     case msg of
         Ignore ->
@@ -481,17 +488,17 @@ update msg model =
         WasmResponseReceived string ->
             case Json.Decode.decodeString (GpxApi.decodeResult GpxApi.decodeElevationProfileDataResponse) string of
                 Err errMsg ->
-                    updateAndStoreModel
+                    updateSplitAndStore
                         (updateState { s | tracks = Error ("parsing result from GPX response: " ++ Json.Decode.errorToString errMsg) })
 
                 Ok typedResult ->
                     case typedResult of
                         Err errMsg ->
-                            updateAndStoreModel
+                            updateSplitAndStore
                                 (updateState { s | tracks = Error ("getting profile data from GPX: " ++ errMsg) })
 
                         Ok gpxTracks ->
-                            updateAndStoreModel
+                            updateSplitAndStore
                                 (updateState
                                     { s
                                         | tracks =
@@ -531,7 +538,7 @@ update msg model =
         NavigateToPrevious ->
             case s.tracks of
                 Loaded tracks ->
-                    updateAndStoreModel (updateState { s | tracks = Loaded (Zipper.navigatePrevious tracks) })
+                    updateSplitAndStore (updateState { s | tracks = Loaded (Zipper.navigatePrevious tracks) })
 
                 _ ->
                     ( model, Cmd.none )
@@ -539,7 +546,7 @@ update msg model =
         NavigateToNext ->
             case s.tracks of
                 Loaded tracks ->
-                    updateAndStoreModel (updateState { s | tracks = Loaded (Zipper.navigateNext tracks) })
+                    updateSplitAndStore (updateState { s | tracks = Loaded (Zipper.navigateNext tracks) })
 
                 _ ->
                     ( model, Cmd.none )
@@ -610,19 +617,19 @@ update msg model =
                 newCategories =
                     Dict.insert category enabled s.filteredCategories
             in
-            updateAndStoreModel (updateState <| correctWaypointSelectionInState { s | filteredCategories = newCategories })
+            updateSplitAndStore (updateState <| correctWaypointSelectionInState { s | filteredCategories = newCategories })
 
         UpdateCategoryFilterEnabled enabled ->
-            updateAndStoreModel (updateState <| correctWaypointSelectionInState { s | categoryFilterEnabled = enabled })
+            updateSplitAndStore (updateState <| correctWaypointSelectionInState { s | categoryFilterEnabled = enabled })
 
         SetAllCategoriesEnabled enabled ->
-            updateAndStoreModel (updateState <| correctWaypointSelectionInState { s | filteredCategories = Dict.map (\_ _ -> enabled) s.filteredCategories })
+            updateSplitAndStore (updateState <| correctWaypointSelectionInState { s | filteredCategories = Dict.map (\_ _ -> enabled) s.filteredCategories })
 
         -- Waypoint editing
         WaypointNameChange i name ->
             case s.tracks of
                 Loaded tracks ->
-                    updateAndStoreModel
+                    updateSplitAndStore
                         (updateState
                             { s
                                 | tracks =
@@ -639,7 +646,7 @@ update msg model =
         WaypointDistanceChange i dist ->
             case s.tracks of
                 Loaded tracks ->
-                    updateAndStoreModel
+                    updateSplitAndStore
                         (updateState
                             { s
                                 | tracks =
@@ -660,7 +667,7 @@ update msg model =
                         ep =
                             s.elevationProfile
                     in
-                    updateAndStoreModel
+                    updateSplitAndStore
                         (updateState
                             { s
                                 | tracks =
@@ -741,7 +748,7 @@ update msg model =
                                 else
                                     Dict.remove cat s.filteredCategories
                     in
-                    updateAndStoreModel
+                    updateSplitAndStore
                         (updateState
                             { s
                                 | tracks = Loaded newTracks
@@ -788,7 +795,7 @@ update msg model =
                                 else
                                     Dict.insert trimmed True s.filteredCategories
                         in
-                        updateAndStoreModel
+                        updateSplitAndStore
                             (updateState
                                 { s
                                     | tracks =
@@ -807,7 +814,7 @@ update msg model =
         ResetWaypoints ->
             case s.tracks of
                 Loaded tracks ->
-                    updateAndStoreModel
+                    updateSplitAndStore
                         (updateState
                             { s
                                 | tracks =
@@ -876,24 +883,24 @@ update msg model =
                 ep =
                     s.elevationProfile
             in
-            updateAndStoreModel (updateState { s | elevationProfile = { ep | manualPosition = pos } })
+            updateSplitAndStore (updateState { s | elevationProfile = { ep | manualPosition = pos } })
 
         UpdateSplits n ->
             let
                 ep =
                     s.elevationProfile
             in
-            updateAndStoreModel (updateState { s | elevationProfile = { ep | splitEquidistantCount = n } })
+            updateSplitAndStore (updateState { s | elevationProfile = { ep | splitEquidistantCount = n } })
 
         SetViewMode mode ->
-            updateAndStoreModel (updateState { s | viewMode = mode })
+            updateSplitAndStore (updateState { s | viewMode = mode })
 
         SetSplitMode mode ->
             let
                 ep =
                     s.elevationProfile
             in
-            updateAndStoreModel (updateState { s | elevationProfile = { ep | activeSplitMode = mode } })
+            updateSplitAndStore (updateState { s | elevationProfile = { ep | activeSplitMode = mode } })
 
         AddSplitWaypoint ->
             let
@@ -922,7 +929,7 @@ update msg model =
                         newIndices =
                             sortWaypointIndices editableWps (idx :: indices)
                     in
-                    updateAndStoreModel (updateState { s | elevationProfile = { ep | splitWaypointIndices = newIndices } })
+                    updateSplitAndStore (updateState { s | elevationProfile = { ep | splitWaypointIndices = newIndices } })
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -946,7 +953,7 @@ update msg model =
                             )
                         |> Maybe.withDefault []
             in
-            updateAndStoreModel (updateState { s | elevationProfile = { ep | splitWaypointIndices = newIndices } })
+            updateSplitAndStore (updateState { s | elevationProfile = { ep | splitWaypointIndices = newIndices } })
 
         RemoveSplitWaypoint splitListPos ->
             let
@@ -956,21 +963,21 @@ update msg model =
                 newIndices =
                     List.Extra.removeAt splitListPos ep.splitWaypointIndices
             in
-            updateAndStoreModel (updateState { s | elevationProfile = { ep | splitWaypointIndices = newIndices } })
+            updateSplitAndStore (updateState { s | elevationProfile = { ep | splitWaypointIndices = newIndices } })
 
         UpdateLiveLookahead val ->
             let
                 ep =
                     s.elevationProfile
             in
-            updateAndStoreModel (updateState { s | elevationProfile = { ep | liveLookahead = val } })
+            updateSplitAndStore (updateState { s | elevationProfile = { ep | liveLookahead = val } })
 
         UpdateLiveLookbehind val ->
             let
                 ep =
                     s.elevationProfile
             in
-            updateAndStoreModel (updateState { s | elevationProfile = { ep | liveLookbehind = val } })
+            updateSplitAndStore (updateState { s | elevationProfile = { ep | liveLookbehind = val } })
 
         -- Cuesheet options
         UpdateTotalDistanceDisplay maybeSelection ->
@@ -1114,11 +1121,7 @@ restoreState jsonString model =
 
 updateAndStoreModel : Model -> ( Model, Cmd Msg )
 updateAndStoreModel model =
-    let
-        state =
-            withLiveSplit model.state
-    in
-    ( { model | state = state }, Cmd.batch [ storeState (encodeSavedState state), requestSplitCmd state ] )
+    ( model, storeState (encodeSavedState model.state) )
 
 
 requestSplitCmd : State -> Cmd Msg

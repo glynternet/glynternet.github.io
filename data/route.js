@@ -5609,7 +5609,7 @@ var $elm$core$Task$perform = F2(
 var $elm$browser$Browser$application = _Browser_application;
 var $author$project$Main$Model = F2(
 	function (nav, state) {
-		return {aL: nav, q: state};
+		return {aL: nav, o: state};
 	});
 var $author$project$Main$Navigation = F2(
 	function (key, basePath) {
@@ -5625,7 +5625,7 @@ var $author$project$Main$StaticView = 1;
 var $author$project$Main$FromZero = {$: 0};
 var $author$project$Main$defaultDistanceDetail = 1;
 var $author$project$Main$defaultSpacing = 25;
-var $author$project$Main$defaultCuesheetOptions = {o: $author$project$Main$defaultDistanceDetail, l: $author$project$Main$defaultSpacing, b4: 0, O: 1000, G: false, n: $author$project$Main$FromZero};
+var $author$project$Main$defaultCuesheetOptions = {p: $author$project$Main$defaultDistanceDetail, l: $author$project$Main$defaultSpacing, b4: 0, O: 1000, G: false, n: $author$project$Main$FromZero};
 var $author$project$Main$EquidistantMode = 0;
 var $author$project$Main$defaultElevationProfileOptions = {H: 0, T: 15, K: 500, U: 1.0, A: 5000, B: 2000, W: $elm$core$Maybe$Nothing, F: false, Z: 1, k: _List_Nil, ab: 200, ac: 1};
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
@@ -7177,7 +7177,7 @@ var $author$project$Main$stateDecoder = function () {
 																																																										A2($elm$core$Maybe$andThen, $author$project$Main$parseTab, activeTab)),
 																																																									z: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.z, categoryFilterEnabled),
 																																																									e: {
-																																																										o: A2($elm$core$Maybe$withDefault, defCs.o, distanceDetail),
+																																																										p: A2($elm$core$Maybe$withDefault, defCs.p, distanceDetail),
 																																																										l: A2($elm$core$Maybe$withDefault, defCs.l, itemSpacing),
 																																																										b4: 0,
 																																																										O: A2($elm$core$Maybe$withDefault, defCs.O, referencePoint),
@@ -7382,7 +7382,7 @@ var $author$project$Main$init = F3(
 						_Utils_update(
 							base,
 							{
-								q: _Utils_update(
+								o: _Utils_update(
 									$author$project$Main$defaultState,
 									{
 										aa: $elm$core$Maybe$Just(errorMsg)
@@ -7675,7 +7675,7 @@ var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$receiveLocation = _Platform_incomingPort('receiveLocation', $elm$json$Json$Decode$value);
 var $author$project$Main$receiveSplitProfile = _Platform_incomingPort('receiveSplitProfile', $elm$json$Json$Decode$string);
 var $author$project$Main$subscriptions = function (_v0) {
-	var state = _v0.q;
+	var state = _v0.o;
 	return $elm$core$Platform$Sub$batch(
 		_List_fromArray(
 			[
@@ -8187,7 +8187,7 @@ var $author$project$Main$encodeSavedState = function (state) {
 						$elm$core$Maybe$Just(
 						_Utils_Tuple2(
 							'distanceDetail',
-							$elm$json$Json$Encode$int(cs.o))),
+							$elm$json$Json$Encode$int(cs.p))),
 						$elm$core$Maybe$Just(
 						_Utils_Tuple2(
 							'showStartFinish',
@@ -8532,7 +8532,7 @@ var $author$project$Main$restoreState = F2(
 			var restored = _Utils_update(
 				model,
 				{
-					q: $author$project$Main$withLiveSplit(decoded)
+					o: $author$project$Main$withLiveSplit(decoded)
 				});
 			return _Utils_Tuple2(
 				restored,
@@ -8540,17 +8540,17 @@ var $author$project$Main$restoreState = F2(
 					_List_fromArray(
 						[
 							$author$project$Main$storeState(
-							$author$project$Main$encodeSavedState(restored.q)),
-							$author$project$Main$requestSplitCmd(restored.q)
+							$author$project$Main$encodeSavedState(restored.o)),
+							$author$project$Main$requestSplitCmd(restored.o)
 						])));
 		} else {
 			var err = _v0.a;
-			var s = model.q;
+			var s = model.o;
 			return _Utils_Tuple2(
 				_Utils_update(
 					model,
 					{
-						q: _Utils_update(
+						o: _Utils_update(
 							s,
 							{
 								aa: $elm$core$Maybe$Just(
@@ -8614,18 +8614,10 @@ var $author$project$Main$sortWaypointIndices = F2(
 var $elm$file$File$toString = _File_toString;
 var $elm$core$String$trim = _String_trim;
 var $author$project$Main$updateAndStoreModel = function (model) {
-	var state = $author$project$Main$withLiveSplit(model.q);
 	return _Utils_Tuple2(
-		_Utils_update(
-			model,
-			{q: state}),
-		$elm$core$Platform$Cmd$batch(
-			_List_fromArray(
-				[
-					$author$project$Main$storeState(
-					$author$project$Main$encodeSavedState(state)),
-					$author$project$Main$requestSplitCmd(state)
-				])));
+		model,
+		$author$project$Main$storeState(
+			$author$project$Main$encodeSavedState(model.o)));
 };
 var $author$project$Zipper$updateCurrent = F2(
 	function (update, zipper) {
@@ -8651,14 +8643,28 @@ var $author$project$Main$updateOverrides = F2(
 				j: fn(ew.j)
 			});
 	});
+var $author$project$Main$updateStoreAndSplit = function (model) {
+	var state = $author$project$Main$withLiveSplit(model.o);
+	return _Utils_Tuple2(
+		_Utils_update(
+			model,
+			{o: state}),
+		$elm$core$Platform$Cmd$batch(
+			_List_fromArray(
+				[
+					$author$project$Main$storeState(
+					$author$project$Main$encodeSavedState(state)),
+					$author$project$Main$requestSplitCmd(state)
+				])));
+};
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		var updateState = function (newState) {
 			return _Utils_update(
 				model,
-				{q: newState});
+				{o: newState});
 		};
-		var s = model.q;
+		var s = model.o;
 		switch (msg.$) {
 			case 0:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -8725,7 +8731,7 @@ var $author$project$Main$update = F2(
 					string);
 				if (_v1.$ === 1) {
 					var errMsg = _v1.a;
-					return $author$project$Main$updateAndStoreModel(
+					return $author$project$Main$updateStoreAndSplit(
 						updateState(
 							_Utils_update(
 								s,
@@ -8737,7 +8743,7 @@ var $author$project$Main$update = F2(
 					var typedResult = _v1.a;
 					if (typedResult.$ === 1) {
 						var errMsg = typedResult.a;
-						return $author$project$Main$updateAndStoreModel(
+						return $author$project$Main$updateStoreAndSplit(
 							updateState(
 								_Utils_update(
 									s,
@@ -8746,7 +8752,7 @@ var $author$project$Main$update = F2(
 									})));
 					} else {
 						var gpxTracks = typedResult.a;
-						return $author$project$Main$updateAndStoreModel(
+						return $author$project$Main$updateStoreAndSplit(
 							updateState(
 								_Utils_update(
 									s,
@@ -8818,7 +8824,7 @@ var $author$project$Main$update = F2(
 				var _v6 = s.b;
 				if (_v6.$ === 3) {
 					var tracks = _v6.a;
-					return $author$project$Main$updateAndStoreModel(
+					return $author$project$Main$updateStoreAndSplit(
 						updateState(
 							_Utils_update(
 								s,
@@ -8833,7 +8839,7 @@ var $author$project$Main$update = F2(
 				var _v7 = s.b;
 				if (_v7.$ === 3) {
 					var tracks = _v7.a;
-					return $author$project$Main$updateAndStoreModel(
+					return $author$project$Main$updateStoreAndSplit(
 						updateState(
 							_Utils_update(
 								s,
@@ -8947,7 +8953,7 @@ var $author$project$Main$update = F2(
 				var category = msg.a;
 				var enabled = msg.b;
 				var newCategories = A3($elm$core$Dict$insert, category, enabled, s.d);
-				return $author$project$Main$updateAndStoreModel(
+				return $author$project$Main$updateStoreAndSplit(
 					updateState(
 						$author$project$Main$correctWaypointSelectionInState(
 							_Utils_update(
@@ -8955,7 +8961,7 @@ var $author$project$Main$update = F2(
 								{d: newCategories}))));
 			case 17:
 				var enabled = msg.a;
-				return $author$project$Main$updateAndStoreModel(
+				return $author$project$Main$updateStoreAndSplit(
 					updateState(
 						$author$project$Main$correctWaypointSelectionInState(
 							_Utils_update(
@@ -8963,7 +8969,7 @@ var $author$project$Main$update = F2(
 								{z: enabled}))));
 			case 18:
 				var enabled = msg.a;
-				return $author$project$Main$updateAndStoreModel(
+				return $author$project$Main$updateStoreAndSplit(
 					updateState(
 						$author$project$Main$correctWaypointSelectionInState(
 							_Utils_update(
@@ -8983,7 +8989,7 @@ var $author$project$Main$update = F2(
 				var _v12 = s.b;
 				if (_v12.$ === 3) {
 					var tracks = _v12.a;
-					return $author$project$Main$updateAndStoreModel(
+					return $author$project$Main$updateStoreAndSplit(
 						updateState(
 							_Utils_update(
 								s,
@@ -9020,7 +9026,7 @@ var $author$project$Main$update = F2(
 				var _v13 = s.b;
 				if (_v13.$ === 3) {
 					var tracks = _v13.a;
-					return $author$project$Main$updateAndStoreModel(
+					return $author$project$Main$updateStoreAndSplit(
 						updateState(
 							_Utils_update(
 								s,
@@ -9058,7 +9064,7 @@ var $author$project$Main$update = F2(
 				if (_v14.$ === 3) {
 					var tracks = _v14.a;
 					var ep = s.a;
-					return $author$project$Main$updateAndStoreModel(
+					return $author$project$Main$updateStoreAndSplit(
 						updateState(
 							_Utils_update(
 								s,
@@ -9154,7 +9160,7 @@ var $author$project$Main$update = F2(
 							return catStillUsed ? s.d : A2($elm$core$Dict$remove, cat, s.d);
 						}
 					}();
-					return $author$project$Main$updateAndStoreModel(
+					return $author$project$Main$updateStoreAndSplit(
 						updateState(
 							_Utils_update(
 								s,
@@ -9207,7 +9213,7 @@ var $author$project$Main$update = F2(
 								});
 						};
 						var newFilteredCategories = A2($elm$core$Dict$member, trimmed, s.d) ? s.d : A3($elm$core$Dict$insert, trimmed, true, s.d);
-						return $author$project$Main$updateAndStoreModel(
+						return $author$project$Main$updateStoreAndSplit(
 							updateState(
 								_Utils_update(
 									s,
@@ -9230,7 +9236,7 @@ var $author$project$Main$update = F2(
 				var _v17 = s.b;
 				if (_v17.$ === 3) {
 					var tracks = _v17.a;
-					return $author$project$Main$updateAndStoreModel(
+					return $author$project$Main$updateStoreAndSplit(
 						updateState(
 							_Utils_update(
 								s,
@@ -9332,7 +9338,7 @@ var $author$project$Main$update = F2(
 			case 32:
 				var pos = msg.a;
 				var ep = s.a;
-				return $author$project$Main$updateAndStoreModel(
+				return $author$project$Main$updateStoreAndSplit(
 					updateState(
 						_Utils_update(
 							s,
@@ -9344,7 +9350,7 @@ var $author$project$Main$update = F2(
 			case 33:
 				var n = msg.a;
 				var ep = s.a;
-				return $author$project$Main$updateAndStoreModel(
+				return $author$project$Main$updateStoreAndSplit(
 					updateState(
 						_Utils_update(
 							s,
@@ -9355,7 +9361,7 @@ var $author$project$Main$update = F2(
 							})));
 			case 34:
 				var mode = msg.a;
-				return $author$project$Main$updateAndStoreModel(
+				return $author$project$Main$updateStoreAndSplit(
 					updateState(
 						_Utils_update(
 							s,
@@ -9363,7 +9369,7 @@ var $author$project$Main$update = F2(
 			case 35:
 				var mode = msg.a;
 				var ep = s.a;
-				return $author$project$Main$updateAndStoreModel(
+				return $author$project$Main$updateStoreAndSplit(
 					updateState(
 						_Utils_update(
 							s,
@@ -9406,7 +9412,7 @@ var $author$project$Main$update = F2(
 						$author$project$Main$sortWaypointIndices,
 						editableWps,
 						A2($elm$core$List$cons, idx, indices));
-					return $author$project$Main$updateAndStoreModel(
+					return $author$project$Main$updateStoreAndSplit(
 						updateState(
 							_Utils_update(
 								s,
@@ -9444,7 +9450,7 @@ var $author$project$Main$update = F2(
 										A3($elm_community$list_extra$List$Extra$setAt, splitListPos, newWaypointIdx, ep.k));
 								})),
 						$author$project$Main$maybeFromloadableResource(s.b)));
-				return $author$project$Main$updateAndStoreModel(
+				return $author$project$Main$updateStoreAndSplit(
 					updateState(
 						_Utils_update(
 							s,
@@ -9457,7 +9463,7 @@ var $author$project$Main$update = F2(
 				var splitListPos = msg.a;
 				var ep = s.a;
 				var newIndices = A2($elm_community$list_extra$List$Extra$removeAt, splitListPos, ep.k);
-				return $author$project$Main$updateAndStoreModel(
+				return $author$project$Main$updateStoreAndSplit(
 					updateState(
 						_Utils_update(
 							s,
@@ -9469,7 +9475,7 @@ var $author$project$Main$update = F2(
 			case 39:
 				var val = msg.a;
 				var ep = s.a;
-				return $author$project$Main$updateAndStoreModel(
+				return $author$project$Main$updateStoreAndSplit(
 					updateState(
 						_Utils_update(
 							s,
@@ -9481,7 +9487,7 @@ var $author$project$Main$update = F2(
 			case 40:
 				var val = msg.a;
 				var ep = s.a;
-				return $author$project$Main$updateAndStoreModel(
+				return $author$project$Main$updateStoreAndSplit(
 					updateState(
 						_Utils_update(
 							s,
@@ -9556,7 +9562,7 @@ var $author$project$Main$update = F2(
 							{
 								e: _Utils_update(
 									cs,
-									{o: detail})
+									{p: detail})
 							})));
 			case 46:
 				var show = msg.a;
@@ -10107,25 +10113,25 @@ var $author$project$Main$cuesheetSvg = F8(
 													return $elm$core$Maybe$Nothing;
 												case 0:
 													return $elm$core$Maybe$Just(
-														A2($author$project$Main$formatKm, cs.o, waypoint.aw));
+														A2($author$project$Main$formatKm, cs.p, waypoint.aw));
 												case 1:
 													return $elm$core$Maybe$Just(
-														A2($author$project$Main$formatKm, cs.o, finishDist - waypoint.aw));
+														A2($author$project$Main$formatKm, cs.p, finishDist - waypoint.aw));
 												case 2:
 													return $elm$core$Maybe$Just(
-														A2($author$project$Main$formatKm, cs.o, cs.O - waypoint.aw));
+														A2($author$project$Main$formatKm, cs.p, cs.O - waypoint.aw));
 												case 3:
 													return A2(
 														$elm$core$Maybe$map,
 														function (rw) {
-															return A2($author$project$Main$formatKm, cs.o, rw.aw - waypoint.aw);
+															return A2($author$project$Main$formatKm, cs.p, rw.aw - waypoint.aw);
 														},
 														refWaypoint);
 												default:
 													return A2(
 														$elm$core$Maybe$map,
 														function (rw) {
-															return A2($author$project$Main$formatKm, cs.o, waypoint.aw - rw.aw);
+															return A2($author$project$Main$formatKm, cs.p, waypoint.aw - rw.aw);
 														},
 														refWaypoint);
 											}
@@ -10313,7 +10319,7 @@ var $author$project$Main$cuesheetSvg = F8(
 													_List_fromArray(
 														[
 															$elm$svg$Svg$text(
-															A2($author$project$Main$formatKm, cs.o, dist) + (' ' + A2($author$project$Main$formatEleGainLoss, gain, loss)))
+															A2($author$project$Main$formatKm, cs.p, dist) + (' ' + A2($author$project$Main$formatEleGainLoss, gain, loss)))
 														]))
 												]));
 								}
@@ -12003,7 +12009,7 @@ var $author$project$Main$viewCuesheetOptionsPanel = function (state) {
 							$elm$html$Html$Attributes$min('0'),
 							$elm$html$Html$Attributes$max('3'),
 							$elm$html$Html$Attributes$value(
-							$elm$core$String$fromInt(cs.o)),
+							$elm$core$String$fromInt(cs.p)),
 							$elm$html$Html$Events$onInput(
 							A2(
 								$elm$core$Basics$composeR,
@@ -13372,7 +13378,7 @@ var $author$project$Main$viewWaypointsTab = F2(
 				]));
 	});
 var $author$project$Main$view = function (_v0) {
-	var state = _v0.q;
+	var state = _v0.o;
 	return A2(
 		$elm$browser$Browser$Document,
 		'Route',
