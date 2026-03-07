@@ -2571,27 +2571,24 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance waypoints cs
                                                                 (waypoint.loss - rw.loss)
                                                         )
 
-                                    isOffRoute =
-                                        waypoint.offRoute > offRouteThreshold
-
                                     offRouteLabel =
                                         String.fromInt (round waypoint.offRoute) ++ "m off"
 
                                     waypointInfo =
                                         List.filterMap identity
-                                            [ waypointDistance
-                                            , waypointEle
+                                            [ waypointDistance |> Maybe.map (\s -> ( s, [] ))
+                                            , waypointEle |> Maybe.map (\s -> ( s, [] ))
                                             , case waypoint.categories of
                                                 [] ->
                                                     Nothing
 
                                                 cats ->
-                                                    Just <| String.join ", " cats
-                                            , if isOffRoute then
-                                                Just <| "⚠ " ++ offRouteLabel
+                                                    Just ( String.join ", " cats, [] )
+                                            , if waypoint.offRoute > offRouteThreshold then
+                                                Just ( "⚠ " ++ offRouteLabel, [ Svg.Attributes.fill "orange" ] )
 
                                               else if showOffRouteDistance && waypoint.offRoute > 0 then
-                                                Just offRouteLabel
+                                                Just ( offRouteLabel, [] )
 
                                               else
                                                 Nothing
@@ -2599,7 +2596,7 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance waypoints cs
 
                                     waypointInfoLines =
                                         if List.isEmpty waypointInfo then
-                                            [ "◉" ]
+                                            [ ( "◉", [] ) ]
 
                                         else
                                             waypointInfo
@@ -2615,15 +2612,17 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance waypoints cs
                                         [ Svg.text waypoint.name ]
                                         :: (waypointInfoLines
                                                 |> List.indexedMap
-                                                    (\j line ->
+                                                    (\j ( line, lineAttributes ) ->
                                                         Svg.text_
-                                                            [ Svg.Attributes.x svgContentLeftStartString
-                                                            , Svg.Attributes.y <| String.fromInt (cs.itemSpacing // 2)
-                                                            , Svg.Attributes.dominantBaseline "middle"
-                                                            , Svg.Attributes.dy (String.fromFloat (toFloat j - (toFloat <| List.length waypointInfoLines - 1) / 2) ++ "em")
-                                                            , Svg.Attributes.textAnchor "end"
-                                                            , Svg.Attributes.fontSize "smaller"
-                                                            ]
+                                                            ([ Svg.Attributes.x svgContentLeftStartString
+                                                             , Svg.Attributes.y <| String.fromInt (cs.itemSpacing // 2)
+                                                             , Svg.Attributes.dominantBaseline "middle"
+                                                             , Svg.Attributes.dy (String.fromFloat (toFloat j - (toFloat <| List.length waypointInfoLines - 1) / 2) ++ "em")
+                                                             , Svg.Attributes.textAnchor "end"
+                                                             , Svg.Attributes.fontSize "smaller"
+                                                             ]
+                                                                ++ lineAttributes
+                                                            )
                                                             [ Svg.text line ]
                                                     )
                                            )
@@ -3107,90 +3106,90 @@ viewElevationProfileOptions state =
             ]
         )
     , optionGroup "Splits"
-                (List.concat
-                    [ [ Html.select
-                            [ Html.Events.onInput
-                                (\v ->
-                                    case v of
-                                        "waypoints" ->
-                                            SetSplitMode WaypointsMode
+        (List.concat
+            [ [ Html.select
+                    [ Html.Events.onInput
+                        (\v ->
+                            case v of
+                                "waypoints" ->
+                                    SetSplitMode WaypointsMode
 
-                                        _ ->
-                                            SetSplitMode EquidistantMode
-                                )
-                            ]
-                            [ Html.option
-                                [ Html.Attributes.value "equidistant"
-                                , Html.Attributes.selected (ep.activeSplitMode == EquidistantMode)
-                                ]
-                                [ Html.text "Equidistant" ]
-                            , Html.option
-                                [ Html.Attributes.value "waypoints"
-                                , Html.Attributes.selected (ep.activeSplitMode == WaypointsMode)
-                                ]
-                                [ Html.text "By waypoints" ]
-                            ]
-                      ]
-                    , case ep.activeSplitMode of
-                        EquidistantMode ->
-                            [ Html.input
-                                [ Html.Attributes.type_ "range"
-                                , Html.Attributes.min "1"
-                                , Html.Attributes.max "10"
-                                , Html.Attributes.value <| String.fromInt ep.splitEquidistantCount
-                                , Html.Events.onInput (String.toInt >> Maybe.map (clamp 1 10) >> Maybe.withDefault 1 >> UpdateSplits)
-                                ]
-                                []
-                            , Html.text (String.fromInt ep.splitEquidistantCount)
-                            ]
-
-                        WaypointsMode ->
-                            let
-                                selectedIndices =
-                                    ep.splitWaypointIndices
-
-                                indexed =
-                                    maybeFromloadableResource state.tracks
-                                        |> Maybe.map (.current >> .editableWaypoints >> indexedEffectiveWaypoints)
-                                        |> Maybe.withDefault []
-
-                                -- splitListPos = position in the splits list; selectedWaypointIdx = editableWaypoints index at that position
-                                dropdownRow splitListPos selectedWaypointIdx =
-                                    let
-                                        waypointOption ( waypointIdx, wp ) =
-                                            Html.option
-                                                [ Html.Attributes.value (String.fromInt waypointIdx)
-                                                , Html.Attributes.selected (waypointIdx == selectedWaypointIdx)
-                                                ]
-                                                [ Html.text (wp.name ++ " (" ++ formatKm 1 wp.distance ++ ")") ]
-                                    in
-                                    Html.div [ Html.Attributes.style "display" "flex", Html.Attributes.style "gap" "0.5em", Html.Attributes.style "align-items" "center" ]
-                                        [ Html.select
-                                            [ Html.Events.onInput
-                                                (\val ->
-                                                    String.toInt val
-                                                        |> Maybe.map (UpdateSplitWaypoint splitListPos)
-                                                        |> Maybe.withDefault Ignore
-                                                )
-                                            ]
-                                            (List.map waypointOption indexed)
-                                        , Html.button
-                                            [ Html.Events.onClick (RemoveSplitWaypoint splitListPos)
-                                            , Html.Attributes.class "button-4"
-                                            ]
-                                            [ Html.text "Remove" ]
-                                        ]
-                            in
-                            List.indexedMap dropdownRow selectedIndices
-                                ++ [ Html.button
-                                        [ Html.Events.onClick AddSplitWaypoint
-                                        , Html.Attributes.class "button-4"
-                                        , Html.Attributes.disabled (List.length selectedIndices >= List.length indexed)
-                                        ]
-                                        [ Html.text "Add" ]
-                                   ]
+                                _ ->
+                                    SetSplitMode EquidistantMode
+                        )
                     ]
-                )
+                    [ Html.option
+                        [ Html.Attributes.value "equidistant"
+                        , Html.Attributes.selected (ep.activeSplitMode == EquidistantMode)
+                        ]
+                        [ Html.text "Equidistant" ]
+                    , Html.option
+                        [ Html.Attributes.value "waypoints"
+                        , Html.Attributes.selected (ep.activeSplitMode == WaypointsMode)
+                        ]
+                        [ Html.text "By waypoints" ]
+                    ]
+              ]
+            , case ep.activeSplitMode of
+                EquidistantMode ->
+                    [ Html.input
+                        [ Html.Attributes.type_ "range"
+                        , Html.Attributes.min "1"
+                        , Html.Attributes.max "10"
+                        , Html.Attributes.value <| String.fromInt ep.splitEquidistantCount
+                        , Html.Events.onInput (String.toInt >> Maybe.map (clamp 1 10) >> Maybe.withDefault 1 >> UpdateSplits)
+                        ]
+                        []
+                    , Html.text (String.fromInt ep.splitEquidistantCount)
+                    ]
+
+                WaypointsMode ->
+                    let
+                        selectedIndices =
+                            ep.splitWaypointIndices
+
+                        indexed =
+                            maybeFromloadableResource state.tracks
+                                |> Maybe.map (.current >> .editableWaypoints >> indexedEffectiveWaypoints)
+                                |> Maybe.withDefault []
+
+                        -- splitListPos = position in the splits list; selectedWaypointIdx = editableWaypoints index at that position
+                        dropdownRow splitListPos selectedWaypointIdx =
+                            let
+                                waypointOption ( waypointIdx, wp ) =
+                                    Html.option
+                                        [ Html.Attributes.value (String.fromInt waypointIdx)
+                                        , Html.Attributes.selected (waypointIdx == selectedWaypointIdx)
+                                        ]
+                                        [ Html.text (wp.name ++ " (" ++ formatKm 1 wp.distance ++ ")") ]
+                            in
+                            Html.div [ Html.Attributes.style "display" "flex", Html.Attributes.style "gap" "0.5em", Html.Attributes.style "align-items" "center" ]
+                                [ Html.select
+                                    [ Html.Events.onInput
+                                        (\val ->
+                                            String.toInt val
+                                                |> Maybe.map (UpdateSplitWaypoint splitListPos)
+                                                |> Maybe.withDefault Ignore
+                                        )
+                                    ]
+                                    (List.map waypointOption indexed)
+                                , Html.button
+                                    [ Html.Events.onClick (RemoveSplitWaypoint splitListPos)
+                                    , Html.Attributes.class "button-4"
+                                    ]
+                                    [ Html.text "Remove" ]
+                                ]
+                    in
+                    List.indexedMap dropdownRow selectedIndices
+                        ++ [ Html.button
+                                [ Html.Events.onClick AddSplitWaypoint
+                                , Html.Attributes.class "button-4"
+                                , Html.Attributes.disabled (List.length selectedIndices >= List.length indexed)
+                                ]
+                                [ Html.text "Add" ]
+                           ]
+            ]
+        )
     , optionGroup "Position"
         (let
             maxDist =

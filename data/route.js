@@ -10066,8 +10066,8 @@ var $author$project$Main$cuesheetSvg = F8(
 								var renderWaypointItem = F2(
 									function (fillAttrs, waypoint) {
 										var waypointEle = function () {
-											var _v4 = cs.n;
-											switch (_v4.$) {
+											var _v5 = cs.n;
+											switch (_v5.$) {
 												case 5:
 													return $elm$core$Maybe$Nothing;
 												case 0:
@@ -10100,8 +10100,8 @@ var $author$project$Main$cuesheetSvg = F8(
 											}
 										}();
 										var waypointDistance = function () {
-											var _v3 = cs.n;
-											switch (_v3.$) {
+											var _v4 = cs.n;
+											switch (_v4.$) {
 												case 5:
 													return $elm$core$Maybe$Nothing;
 												case 0:
@@ -10131,28 +10131,48 @@ var $author$project$Main$cuesheetSvg = F8(
 										}();
 										var offRouteLabel = $elm$core$String$fromInt(
 											$elm$core$Basics$round(waypoint.bg)) + 'm off';
-										var isOffRoute = _Utils_cmp(waypoint.bg, offRouteThreshold) > 0;
 										var waypointInfo = A2(
 											$elm$core$List$filterMap,
 											$elm$core$Basics$identity,
 											_List_fromArray(
 												[
-													waypointDistance,
-													waypointEle,
+													A2(
+													$elm$core$Maybe$map,
+													function (s) {
+														return _Utils_Tuple2(s, _List_Nil);
+													},
+													waypointDistance),
+													A2(
+													$elm$core$Maybe$map,
+													function (s) {
+														return _Utils_Tuple2(s, _List_Nil);
+													},
+													waypointEle),
 													function () {
-													var _v2 = waypoint.aY;
-													if (!_v2.b) {
+													var _v3 = waypoint.aY;
+													if (!_v3.b) {
 														return $elm$core$Maybe$Nothing;
 													} else {
-														var cats = _v2;
+														var cats = _v3;
 														return $elm$core$Maybe$Just(
-															A2($elm$core$String$join, ', ', cats));
+															_Utils_Tuple2(
+																A2($elm$core$String$join, ', ', cats),
+																_List_Nil));
 													}
 												}(),
-													isOffRoute ? $elm$core$Maybe$Just('⚠ ' + offRouteLabel) : ((showOffRouteDistance && (waypoint.bg > 0)) ? $elm$core$Maybe$Just(offRouteLabel) : $elm$core$Maybe$Nothing)
+													(_Utils_cmp(waypoint.bg, offRouteThreshold) > 0) ? $elm$core$Maybe$Just(
+													_Utils_Tuple2(
+														'⚠ ' + offRouteLabel,
+														_List_fromArray(
+															[
+																$elm$svg$Svg$Attributes$fill('orange')
+															]))) : ((showOffRouteDistance && (waypoint.bg > 0)) ? $elm$core$Maybe$Just(
+													_Utils_Tuple2(offRouteLabel, _List_Nil)) : $elm$core$Maybe$Nothing)
 												]));
 										var waypointInfoLines = $elm$core$List$isEmpty(waypointInfo) ? _List_fromArray(
-											['◉']) : waypointInfo;
+											[
+												_Utils_Tuple2('◉', _List_Nil)
+											]) : waypointInfo;
 										return A2(
 											$elm$svg$Svg$g,
 											_List_fromArray(
@@ -10178,21 +10198,25 @@ var $author$project$Main$cuesheetSvg = F8(
 												A2(
 													$elm$core$List$indexedMap,
 													F2(
-														function (j, line) {
+														function (j, _v2) {
+															var line = _v2.a;
+															var lineAttributes = _v2.b;
 															return A2(
 																$elm$svg$Svg$text_,
-																_List_fromArray(
-																	[
-																		$elm$svg$Svg$Attributes$x(svgContentLeftStartString),
-																		$elm$svg$Svg$Attributes$y(
-																		$elm$core$String$fromInt((cs.l / 2) | 0)),
-																		$elm$svg$Svg$Attributes$dominantBaseline('middle'),
-																		$elm$svg$Svg$Attributes$dy(
-																		$elm$core$String$fromFloat(
-																			j - (($elm$core$List$length(waypointInfoLines) - 1) / 2)) + 'em'),
-																		$elm$svg$Svg$Attributes$textAnchor('end'),
-																		$elm$svg$Svg$Attributes$fontSize('smaller')
-																	]),
+																_Utils_ap(
+																	_List_fromArray(
+																		[
+																			$elm$svg$Svg$Attributes$x(svgContentLeftStartString),
+																			$elm$svg$Svg$Attributes$y(
+																			$elm$core$String$fromInt((cs.l / 2) | 0)),
+																			$elm$svg$Svg$Attributes$dominantBaseline('middle'),
+																			$elm$svg$Svg$Attributes$dy(
+																			$elm$core$String$fromFloat(
+																				j - (($elm$core$List$length(waypointInfoLines) - 1) / 2)) + 'em'),
+																			$elm$svg$Svg$Attributes$textAnchor('end'),
+																			$elm$svg$Svg$Attributes$fontSize('smaller')
+																		]),
+																	lineAttributes),
 																_List_fromArray(
 																	[
 																		$elm$svg$Svg$text(line)
