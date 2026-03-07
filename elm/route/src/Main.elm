@@ -1173,10 +1173,6 @@ requestSplitCmdWasm state =
                                         [ ( "mode", Json.Encode.string "waypoints" )
                                         , ( "distances", Json.Encode.list Json.Encode.float distances )
                                         ]
-
-                                    LiveMode ->
-                                        -- Live mode splits are computed in Elm, no WASM needed
-                                        []
                                )
                         )
                     )
@@ -1250,7 +1246,7 @@ computeGainLoss tps =
 
 withLiveSplit : State -> State
 withLiveSplit state =
-    if state.elevationProfile.activeSplitMode == LiveMode then
+    if state.elevationProfile.viewMode == LiveView then
         { state | splitSegments = computeLiveSplitFromState state }
 
     else
@@ -3005,122 +3001,141 @@ viewElevationProfileOptions state =
                 []
             ]
         )
-    , optionGroup "Splits"
-        (List.concat
-            [ [ Html.select
-                    [ Html.Events.onInput
-                        (\v ->
-                            case v of
-                                "waypoints" ->
-                                    SetSplitMode WaypointsMode
+    , optionGroup "View"
+        [ Html.select
+            [ Html.Events.onInput
+                (\v ->
+                    case v of
+                        "live" ->
+                            SetViewMode LiveView
 
-                                "live" ->
-                                    SetSplitMode LiveMode
-
-                                _ ->
-                                    SetSplitMode EquidistantMode
-                        )
-                    ]
-                    [ Html.option
-                        [ Html.Attributes.value "equidistant"
-                        , Html.Attributes.selected (ep.activeSplitMode == EquidistantMode)
-                        ]
-                        [ Html.text "Equidistant" ]
-                    , Html.option
-                        [ Html.Attributes.value "waypoints"
-                        , Html.Attributes.selected (ep.activeSplitMode == WaypointsMode)
-                        ]
-                        [ Html.text "By waypoints" ]
-                    , Html.option
-                        [ Html.Attributes.value "live"
-                        , Html.Attributes.selected (ep.activeSplitMode == LiveMode)
-                        ]
-                        [ Html.text "Live" ]
-                    ]
-              ]
-            , case ep.activeSplitMode of
-                EquidistantMode ->
-                    [ Html.input
-                        [ Html.Attributes.type_ "range"
-                        , Html.Attributes.min "1"
-                        , Html.Attributes.max "10"
-                        , Html.Attributes.value <| String.fromInt ep.splitEquidistantCount
-                        , Html.Events.onInput (String.toInt >> Maybe.map (clamp 1 10) >> Maybe.withDefault 1 >> UpdateSplits)
-                        ]
-                        []
-                    , Html.text (String.fromInt ep.splitEquidistantCount)
-                    ]
-
-                WaypointsMode ->
-                    let
-                        selectedIndices =
-                            ep.splitWaypointIndices
-
-                        indexed =
-                            maybeFromloadableResource state.tracks
-                                |> Maybe.map (.current >> .editableWaypoints >> indexedEffectiveWaypoints)
-                                |> Maybe.withDefault []
-
-                        -- splitListPos = position in the splits list; selectedWaypointIdx = editableWaypoints index at that position
-                        dropdownRow splitListPos selectedWaypointIdx =
-                            let
-                                waypointOption ( waypointIdx, wp ) =
-                                    Html.option
-                                        [ Html.Attributes.value (String.fromInt waypointIdx)
-                                        , Html.Attributes.selected (waypointIdx == selectedWaypointIdx)
-                                        ]
-                                        [ Html.text (wp.name ++ " (" ++ formatKm 1 wp.distance ++ ")") ]
-                            in
-                            Html.div [ Html.Attributes.style "display" "flex", Html.Attributes.style "gap" "0.5em", Html.Attributes.style "align-items" "center" ]
-                                [ Html.select
-                                    [ Html.Events.onInput
-                                        (\val ->
-                                            String.toInt val
-                                                |> Maybe.map (UpdateSplitWaypoint splitListPos)
-                                                |> Maybe.withDefault Ignore
-                                        )
-                                    ]
-                                    (List.map waypointOption indexed)
-                                , Html.button
-                                    [ Html.Events.onClick (RemoveSplitWaypoint splitListPos)
-                                    , Html.Attributes.class "button-4"
-                                    ]
-                                    [ Html.text "Remove" ]
-                                ]
-                    in
-                    List.indexedMap dropdownRow selectedIndices
-                        ++ [ Html.button
-                                [ Html.Events.onClick AddSplitWaypoint
-                                , Html.Attributes.class "button-4"
-                                , Html.Attributes.disabled (List.length selectedIndices >= List.length indexed)
-                                ]
-                                [ Html.text "Add" ]
-                           ]
-
-                LiveMode ->
-                    [ Html.text ("Lookbehind: " ++ formatKm 1 ep.liveLookbehind)
-                    , Html.input
-                        [ Html.Attributes.type_ "range"
-                        , Html.Attributes.min "0"
-                        , Html.Attributes.max "50000"
-                        , Html.Attributes.step "500"
-                        , Html.Attributes.value <| String.fromFloat ep.liveLookbehind
-                        , Html.Events.onInput (String.toFloat >> Maybe.withDefault 2000 >> UpdateLiveLookbehind)
-                        ]
-                        []
-                    , Html.text ("Lookahead: " ++ formatKm 1 ep.liveLookahead)
-                    , Html.input
-                        [ Html.Attributes.type_ "range"
-                        , Html.Attributes.min "0"
-                        , Html.Attributes.max "200000"
-                        , Html.Attributes.step "500"
-                        , Html.Attributes.value <| String.fromFloat ep.liveLookahead
-                        , Html.Events.onInput (String.toFloat >> Maybe.withDefault 5000 >> UpdateLiveLookahead)
-                        ]
-                        []
-                    ]
+                        _ ->
+                            SetViewMode StaticView
+                )
             ]
-        )
+            [ Html.option
+                [ Html.Attributes.value "static"
+                , Html.Attributes.selected (ep.viewMode == StaticView)
+                ]
+                [ Html.text "Static" ]
+            , Html.option
+                [ Html.Attributes.value "live"
+                , Html.Attributes.selected (ep.viewMode == LiveView)
+                ]
+                [ Html.text "Live" ]
+            ]
+        ]
+    , case ep.viewMode of
+        LiveView ->
+            optionGroup "Live window"
+                [ Html.text ("Lookbehind: " ++ formatKm 1 ep.liveLookbehind)
+                , Html.input
+                    [ Html.Attributes.type_ "range"
+                    , Html.Attributes.min "0"
+                    , Html.Attributes.max "50000"
+                    , Html.Attributes.step "500"
+                    , Html.Attributes.value <| String.fromFloat ep.liveLookbehind
+                    , Html.Events.onInput (String.toFloat >> Maybe.withDefault 2000 >> UpdateLiveLookbehind)
+                    ]
+                    []
+                , Html.text ("Lookahead: " ++ formatKm 1 ep.liveLookahead)
+                , Html.input
+                    [ Html.Attributes.type_ "range"
+                    , Html.Attributes.min "0"
+                    , Html.Attributes.max "200000"
+                    , Html.Attributes.step "500"
+                    , Html.Attributes.value <| String.fromFloat ep.liveLookahead
+                    , Html.Events.onInput (String.toFloat >> Maybe.withDefault 5000 >> UpdateLiveLookahead)
+                    ]
+                    []
+                ]
+
+        StaticView ->
+            optionGroup "Splits"
+                (List.concat
+                    [ [ Html.select
+                            [ Html.Events.onInput
+                                (\v ->
+                                    case v of
+                                        "waypoints" ->
+                                            SetSplitMode WaypointsMode
+
+                                        _ ->
+                                            SetSplitMode EquidistantMode
+                                )
+                            ]
+                            [ Html.option
+                                [ Html.Attributes.value "equidistant"
+                                , Html.Attributes.selected (ep.activeSplitMode == EquidistantMode)
+                                ]
+                                [ Html.text "Equidistant" ]
+                            , Html.option
+                                [ Html.Attributes.value "waypoints"
+                                , Html.Attributes.selected (ep.activeSplitMode == WaypointsMode)
+                                ]
+                                [ Html.text "By waypoints" ]
+                            ]
+                      ]
+                    , case ep.activeSplitMode of
+                        EquidistantMode ->
+                            [ Html.input
+                                [ Html.Attributes.type_ "range"
+                                , Html.Attributes.min "1"
+                                , Html.Attributes.max "10"
+                                , Html.Attributes.value <| String.fromInt ep.splitEquidistantCount
+                                , Html.Events.onInput (String.toInt >> Maybe.map (clamp 1 10) >> Maybe.withDefault 1 >> UpdateSplits)
+                                ]
+                                []
+                            , Html.text (String.fromInt ep.splitEquidistantCount)
+                            ]
+
+                        WaypointsMode ->
+                            let
+                                selectedIndices =
+                                    ep.splitWaypointIndices
+
+                                indexed =
+                                    maybeFromloadableResource state.tracks
+                                        |> Maybe.map (.current >> .editableWaypoints >> indexedEffectiveWaypoints)
+                                        |> Maybe.withDefault []
+
+                                -- splitListPos = position in the splits list; selectedWaypointIdx = editableWaypoints index at that position
+                                dropdownRow splitListPos selectedWaypointIdx =
+                                    let
+                                        waypointOption ( waypointIdx, wp ) =
+                                            Html.option
+                                                [ Html.Attributes.value (String.fromInt waypointIdx)
+                                                , Html.Attributes.selected (waypointIdx == selectedWaypointIdx)
+                                                ]
+                                                [ Html.text (wp.name ++ " (" ++ formatKm 1 wp.distance ++ ")") ]
+                                    in
+                                    Html.div [ Html.Attributes.style "display" "flex", Html.Attributes.style "gap" "0.5em", Html.Attributes.style "align-items" "center" ]
+                                        [ Html.select
+                                            [ Html.Events.onInput
+                                                (\val ->
+                                                    String.toInt val
+                                                        |> Maybe.map (UpdateSplitWaypoint splitListPos)
+                                                        |> Maybe.withDefault Ignore
+                                                )
+                                            ]
+                                            (List.map waypointOption indexed)
+                                        , Html.button
+                                            [ Html.Events.onClick (RemoveSplitWaypoint splitListPos)
+                                            , Html.Attributes.class "button-4"
+                                            ]
+                                            [ Html.text "Remove" ]
+                                        ]
+                            in
+                            List.indexedMap dropdownRow selectedIndices
+                                ++ [ Html.button
+                                        [ Html.Events.onClick AddSplitWaypoint
+                                        , Html.Attributes.class "button-4"
+                                        , Html.Attributes.disabled (List.length selectedIndices >= List.length indexed)
+                                        ]
+                                        [ Html.text "Add" ]
+                                   ]
+                    ]
+                )
     , optionGroup "Position"
         (let
             maxDist =
@@ -3598,6 +3613,17 @@ encodeSavedState state =
             , Just ( "intensityTau", Json.Encode.float ep.intensityTau )
             , ep.manualPosition |> Maybe.map (\pos -> ( "manualPosition", Json.Encode.float pos ))
             , Just
+                ( "viewMode"
+                , Json.Encode.string
+                    (case ep.viewMode of
+                        LiveView ->
+                            "live"
+
+                        StaticView ->
+                            "static"
+                    )
+                )
+            , Just
                 ( "splitMode"
                 , Json.Encode.string
                     (case ep.activeSplitMode of
@@ -3606,9 +3632,6 @@ encodeSavedState state =
 
                         WaypointsMode ->
                             "waypoints"
-
-                        LiveMode ->
-                            "live"
                     )
                 )
             , Just ( "splitEquidistantCount", Json.Encode.int ep.splitEquidistantCount )
@@ -3642,7 +3665,7 @@ stateDecoder =
             defaultCuesheetOptions
     in
     Json.Decode.succeed
-        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau manualPosition splitMode splitEquidistantCount splitWaypointIndices liveLookahead liveLookbehind labelHeightGain totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints ->
+        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau manualPosition viewMode splitMode splitEquidistantCount splitWaypointIndices liveLookahead liveLookbehind labelHeightGain totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints ->
             { tracks = loadableResourceFromMaybe tracks
             , showOptions = showOptions |> Maybe.withDefault defaultState.showOptions
             , activeTab = activeTab |> Maybe.andThen parseTab |> Maybe.withDefault defaultState.activeTab
@@ -3663,13 +3686,17 @@ stateDecoder =
                 , showIntensity = showIntensity |> Maybe.withDefault defEp.showIntensity
                 , intensityTau = intensityTau |> Maybe.withDefault defEp.intensityTau
                 , manualPosition = manualPosition
+                , viewMode =
+                    case viewMode of
+                        Just "live" ->
+                            LiveView
+
+                        _ ->
+                            StaticView
                 , activeSplitMode =
                     case splitMode of
                         Just "waypoints" ->
                             WaypointsMode
-
-                        Just "live" ->
-                            LiveMode
 
                         _ ->
                             EquidistantMode
@@ -3703,6 +3730,7 @@ stateDecoder =
         |> andMap (maybeField "showIntensity" Json.Decode.bool)
         |> andMap (maybeField "intensityTau" Json.Decode.float)
         |> andMap (maybeField "manualPosition" Json.Decode.float)
+        |> andMap (maybeField "viewMode" Json.Decode.string)
         |> andMap (maybeField "splitMode" Json.Decode.string)
         |> andMap (maybeField "splitEquidistantCount" Json.Decode.int)
         |> andMap (maybeField "splitWaypointIndices" (Json.Decode.list Json.Decode.int))
