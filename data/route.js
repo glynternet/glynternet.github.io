@@ -13174,7 +13174,12 @@ var $author$project$Main$viewWaypointsTab = F2(
 												$author$project$Main$viewWaypointCategories,
 												i,
 												wp.aX,
-												$elm$core$Dict$keys(state.d),
+												A2(
+													$elm$core$List$filter,
+													function (c) {
+														return !_Utils_eq(c, $author$project$Main$unknownCategory);
+													},
+													$elm$core$Dict$keys(state.d)),
 												A2(
 													$elm$core$Maybe$withDefault,
 													'',

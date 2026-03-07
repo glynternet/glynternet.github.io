@@ -109,10 +109,14 @@ type Tab
     | WaypointsTab
 
 
+type ViewMode
+    = LiveView
+    | StaticView
+
+
 type ActiveSplitMode
     = EquidistantMode
     | WaypointsMode
-    | LiveMode
 
 
 type alias EditableTrack =
@@ -194,6 +198,7 @@ type alias ElevationProfileOptions =
     , showIntensity : Bool
     , intensityTau : Float
     , manualPosition : Maybe Float
+    , viewMode : ViewMode
     , activeSplitMode : ActiveSplitMode
     , splitEquidistantCount : Int
     , splitWaypointIndices : List Int
@@ -230,6 +235,7 @@ defaultElevationProfileOptions =
     , showIntensity = False
     , intensityTau = 500
     , manualPosition = Nothing
+    , viewMode = StaticView
     , activeSplitMode = EquidistantMode
     , splitEquidistantCount = 1
     , splitWaypointIndices = []
@@ -390,6 +396,7 @@ type Msg
     | UpdateIntensityTau Float
     | UpdateManualPosition (Maybe Float)
     | UpdateSplits Int
+    | SetViewMode ViewMode
     | SetSplitMode ActiveSplitMode
     | AddSplitWaypoint
     | UpdateSplitWaypoint Int Int
@@ -876,6 +883,13 @@ update msg model =
             in
             updateAndStoreModel (updateState { s | elevationProfile = { ep | splitEquidistantCount = n } })
 
+        SetViewMode mode ->
+            let
+                ep =
+                    s.elevationProfile
+            in
+            updateAndStoreModel (updateState { s | elevationProfile = { ep | viewMode = mode } })
+
         SetSplitMode mode ->
             let
                 ep =
@@ -1111,11 +1125,11 @@ updateAndStoreModel model =
 
 requestSplitCmd : State -> Cmd Msg
 requestSplitCmd state =
-    case state.elevationProfile.activeSplitMode of
-        LiveMode ->
+    case state.elevationProfile.viewMode of
+        LiveView ->
             Cmd.none
 
-        _ ->
+        StaticView ->
             requestSplitCmdWasm state
 
 
@@ -2335,7 +2349,7 @@ viewWaypointsTab state tracks =
                                                 []
                                             , viewButton [] "X" (WaypointDeleted i True)
                                             ]
-                                        , viewWaypointCategories i wp.categories (Dict.keys state.filteredCategories) (Dict.get i state.newCategoryInputs |> Maybe.withDefault "")
+                                        , viewWaypointCategories i wp.categories (List.filter (\c -> c /= unknownCategory) (Dict.keys state.filteredCategories)) (Dict.get i state.newCategoryInputs |> Maybe.withDefault "")
                                         ]
                                     )
 
