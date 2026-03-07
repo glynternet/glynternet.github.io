@@ -1896,7 +1896,7 @@ profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation
 
                                 strokeColor =
                                     if isOffRoute then
-                                        "orange"
+                                        offRouteColour
 
                                     else
                                         "lightgray"
@@ -2585,7 +2585,7 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance waypoints cs
                                                 cats ->
                                                     Just ( String.join ", " cats, [] )
                                             , if waypoint.offRoute > offRouteThreshold then
-                                                Just ( "⚠ " ++ offRouteLabel, [ Svg.Attributes.fill "orange" ] )
+                                                Just ( "⚠️ " ++ offRouteLabel, [ Svg.Attributes.fill offRouteColour ] )
 
                                               else if showOffRouteDistance && waypoint.offRoute > 0 then
                                                 Just ( offRouteLabel, [] )
@@ -2632,7 +2632,7 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance waypoints cs
                             InfoWaypoint waypoint ->
                                 renderWaypointItem
                                     (if waypoint.offRoute > offRouteThreshold then
-                                        [ Svg.Attributes.fill "orange" ]
+                                        [ Svg.Attributes.fill offRouteColour ]
 
                                      else
                                         []
@@ -3428,6 +3428,10 @@ viewLocationOptions state =
 
 
 -- SHARED VIEW HELPERS
+
+
+offRouteColour =
+    "orangered"
 
 
 viewErrorPanel : String -> Html Msg

@@ -9967,6 +9967,7 @@ var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
 var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
+var $author$project$Main$offRouteColour = 'orangered';
 var $elm$core$Basics$round = _Basics_round;
 var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
@@ -10162,10 +10163,10 @@ var $author$project$Main$cuesheetSvg = F8(
 												}(),
 													(_Utils_cmp(waypoint.bg, offRouteThreshold) > 0) ? $elm$core$Maybe$Just(
 													_Utils_Tuple2(
-														'⚠ ' + offRouteLabel,
+														'⚠️ ' + offRouteLabel,
 														_List_fromArray(
 															[
-																$elm$svg$Svg$Attributes$fill('orange')
+																$elm$svg$Svg$Attributes$fill($author$project$Main$offRouteColour)
 															]))) : ((showOffRouteDistance && (waypoint.bg > 0)) ? $elm$core$Maybe$Just(
 													_Utils_Tuple2(offRouteLabel, _List_Nil)) : $elm$core$Maybe$Nothing)
 												]));
@@ -10231,7 +10232,7 @@ var $author$project$Main$cuesheetSvg = F8(
 											renderWaypointItem,
 											(_Utils_cmp(waypoint.bg, offRouteThreshold) > 0) ? _List_fromArray(
 												[
-													$elm$svg$Svg$Attributes$fill('orange')
+													$elm$svg$Svg$Attributes$fill($author$project$Main$offRouteColour)
 												]) : _List_Nil,
 											waypoint);
 									case 1:
@@ -10953,7 +10954,7 @@ var $author$project$Main$profile = function (segmentIndex) {
 																								A2($author$project$Main$interpolateWaypointElevation, fullTrackpoints, waypoint.aw) - 5);
 																							var x = calc.aE(waypoint.aw);
 																							var isOffRoute = _Utils_cmp(waypoint.bg, offRouteThreshold) > 0;
-																							var strokeColor = isOffRoute ? 'orange' : 'lightgray';
+																							var strokeColor = isOffRoute ? $author$project$Main$offRouteColour : 'lightgray';
 																							return _List_fromArray(
 																								[
 																									A2(
