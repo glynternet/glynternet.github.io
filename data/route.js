@@ -12637,7 +12637,8 @@ var $author$project$Main$viewOptionsPanel = function (state) {
 				$elm$html$Html$Attributes$class('flex-container'),
 				$elm$html$Html$Attributes$class('column'),
 				A2($elm$html$Html$Attributes$style, 'overflow', 'auto'),
-				$elm$html$Html$Attributes$class('narrow')
+				$elm$html$Html$Attributes$class('narrow'),
+				A2($elm$html$Html$Attributes$style, 'flex-shrink', '0')
 			]),
 		(!state.X) ? _List_fromArray(
 			[

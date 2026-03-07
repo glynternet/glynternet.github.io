@@ -2728,6 +2728,7 @@ viewOptionsPanel state =
         , Html.Attributes.class "column"
         , Html.Attributes.style "overflow" "auto"
         , Html.Attributes.class "narrow"
+        , Html.Attributes.style "flex-shrink" "0"
         ]
         (if not state.showOptions then
             [ Html.p
