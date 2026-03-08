@@ -49,6 +49,22 @@ layout: default
 						const result = splitProfile(params);
 						app.ports.receiveSplitProfile.send(result);
 					});
+					const profileObserver = new ResizeObserver(entries => {
+						for (const entry of entries) {
+							app.ports.profileWidthChanged.send(Math.round(entry.contentRect.width));
+						}
+					});
+					new MutationObserver((_, mo) => {
+						const el = document.getElementById('profile-container');
+						if (el) {
+							mo.disconnect();
+							profileObserver.observe(el);
+						}
+					}).observe(document.body, { childList: true, subtree: true });
+					// Also check immediately in case the element already exists
+					const profileEl = document.getElementById('profile-container');
+					if (profileEl) profileObserver.observe(profileEl);
+
 					app.ports.requestLocation.subscribe(function() {
 						if (!navigator.geolocation) {
 							app.ports.receiveLocation.send({ error: "position_unavailable" });

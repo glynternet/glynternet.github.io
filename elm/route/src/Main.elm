@@ -51,6 +51,7 @@ subscriptions { state } =
             Sub.none
         , receiveElevationProfileData WasmResponseReceived
         , receiveSplitProfile SplitProfileReceived
+        , profileWidthChanged ProfileWidthChanged
         ]
 
 
@@ -97,6 +98,7 @@ type alias State =
     -- Transient (never persisted)
     , stateDecodeError : Maybe String
     , splitSegments : Maybe GpxApi.SplitResult
+    , profilePixelWidth : Maybe Int
     }
 
 
@@ -291,6 +293,7 @@ defaultState =
     , showOffRouteDistance = False
     , stateDecodeError = Nothing
     , splitSegments = Nothing
+    , profilePixelWidth = Nothing
     }
 
 
@@ -423,6 +426,7 @@ type Msg
     | StateFileRead String
     | ImportStateFromUrl String
     | StateUrlFetched (Result Http.Error String)
+    | ProfileWidthChanged Int
 
 
 
@@ -1100,6 +1104,9 @@ update msg model =
             , Cmd.none
             )
 
+        ProfileWidthChanged width ->
+            ( updateState { s | profilePixelWidth = Just width }, Cmd.none )
+
 
 restoreState : String -> Model -> ( Model, Cmd Msg )
 restoreState jsonString model =
@@ -1107,7 +1114,7 @@ restoreState jsonString model =
         Ok decoded ->
             let
                 restored =
-                    { model | state = withLiveSplit decoded }
+                    { model | state = withLiveSplit { decoded | profilePixelWidth = model.state.profilePixelWidth } }
             in
             ( restored, Cmd.batch [ storeState (encodeSavedState restored.state), requestSplitCmd restored.state ] )
 
@@ -1726,6 +1733,9 @@ viewElevationProfileTab state tracks =
 
         Just splitResult ->
             let
+                downsampleWidth =
+                    Maybe.withDefault profileSvgWidth state.profilePixelWidth
+
                 profileViews =
                     List.map2 Tuple.pair splitResult.boundaries splitResult.segments
                         |> List.indexedMap
@@ -1752,15 +1762,20 @@ viewElevationProfileTab state tracks =
                                         fullIntensity
                                             |> List.filter (\pt -> pt.distance >= segStart && pt.distance <= segEnd)
                                             |> List.map (\pt -> { pt | distance = pt.distance - segStart })
-                                            |> downsample profileSvgWidth
+                                            |> downsample downsampleWidth
 
                                     downsampledSeg =
-                                        { seg | trackpoints = downsample (profileSvgWidth ** 2) seg.trackpoints }
+                                        { seg | trackpoints = downsample downsampleWidth seg.trackpoints }
                                 in
                                 profile segIndex downsampledSeg seg.trackpoints segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.labelHeightGain state.offRouteThreshold segPosition segIntensity trackMinIntensity trackMaxIntensity
                             )
             in
-            Html.div [] profileViews
+            Html.div [ Html.Attributes.id profileContainerId ] profileViews
+
+
+profileContainerId : String
+profileContainerId =
+    "profile-container"
 
 
 profileSvgWidth : Int
@@ -3777,6 +3792,7 @@ stateDecoder =
                 }
             , stateDecodeError = Nothing
             , splitSegments = Nothing
+            , profilePixelWidth = Nothing
             }
         )
         |> andMap (maybeField "tracks" (Zipper.decoder editableTrackDecoder))
@@ -3842,6 +3858,9 @@ port requestLocation : () -> Cmd msg
 
 
 port receiveLocation : (Json.Decode.Value -> msg) -> Sub msg
+
+
+port profileWidthChanged : (Int -> msg) -> Sub msg
 
 
 
