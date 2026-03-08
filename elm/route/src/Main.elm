@@ -1752,10 +1752,10 @@ viewElevationProfileTab state tracks =
                                         fullIntensity
                                             |> List.filter (\pt -> pt.distance >= segStart && pt.distance <= segEnd)
                                             |> List.map (\pt -> { pt | distance = pt.distance - segStart })
-                                            |> downsample (profileSvgWidth // 1)
+                                            |> downsample profileSvgWidth
 
                                     downsampledSeg =
-                                        { seg | trackpoints = downsample profileSvgWidth seg.trackpoints }
+                                        { seg | trackpoints = downsample (profileSvgWidth ** 2) seg.trackpoints }
                                 in
                                 profile segIndex downsampledSeg seg.trackpoints segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.labelHeightGain state.offRouteThreshold segPosition segIntensity trackMinIntensity trackMaxIntensity
                             )
