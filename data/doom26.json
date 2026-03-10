@@ -113781,7 +113781,7 @@
             "loss": 396.30000000000007,
             "offRoute": 46.52473032960328
           },
-          "deleted": false
+          "deleted": true
         },
         {
           "original": {
@@ -113794,7 +113794,7 @@
             "loss": 396.5000000000001,
             "offRoute": 83.66946611758358
           },
-          "deleted": false
+          "deleted": true
         },
         {
           "original": {
@@ -113846,7 +113846,7 @@
             "loss": 397.5000000000001,
             "offRoute": 31.190071775306272
           },
-          "deleted": false
+          "deleted": true
         },
         {
           "original": {
@@ -114548,7 +114548,7 @@
             "loss": 3517.199999999988,
             "offRoute": 6.548070328393935
           },
-          "deleted": true
+          "deleted": false
         },
         {
           "original": {
@@ -117674,7 +117674,7 @@
             "loss": 14190.800000000052,
             "offRoute": 10.755982090979376
           },
-          "deleted": true
+          "deleted": false
         },
         {
           "original": {
@@ -117687,7 +117687,7 @@
             "loss": 14191.300000000052,
             "offRoute": 135.92354142323245
           },
-          "deleted": true
+          "deleted": false
         },
         {
           "original": {
@@ -117843,7 +117843,7 @@
             "loss": 14443.100000000046,
             "offRoute": 63.24469952653591
           },
-          "deleted": false
+          "deleted": true
         },
         {
           "original": {
@@ -117856,7 +117856,7 @@
             "loss": 14509.600000000051,
             "offRoute": 24.785566385781507
           },
-          "deleted": false
+          "deleted": true
         },
         {
           "original": {
@@ -117882,7 +117882,7 @@
             "loss": 14762.30000000005,
             "offRoute": 6.17554473532825
           },
-          "deleted": false
+          "deleted": true
         },
         {
           "original": {
@@ -117895,7 +117895,7 @@
             "loss": 14796.800000000054,
             "offRoute": 23.342666602700294
           },
-          "deleted": false
+          "deleted": true
         },
         {
           "original": {
@@ -117908,7 +117908,7 @@
             "loss": 14803.100000000053,
             "offRoute": 31.190071775306272
           },
-          "deleted": false
+          "deleted": true
         },
         {
           "original": {
@@ -117973,7 +117973,7 @@
             "loss": 14810.000000000053,
             "offRoute": 97.17153141424582
           },
-          "deleted": false
+          "deleted": true
         },
         {
           "original": {
@@ -117986,7 +117986,7 @@
             "loss": 14812.100000000053,
             "offRoute": 92.56178439405954
           },
-          "deleted": false
+          "deleted": true
         },
         {
           "original": {
@@ -117999,7 +117999,7 @@
             "loss": 14822.500000000053,
             "offRoute": 46.52473032960328
           },
-          "deleted": false
+          "deleted": true
         }
       ],
       "gain": 14828.200000000059,
@@ -118007,8 +118007,8 @@
     },
     "next": []
   },
-  "activeTab": "elevationProfile",
-  "showOptions": true,
+  "activeTab": "cuesheet",
+  "showOptions": false,
   "trackingIntervalSec": 10,
   "categoryFilterEnabled": true,
   "filteredCategories": {
@@ -118028,7 +118028,7 @@
     "Shelter": true,
     "Singletrack": true,
     "Summit": false,
-    "Toilets": true,
+    "Toilets": false,
     "Viewpoint": false,
     "Water Source": false
   },
@@ -118037,6 +118037,7 @@
   "trackThickness": 1,
   "showIntensity": true,
   "intensityTau": 13000,
+  "viewMode": "static",
   "splitMode": "waypoints",
   "splitEquidistantCount": 4,
   "splitWaypointIndices": [
@@ -118045,11 +118046,12 @@
   ],
   "liveLookahead": 106000,
   "liveLookbehind": 2000,
+  "labelHeightGain": 1,
   "totalDistanceDisplay": "from zero",
   "referencePoint": 1000,
   "itemSpacing": 45,
   "distanceDetail": 1,
-  "showStartFinish": false,
+  "showStartFinish": true,
   "offRouteThreshold": 250,
   "showOffRouteWaypoints": true,
   "showOffRouteDistance": true
