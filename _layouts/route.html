@@ -49,6 +49,21 @@ layout: default
 						const result = splitProfile(params);
 						app.ports.receiveSplitProfile.send(result);
 					});
+					app.ports.requestSplitsGpx.subscribe(segmentsJson => {
+						const gpxResult = splitsToGpx(segmentsJson);
+						const parsed = JSON.parse(gpxResult);
+						if (parsed && parsed.error) {
+							console.error('GPX generation error:', parsed.error);
+							return;
+						}
+						const blob = new Blob([parsed], { type: 'application/gpx+xml' });
+						const url = URL.createObjectURL(blob);
+						const a = document.createElement('a');
+						a.href = url;
+						a.download = 'route.gpx';
+						a.click();
+						URL.revokeObjectURL(url);
+					});
 					const profileObserver = new ResizeObserver(entries => {
 						for (const entry of entries) {
 							app.ports.profileWidthChanged.send(Math.round(entry.contentRect.width));

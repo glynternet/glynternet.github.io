@@ -1,18 +1,21 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"syscall/js"
 
 	"github.com/glynternet/gpx/pkg/elevation"
-	"github.com/tkrajina/gpxgo/gpx"
+	gpxio "github.com/glynternet/gpx/pkg/io"
+	gpxgo "github.com/tkrajina/gpxgo/gpx"
 )
 
 func main() {
 	fmt.Println("Profile wasm started")
 	js.Global().Set("elevationProfileData", jsonResultFunc1(elevationProfileData))
 	js.Global().Set("splitProfile", jsonResultFunc1(splitProfile))
+	js.Global().Set("splitsToGpx", jsonResultFunc1(splitsToGpx))
 	select {}
 }
 
@@ -55,7 +58,7 @@ func splitProfile(arg js.Value) (elevation.SplitResult, error) {
 }
 
 func elevationProfileData(arg js.Value) ([]elevation.Profile, error) {
-	gpxData, err := gpx.ParseBytes([]byte(arg.String()))
+	gpxData, err := gpxgo.ParseBytes([]byte(arg.String()))
 	if err != nil {
 		return nil, fmt.Errorf("parsing GPX data: %w", err)
 	}
@@ -67,4 +70,33 @@ func elevationProfileData(arg js.Value) ([]elevation.Profile, error) {
 		return nil, fmt.Errorf("calculating profiles from parsed data: %w", err)
 	}
 	return profiles, nil
+}
+
+func splitsToGpx(arg js.Value) (string, error) {
+	var segments []elevation.Profile
+	if err := json.Unmarshal([]byte(arg.String()), &segments); err != nil {
+		return "", fmt.Errorf("parsing segments: %w", err)
+	}
+	var tracks []gpxgo.GPXTrack
+	for i, seg := range segments {
+		var points []gpxgo.GPXPoint
+		for _, tp := range seg.Track {
+			points = append(points, gpxgo.GPXPoint{
+				Point: gpxgo.Point{
+					Latitude:  tp.Lat,
+					Longitude: tp.Lon,
+					Elevation: *gpxgo.NewNullableFloat64(tp.Elevation),
+				},
+			})
+		}
+		tracks = append(tracks, gpxgo.GPXTrack{
+			Name:     fmt.Sprintf("Split %d", i+1),
+			Segments: []gpxgo.GPXTrackSegment{{Points: points}},
+		})
+	}
+	var buf bytes.Buffer
+	if err := gpxio.Write(&buf, gpxgo.GPX{Tracks: tracks}); err != nil {
+		return "", fmt.Errorf("writing gpx: %w", err)
+	}
+	return buf.String(), nil
 }

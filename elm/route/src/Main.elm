@@ -421,6 +421,7 @@ type Msg
     | UpdateShowOffRouteWaypoints Bool
       -- State export/import
     | ExportState
+    | DownloadSplitsGpx
     | ImportStateFromFile
     | StateFileSelected File.File
     | StateFileRead String
@@ -1060,6 +1061,14 @@ update msg model =
 
         ExportState ->
             ( model, downloadState (encodeSavedState { s | showOptions = False }) )
+
+        DownloadSplitsGpx ->
+            case s.splitSegments of
+                Just splitResult ->
+                    ( model, requestSplitsGpx (Json.Encode.encode 0 (Json.Encode.list GpxApi.encodeTrack splitResult.segments)) )
+
+                Nothing ->
+                    ( model, Cmd.none )
 
         ImportStateFromFile ->
             ( model, File.Select.file [ "application/json" ] StateFileSelected )
@@ -2900,7 +2909,12 @@ viewOptionsPanel state =
                             ]
 
                         StaticView ->
-                            []
+                            case state.splitSegments of
+                                Just _ ->
+                                    [ viewButton [] "Download splits" DownloadSplitsGpx ]
+
+                                Nothing ->
+                                    []
 
                     -- Tab-specific options
                     , case state.activeTab of
@@ -3861,6 +3875,9 @@ port receiveLocation : (Json.Decode.Value -> msg) -> Sub msg
 
 
 port profileWidthChanged : (Int -> msg) -> Sub msg
+
+
+port requestSplitsGpx : String -> Cmd msg
 
 
 
