@@ -14,6 +14,14 @@ series:
 
 events:
 
+### 2027
+- summary: Frisco Freeze
+  begin: 2027-02-13
+  location: Frisco Nordic Center
+  urls:
+  - https://www.townoffrisco.com/event/nordic-center-events/frisco-freeze-winter-bike-race/
+
+
 ### 2026
 
 - summary: Pleasantville
@@ -255,7 +263,7 @@ events:
 #   series: Arizona Endurance Series
 #   urls:
 #   - https://rockyroad5050.wordpress.com/ripsey/
-- summary: Fatty Patty
+- summary: "Cancelled: Fatty Patty"
   begin: 2026-03-21
   location: Leadville
   series: Leadville Winter Series
