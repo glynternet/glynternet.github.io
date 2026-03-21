@@ -150,10 +150,9 @@ events:
   location: Reno, Colorado
   urls:
   - https://tnca400.com/
-- summary: 'DATE TBD: Salida Big Friggin Loop (SBFL)'
-  begin: 2026-06-07
+- summary: 'Salida Big Friggin Loop (SBFL)'
+  begin: 2026-06-06
   location: Salida, CO
-  description: Date taken from 2025 schedule for time of year approximation
   series: Colorado Endurance Series
   urls:
   - https://coloradoes.wordpress.com/swes-event-list/sbfl/
