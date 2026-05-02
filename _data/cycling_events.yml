@@ -85,10 +85,9 @@ events:
   series: New Mexico Endurance Series
   urls:
   - https://nm-es.weebly.com/santa-fe-big-friggin-loop.html
-- summary: 'DATE TBD: Colorado Trail Classic (CTC)'
+- summary: 'Colorado Trail Classic (CTC)'
   begin: 2026-09-06
   location: Colorado
-  description: Date taken from 2025 schedule for time of year approximation
   series: Colorado Endurance Series
   urls:
   - https://coloradoes.wordpress.com/swes-event-list/colorado-trail-classic/
@@ -129,9 +128,9 @@ events:
   urls:
   - https://nm-es.weebly.com/watermelon-beat-down.html
 - summary: 'DATE TBD: Pain In The Aspen (PIA)'
-  begin: 2026-07-12
+  begin: 2026-07-27
   location: Colorado
-  description: Date taken from 2025 schedule for time of year approximation
+  description: Date 27th or 28th, organiser undecided atm
   series: Colorado Endurance Series
   urls:
   - https://coloradoes.wordpress.com/swes-event-list/pain-in-the-aspen/
@@ -198,9 +197,9 @@ events:
   series: New Mexico Endurance Series
   urls:
   - https://nm-es.weebly.com/manzanita-mountain-epic.html
-- summary: 'DATE TBD: Guffey Huffer (Gravel)'
-  begin: 2026-05-10
-  location: Colorado
+- summary: 'Guffey Huffer (Gravel)'
+  begin: 2026-05-16
+  location: Salida, CO
   description: Date taken from 2025 schedule for time of year approximation
   series: Colorado Endurance Series
   urls:
