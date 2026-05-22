@@ -11,6 +11,8 @@ series:
     url: https://www.cloudcitywheelers.com/the-winter-bike-series
   New Mexico Endurance Series:
     url: https://nm-es.weebly.com/rides.html
+  Texas Showdown Series:
+    url: https://texasshowdownseries.com/
 
 events:
 
@@ -30,6 +32,12 @@ events:
   series: Arizona Endurance Series
   urls:
   - https://rockyroad5050.wordpress.com/pleasantville/
+- summary: West Texas Showdown
+  begin: 2026-12-04
+  end: 2026-12-06
+  location:  Terlingua, TX
+  urls:
+  - https://texasshowdownseries.com/west-texas-showdown/
 - summary: Picketpost Punisher
   begin: 2026-11-14
   location: Arizona
