@@ -35,12 +35,26 @@ Kinda quick-release taut-line hitch
 
 ### Tarp corner
 - For tarps with holes: https://www.instagram.com/reels/DPIAQA3DEue/
+- Tarp without corner hole: Triple sheet bend
+	- https://www.instagram.com/reels/DNp2XAVx0bV/
+
+### Classic bowline
+- Swish way to do it: https://www.instagram.com/reels/DO4UhSJD5Ai/
 
 ### Double-wrapped bowline round pole
 - https://www.instagram.com/reels/DP5f3jdFZ3o/
 
 ### Idiana Jones precipice knot
 Nooooo I lost it 😣
+
+### Coil unattached rope
+- https://www.animatedknots.com/coil-unattached-rope-knot
+
+### Figure 8 directional loop
+- https://www.animatedknots.com/figure-8-directional-loop-knot
+
+### Span loop knot / midline loop
+- https://www.instagram.com/reel/DB3wxbCgraW/?igsh=d241MWhqZHg4ZTNw
 
 References:
 * https://www.tegral.com.au/the-favorite-knot-types-of-every-trucker/
