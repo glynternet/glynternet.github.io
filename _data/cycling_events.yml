@@ -160,6 +160,7 @@ events:
 - summary: Mishigami Challenge
   begin: 2026-07-11
   location: Michigan
+  attending: false
   urls:
   - https://mishigamichallenge.com/
   - https://midwestultracycling.com/mishigami/
@@ -185,6 +186,7 @@ events:
 - summary: Olympic 420 Adventure
   begin: 2026-06-26
   location: Olympic Peninsula, Washington
+  attending: false
   urls:
   - https://olympic420.weebly.com/
 - summary: El Rito Epic
