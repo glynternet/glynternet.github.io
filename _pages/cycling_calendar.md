@@ -60,7 +60,7 @@ function renderEvents() {
   const futureEvents = [];
   const pastEvents = [];
 
-  eventsData.forEach(event => {
+  eventsData.filter(event => event.attending !== false).forEach(event => {
     const eventDate = new Date(event.begin + 'T00:00:00');
     if (eventDate >= today) {
       futureEvents.push(event);

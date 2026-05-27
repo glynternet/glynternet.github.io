@@ -75,6 +75,8 @@ def main():
     calendar = ics.Calendar()
 
     for event_data in data.get("events", []):
+        if event_data.get("attending") is False:
+            continue
         calendar.events.append(create_event(event_data, series_map))
 
     print(calendar.serialize())

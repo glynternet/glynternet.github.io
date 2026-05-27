@@ -179,6 +179,7 @@ events:
 - summary: GCOR (Olympic GC)
   begin: 2026-06-28
   location: Olympic Peninsula, Washington
+  attending: false
   urls:
   - https://gcorbikeroute.wordpress.com/
 - summary: Olympic 420 Adventure
@@ -201,9 +202,11 @@ events:
   location: Minturn, Colorado
   description: Choose Your Own Adventure format
   series: Dark Timber MTB
+  attending: false
 - summary: Trans North California 400 (TNCA400)
   begin: 2026-06-13
   location: Reno, Colorado
+  attending: false
   urls:
   - https://tnca400.com/
 - summary: 'Salida Big Friggin Loop (SBFL)'
@@ -212,42 +215,48 @@ events:
   series: Colorado Endurance Series
   urls:
   - https://coloradoes.wordpress.com/swes-event-list/sbfl/
-# - summary: Kaibab 160 & 230 Stage Bikepack (Day 5)
-#   begin: 2026-06-08
-#   location: Arizona
-#   series: Arizona Endurance Series
-#   urls:
-#   - https://rockyroad5050.wordpress.com/kaibab-130-and-200/
-# - summary: Kaibab 160 & 230 Stage Bikepack (Day 4)
-#   begin: 2026-06-07
-#   location: Arizona
-#   series: Arizona Endurance Series
-#   urls:
-#   - https://rockyroad5050.wordpress.com/kaibab-130-and-200/
-# - summary: Aspen Asphyxiation
-#   begin: 2026-06-06
-#   location: Flagstaff, AZ
-#   series: Arizona Endurance Series
-#   urls:
-#   - https://rockyroad5050.wordpress.com/5-aspen-asphyxiation/
-# - summary: Kaibab 160 & 230 Stage Bikepack (Day 3)
-#   begin: 2026-06-06
-#   location: Arizona
-#   series: Arizona Endurance Series
-#   urls:
-#   - https://rockyroad5050.wordpress.com/kaibab-130-and-200/
-# - summary: Kaibab 160 & 230 Stage Bikepack (Day 2)
-#   begin: 2026-06-05
-#   location: Arizona
-#   series: Arizona Endurance Series
-#   urls:
-#   - https://rockyroad5050.wordpress.com/kaibab-130-and-200/
-# - summary: Kaibab 160 & 230 Stage Bikepack (Day 1)
-#   begin: 2026-06-04
-#   location: Arizona
-#   series: Arizona Endurance Series
-#   urls:
-#   - https://rockyroad5050.wordpress.com/kaibab-130-and-200/
+- summary: Kaibab 160 & 230 Stage Bikepack (Day 5)
+  begin: 2026-06-08
+  location: Arizona
+  series: Arizona Endurance Series
+  attending: false
+  urls:
+  - https://rockyroad5050.wordpress.com/kaibab-130-and-200/
+- summary: Kaibab 160 & 230 Stage Bikepack (Day 4)
+  begin: 2026-06-07
+  location: Arizona
+  series: Arizona Endurance Series
+  attending: false
+  urls:
+  - https://rockyroad5050.wordpress.com/kaibab-130-and-200/
+- summary: Aspen Asphyxiation
+  begin: 2026-06-06
+  location: Flagstaff, AZ
+  series: Arizona Endurance Series
+  attending: false
+  urls:
+  - https://rockyroad5050.wordpress.com/5-aspen-asphyxiation/
+- summary: Kaibab 160 & 230 Stage Bikepack (Day 3)
+  begin: 2026-06-06
+  location: Arizona
+  series: Arizona Endurance Series
+  attending: false
+  urls:
+  - https://rockyroad5050.wordpress.com/kaibab-130-and-200/
+- summary: Kaibab 160 & 230 Stage Bikepack (Day 2)
+  begin: 2026-06-05
+  location: Arizona
+  series: Arizona Endurance Series
+  attending: false
+  urls:
+  - https://rockyroad5050.wordpress.com/kaibab-130-and-200/
+- summary: Kaibab 160 & 230 Stage Bikepack (Day 1)
+  begin: 2026-06-04
+  location: Arizona
+  series: Arizona Endurance Series
+  attending: false
+  urls:
+  - https://rockyroad5050.wordpress.com/kaibab-130-and-200/
 - summary: 'DATE TBD: Hellbender Extinction'
   begin: 2026-05-31
   location: West Virginia
@@ -277,14 +286,15 @@ events:
   series: Colorado Endurance Series
   urls:
   - https://coloradoes.wordpress.com/swes-event-list/ddf200k/
-# - summary: Pinyons & Pines
-#   begin: 2026-05-14
-#   location: Arizona
-#   description: Multi-day ride through Flagstaff, Sedona and beyond
-#   series: Arizona Endurance Series
-#   urls:
-#   - https://rockyroad5050.wordpress.com/pinyons-pines-bikepack/
-#   - https://danaernst.com/PinyonsPines/
+- summary: Pinyons & Pines
+  begin: 2026-05-14
+  location: Arizona
+  description: Multi-day ride through Flagstaff, Sedona and beyond
+  series: Arizona Endurance Series
+  attending: false
+  urls:
+  - https://rockyroad5050.wordpress.com/pinyons-pines-bikepack/
+  - https://danaernst.com/PinyonsPines/
 - summary: Westwater 200
   begin: 2026-05-09
   location: Fruita, Colorado
@@ -292,12 +302,13 @@ events:
   series: Dark Timber MTB
   urls:
     - https://www.darktimbermtb.com/westwater-200
-# - summary: Prescott Monstercross
-#   begin: 2026-04-18
-#   location: Prescott, AZ
-#   series: Arizona Endurance Series
-#   urls:
-#   - https://rockyroad5050.wordpress.com/pm/
+- summary: Prescott Monstercross
+  begin: 2026-04-18
+  location: Prescott, AZ
+  series: Arizona Endurance Series
+  attending: false
+  urls:
+  - https://rockyroad5050.wordpress.com/pm/
 - summary: RockStar Challenge
   begin: 2026-04-18
   end: 2026-04-21
@@ -315,12 +326,13 @@ events:
   series: New Mexico Endurance Series
   urls:
   - https://nm-es.weebly.com/san-ysidro-dirty-century.html
-# - summary: Coronado Gold
-#   begin: 2026-04-04
-#   location: Patagonia, AZ
-#   series: Arizona Endurance Series
-#   urls:
-#   - https://rockyroad5050.wordpress.com/coronado-gold/
+- summary: Coronado Gold
+  begin: 2026-04-04
+  location: Patagonia, AZ
+  series: Arizona Endurance Series
+  attending: false
+  urls:
+  - https://rockyroad5050.wordpress.com/coronado-gold/
 - summary: East Side Epic (Leadville Winter Series)
   begin: 2026-04-04
   location: Leadville
@@ -331,20 +343,22 @@ events:
   series: New Mexico Endurance Series
   urls:
   - https://nm-es.weebly.com/abq-mixed-media-big-friggin-loop.html
-# - summary: Sedona Big Friggin' Loop
-#   begin: 2026-03-28
-#   location: Sedona, AZ
-#   description: Individual Time Trial format
-#   series: Arizona Endurance Series
-#   urls:
-#   - https://rockyroad5050.wordpress.com/3-sedona-big-friggin-loop/
-# - summary: Ripsey
-#   begin: 2026-03-21
-#   location: Arizona
-#   description: Features the famed Ripsey ridgeline on the Arizona Trail
-#   series: Arizona Endurance Series
-#   urls:
-#   - https://rockyroad5050.wordpress.com/ripsey/
+- summary: Sedona Big Friggin' Loop
+  begin: 2026-03-28
+  location: Sedona, AZ
+  description: Individual Time Trial format
+  series: Arizona Endurance Series
+  attending: false
+  urls:
+  - https://rockyroad5050.wordpress.com/3-sedona-big-friggin-loop/
+- summary: Ripsey
+  begin: 2026-03-21
+  location: Arizona
+  description: Features the famed Ripsey ridgeline on the Arizona Trail
+  series: Arizona Endurance Series
+  attending: false
+  urls:
+  - https://rockyroad5050.wordpress.com/ripsey/
 - summary: "Cancelled: Fatty Patty"
   begin: 2026-03-21
   location: Leadville
@@ -369,26 +383,29 @@ events:
   series: Dusty Roadrunner Gravel Series
   urls:
   - https://dustyroadrunner.weebly.com/february-21---south-valley-roubaix.html
-# - summary: Tortolita 50
-#   begin: 2026-02-21
-#   location: Tucson, AZ
-#   series: Arizona Endurance Series
-#   urls:
-#   - https://rockyroad5050.wordpress.com/tucson/
-# - summary: Gila 100 Bikepacking Stage Race (Day 2)
-#   begin: 2026-02-15
-#   location: Arizona
-#   description: 2-day bikepacking event
-#   series: Arizona Endurance Series
-#   urls:
-#   - https://rockyroad5050.wordpress.com/the-gila-100/
-# - summary: Gila 100 Bikepacking Stage Race (Day 1)
-#   begin: 2026-02-14
-#   location: Arizona
-#   description: 2-day bikepacking event
-#   series: Arizona Endurance Series
-#   urls:
-#   - https://rockyroad5050.wordpress.com/the-gila-100/
+- summary: Tortolita 50
+  begin: 2026-02-21
+  location: Tucson, AZ
+  series: Arizona Endurance Series
+  attending: false
+  urls:
+  - https://rockyroad5050.wordpress.com/tucson/
+- summary: Gila 100 Bikepacking Stage Race (Day 2)
+  begin: 2026-02-15
+  location: Arizona
+  description: 2-day bikepacking event
+  series: Arizona Endurance Series
+  attending: false
+  urls:
+  - https://rockyroad5050.wordpress.com/the-gila-100/
+- summary: Gila 100 Bikepacking Stage Race (Day 1)
+  begin: 2026-02-14
+  location: Arizona
+  description: 2-day bikepacking event
+  series: Arizona Endurance Series
+  attending: false
+  urls:
+  - https://rockyroad5050.wordpress.com/the-gila-100/
 - summary: Frisco Freeze
   begin: 2026-02-14
   location: Frisco Nordic Center
@@ -418,13 +435,14 @@ events:
   end: 2026-01-25
   location: Leadville
   series: Leadville Winter Series
-# - summary: Antelope Peak Challenge
-#   begin: 2026-01-17
-#   location: Oracle, AZ
-#   description: Little known singletrack near Oracle
-#   series: Arizona Endurance Series
-#   urls:
-#   - https://rockyroad5050.wordpress.com/apc/
+- summary: Antelope Peak Challenge
+  begin: 2026-01-17
+  location: Oracle, AZ
+  description: Little known singletrack near Oracle
+  series: Arizona Endurance Series
+  attending: false
+  urls:
+  - https://rockyroad5050.wordpress.com/apc/
 
 ### 2025
 
