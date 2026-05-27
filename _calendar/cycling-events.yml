@@ -42,6 +42,10 @@ events:
   - https://texasshowdownseries.com/west-texas-showdown/
 - summary: Quebradas Desert Kraken
   begin: 2026-11-08
+  location: Bosquecito Rd, near Socorro, NM (https://maps.app.goo.gl/6xZiZmDAeg7sYbKB7)
+  geo:
+    lat: 34.1216884
+    lon: -106.8846446
   series: Dusty Roadrunner Gravel Series
   urls:
   - https://dustyroadrunner.weebly.com/november-8th---quebradas-desert-kraken.html
@@ -72,6 +76,10 @@ events:
   - https://rockyroad5050.wordpress.com/5-coconino-250-and-350/
 - summary: Jemez Loupes
   begin: 2026-10-03
+  location: Jemez Mountains (FR69 area), NM (https://maps.app.goo.gl/dFX25UJecM311bBE9)
+  geo:
+    lat: 35.9993171
+    lon: -106.7681897
   series: Dusty Roadrunner Gravel Series
   urls:
   - https://dustyroadrunner.weebly.com/october-3rd---jemez-loupes.html
@@ -101,6 +109,10 @@ events:
   - https://coloradoes.wordpress.com/leadville-big-friggin-loop-2021/
 - summary: 'DATE TBD: Dusty Roadrunner Gravel Series Round'
   begin: 2026-08-29
+  location: TBD, near Pecos/Glorieta, NM (https://maps.app.goo.gl/E19E77EbNtTZvnkLA)
+  geo:
+    lat: 35.5084171
+    lon: -105.8055235
   description: Date 29th or 30th, location TBD (organisers preriding 3 options)
   series: Dusty Roadrunner Gravel Series
   urls:
@@ -191,6 +203,10 @@ events:
   - https://olympic420.weebly.com/
 - summary: El Rito Epic
   begin: 2026-06-20
+  location: El Rito, Carson NF, NM (https://maps.app.goo.gl/QwPLAkZvL1jqEaDA8)
+  geo:
+    lat: 36.4173985
+    lon: -106.1773460
   series: Dusty Roadrunner Gravel Series
   urls:
   - https://dustyroadrunner.weebly.com/june-20th---el-rito-epic.html
@@ -319,6 +335,10 @@ events:
   - https://cyclingva.com/events/rockstar-challenge/
 - summary: Withington
   begin: 2026-04-25
+  location: Magdalena Mountains, Cibola NF, NM (https://maps.app.goo.gl/Wz4DbJEwYRr4i3ei7)
+  geo:
+    lat: 33.956997
+    lon: -107.495086
   series: Dusty Roadrunner Gravel Series
   urls:
   - https://dustyroadrunner.weebly.com/april-25th---withington.html
@@ -377,11 +397,19 @@ events:
   series: Leadville Winter Series
 - summary: South Valley Roubaix - Round 2
   begin: 2026-02-28
+  location: South Valley, Albuquerque, NM (https://maps.app.goo.gl/TCteSVwaEGgaYEgu7)
+  geo:
+    lat: 34.9808241
+    lon: -106.6707736
   series: Dusty Roadrunner Gravel Series
   urls:
   - https://dustyroadrunner.weebly.com/february-28---south-valley-roubaix.html
 - summary: South Valley Roubaix - Round 1
   begin: 2026-02-21
+  location: South Valley, Albuquerque, NM (https://maps.app.goo.gl/TCteSVwaEGgaYEgu7)
+  geo:
+    lat: 34.9808241
+    lon: -106.6707736
   series: Dusty Roadrunner Gravel Series
   urls:
   - https://dustyroadrunner.weebly.com/february-21---south-valley-roubaix.html

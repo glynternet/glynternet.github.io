@@ -55,6 +55,15 @@ def create_event(event_data: dict, series_map: dict) -> ics.Event:
     if location := event_data.get("location"):
         e.location = location
 
+    if geo := event_data.get("geo"):
+        if not isinstance(geo, dict) or set(geo.keys()) != {"lat", "lon"}:
+            print(f"'geo' must be a mapping with exactly 'lat' and 'lon' keys in event: {event_data}", file=sys.stderr)
+            sys.exit(1)
+        if not all(isinstance(geo[k], (int, float)) for k in ("lat", "lon")):
+            print(f"'geo' lat/lon must be numeric in event: {event_data}", file=sys.stderr)
+            sys.exit(1)
+        e.geo = (geo["lat"], geo["lon"])
+
     if description := build_description(event_data, series_map):
         e.description = description
 
