@@ -42,7 +42,7 @@ events:
   - https://texasshowdownseries.com/west-texas-showdown/
 - summary: Quebradas Desert Kraken
   begin: 2026-11-08
-  location: Bosquecito Rd, near Socorro, NM (https://maps.app.goo.gl/6xZiZmDAeg7sYbKB7)
+  location: Bosquecito Rd, near Socorro, NM (https://goo.gl/maps/6xZiZmDAeg7sYbKB7)
   geo:
     lat: 34.1216884
     lon: -106.8846446
@@ -203,7 +203,7 @@ events:
   - https://olympic420.weebly.com/
 - summary: El Rito Epic
   begin: 2026-06-20
-  location: El Rito, Carson NF, NM (https://maps.app.goo.gl/QwPLAkZvL1jqEaDA8)
+  location: El Rito, Carson NF, NM (https://goo.gl/maps/QwPLAkZvL1jqEaDA8)
   geo:
     lat: 36.4173985
     lon: -106.1773460
