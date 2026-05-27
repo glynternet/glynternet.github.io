@@ -26,7 +26,9 @@ function formatEvent(event) {
   if (event.end) {
     html += `<p><strong>End:</strong> ${event.end}</p>\n`;
   }
-  html += `<p><strong>Location:</strong> ${event.location.trim()}</p>\n`;
+  if (event.location) {
+    html += `<p><strong>Location:</strong> ${event.location.trim()}</p>\n`;
+  }
 
   if (event.series) {
     const seriesInfo = seriesData[event.series];
