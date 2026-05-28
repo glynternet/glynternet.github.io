@@ -182,10 +182,17 @@ events:
   series: New Mexico Endurance Series
   urls:
   - https://nm-es.weebly.com/watermelon-beat-down.html
-- summary: 'DATE TBD: Pain In The Aspen (PIA)'
-  begin: 2026-07-27
+- summary: Fossil Ultimate
+  begin: 2026-07-04
+  location: IOOF Park, Gunnison, CO
+  description: 60 mile figure-8 self-supported MTB ride. 5AM start at IOOF Park downtown Gunnison.
+  urls:
+  - https://jwookieone.com/fossil-ultimate/
+  - https://www.plotaroute.com/routeplayer/3020310
+- summary: 'Pain In The Aspen (PIA)'
+  begin: 2026-07-28
   location: Colorado
-  description: Date 27th or 28th, organiser undecided atm
+  attending: false
   series: Colorado Endurance Series
   urls:
   - https://coloradoes.wordpress.com/swes-event-list/pain-in-the-aspen/
