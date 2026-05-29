@@ -19,6 +19,11 @@ series:
 events:
 
 ### 2027
+- summary: Fred Whitton Challenge
+  begin: 2027-05-09
+  location: Lake District, UK
+  urls:
+  - https://fredwhittonchallenge.co.uk/
 - summary: Frisco Freeze
   begin: 2027-02-20
   location: Frisco Nordic Center
