@@ -209,6 +209,8 @@ type alias ElevationProfileOptions =
     , liveLookahead : Float
     , liveLookbehind : Float
     , labelHeightGain : Float
+    , distanceMarkerInterval : Maybe Float
+    , distanceMarkerSegmentEnds : Bool
     }
 
 
@@ -245,6 +247,8 @@ defaultElevationProfileOptions =
     , liveLookahead = 5000
     , liveLookbehind = 2000
     , labelHeightGain = 1.0
+    , distanceMarkerInterval = Nothing
+    , distanceMarkerSegmentEnds = False
     }
 
 
@@ -408,6 +412,8 @@ type Msg
     | RemoveSplitWaypoint Int
     | UpdateLiveLookahead Float
     | UpdateLiveLookbehind Float
+    | UpdateDistanceMarkerInterval (Maybe Float)
+    | UpdateDistanceMarkerSegmentEnds Bool
       -- Cuesheet
     | UpdateTotalDistanceDisplay (Maybe TotalDistanceDisplay)
     | UpdatePosition Float
@@ -983,6 +989,20 @@ update msg model =
                     s.elevationProfile
             in
             updateSplitAndStore (updateState { s | elevationProfile = { ep | liveLookbehind = val } })
+
+        UpdateDistanceMarkerInterval maybeInterval ->
+            let
+                ep =
+                    s.elevationProfile
+            in
+            updateAndStoreModel (updateState { s | elevationProfile = { ep | distanceMarkerInterval = maybeInterval } })
+
+        UpdateDistanceMarkerSegmentEnds show ->
+            let
+                ep =
+                    s.elevationProfile
+            in
+            updateAndStoreModel (updateState { s | elevationProfile = { ep | distanceMarkerSegmentEnds = show } })
 
         -- Cuesheet options
         UpdateTotalDistanceDisplay maybeSelection ->
@@ -1735,6 +1755,28 @@ viewElevationProfileTab state tracks =
                 (\pt ( mn, mx ) -> ( min mn pt.intensity, max mx pt.intensity ))
                 ( 1 / 0, -(1 / 0) )
                 fullIntensity
+
+        -- distance markers reuse the cuesheet's "Total distance" setting so distance
+        -- reads the same in both views
+        cs =
+            state.cuesheet
+
+        currentEffectiveWaypoints =
+            effectiveWaypoints tracks.current.editableWaypoints
+
+        currentFinishDistance =
+            lastTrackpointDistance tracks.current.trackpoints
+
+        refWaypoint =
+            case cs.totalDistanceDisplay of
+                ToWaypoint idx ->
+                    List.Extra.getAt idx currentEffectiveWaypoints
+
+                FromWaypoint idx ->
+                    List.Extra.getAt idx currentEffectiveWaypoints
+
+                _ ->
+                    Nothing
     in
     case state.splitSegments of
         Nothing ->
@@ -1775,8 +1817,21 @@ viewElevationProfileTab state tracks =
 
                                     downsampledSeg =
                                         { seg | trackpoints = downsample downsampleWidth seg.trackpoints }
+
+                                    markers =
+                                        distanceMarkers
+                                            { mode = cs.totalDistanceDisplay
+                                            , finishDist = currentFinishDistance
+                                            , referencePoint = cs.referencePoint
+                                            , refWaypoint = refWaypoint
+                                            , detail = cs.distanceDetail
+                                            , interval = ep.distanceMarkerInterval
+                                            , segmentEnds = ep.distanceMarkerSegmentEnds
+                                            , segStart = segStart
+                                            , segMaxDistance = segMaxDistance
+                                            }
                                 in
-                                profile segIndex downsampledSeg seg.trackpoints segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.labelHeightGain state.offRouteThreshold segPosition segIntensity trackMinIntensity trackMaxIntensity
+                                profile segIndex downsampledSeg seg.trackpoints segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.labelHeightGain state.offRouteThreshold segPosition segIntensity trackMinIntensity trackMaxIntensity markers
                             )
             in
             Html.div [ Html.Attributes.id profileContainerId ] profileViews
@@ -1824,8 +1879,123 @@ elevationTicks minElev maxElev =
     buildTicks firstTick []
 
 
-profile : Int -> GpxApi.Track -> List GpxApi.TrackPoint -> Float -> Float -> Float -> Float -> Int -> Float -> Float -> Float -> Maybe Float -> List { distance : Float, intensity : Float } -> Float -> Float -> Html Msg
-profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation fontSize trackHeight trackThickness labelHeightGain offRouteThreshold maybePosition intensityPoints minIntensity maxIntensity =
+{-| The distance value to display for an absolute route distance, given the chosen
+display mode. Returns Nothing when nothing should be shown (None, or an unresolved
+reference waypoint). Shared by the cuesheet and the elevation profile distance markers.
+-}
+displayedDistanceValue : TotalDistanceDisplay -> Float -> Float -> Maybe GpxApi.Waypoint -> Float -> Maybe Float
+displayedDistanceValue mode finishDist referencePoint refWaypoint distance =
+    case mode of
+        None ->
+            Nothing
+
+        FromZero ->
+            Just distance
+
+        ToFinish ->
+            Just (finishDist - distance)
+
+        ToPoint ->
+            Just (referencePoint - distance)
+
+        ToWaypoint _ ->
+            refWaypoint |> Maybe.map (\rw -> rw.distance - distance)
+
+        FromWaypoint _ ->
+            refWaypoint |> Maybe.map (\rw -> distance - rw.distance)
+
+
+{-| A "nice" round marker interval (in metres) for a displayed-distance range (in metres),
+bucketed like elevationTicks.
+-}
+niceDistanceInterval : Float -> Float
+niceDistanceInterval range =
+    if range > 100000 then
+        20000
+
+    else if range > 50000 then
+        10000
+
+    else if range > 20000 then
+        5000
+
+    else if range > 10000 then
+        2000
+
+    else
+        1000
+
+
+{-| Evenly-spaced, round-numbered distance markers for one profile segment. Each mode is a
+linear map of absolute distance (value = base ± distance), so ticks are placed at multiples
+of the interval in the displayed metric and inverted back to a segment-local position. The
+returned distance is segment-local (metres), ready for the segment's XYCalculator.
+-}
+distanceMarkers :
+    { mode : TotalDistanceDisplay
+    , finishDist : Float
+    , referencePoint : Float
+    , refWaypoint : Maybe GpxApi.Waypoint
+    , detail : Int
+    , interval : Maybe Float
+    , segmentEnds : Bool
+    , segStart : Float
+    , segMaxDistance : Float
+    }
+    -> List { distance : Float, label : String }
+distanceMarkers cfg =
+    let
+        displayed dist =
+            displayedDistanceValue cfg.mode cfg.finishDist cfg.referencePoint cfg.refWaypoint dist
+    in
+    case ( displayed cfg.segStart, displayed (cfg.segStart + cfg.segMaxDistance) ) of
+        ( Just vStart, Just vEnd ) ->
+            let
+                ( vMin, vMax ) =
+                    ( min vStart vEnd, max vStart vEnd )
+
+                interval =
+                    Maybe.withDefault (niceDistanceInterval (vMax - vMin)) cfg.interval
+
+                firstTick =
+                    toFloat (ceiling (vMin / interval)) * interval
+
+                buildValues current acc =
+                    if current > vMax then
+                        List.reverse acc
+
+                    else
+                        buildValues (current + interval) (current :: acc)
+
+                -- the displayed value changes by ±1 per metre, so the segment-local
+                -- position is just the value's offset from the segment-start value
+                toMarker value =
+                    { distance =
+                        if vStart <= vEnd then
+                            value - vStart
+
+                        else
+                            vStart - value
+                    , label = formatKm cfg.detail value
+                    }
+
+                segmentEndValues =
+                    if cfg.segmentEnds then
+                        [ vStart, vEnd ]
+
+                    else
+                        []
+            in
+            (buildValues firstTick [] ++ segmentEndValues)
+                |> List.map toMarker
+                |> List.Extra.uniqueBy (.distance >> round)
+
+        _ ->
+            []
+
+
+profile : Int -> GpxApi.Track -> List GpxApi.TrackPoint -> Float -> Float -> Float -> Float -> Int -> Float -> Float -> Float -> Maybe Float -> List { distance : Float, intensity : Float } -> Float -> Float -> List { distance : Float, label : String } -> Html Msg
+profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation fontSize trackHeight trackThickness labelHeightGain offRouteThreshold maybePosition intensityPoints minIntensity maxIntensity markers =
     let
         waypointTextHeight =
             track.waypoints
@@ -1834,8 +2004,17 @@ profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation
                 |> Maybe.withDefault 0
                 |> (\len -> max 100 (round (toFloat len * 0.6 * fontSize * labelHeightGain)))
 
+        -- a reserved row below the axis for horizontal distance-marker labels, so they
+        -- don't collide with the rotated waypoint names
+        markerLabelHeight =
+            if List.isEmpty markers then
+                0
+
+            else
+                14
+
         svgHeight =
-            trackHeight + waypointTextHeight
+            trackHeight + markerLabelHeight + waypointTextHeight
 
         calc =
             xyCalculator
@@ -1899,6 +2078,35 @@ profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation
                             ]
                         )
                 )
+            , -- distance markers
+              Svg.g []
+                (markers
+                    |> List.concatMap
+                        (\marker ->
+                            let
+                                x =
+                                    calc.x marker.distance
+                            in
+                            [ Svg.line
+                                [ Svg.Attributes.x1 x
+                                , Svg.Attributes.y1 <| String.fromInt <| trackHeight - 4
+                                , Svg.Attributes.x2 x
+                                , Svg.Attributes.y2 <| String.fromInt <| trackHeight + 4
+                                , Svg.Attributes.stroke "grey"
+                                , Svg.Attributes.strokeWidth "1"
+                                ]
+                                []
+                            , Svg.text_
+                                [ Svg.Attributes.x x
+                                , Svg.Attributes.y <| String.fromInt <| trackHeight + markerLabelHeight - 3
+                                , Svg.Attributes.textAnchor "middle"
+                                , Svg.Attributes.fontSize "10"
+                                , Svg.Attributes.fill "grey"
+                                ]
+                                [ Svg.text marker.label ]
+                            ]
+                        )
+                )
             , -- waypoints
               Svg.g []
                 (let
@@ -1906,7 +2114,7 @@ profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation
                         String.fromInt svgHeight
 
                     paddedWaypointTextY =
-                        String.fromInt <| trackHeight + 5
+                        String.fromInt <| trackHeight + 5 + markerLabelHeight
                  in
                  track.waypoints
                     |> List.concatMap
@@ -2535,26 +2743,8 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance waypoints cs
                             renderWaypointItem fillAttrs waypoint =
                                 let
                                     waypointDistance =
-                                        case cs.totalDistanceDisplay of
-                                            None ->
-                                                Nothing
-
-                                            FromZero ->
-                                                Just (formatKm cs.distanceDetail waypoint.distance)
-
-                                            ToFinish ->
-                                                Just (formatKm cs.distanceDetail (finishDist - waypoint.distance))
-
-                                            ToPoint ->
-                                                Just (formatKm cs.distanceDetail (cs.referencePoint - waypoint.distance))
-
-                                            ToWaypoint _ ->
-                                                refWaypoint
-                                                    |> Maybe.map (\rw -> formatKm cs.distanceDetail (rw.distance - waypoint.distance))
-
-                                            FromWaypoint _ ->
-                                                refWaypoint
-                                                    |> Maybe.map (\rw -> formatKm cs.distanceDetail (waypoint.distance - rw.distance))
+                                        displayedDistanceValue cs.totalDistanceDisplay finishDist cs.referencePoint refWaypoint waypoint.distance
+                                            |> Maybe.map (formatKm cs.distanceDetail)
 
                                     waypointEle =
                                         case cs.totalDistanceDisplay of
@@ -3254,21 +3444,59 @@ viewElevationProfileOptions state =
             ]
         )
     , Html.hr [] []
+    , viewTotalDistanceOptions state
+    , optionGroup "Marker interval"
+        (List.concat
+            [ [ checkbox (ep.distanceMarkerInterval == Nothing)
+                    (UpdateDistanceMarkerInterval
+                        (if ep.distanceMarkerInterval == Nothing then
+                            Just 10000
+
+                         else
+                            Nothing
+                        )
+                    )
+                    "Auto interval"
+              ]
+            , case ep.distanceMarkerInterval of
+                Just interval ->
+                    [ Html.input
+                        [ Html.Attributes.type_ "range"
+                        , Html.Attributes.min "1"
+                        , Html.Attributes.max "50"
+                        , Html.Attributes.step "1"
+                        , Html.Attributes.value <| String.fromFloat (interval / 1000)
+                        , Html.Events.onInput (String.toFloat >> Maybe.withDefault 10 >> (\km -> UpdateDistanceMarkerInterval (Just (km * 1000))))
+                        ]
+                        []
+                    , Html.text (formatKm 0 interval)
+                    ]
+
+                Nothing ->
+                    []
+            , [ checkbox ep.distanceMarkerSegmentEnds (UpdateDistanceMarkerSegmentEnds (not ep.distanceMarkerSegmentEnds)) "Mark segment start/finish" ]
+            ]
+        )
+    , Html.hr [] []
     ]
 
 
-viewCuesheetOptionsPanel : State -> List (Html Msg)
-viewCuesheetOptionsPanel state =
+{-| The "Total distance" selector (mode dropdown plus the reference-point / reference-waypoint
+input it implies). Shared by the cuesheet and the elevation profile so the single
+`state.cuesheet.totalDistanceDisplay` setting can be changed from either panel.
+-}
+viewTotalDistanceOptions : State -> Html Msg
+viewTotalDistanceOptions state =
     let
         cs =
             state.cuesheet
 
-        maxDistance =
-            maybeFromloadableResource state.tracks
-                |> Maybe.map (\ts -> lastTrackpointDistance ts.current.trackpoints)
-
         maybeTracks =
             maybeFromloadableResource state.tracks
+
+        maxDistance =
+            maybeTracks
+                |> Maybe.map (\ts -> lastTrackpointDistance ts.current.trackpoints)
 
         filteredWps =
             maybeTracks
@@ -3299,21 +3527,16 @@ viewCuesheetOptionsPanel state =
                     )
                 |> Maybe.withDefault []
 
+        defaultWaypointIdx =
+            List.head indexedFiltered |> Maybe.map Tuple.first |> Maybe.withDefault 0
+
         parseModeDropdown maybeStr =
             case maybeStr of
                 Just "to waypoint" ->
-                    let
-                        defaultIdx =
-                            List.head indexedFiltered |> Maybe.map Tuple.first |> Maybe.withDefault 0
-                    in
-                    UpdateTotalDistanceDisplay (Just (ToWaypoint defaultIdx))
+                    UpdateTotalDistanceDisplay (Just (ToWaypoint defaultWaypointIdx))
 
                 Just "from waypoint" ->
-                    let
-                        defaultIdx =
-                            List.head indexedFiltered |> Maybe.map Tuple.first |> Maybe.withDefault 0
-                    in
-                    UpdateTotalDistanceDisplay (Just (FromWaypoint defaultIdx))
+                    UpdateTotalDistanceDisplay (Just (FromWaypoint defaultWaypointIdx))
 
                 _ ->
                     maybeStr
@@ -3321,11 +3544,7 @@ viewCuesheetOptionsPanel state =
                         |> Maybe.withDefault Nothing
                         |> UpdateTotalDistanceDisplay
     in
-    [ optionGroup "Start/Finish"
-        [ checkbox cs.showStartFinish (UpdateShowStartFinish (not cs.showStartFinish)) "Show start/finish"
-        ]
-    , Html.hr [] []
-    , optionGroup "Total distance"
+    optionGroup "Total distance"
         ([ Dropdown.dropdown
             (Dropdown.Options
                 [ Dropdown.Item (formatTotalDistanceDisplay FromZero) (formatTotalDistanceDisplay FromZero) True
@@ -3365,6 +3584,23 @@ viewCuesheetOptionsPanel state =
                         []
                )
         )
+
+
+viewCuesheetOptionsPanel : State -> List (Html Msg)
+viewCuesheetOptionsPanel state =
+    let
+        cs =
+            state.cuesheet
+
+        maxDistance =
+            maybeFromloadableResource state.tracks
+                |> Maybe.map (\ts -> lastTrackpointDistance ts.current.trackpoints)
+    in
+    [ optionGroup "Start/Finish"
+        [ checkbox cs.showStartFinish (UpdateShowStartFinish (not cs.showStartFinish)) "Show start/finish"
+        ]
+    , Html.hr [] []
+    , viewTotalDistanceOptions state
     , Html.hr [] []
     , optionGroup "Position"
         [ Html.input
@@ -3729,6 +3965,8 @@ encodeSavedState state =
             , Just ( "liveLookahead", Json.Encode.float ep.liveLookahead )
             , Just ( "liveLookbehind", Json.Encode.float ep.liveLookbehind )
             , Just ( "labelHeightGain", Json.Encode.float ep.labelHeightGain )
+            , ep.distanceMarkerInterval |> Maybe.map (\m -> ( "distanceMarkerInterval", Json.Encode.float m ))
+            , Just ( "distanceMarkerSegmentEnds", Json.Encode.bool ep.distanceMarkerSegmentEnds )
             , Just ( "totalDistanceDisplay", Json.Encode.string (formatTotalDistanceDisplay cs.totalDistanceDisplay) )
             , Just ( "referencePoint", Json.Encode.float cs.referencePoint )
             , Just ( "itemSpacing", Json.Encode.int cs.itemSpacing )
@@ -3755,7 +3993,7 @@ stateDecoder =
             defaultCuesheetOptions
     in
     Json.Decode.succeed
-        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau manualPosition viewMode splitMode splitEquidistantCount splitWaypointIndices liveLookahead liveLookbehind labelHeightGain totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints ->
+        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau manualPosition viewMode splitMode splitEquidistantCount splitWaypointIndices liveLookahead liveLookbehind labelHeightGain distanceMarkerInterval distanceMarkerSegmentEnds totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints ->
             { tracks = loadableResourceFromMaybe tracks
             , showOptions = showOptions |> Maybe.withDefault defaultState.showOptions
             , activeTab = activeTab |> Maybe.andThen parseTab |> Maybe.withDefault defaultState.activeTab
@@ -3795,6 +4033,8 @@ stateDecoder =
                 , liveLookahead = liveLookahead |> Maybe.withDefault defEp.liveLookahead
                 , liveLookbehind = liveLookbehind |> Maybe.withDefault defEp.liveLookbehind
                 , labelHeightGain = labelHeightGain |> Maybe.withDefault defEp.labelHeightGain
+                , distanceMarkerInterval = distanceMarkerInterval
+                , distanceMarkerSegmentEnds = distanceMarkerSegmentEnds |> Maybe.withDefault defEp.distanceMarkerSegmentEnds
                 }
             , cuesheet =
                 { totalDistanceDisplay = totalDistanceDisplay |> Maybe.andThen parseTotalDistanceDisplay |> Maybe.withDefault defCs.totalDistanceDisplay
@@ -3828,6 +4068,8 @@ stateDecoder =
         |> andMap (maybeField "liveLookahead" Json.Decode.float)
         |> andMap (maybeField "liveLookbehind" Json.Decode.float)
         |> andMap (maybeField "labelHeightGain" Json.Decode.float)
+        |> andMap (maybeField "distanceMarkerInterval" Json.Decode.float)
+        |> andMap (maybeField "distanceMarkerSegmentEnds" Json.Decode.bool)
         |> andMap (maybeField "totalDistanceDisplay" Json.Decode.string)
         |> andMap (maybeField "referencePoint" Json.Decode.float)
         |> andMap (maybeField "itemSpacing" Json.Decode.int)
