@@ -9,6 +9,7 @@ tags: cycling
 
 [🧭](/cycling/routes)
 [🗺️](/cycling/maps)
+[📍](/cycling/poi-filter)
 [🍌](/cycling/nutrition)
 [☕](/data/halfway-coffee.gpx)
 [📅](/cycling/calendar)
