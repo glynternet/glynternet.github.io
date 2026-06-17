@@ -1134,7 +1134,15 @@ update msg model =
             )
 
         ProfileWidthChanged width ->
-            ( updateState { s | profilePixelWidth = Just width }, Cmd.none )
+            -- Guard against a bad measurement (e.g. the ResizeObserver firing before
+            -- #profile-container's layout has settled). A width of 0/1 downsamples the
+            -- track line to <2 points and makes it disappear; keep the previous/default
+            -- width instead, and log so we can confirm when this happens in the wild.
+            if width >= 2 then
+                ( updateState { s | profilePixelWidth = Just width }, Cmd.none )
+
+            else
+                ( model, logError ("[profile-bug] ignored bad profile width: " ++ String.fromInt width) )
 
 
 restoreState : String -> Model -> ( Model, Cmd Msg )
@@ -2225,7 +2233,9 @@ downsample maxPoints list =
         len =
             List.length list
     in
-    if len <= maxPoints then
+    -- maxPoints < 2 can't produce a drawable line (the stride maths divides by zero
+    -- and yields 0/1 points), so keep the full list rather than blanking the track.
+    if maxPoints < 2 || len <= maxPoints then
         list
 
     else

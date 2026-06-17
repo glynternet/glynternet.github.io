@@ -9773,14 +9773,17 @@ var $author$project$Main$update = F2(
 				}
 			default:
 				var width = msg.a;
-				return _Utils_Tuple2(
+				return (width >= 2) ? _Utils_Tuple2(
 					updateState(
 						_Utils_update(
 							s,
 							{
 								ai: $elm$core$Maybe$Just(width)
 							})),
-					$elm$core$Platform$Cmd$none);
+					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
+					model,
+					$author$project$Main$logError(
+						'[profile-bug] ignored bad profile width: ' + $elm$core$String$fromInt(width)));
 		}
 	});
 var $elm$browser$Browser$Document = F2(
@@ -10783,7 +10786,7 @@ var $author$project$Main$distanceMarkers = function (cfg) {
 var $author$project$Main$downsample = F2(
 	function (maxPoints, list) {
 		var len = $elm$core$List$length(list);
-		if (_Utils_cmp(len, maxPoints) < 1) {
+		if ((maxPoints < 2) || (_Utils_cmp(len, maxPoints) < 1)) {
 			return list;
 		} else {
 			var stride = (len - 1) / (maxPoints - 1);

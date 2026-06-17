@@ -66,19 +66,32 @@ layout: default
 					});
 					const profileObserver = new ResizeObserver(entries => {
 						for (const entry of entries) {
-							app.ports.profileWidthChanged.send(Math.round(entry.contentRect.width));
+							const w = Math.round(entry.contentRect.width);
+							if (w < 2) {
+								// This is the track-line-disappearing condition: a 0/1 width
+								// downsamples the track line to <2 points. The Elm guard now
+								// ignores it, but log loudly so we can capture it in the wild.
+								console.warn('[profile-bug] ResizeObserver delivered bad width=', w, '— track line would vanish without the guard. rect=', entry.contentRect);
+							} else {
+								console.log('[profile-debug] ResizeObserver width=', w);
+							}
+							app.ports.profileWidthChanged.send(w);
 						}
 					});
 					new MutationObserver((_, mo) => {
 						const el = document.getElementById('profile-container');
 						if (el) {
 							mo.disconnect();
+							console.log('[profile-debug] MutationObserver found #profile-container, observing. offsetWidth=', el.offsetWidth);
 							profileObserver.observe(el);
 						}
 					}).observe(document.body, { childList: true, subtree: true });
 					// Also check immediately in case the element already exists
 					const profileEl = document.getElementById('profile-container');
-					if (profileEl) profileObserver.observe(profileEl);
+					if (profileEl) {
+						console.log('[profile-debug] #profile-container already present at init, observing. offsetWidth=', profileEl.offsetWidth);
+						profileObserver.observe(profileEl);
+					}
 
 					app.ports.requestLocation.subscribe(function() {
 						if (!navigator.geolocation) {
