@@ -64,34 +64,33 @@ layout: default
 						a.click();
 						URL.revokeObjectURL(url);
 					});
+					// Track the elevation profile container's width so Elm can downsample
+					// the track line to ~one point per pixel. The container is unmounted
+					// and remounted as routes are loaded/re-uploaded (it's hidden during
+					// the "Loading" state), so:
+					//   - the ResizeObserver ignores a detached target: a node being torn
+					//     down reports 0x0, which previously reached Elm and collapsed the
+					//     track line to <2 points;
+					//   - the MutationObserver stays connected and re-points the observer at
+					//     whichever #profile-container currently exists, releasing the old
+					//     one, instead of disconnecting after the first match.
+					let observedProfileEl = null;
 					const profileObserver = new ResizeObserver(entries => {
 						for (const entry of entries) {
+							if (!entry.target.isConnected) continue; // detaching node, 0x0 — ignore
 							const w = Math.round(entry.contentRect.width);
-							if (w < 2) {
-								// This is the track-line-disappearing condition: a 0/1 width
-								// downsamples the track line to <2 points. The Elm guard now
-								// ignores it, but log loudly so we can capture it in the wild.
-								console.warn('[profile-bug] ResizeObserver delivered bad width=', w, '— track line would vanish without the guard. rect=', entry.contentRect);
-							} else {
-								console.log('[profile-debug] ResizeObserver width=', w);
-							}
-							app.ports.profileWidthChanged.send(w);
+							if (w > 0) app.ports.profileWidthChanged.send(w);
 						}
 					});
-					new MutationObserver((_, mo) => {
+					function syncProfileObserver() {
 						const el = document.getElementById('profile-container');
-						if (el) {
-							mo.disconnect();
-							console.log('[profile-debug] MutationObserver found #profile-container, observing. offsetWidth=', el.offsetWidth);
-							profileObserver.observe(el);
-						}
-					}).observe(document.body, { childList: true, subtree: true });
-					// Also check immediately in case the element already exists
-					const profileEl = document.getElementById('profile-container');
-					if (profileEl) {
-						console.log('[profile-debug] #profile-container already present at init, observing. offsetWidth=', profileEl.offsetWidth);
-						profileObserver.observe(profileEl);
+						if (el === observedProfileEl) return;
+						if (observedProfileEl) profileObserver.unobserve(observedProfileEl);
+						observedProfileEl = el;
+						if (el) profileObserver.observe(el);
 					}
+					new MutationObserver(syncProfileObserver).observe(document.body, { childList: true, subtree: true });
+					syncProfileObserver(); // in case the container is already present
 
 					app.ports.requestLocation.subscribe(function() {
 						if (!navigator.geolocation) {
