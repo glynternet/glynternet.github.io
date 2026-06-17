@@ -10184,46 +10184,54 @@ var $author$project$Main$cuesheetSvg = F8(
 									'translate(0,' + ($elm$core$String$fromInt(i * cs.m) + ')'));
 								var renderWaypointItem = F2(
 									function (fillAttrs, waypoint) {
-										var waypointEle = function () {
-											var _v4 = cs.k;
-											switch (_v4.$) {
-												case 5:
-													return $elm$core$Maybe$Nothing;
-												case 0:
-													return $elm$core$Maybe$Just(
-														A2($author$project$Main$formatEleGainLoss, waypoint.aC, waypoint.aF));
-												case 1:
-													return A2(
-														$elm$core$Maybe$map,
-														function (last) {
-															return A2($author$project$Main$formatEleGainLoss, last.aC - waypoint.aC, last.aF - waypoint.aF);
-														},
-														lastWaypoint);
-												case 2:
-													return $elm$core$Maybe$Just(
-														A2($author$project$Main$formatEleGainLoss, refPointEle.a - waypoint.aC, refPointEle.b - waypoint.aF));
-												case 3:
-													return A2(
-														$elm$core$Maybe$map,
-														function (rw) {
-															return A2($author$project$Main$formatEleGainLoss, rw.aC - waypoint.aC, rw.aF - waypoint.aF);
-														},
-														refWaypoint);
-												default:
-													return A2(
-														$elm$core$Maybe$map,
-														function (rw) {
-															return A2($author$project$Main$formatEleGainLoss, waypoint.aC - rw.aC, waypoint.aF - rw.aF);
-														},
-														refWaypoint);
-											}
-										}();
-										var waypointDistance = A2(
-											$elm$core$Maybe$map,
-											$author$project$Main$formatKm(cs.A),
-											A5($author$project$Main$displayedDistanceValue, cs.k, finishDist, cs.s, refWaypoint, waypoint.aA));
 										var offRouteLabel = $elm$core$String$fromInt(
 											$elm$core$Basics$round(waypoint.bp)) + 'm off';
+										var displayedDistance = A5($author$project$Main$displayedDistanceValue, cs.k, finishDist, cs.s, refWaypoint, waypoint.aA);
+										var isReferencePoint = _Utils_eq(
+											displayedDistance,
+											$elm$core$Maybe$Just(0));
+										var waypointEle = function () {
+											if (isReferencePoint) {
+												return $elm$core$Maybe$Nothing;
+											} else {
+												var _v4 = cs.k;
+												switch (_v4.$) {
+													case 5:
+														return $elm$core$Maybe$Nothing;
+													case 0:
+														return $elm$core$Maybe$Just(
+															A2($author$project$Main$formatEleGainLoss, waypoint.aC, waypoint.aF));
+													case 1:
+														return A2(
+															$elm$core$Maybe$map,
+															function (last) {
+																return A2($author$project$Main$formatEleGainLoss, last.aC - waypoint.aC, last.aF - waypoint.aF);
+															},
+															lastWaypoint);
+													case 2:
+														return $elm$core$Maybe$Just(
+															A2($author$project$Main$formatEleGainLoss, refPointEle.a - waypoint.aC, refPointEle.b - waypoint.aF));
+													case 3:
+														return A2(
+															$elm$core$Maybe$map,
+															function (rw) {
+																return A2($author$project$Main$formatEleGainLoss, rw.aC - waypoint.aC, rw.aF - waypoint.aF);
+															},
+															refWaypoint);
+													default:
+														return A2(
+															$elm$core$Maybe$map,
+															function (rw) {
+																return A2($author$project$Main$formatEleGainLoss, waypoint.aC - rw.aC, waypoint.aF - rw.aF);
+															},
+															refWaypoint);
+												}
+											}
+										}();
+										var waypointDistance = isReferencePoint ? $elm$core$Maybe$Nothing : A2(
+											$elm$core$Maybe$map,
+											$author$project$Main$formatKm(cs.A),
+											displayedDistance);
 										var waypointInfo = A2(
 											$elm$core$List$filterMap,
 											$elm$core$Basics$identity,

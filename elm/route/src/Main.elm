@@ -2752,51 +2752,66 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance waypoints cs
                         let
                             renderWaypointItem fillAttrs waypoint =
                                 let
-                                    waypointDistance =
+                                    displayedDistance =
                                         displayedDistanceValue cs.totalDistanceDisplay finishDist cs.referencePoint refWaypoint waypoint.distance
-                                            |> Maybe.map (formatKm cs.distanceDetail)
+
+                                    -- This waypoint is the point the total distance is measured to/from,
+                                    -- so its to/from distance and elevation are both 0 and not worth showing.
+                                    isReferencePoint =
+                                        displayedDistance == Just 0
+
+                                    waypointDistance =
+                                        if isReferencePoint then
+                                            Nothing
+
+                                        else
+                                            Maybe.map (formatKm cs.distanceDetail) displayedDistance
 
                                     waypointEle =
-                                        case cs.totalDistanceDisplay of
-                                            None ->
-                                                Nothing
+                                        if isReferencePoint then
+                                            Nothing
 
-                                            FromZero ->
-                                                Just (formatEleGainLoss waypoint.gain waypoint.loss)
+                                        else
+                                            case cs.totalDistanceDisplay of
+                                                None ->
+                                                    Nothing
 
-                                            ToFinish ->
-                                                lastWaypoint
-                                                    |> Maybe.map
-                                                        (\last ->
-                                                            formatEleGainLoss
-                                                                (last.gain - waypoint.gain)
-                                                                (last.loss - waypoint.loss)
+                                                FromZero ->
+                                                    Just (formatEleGainLoss waypoint.gain waypoint.loss)
+
+                                                ToFinish ->
+                                                    lastWaypoint
+                                                        |> Maybe.map
+                                                            (\last ->
+                                                                formatEleGainLoss
+                                                                    (last.gain - waypoint.gain)
+                                                                    (last.loss - waypoint.loss)
+                                                            )
+
+                                                ToPoint ->
+                                                    Just
+                                                        (formatEleGainLoss
+                                                            (Tuple.first refPointEle - waypoint.gain)
+                                                            (Tuple.second refPointEle - waypoint.loss)
                                                         )
 
-                                            ToPoint ->
-                                                Just
-                                                    (formatEleGainLoss
-                                                        (Tuple.first refPointEle - waypoint.gain)
-                                                        (Tuple.second refPointEle - waypoint.loss)
-                                                    )
+                                                ToWaypoint _ ->
+                                                    refWaypoint
+                                                        |> Maybe.map
+                                                            (\rw ->
+                                                                formatEleGainLoss
+                                                                    (rw.gain - waypoint.gain)
+                                                                    (rw.loss - waypoint.loss)
+                                                            )
 
-                                            ToWaypoint _ ->
-                                                refWaypoint
-                                                    |> Maybe.map
-                                                        (\rw ->
-                                                            formatEleGainLoss
-                                                                (rw.gain - waypoint.gain)
-                                                                (rw.loss - waypoint.loss)
-                                                        )
-
-                                            FromWaypoint _ ->
-                                                refWaypoint
-                                                    |> Maybe.map
-                                                        (\rw ->
-                                                            formatEleGainLoss
-                                                                (waypoint.gain - rw.gain)
-                                                                (waypoint.loss - rw.loss)
-                                                        )
+                                                FromWaypoint _ ->
+                                                    refWaypoint
+                                                        |> Maybe.map
+                                                            (\rw ->
+                                                                formatEleGainLoss
+                                                                    (waypoint.gain - rw.gain)
+                                                                    (waypoint.loss - rw.loss)
+                                                            )
 
                                     offRouteLabel =
                                         String.fromInt (round waypoint.offRoute) ++ "m off"
