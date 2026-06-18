@@ -70,6 +70,9 @@ type alias State =
     , showOptions : Bool
     , activeTab : Tab
 
+    -- Position on the route (set manually or by tracking; the single source of truth)
+    , position : Maybe Float
+
     -- Location tracking
     , location : Maybe Location.LocationState
     , locationError : Maybe Location.LocationError
@@ -202,7 +205,6 @@ type alias ElevationProfileOptions =
     , trackThickness : Float
     , showIntensity : Bool
     , intensityTau : Float
-    , manualPosition : Maybe Float
     , activeSplitMode : ActiveSplitMode
     , splitEquidistantCount : Int
     , splitWaypointIndices : List Int
@@ -217,7 +219,6 @@ type alias ElevationProfileOptions =
 type alias CuesheetOptions =
     { totalDistanceDisplay : TotalDistanceDisplay
     , referencePoint : Float
-    , position : Float
     , itemSpacing : Int
     , distanceDetail : Int
     , showStartFinish : Bool
@@ -240,7 +241,6 @@ defaultElevationProfileOptions =
     , trackThickness = 1
     , showIntensity = False
     , intensityTau = 500
-    , manualPosition = Nothing
     , activeSplitMode = EquidistantMode
     , splitEquidistantCount = 1
     , splitWaypointIndices = []
@@ -256,7 +256,6 @@ defaultCuesheetOptions : CuesheetOptions
 defaultCuesheetOptions =
     { totalDistanceDisplay = FromZero
     , referencePoint = 1000
-    , position = 0
     , itemSpacing = defaultSpacing
     , distanceDetail = defaultDistanceDetail
     , showStartFinish = False
@@ -282,6 +281,7 @@ defaultState =
     { tracks = NotLoaded
     , showOptions = True
     , activeTab = ElevationProfileTab
+    , position = Nothing
     , location = Nothing
     , locationError = Nothing
     , trackingEnabled = False
@@ -403,7 +403,6 @@ type Msg
     | UpdateLabelHeightGain Float
     | ShowIntensity Bool
     | UpdateIntensityTau Float
-    | UpdateManualPosition (Maybe Float)
     | UpdateSplits Int
     | SetViewMode ViewMode
     | SetSplitMode ActiveSplitMode
@@ -414,9 +413,9 @@ type Msg
     | UpdateLiveLookbehind Float
     | UpdateDistanceMarkerInterval (Maybe Float)
     | UpdateDistanceMarkerSegmentEnds Bool
+    | UpdatePosition (Maybe Float)
       -- Cuesheet
     | UpdateTotalDistanceDisplay (Maybe TotalDistanceDisplay)
-    | UpdatePosition Float
     | UpdateReferencePoint Float
     | UpdateItemSpacing Int
     | UpdateDistanceDetail Int
@@ -597,16 +596,13 @@ update msg model =
                                     Location.findNearestTrackPoint gpsPos tracks.current.trackpoints
                                         |> Maybe.map .distance
                                         |> Maybe.withDefault 0
-
-                                cs =
-                                    s.cuesheet
                             in
                             ( updateState
                                 (withLiveSplit
                                     { s
                                         | location = Just (Location.LocationState gpsPos pos.accuracy matchedDist)
                                         , locationError = Nothing
-                                        , cuesheet = { cs | position = matchedDist }
+                                        , position = Just matchedDist
                                     }
                                 )
                             , Cmd.none
@@ -889,12 +885,9 @@ update msg model =
             in
             updateAndStoreModel (updateState { s | elevationProfile = { ep | intensityTau = tau } })
 
-        UpdateManualPosition pos ->
-            let
-                ep =
-                    s.elevationProfile
-            in
-            updateSplitAndStore (updateState { s | elevationProfile = { ep | manualPosition = pos } })
+        UpdatePosition pos ->
+            -- Manually setting or clearing the position drops the GPS fix, whose accuracy no longer applies
+            updateSplitAndStore (updateState { s | position = pos, location = Nothing })
 
         UpdateSplits n ->
             let
@@ -1016,13 +1009,6 @@ update msg model =
                         updateAndStoreModel (updateState { s | cuesheet = { cs | totalDistanceDisplay = selection } })
                     )
                 |> Maybe.withDefault ( model, Cmd.none )
-
-        UpdatePosition position ->
-            let
-                cs =
-                    s.cuesheet
-            in
-            updateAndStoreModel (updateState { s | cuesheet = { cs | position = position } })
 
         UpdateReferencePoint point ->
             let
@@ -1242,7 +1228,7 @@ computeLiveSplitFromState state =
                     state.elevationProfile
 
                 ( rangeStart, rangeEnd ) =
-                    case effectivePosition state of
+                    case state.position of
                         Just p ->
                             ( max 0 (p - ep.liveLookbehind), min maxDist (p + ep.liveLookahead) )
 
@@ -1369,7 +1355,7 @@ waypointPredicates state =
 
           else
             Just (offRoutePredicate state.offRouteThreshold)
-        , case ( state.viewMode, effectivePosition state ) of
+        , case ( state.viewMode, state.position ) of
             ( LiveView, Just pos ) ->
                 let
                     ep =
@@ -1476,16 +1462,6 @@ correctWaypointSelectionInState s =
                     correctWaypointSelection cs.totalDistanceDisplay indexed
             in
             { s | cuesheet = { cs | totalDistanceDisplay = corrected } }
-
-
-effectivePosition : State -> Maybe Float
-effectivePosition state =
-    case state.elevationProfile.manualPosition of
-        Just _ ->
-            state.elevationProfile.manualPosition
-
-        Nothing ->
-            state.location |> Maybe.map .matchedDistance
 
 
 injectStartFinish : Float -> ( Float, Float ) -> List GpxApi.Waypoint -> List GpxApi.Waypoint
@@ -1748,9 +1724,6 @@ viewElevationProfileTab state tracks =
         trackMinElevation =
             Maybe.withDefault 1 <| List.minimum <| List.map .elevation tracks.current.trackpoints
 
-        pos =
-            effectivePosition state
-
         fullIntensity =
             if ep.showIntensity then
                 computeIntensity ep.intensityTau tracks.current.trackpoints
@@ -1807,7 +1780,7 @@ viewElevationProfileTab state tracks =
                                             |> Maybe.withDefault (segEnd - segStart)
 
                                     segPosition =
-                                        pos
+                                        state.position
                                             |> Maybe.andThen
                                                 (\p ->
                                                     if p >= segStart && p <= segEnd then
@@ -1842,7 +1815,10 @@ viewElevationProfileTab state tracks =
                                 profile segIndex downsampledSeg seg.trackpoints segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.labelHeightGain state.offRouteThreshold segPosition segIntensity trackMinIntensity trackMaxIntensity markers
                             )
             in
-            Html.div [ Html.Attributes.id profileContainerId ] profileViews
+            Html.div []
+                [ liveNoPositionWarning state
+                , Html.div [ Html.Attributes.id profileContainerId ] profileViews
+                ]
 
 
 profileContainerId : String
@@ -2499,7 +2475,7 @@ viewCuesheetTab state tracks =
                 |> trimWaypointCategories state.filteredCategories
 
         positionWaypoint =
-            case ( effectivePosition state, state.viewMode ) of
+            case ( state.position, state.viewMode ) of
                 ( Just pos, LiveView ) ->
                     cumulativeGainLossAtDistance pos tracks.current.trackpoints
                         |> Result.toMaybe
@@ -2537,7 +2513,8 @@ viewCuesheetTab state tracks =
                         |> Result.withDefault ( 0, 0 )
     in
     Html.div []
-        [ cuesheetSvg state.offRouteThreshold state.showOffRouteDistance (Maybe.map .distance positionWaypoint) waypointsWithPosition cs currentFinishDistance refPointEle refWaypoint
+        [ liveNoPositionWarning state
+        , cuesheetSvg state.offRouteThreshold state.showOffRouteDistance (Maybe.map .distance positionWaypoint) (Maybe.withDefault 0 state.position) waypointsWithPosition cs currentFinishDistance refPointEle refWaypoint
         ]
 
 
@@ -2716,11 +2693,11 @@ viewWaypointCategories idx waypointCategories allCategories newCatInput =
         ]
 
 
-cuesheetSvg : Float -> Bool -> Maybe Float -> List GpxApi.Waypoint -> CuesheetOptions -> Float -> ( Float, Float ) -> Maybe GpxApi.Waypoint -> Html Msg
-cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance waypoints cs finishDist refPointEle refWaypoint =
+cuesheetSvg : Float -> Bool -> Maybe Float -> Float -> List GpxApi.Waypoint -> CuesheetOptions -> Float -> ( Float, Float ) -> Maybe GpxApi.Waypoint -> Html Msg
+cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPosition waypoints cs finishDist refPointEle refWaypoint =
     let
         info =
-            waypointInfos positionDistance cs.position waypoints
+            waypointInfos positionDistance scrollPosition waypoints
 
         lastWaypoint =
             List.reverse waypoints |> List.head
@@ -3437,37 +3414,6 @@ viewElevationProfileOptions state =
                            ]
             ]
         )
-    , optionGroup "Position"
-        (let
-            maxDist =
-                maybeFromloadableResource state.tracks
-                    |> Maybe.andThen (\ts -> List.maximum (List.map .distance ts.current.trackpoints))
-                    |> Maybe.withDefault 1
-         in
-         List.concat
-            [ [ Html.input
-                    [ Html.Attributes.type_ "range"
-                    , Html.Attributes.min "0"
-                    , Html.Attributes.max (String.fromFloat maxDist)
-                    , Html.Attributes.step "100"
-                    , Html.Attributes.value (String.fromFloat (effectivePosition state |> Maybe.withDefault 0))
-                    , Html.Events.onInput (String.toFloat >> Maybe.map Just >> Maybe.withDefault Nothing >> UpdateManualPosition)
-                    , Html.Attributes.disabled state.trackingEnabled
-                    ]
-                    []
-              ]
-            , case ep.manualPosition of
-                Just _ ->
-                    if state.trackingEnabled then
-                        []
-
-                    else
-                        [ viewButton [ Html.Attributes.style "width" "100%" ] "Clear position" (UpdateManualPosition Nothing) ]
-
-                Nothing ->
-                    []
-            ]
-        )
     , Html.hr [] []
     , viewTotalDistanceOptions state
     , optionGroup "Marker interval"
@@ -3616,10 +3562,6 @@ viewCuesheetOptionsPanel state =
     let
         cs =
             state.cuesheet
-
-        maxDistance =
-            maybeFromloadableResource state.tracks
-                |> Maybe.map (\ts -> lastTrackpointDistance ts.current.trackpoints)
     in
     [ optionGroup "Start/Finish"
         [ checkbox cs.showStartFinish (UpdateShowStartFinish (not cs.showStartFinish)) "Show start/finish"
@@ -3627,16 +3569,6 @@ viewCuesheetOptionsPanel state =
     , Html.hr [] []
     , viewTotalDistanceOptions state
     , Html.hr [] []
-    , optionGroup "Position"
-        [ Html.input
-            [ Html.Attributes.type_ "range"
-            , Html.Attributes.min "0"
-            , maxDistance |> Maybe.map (String.fromFloat >> Html.Attributes.max) |> Maybe.withDefault (Html.Attributes.disabled True)
-            , Html.Attributes.value <| String.fromFloat cs.position
-            , Html.Events.onInput (String.toFloat >> Maybe.withDefault 0.0 >> UpdatePosition)
-            ]
-            []
-        ]
     , optionGroup "Spacing"
         [ Html.input
             [ Html.Attributes.type_ "range"
@@ -3665,9 +3597,39 @@ viewCuesheetOptionsPanel state =
 viewLocationOptions : State -> List (Html Msg)
 viewLocationOptions state =
     case state.tracks of
-        Loaded _ ->
+        Loaded tracks ->
+            let
+                maxDist =
+                    lastTrackpointDistance tracks.current.trackpoints
+
+                locationStatus text =
+                    Html.p
+                        [ Html.Attributes.style "font-size" "0.8em"
+                        , Html.Attributes.style "margin" "0.5em 0"
+                        ]
+                        [ Html.text text ]
+            in
             List.concat
                 [ [ Html.hr [] []
+                  , optionGroup "Position"
+                        (Html.input
+                            [ Html.Attributes.type_ "range"
+                            , Html.Attributes.min "0"
+                            , Html.Attributes.max (String.fromFloat maxDist)
+                            , Html.Attributes.step "100"
+                            , Html.Attributes.value (String.fromFloat (Maybe.withDefault 0 state.position))
+                            , Html.Events.onInput (String.toFloat >> UpdatePosition)
+                            , Html.Attributes.disabled state.trackingEnabled
+                            ]
+                            []
+                            :: (case state.position of
+                                    Just _ ->
+                                        [ viewButton [ Html.Attributes.style "width" "100%" ] "Clear position" (UpdatePosition Nothing) ]
+
+                                    Nothing ->
+                                        []
+                               )
+                        )
                   , viewButton [ Html.Attributes.style "width" "100%" ]
                         (if state.trackingEnabled then
                             "Stop Tracking"
@@ -3694,25 +3656,19 @@ viewLocationOptions state =
 
                   else
                     []
-                , [ Html.p
-                        [ Html.Attributes.style "font-size" "0.8em"
-                        , Html.Attributes.style "margin" "0.5em 0"
-                        ]
-                        [ Html.text
-                            (case state.locationError of
-                                Just err ->
-                                    Location.locationErrorToString err
+                , case ( state.locationError, state.location, state.trackingEnabled ) of
+                    ( Just err, _, _ ) ->
+                        [ locationStatus (Location.locationErrorToString err) ]
 
-                                Nothing ->
-                                    case state.location of
-                                        Just loc ->
-                                            "Accuracy: " ++ String.fromFloat (toFloat (round (loc.accuracy * 10)) / 10) ++ "m"
+                    ( Nothing, Just loc, _ ) ->
+                        [ locationStatus ("Accuracy: " ++ String.fromFloat (toFloat (round (loc.accuracy * 10)) / 10) ++ "m") ]
 
-                                        Nothing ->
-                                            "No location fix"
-                            )
-                        ]
-                  ]
+                    -- tracking but no fix yet; nothing to say when idle and cleared
+                    ( Nothing, Nothing, True ) ->
+                        [ locationStatus "No location fix" ]
+
+                    ( Nothing, Nothing, False ) ->
+                        []
                 ]
 
         _ ->
@@ -3730,6 +3686,19 @@ offRouteColour =
 viewErrorPanel : String -> Html Msg
 viewErrorPanel error =
     Html.div [ Html.Attributes.class "error_panel" ] [ Html.text error ]
+
+
+{-| Warns that live view is active without a position, so the whole route is shown
+rather than a window around the current position. Empty when a position is set or in static view.
+-}
+liveNoPositionWarning : State -> Html Msg
+liveNoPositionWarning state =
+    if state.viewMode == LiveView && state.position == Nothing then
+        Html.div [ Html.Attributes.class "warning_panel" ]
+            [ Html.text "Live view has no position — showing the whole route. Set a position or start tracking." ]
+
+    else
+        Html.text ""
 
 
 viewButton : List (Html.Attribute Msg) -> String -> Msg -> Html Msg
@@ -3962,7 +3931,7 @@ encodeSavedState state =
             , Just ( "trackThickness", Json.Encode.float ep.trackThickness )
             , Just ( "showIntensity", Json.Encode.bool ep.showIntensity )
             , Just ( "intensityTau", Json.Encode.float ep.intensityTau )
-            , ep.manualPosition |> Maybe.map (\pos -> ( "manualPosition", Json.Encode.float pos ))
+            , state.position |> Maybe.map (\pos -> ( "position", Json.Encode.float pos ))
             , Just
                 ( "viewMode"
                 , Json.Encode.string
@@ -4018,10 +3987,11 @@ stateDecoder =
             defaultCuesheetOptions
     in
     Json.Decode.succeed
-        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau manualPosition viewMode splitMode splitEquidistantCount splitWaypointIndices liveLookahead liveLookbehind labelHeightGain distanceMarkerInterval distanceMarkerSegmentEnds totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints ->
+        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau position viewMode splitMode splitEquidistantCount splitWaypointIndices liveLookahead liveLookbehind labelHeightGain distanceMarkerInterval distanceMarkerSegmentEnds totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints ->
             { tracks = loadableResourceFromMaybe tracks
             , showOptions = showOptions |> Maybe.withDefault defaultState.showOptions
             , activeTab = activeTab |> Maybe.andThen parseTab |> Maybe.withDefault defaultState.activeTab
+            , position = position
             , location = Nothing
             , locationError = Nothing
             , trackingEnabled = False
@@ -4045,7 +4015,6 @@ stateDecoder =
                 , trackThickness = trackThickness |> Maybe.withDefault defEp.trackThickness
                 , showIntensity = showIntensity |> Maybe.withDefault defEp.showIntensity
                 , intensityTau = intensityTau |> Maybe.withDefault defEp.intensityTau
-                , manualPosition = manualPosition
                 , activeSplitMode =
                     case splitMode of
                         Just "waypoints" ->
@@ -4064,7 +4033,6 @@ stateDecoder =
             , cuesheet =
                 { totalDistanceDisplay = totalDistanceDisplay |> Maybe.andThen parseTotalDistanceDisplay |> Maybe.withDefault defCs.totalDistanceDisplay
                 , referencePoint = referencePoint |> Maybe.withDefault defCs.referencePoint
-                , position = 0
                 , itemSpacing = itemSpacing |> Maybe.withDefault defCs.itemSpacing
                 , distanceDetail = distanceDetail |> Maybe.withDefault defCs.distanceDetail
                 , showStartFinish = showStartFinish |> Maybe.withDefault defCs.showStartFinish
@@ -4085,7 +4053,7 @@ stateDecoder =
         |> andMap (maybeField "trackThickness" Json.Decode.float)
         |> andMap (maybeField "showIntensity" Json.Decode.bool)
         |> andMap (maybeField "intensityTau" Json.Decode.float)
-        |> andMap (maybeField "manualPosition" Json.Decode.float)
+        |> andMap (maybeField "position" Json.Decode.float)
         |> andMap (maybeField "viewMode" Json.Decode.string)
         |> andMap (maybeField "splitMode" Json.Decode.string)
         |> andMap (maybeField "splitEquidistantCount" Json.Decode.int)
