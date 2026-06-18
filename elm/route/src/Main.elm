@@ -592,15 +592,21 @@ update msg model =
                                 gpsPos =
                                     Location.LatLon pos.lat pos.lon
 
-                                matchedDist =
+                                nearest =
                                     Location.findNearestTrackPoint gpsPos tracks.current.trackpoints
-                                        |> Maybe.map .distance
+
+                                matchedDist =
+                                    nearest |> Maybe.map .distance |> Maybe.withDefault 0
+
+                                offRouteDist =
+                                    nearest
+                                        |> Maybe.map (\tp -> Location.haversineDistance gpsPos (Location.LatLon tp.lat tp.lon))
                                         |> Maybe.withDefault 0
                             in
                             ( updateState
                                 (withLiveSplit
                                     { s
-                                        | location = Just (Location.LocationState gpsPos pos.accuracy matchedDist)
+                                        | location = Just (Location.LocationState gpsPos pos.accuracy matchedDist offRouteDist)
                                         , locationError = Nothing
                                         , position = Just matchedDist
                                     }
@@ -2475,14 +2481,13 @@ viewCuesheetTab state tracks =
                 |> trimWaypointCategories state.filteredCategories
 
         positionWaypoint =
-            case ( state.position, state.viewMode ) of
-                ( Just pos, LiveView ) ->
-                    cumulativeGainLossAtDistance pos tracks.current.trackpoints
-                        |> Result.toMaybe
-                        |> Maybe.map (\( g, l ) -> GpxApi.Waypoint pos "Current position" [] g l 0)
-
-                _ ->
-                    Nothing
+            state.position
+                |> Maybe.andThen
+                    (\pos ->
+                        cumulativeGainLossAtDistance pos tracks.current.trackpoints
+                            |> Result.toMaybe
+                            |> Maybe.map (\( g, l ) -> GpxApi.Waypoint pos "Current position" [] g l (state.location |> Maybe.map .offRouteDistance |> Maybe.withDefault 0))
+                    )
 
         waypointsWithPosition =
             case positionWaypoint of
@@ -2491,6 +2496,15 @@ viewCuesheetTab state tracks =
 
                 Nothing ->
                     filteredWaypoints
+
+        -- Live view trims the list to what's ahead of the position; static view shows the whole list with the marker inline
+        scrollPosition =
+            case state.viewMode of
+                LiveView ->
+                    Maybe.withDefault 0 state.position
+
+                StaticView ->
+                    0
 
         refWaypoint =
             case cs.totalDistanceDisplay of
@@ -2514,7 +2528,7 @@ viewCuesheetTab state tracks =
     in
     Html.div []
         [ liveNoPositionWarning state
-        , cuesheetSvg state.offRouteThreshold state.showOffRouteDistance (Maybe.map .distance positionWaypoint) (Maybe.withDefault 0 state.position) waypointsWithPosition cs currentFinishDistance refPointEle refWaypoint
+        , cuesheetSvg state.offRouteThreshold state.showOffRouteDistance (Maybe.map .distance positionWaypoint) scrollPosition waypointsWithPosition cs currentFinishDistance refPointEle refWaypoint
         ]
 
 
@@ -2727,7 +2741,7 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                                 Svg.Attributes.transform <| "translate(0," ++ (String.fromInt <| i * cs.itemSpacing) ++ ")"
                         in
                         let
-                            renderWaypointItem fillAttrs waypoint =
+                            renderWaypointItem showOffRoute fillAttrs waypoint =
                                 let
                                     displayedDistance =
                                         displayedDistanceValue cs.totalDistanceDisplay finishDist cs.referencePoint refWaypoint waypoint.distance
@@ -2806,7 +2820,7 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                                             , if waypoint.offRoute > offRouteThreshold then
                                                 Just ( "⚠️ " ++ offRouteLabel, [ Svg.Attributes.fill offRouteColour ] )
 
-                                              else if showOffRouteDistance && waypoint.offRoute > 0 then
+                                              else if showOffRoute && waypoint.offRoute > 0 then
                                                 Just ( offRouteLabel, [] )
 
                                               else
@@ -2849,7 +2863,7 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                         in
                         case item of
                             InfoWaypoint waypoint ->
-                                renderWaypointItem
+                                renderWaypointItem showOffRouteDistance
                                     (if waypoint.offRoute > offRouteThreshold then
                                         [ Svg.Attributes.fill offRouteColour ]
 
@@ -2859,7 +2873,7 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                                     waypoint
 
                             InfoPosition waypoint ->
-                                renderWaypointItem [ Svg.Attributes.fill "steelblue" ] waypoint
+                                renderWaypointItem True [ Svg.Attributes.fill "steelblue" ] waypoint
 
                             Ride dist ( gain, loss ) ->
                                 let

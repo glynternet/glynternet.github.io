@@ -14,6 +14,7 @@ type alias LocationState =
     { position : LatLon
     , accuracy : Float
     , matchedDistance : Float
+    , offRouteDistance : Float
     }
 
 
