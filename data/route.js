@@ -10622,19 +10622,19 @@ var $author$project$Main$viewCuesheetTab = F2(
 				$author$project$Main$filterWaypoints,
 				$author$project$Main$waypointPredicates(state),
 				waypointsWithStartFinish));
-		var waypointsWithPosition = function () {
-			if (!positionWaypoint.$) {
-				var pw = positionWaypoint.a;
-				return A2(
-					$elm$core$List$sortBy,
-					function ($) {
-						return $.az;
-					},
-					A2($elm$core$List$cons, pw, filteredWaypoints));
-			} else {
-				return filteredWaypoints;
-			}
-		}();
+		var waypointsWithPosition = A2(
+			$elm$core$List$sortBy,
+			function ($) {
+				return $.az;
+			},
+			function () {
+				if (!positionWaypoint.$) {
+					var pw = positionWaypoint.a;
+					return A2($elm$core$List$cons, pw, filteredWaypoints);
+				} else {
+					return filteredWaypoints;
+				}
+			}());
 		return A2(
 			$elm$html$Html$div,
 			_List_Nil,

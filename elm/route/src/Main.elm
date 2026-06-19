@@ -2489,13 +2489,17 @@ viewCuesheetTab state tracks =
                             |> Maybe.map (\( g, l ) -> GpxApi.Waypoint pos "Current position" [] g l (state.location |> Maybe.map .offRouteDistance |> Maybe.withDefault 0))
                     )
 
+        -- Sort by distance so edited waypoint distances reorder the list (the original
+        -- waypoint order no longer matches distance once a distance override is applied)
         waypointsWithPosition =
-            case positionWaypoint of
-                Just pw ->
-                    List.sortBy .distance (pw :: filteredWaypoints)
+            List.sortBy .distance
+                (case positionWaypoint of
+                    Just pw ->
+                        pw :: filteredWaypoints
 
-                Nothing ->
-                    filteredWaypoints
+                    Nothing ->
+                        filteredWaypoints
+                )
 
         -- Live view trims the list to what's ahead of the position; static view shows the whole list with the marker inline
         scrollPosition =
