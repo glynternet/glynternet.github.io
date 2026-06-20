@@ -186,7 +186,15 @@ effectiveWaypoint trackpoints ew =
     , categories = Maybe.withDefault ew.original.categories ew.overrides.categories
     , gain = gain
     , loss = loss
-    , offRoute = ew.original.offRoute
+    , offRoute =
+        case ew.overrides.distance of
+            -- An overridden distance pins the waypoint onto the route at
+            -- that point, so it is no longer off-route.
+            Just _ ->
+                0
+
+            Nothing ->
+                ew.original.offRoute
     }
 
 

@@ -5625,7 +5625,7 @@ var $author$project$Main$StaticView = 1;
 var $author$project$Main$FromZero = {$: 0};
 var $author$project$Main$defaultDistanceDetail = 1;
 var $author$project$Main$defaultSpacing = 25;
-var $author$project$Main$defaultCuesheetOptions = {A: $author$project$Main$defaultDistanceDetail, l: $author$project$Main$defaultSpacing, u: 1000, H: false, g: $author$project$Main$FromZero};
+var $author$project$Main$defaultCuesheetOptions = {A: $author$project$Main$defaultDistanceDetail, l: $author$project$Main$defaultSpacing, u: 1000, H: false, h: $author$project$Main$FromZero};
 var $author$project$Main$EquidistantMode = 0;
 var $author$project$Main$defaultElevationProfileOptions = {J: 0, M: $elm$core$Maybe$Nothing, N: false, W: 15, O: 500, X: 1.0, B: 5000, C: 2000, G: false, aa: 1, k: _List_Nil, ac: 200, ad: 1};
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
@@ -6472,7 +6472,7 @@ var $author$project$GpxApi$Track = F3(
 		return {aJ: gainLoss, bM: trackpoints, bP: waypoints};
 	});
 var $author$project$Main$effectiveDistance = function (ew) {
-	return A2($elm$core$Maybe$withDefault, ew.q.az, ew.h.az);
+	return A2($elm$core$Maybe$withDefault, ew.q.az, ew.g.az);
 };
 var $elm_community$list_extra$List$Extra$find = F2(
 	function (predicate, list) {
@@ -6549,7 +6549,7 @@ var $elm$core$Result$withDefault = F2(
 var $author$project$Main$effectiveWaypoint = F2(
 	function (trackpoints, ew) {
 		var _v0 = function () {
-			var _v1 = ew.h.az;
+			var _v1 = ew.g.az;
 			if (!_v1.$) {
 				var overriddenDistance = _v1.a;
 				return A2(
@@ -6563,12 +6563,19 @@ var $author$project$Main$effectiveWaypoint = F2(
 		var gain = _v0.a;
 		var loss = _v0.b;
 		return {
-			a1: A2($elm$core$Maybe$withDefault, ew.q.a1, ew.h.a1),
+			a1: A2($elm$core$Maybe$withDefault, ew.q.a1, ew.g.a1),
 			az: $author$project$Main$effectiveDistance(ew),
 			aB: gain,
 			aE: loss,
-			bn: A2($elm$core$Maybe$withDefault, ew.q.bn, ew.h.bn),
-			bo: ew.q.bo
+			bn: A2($elm$core$Maybe$withDefault, ew.q.bn, ew.g.bn),
+			bo: function () {
+				var _v2 = ew.g.az;
+				if (!_v2.$) {
+					return 0;
+				} else {
+					return ew.q.bo;
+				}
+			}()
 		};
 	});
 var $author$project$Main$effectiveWaypoints = function (track) {
@@ -6945,7 +6952,7 @@ var $author$project$GpxApi$decodeTrackpoints = $elm$json$Json$Decode$list(
 		A2($elm$json$Json$Decode$field, 'loss', $elm$json$Json$Decode$float)));
 var $author$project$Main$EditableWaypoint = F3(
 	function (original, deleted, overrides) {
-		return {L: deleted, q: original, h: overrides};
+		return {L: deleted, q: original, g: overrides};
 	});
 var $author$project$Main$WaypointOverrides = F3(
 	function (name, distance, categories) {
@@ -7273,9 +7280,9 @@ var $author$project$Main$stateDecoder = function () {
 																																																														l: A2($elm$core$Maybe$withDefault, defCs.l, itemSpacing),
 																																																														u: A2($elm$core$Maybe$withDefault, defCs.u, referencePoint),
 																																																														H: A2($elm$core$Maybe$withDefault, defCs.H, showStartFinish),
-																																																														g: A2(
+																																																														h: A2(
 																																																															$elm$core$Maybe$withDefault,
-																																																															defCs.g,
+																																																															defCs.h,
 																																																															A2($elm$core$Maybe$andThen, $author$project$Main$parseTotalDistanceDisplay, totalDistanceDisplay))
 																																																													},
 																																																													a: {
@@ -7915,13 +7922,13 @@ var $author$project$Main$correctWaypointSelectionInState = function (s) {
 			$author$project$Main$waypointPredicates(s),
 			allWaypoints);
 		var indexed = A2($author$project$Main$indexedFilteredWaypoints, allWaypoints, filtered);
-		var corrected = A2($author$project$Main$correctWaypointSelection, cs.g, indexed);
+		var corrected = A2($author$project$Main$correctWaypointSelection, cs.h, indexed);
 		return _Utils_update(
 			s,
 			{
 				e: _Utils_update(
 					cs,
-					{g: corrected})
+					{h: corrected})
 			});
 	}
 };
@@ -8076,7 +8083,7 @@ var $author$project$Main$encodeEditableWaypoint = function (ew) {
 							'name',
 							$elm$json$Json$Encode$string(n));
 					},
-					ew.h.bn),
+					ew.g.bn),
 					A2(
 					$elm$core$Maybe$map,
 					function (d) {
@@ -8084,7 +8091,7 @@ var $author$project$Main$encodeEditableWaypoint = function (ew) {
 							'distance',
 							$elm$json$Json$Encode$float(d));
 					},
-					ew.h.az),
+					ew.g.az),
 					A2(
 					$elm$core$Maybe$map,
 					function (cats) {
@@ -8092,7 +8099,7 @@ var $author$project$Main$encodeEditableWaypoint = function (ew) {
 							'categories',
 							A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$string, cats));
 					},
-					ew.h.a1)
+					ew.g.a1)
 				])));
 };
 var $author$project$Main$encodeEditableTrack = function (track) {
@@ -8274,7 +8281,7 @@ var $author$project$Main$encodeSavedState = function (state) {
 						_Utils_Tuple2(
 							'totalDistanceDisplay',
 							$elm$json$Json$Encode$string(
-								$author$project$Main$formatTotalDistanceDisplay(cs.g)))),
+								$author$project$Main$formatTotalDistanceDisplay(cs.h)))),
 						$elm$core$Maybe$Just(
 						_Utils_Tuple2(
 							'referencePoint',
@@ -8739,7 +8746,7 @@ var $author$project$Main$updateOverrides = F2(
 		return _Utils_update(
 			ew,
 			{
-				h: fn(ew.h)
+				g: fn(ew.g)
 			});
 	});
 var $author$project$Main$update = F2(
@@ -9215,12 +9222,12 @@ var $author$project$Main$update = F2(
 				if (_v15.$ === 3) {
 					var tracks = _v15.a;
 					var updateCats = function (ew) {
-						var o = ew.h;
-						var currentCats = A2($elm$core$Maybe$withDefault, ew.q.a1, ew.h.a1);
+						var o = ew.g;
+						var currentCats = A2($elm$core$Maybe$withDefault, ew.q.a1, ew.g.a1);
 						return _Utils_update(
 							ew,
 							{
-								h: _Utils_update(
+								g: _Utils_update(
 									o,
 									{
 										a1: $elm$core$Maybe$Just(
@@ -9300,12 +9307,12 @@ var $author$project$Main$update = F2(
 					if (_v16.$ === 3) {
 						var tracks = _v16.a;
 						var updateCats = function (ew) {
-							var o = ew.h;
-							var currentCats = A2($elm$core$Maybe$withDefault, ew.q.a1, ew.h.a1);
+							var o = ew.g;
+							var currentCats = A2($elm$core$Maybe$withDefault, ew.q.a1, ew.g.a1);
 							return A2($elm$core$List$member, trimmed, currentCats) ? ew : _Utils_update(
 								ew,
 								{
-									h: _Utils_update(
+									g: _Utils_update(
 										o,
 										{
 											a1: $elm$core$Maybe$Just(
@@ -9357,7 +9364,7 @@ var $author$project$Main$update = F2(
 															function (ew) {
 																return _Utils_update(
 																	ew,
-																	{L: false, h: $author$project$Main$emptyOverrides});
+																	{L: false, g: $author$project$Main$emptyOverrides});
 															},
 															current.o)
 													});
@@ -9646,7 +9653,7 @@ var $author$project$Main$update = F2(
 										{
 											e: _Utils_update(
 												cs,
-												{g: selection})
+												{h: selection})
 										})));
 						},
 						maybeSelection));
@@ -9709,7 +9716,7 @@ var $author$project$Main$update = F2(
 				var idx = msg.a;
 				var cs = s.e;
 				var newDisplay = function () {
-					var _v19 = cs.g;
+					var _v19 = cs.h;
 					switch (_v19.$) {
 						case 3:
 							return $author$project$Main$ToWaypoint(idx);
@@ -9727,7 +9734,7 @@ var $author$project$Main$update = F2(
 							{
 								e: _Utils_update(
 									cs,
-									{g: newDisplay})
+									{h: newDisplay})
 							})));
 			case 50:
 				var threshold = msg.a;
@@ -10300,7 +10307,7 @@ var $author$project$Main$cuesheetSvg = function (offRouteThreshold) {
 																	function (showOffRoute, fillAttrs, waypoint) {
 																		var offRouteLabel = $elm$core$String$fromInt(
 																			$elm$core$Basics$round(waypoint.bo)) + 'm off';
-																		var displayedDistance = A5($author$project$Main$displayedDistanceValue, cs.g, finishDist, cs.u, refWaypoint, waypoint.az);
+																		var displayedDistance = A5($author$project$Main$displayedDistanceValue, cs.h, finishDist, cs.u, refWaypoint, waypoint.az);
 																		var isReferencePoint = _Utils_eq(
 																			displayedDistance,
 																			$elm$core$Maybe$Just(0));
@@ -10308,7 +10315,7 @@ var $author$project$Main$cuesheetSvg = function (offRouteThreshold) {
 																			if (isReferencePoint) {
 																				return $elm$core$Maybe$Nothing;
 																			} else {
-																				var _v5 = cs.g;
+																				var _v5 = cs.h;
 																				switch (_v5.$) {
 																					case 7:
 																						return $elm$core$Maybe$Nothing;
@@ -10354,7 +10361,7 @@ var $author$project$Main$cuesheetSvg = function (offRouteThreshold) {
 																				}
 																			}
 																		}();
-																		var waypointDistance = isReferencePoint ? $elm$core$Maybe$Nothing : ($author$project$Main$displayIsPercent(cs.g) ? A2($elm$core$Maybe$map, $author$project$Main$formatPercent, displayedDistance) : A2(
+																		var waypointDistance = isReferencePoint ? $elm$core$Maybe$Nothing : ($author$project$Main$displayIsPercent(cs.h) ? A2($elm$core$Maybe$map, $author$project$Main$formatPercent, displayedDistance) : A2(
 																			$elm$core$Maybe$map,
 																			$author$project$Main$formatKm(cs.A),
 																			displayedDistance));
@@ -10541,7 +10548,7 @@ var $author$project$Main$cuesheetSvg = function (offRouteThreshold) {
 																					_List_fromArray(
 																						[
 																							$elm$svg$Svg$text(
-																							$author$project$Main$displayIsPercent(cs.g) ? (A2(
+																							$author$project$Main$displayIsPercent(cs.h) ? (A2(
 																								$elm$core$Maybe$withDefault,
 																								'',
 																								A2(
@@ -10711,7 +10718,7 @@ var $author$project$Main$viewCuesheetTab = F2(
 		var currentEffectiveWaypoints = $author$project$Main$effectiveWaypoints(tracks.c);
 		var cs = state.e;
 		var refWaypoint = function () {
-			var _v2 = cs.g;
+			var _v2 = cs.h;
 			switch (_v2.$) {
 				case 3:
 					var idx = _v2.a;
@@ -11499,7 +11506,7 @@ var $author$project$Main$viewElevationProfileTab = F2(
 		var currentEffectiveWaypoints = $author$project$Main$effectiveWaypoints(tracks.c);
 		var cs = state.e;
 		var refWaypoint = function () {
-			var _v5 = cs.g;
+			var _v5 = cs.h;
 			switch (_v5.$) {
 				case 3:
 					var idx = _v5.a;
@@ -11572,7 +11579,7 @@ var $author$project$Main$viewElevationProfileTab = F2(
 									},
 									fullIntensity)));
 						var markers = $author$project$Main$distanceMarkers(
-							{a4: cs.A, aH: currentFinishDistance, be: ep.M, aO: cs.g, bw: refWaypoint, u: cs.u, bC: segMaxDistance, aT: segStart, bD: ep.N});
+							{a4: cs.A, aH: currentFinishDistance, be: ep.M, aO: cs.h, bw: refWaypoint, u: cs.u, bC: segMaxDistance, aT: segStart, bD: ep.N});
 						var downsampledSeg = _Utils_update(
 							seg,
 							{
@@ -12263,10 +12270,10 @@ var $author$project$Main$viewTotalDistanceOptions = function (state) {
 						parseModeDropdown),
 					_List_Nil,
 					$elm$core$Maybe$Just(
-						$author$project$Main$formatTotalDistanceDisplayLabel(cs.g)))
+						$author$project$Main$formatTotalDistanceDisplayLabel(cs.h)))
 				]),
 			function () {
-				var _v0 = cs.g;
+				var _v0 = cs.h;
 				switch (_v0.$) {
 					case 2:
 						return _List_fromArray(
@@ -13682,7 +13689,7 @@ var $author$project$Main$viewWaypointsTab = F2(
 		var anyWaypointEdited = A2(
 			$elm$core$List$any,
 			function (ew) {
-				return ew.L || (!_Utils_eq(ew.h, $author$project$Main$emptyOverrides));
+				return ew.L || (!_Utils_eq(ew.g, $author$project$Main$emptyOverrides));
 			},
 			tracks.c.o);
 		return A2(
