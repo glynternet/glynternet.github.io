@@ -161,41 +161,63 @@ editableTrackFromGpxTrack track =
     }
 
 
-effectiveWaypoint : EditableWaypoint -> GpxApi.Waypoint
-effectiveWaypoint ew =
-    { distance = Maybe.withDefault ew.original.distance ew.overrides.distance
+effectiveDistance : EditableWaypoint -> Float
+effectiveDistance ew =
+    Maybe.withDefault ew.original.distance ew.overrides.distance
+
+
+effectiveWaypoint : List GpxApi.TrackPoint -> EditableWaypoint -> GpxApi.Waypoint
+effectiveWaypoint trackpoints ew =
+    let
+        -- A distance override relocates the waypoint along the route, so its
+        -- cumulative gain/loss must be re-read at the new position; keeping the
+        -- original values would report climb/descent for where it used to be.
+        ( gain, loss ) =
+            case ew.overrides.distance of
+                Just overriddenDistance ->
+                    cumulativeGainLossAtDistance overriddenDistance trackpoints
+                        |> Result.withDefault ( ew.original.gain, ew.original.loss )
+
+                Nothing ->
+                    ( ew.original.gain, ew.original.loss )
+    in
+    { distance = effectiveDistance ew
     , name = Maybe.withDefault ew.original.name ew.overrides.name
     , categories = Maybe.withDefault ew.original.categories ew.overrides.categories
-    , gain = ew.original.gain
-    , loss = ew.original.loss
+    , gain = gain
+    , loss = loss
     , offRoute = ew.original.offRoute
     }
 
 
-effectiveWaypoints : List EditableWaypoint -> List GpxApi.Waypoint
-effectiveWaypoints =
+effectiveWaypoints : EditableTrack -> List GpxApi.Waypoint
+effectiveWaypoints track =
     List.filterMap
         (\ew ->
             if ew.deleted then
                 Nothing
 
             else
-                Just (effectiveWaypoint ew)
+                Just (effectiveWaypoint track.trackpoints ew)
         )
+        track.editableWaypoints
 
 
 {-| Pairs each non-deleted waypoint with its stable index in the editableWaypoints list.
+Editing flows (e.g. split-at-waypoint selection) reference waypoints by this index, so the
+original order is preserved here even though viewing flows resolve and re-sort by distance.
 -}
-indexedEffectiveWaypoints : List EditableWaypoint -> List ( Int, GpxApi.Waypoint )
-indexedEffectiveWaypoints =
-    List.indexedMap Tuple.pair
-        >> List.filterMap
+indexedEffectiveWaypoints : EditableTrack -> List ( Int, GpxApi.Waypoint )
+indexedEffectiveWaypoints track =
+    track.editableWaypoints
+        |> List.indexedMap Tuple.pair
+        |> List.filterMap
             (\( i, ew ) ->
                 if ew.deleted then
                     Nothing
 
                 else
-                    Just ( i, effectiveWaypoint ew )
+                    Just ( i, effectiveWaypoint track.trackpoints ew )
             )
 
 
@@ -446,7 +468,7 @@ sortWaypointIndices editableWps indices =
     List.sortBy
         (\idx ->
             List.Extra.getAt idx editableWps
-                |> Maybe.map (effectiveWaypoint >> .distance)
+                |> Maybe.map effectiveDistance
                 |> Maybe.withDefault 0
         )
         indices
@@ -742,7 +764,7 @@ update msg model =
                                 tracks
 
                         allEffectiveWaypoints =
-                            List.concatMap (.editableWaypoints >> effectiveWaypoints) (newTracks.prev ++ [ newTracks.current ] ++ newTracks.next)
+                            List.concatMap effectiveWaypoints (newTracks.prev ++ [ newTracks.current ] ++ newTracks.next)
 
                         newFilteredCategories =
                             if add then
@@ -925,7 +947,9 @@ update msg model =
                         |> Maybe.withDefault []
 
                 availableIndices =
-                    indexedEffectiveWaypoints editableWps |> List.map Tuple.first
+                    maybeFromloadableResource s.tracks
+                        |> Maybe.map (.current >> indexedEffectiveWaypoints >> List.map Tuple.first)
+                        |> Maybe.withDefault []
 
                 indices =
                     ep.splitWaypointIndices
@@ -1178,7 +1202,7 @@ requestSplitCmdWasm state =
         Loaded tracks ->
             let
                 filteredWaypoints =
-                    effectiveWaypoints tracks.current.editableWaypoints
+                    effectiveWaypoints tracks.current
                         |> filterWaypoints (waypointPredicates state)
             in
             requestSplitProfile
@@ -1204,7 +1228,7 @@ requestSplitCmdWasm state =
                                                                             Nothing
 
                                                                         else
-                                                                            Just (effectiveWaypoint ew).distance
+                                                                            Just (effectiveDistance ew)
                                                                     )
                                                         )
                                                     |> List.sort
@@ -1247,7 +1271,7 @@ computeLiveSplitFromState state =
                     tps |> List.filter (\tp -> tp.distance >= rangeStart && tp.distance <= rangeEnd)
 
                 segWps =
-                    effectiveWaypoints tracks.current.editableWaypoints
+                    effectiveWaypoints tracks.current
                         |> filterWaypoints (waypointPredicates state)
                         |> List.filter (\wp -> wp.distance >= rangeStart && wp.distance <= rangeEnd)
 
@@ -1455,7 +1479,7 @@ correctWaypointSelectionInState s =
         Just tracks ->
             let
                 allWaypoints =
-                    effectiveWaypoints tracks.current.editableWaypoints
+                    effectiveWaypoints tracks.current
 
                 filtered =
                     filterWaypoints (waypointPredicates s) allWaypoints
@@ -1751,7 +1775,7 @@ viewElevationProfileTab state tracks =
             state.cuesheet
 
         currentEffectiveWaypoints =
-            effectiveWaypoints tracks.current.editableWaypoints
+            effectiveWaypoints tracks.current
 
         currentFinishDistance =
             lastTrackpointDistance tracks.current.trackpoints
@@ -2546,7 +2570,7 @@ viewCuesheetTab state tracks =
             state.cuesheet
 
         currentEffectiveWaypoints =
-            effectiveWaypoints tracks.current.editableWaypoints
+            effectiveWaypoints tracks.current
 
         currentFinishDistance =
             lastTrackpointDistance tracks.current.trackpoints
@@ -2651,7 +2675,7 @@ viewWaypointsTab state tracks =
                     (\( i, ew ) ->
                         let
                             wp =
-                                effectiveWaypoint ew
+                                effectiveWaypoint tracks.current.trackpoints ew
 
                             predicates =
                                 waypointPredicates state
@@ -3505,7 +3529,7 @@ viewElevationProfileOptions state =
 
                         indexed =
                             maybeFromloadableResource state.tracks
-                                |> Maybe.map (.current >> .editableWaypoints >> indexedEffectiveWaypoints)
+                                |> Maybe.map (.current >> indexedEffectiveWaypoints)
                                 |> Maybe.withDefault []
 
                         -- splitListPos = position in the splits list; selectedWaypointIdx = editableWaypoints index at that position
@@ -3606,7 +3630,7 @@ viewTotalDistanceOptions state =
                     (\ts ->
                         let
                             currentEffective =
-                                effectiveWaypoints ts.current.editableWaypoints
+                                effectiveWaypoints ts.current
                         in
                         (if cs.showStartFinish then
                             injectStartFinish (lastTrackpointDistance ts.current.trackpoints) ts.current.gainLoss currentEffective
@@ -3623,7 +3647,6 @@ viewTotalDistanceOptions state =
             maybeTracks
                 |> Maybe.map
                     (.current
-                        >> .editableWaypoints
                         >> effectiveWaypoints
                         >> (\waypoints -> indexedFilteredWaypoints waypoints filteredWps)
                     )
