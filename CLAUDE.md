@@ -87,6 +87,22 @@ This is a Jekyll static site with the following structure:
 - `_includes/`: Jekyll partials
 - `_sass/`: Stylesheets
 
+### Navigating `elm/route/src/Main.elm`
+
+The route app is one monolithic Elm file (~4200 lines). To orient quickly:
+
+- **Rough section map** (line numbers approximate — grep the names):
+  - Model/`State`, option records, and defaults: ~`type alias State` through `defaultCuesheetOptions`
+  - `Msg` + `update`
+  - Elevation profile rendering: `viewElevationProfileTab`, `profile`, `distanceMarkers`
+  - Cuesheet rendering: `viewCuesheetTab`, `cuesheetSvg`, `waypointInfos`
+  - Distance/elevation display logic: `displayedDistanceValue`, `displayIsPercent`
+  - Format helpers: `formatKm`, `formatM`, `formatEleGainLoss`, `formatPercent`
+  - Serialization: `parseTotalDistanceDisplay` / `formatTotalDistanceDisplay`, plus the encode/decode of `State`
+- **`TotalDistanceDisplay` is the central enum for distance/elevation display.** Both the cuesheet and the elevation profile key off the single `state.cuesheet.totalDistanceDisplay`. To find everything affected by a display mode, grep `TotalDistanceDisplay` / `totalDistanceDisplay`; the Elm compiler's exhaustive `case` checking then flags every site to update when you add a constructor.
+- **Data model** (`elm/shared/src/GpxApi.elm`): `TrackPoint.gain`/`.loss` are **cumulative** from the start; route totals live in `EditableTrack.gainLoss` / `Track.gainLoss`; `lastTrackpointDistance` gives total distance; `cumulativeGainLossAtDistance` looks up cumulative climb at any distance (used to build the current-position cuesheet row).
+- Build/typecheck with `make route.js` (compiles to `data/route.js`).
+
 ### Important: `_data/` vs `data/` Directories
 
 These two directories serve different purposes and are **both necessary**:
@@ -137,7 +153,18 @@ The project uses Docker for consistent build environments:
 
 ## Service Worker
 
-The site includes a service worker (`sw.js`) that provides offline support for the route tools (cue sheet, elevation profile). It caches the WASM module, compiled Elm JS, and other assets for offline use.
+The site includes a service worker (`sw.js`) that provides offline support for the route tools (cue sheet, elevation profile). It precaches the WASM module (`/data/gpx.wasm`), compiled Elm JS (`/data/route.js`), the Go WASM shim, the route page (`/cycling/route`) and `/css/main.css`, and serves sub-resources **cache-first** for speed.
+
+### Cache busting (how new builds reach online users)
+
+Because sub-resources are served **cache-first** and the route page loads `route.js` via a plain `<script src="/data/route.js">` (no content hash in the URL), a returning online user keeps running the **old** assets until the service worker itself changes. The only cache-busting lever is `CACHE_VERSION` in `sw.js`: changing it makes the browser detect a new SW on the next navigation → `install` re-precaches fresh assets → `activate` deletes the old-version caches → `skipWaiting()` + `clients.claim()` apply it immediately (already-open tabs need a reload; new navigations update).
+
+**This is automated.** `sw.js` carries Jekyll frontmatter so it is Liquid-processed, and `CACHE_VERSION` is stamped from `{{ site.time | date: "%Y%m%d%H%M%S" }}` at build time. Every deploy therefore produces a new version and busts caches with no manual step. Tradeoff: each deploy re-precaches all assets even when unchanged (small, infrequent). The deploy (`.github/workflows/pages.yml`) only runs `jekyll build` on committed files, so the compiled `data/route.js` must be committed for changes to ship.
+
+### Bad-connection safety (why a flaky update never breaks a user)
+
+- **Fully offline:** the browser never re-checks `sw.js`, so the device just keeps running the already-installed SW and its cached assets. The user stays on the working old version.
+- **Connection drops mid-update:** install fetches all precache URLs inside `Promise.all` within `event.waitUntil` (and `cache: 'reload'` to bypass the HTTP cache). This is **all-or-nothing** — if any asset fails to download, the promise rejects, install fails, the new SW is discarded, and the old SW + old caches stay fully intact (cache deletion only happens in `activate`, which runs only after a complete install; `skipWaiting()` is chained after the precache succeeds). There is no half-updated state; the browser retries on a later navigation. **Preserve this atomicity in any SW change.**
 
 ## Notes
 
