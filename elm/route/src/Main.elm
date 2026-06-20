@@ -231,6 +231,8 @@ type TotalDistanceDisplay
     | ToPoint
     | ToWaypoint Int
     | FromWaypoint Int
+    | PercentProgress
+    | PercentRemaining
     | None
 
 
@@ -1894,6 +1896,40 @@ displayedDistanceValue mode finishDist referencePoint refWaypoint distance =
         FromWaypoint _ ->
             refWaypoint |> Maybe.map (\rw -> distance - rw.distance)
 
+        PercentProgress ->
+            safePercent distance finishDist
+
+        PercentRemaining ->
+            safePercent (finishDist - distance) finishDist
+
+
+{-| True for the percentage display modes, whose distance/elevation values are fractions of
+the route total rather than absolute metres. The single switch the formatting code keys off.
+-}
+displayIsPercent : TotalDistanceDisplay -> Bool
+displayIsPercent mode =
+    case mode of
+        PercentProgress ->
+            True
+
+        PercentRemaining ->
+            True
+
+        _ ->
+            False
+
+
+{-| `part` as a percentage of `total`, or Nothing when `total` is non-positive (empty or
+flat route) so we never display NaN.
+-}
+safePercent : Float -> Float -> Maybe Float
+safePercent part total =
+    if total > 0 then
+        Just (part / total * 100)
+
+    else
+        Nothing
+
 
 {-| A "nice" round marker interval (in metres) for a displayed-distance range (in metres),
 bucketed like elevationTicks.
@@ -1914,6 +1950,27 @@ niceDistanceInterval range =
 
     else
         1000
+
+
+{-| A "nice" round marker interval (in %) for a displayed-percentage range, mirroring
+`niceDistanceInterval` but bucketed for the 0–100 scale of the percentage display modes.
+-}
+nicePercentInterval : Float -> Float
+nicePercentInterval range =
+    if range > 50 then
+        25
+
+    else if range > 20 then
+        10
+
+    else if range > 10 then
+        5
+
+    else if range > 5 then
+        2
+
+    else
+        1
 
 
 {-| Evenly-spaced, round-numbered distance markers for one profile segment. Each mode is a
@@ -1944,8 +2001,17 @@ distanceMarkers cfg =
                 ( vMin, vMax ) =
                     ( min vStart vEnd, max vStart vEnd )
 
+                isPercent =
+                    displayIsPercent cfg.mode
+
                 interval =
-                    Maybe.withDefault (niceDistanceInterval (vMax - vMin)) cfg.interval
+                    if isPercent then
+                        -- cfg.interval is a metres setting, meaningless on the % scale, so
+                        -- always auto-pick a round % interval here.
+                        nicePercentInterval (vMax - vMin)
+
+                    else
+                        Maybe.withDefault (niceDistanceInterval (vMax - vMin)) cfg.interval
 
                 firstTick =
                     toFloat (ceiling (vMin / interval)) * interval
@@ -1957,16 +2023,32 @@ distanceMarkers cfg =
                     else
                         buildValues (current + interval) (current :: acc)
 
-                -- the displayed value changes by ±1 per metre, so the segment-local
-                -- position is just the value's offset from the segment-start value
+                -- The displayed value is a linear map of distance: ±1 per metre for the
+                -- distance modes, ±(100/finishDist) per metre for the percentage modes, so a
+                -- displayed-value offset converts to a segment-local distance (metres) by
+                -- scaling with metresPerDisplayedUnit.
+                metresPerDisplayedUnit =
+                    if isPercent then
+                        cfg.finishDist / 100
+
+                    else
+                        1
+
                 toMarker value =
                     { distance =
-                        if vStart <= vEnd then
+                        (if vStart <= vEnd then
                             value - vStart
 
-                        else
+                         else
                             vStart - value
-                    , label = formatKm cfg.detail value
+                        )
+                            * metresPerDisplayedUnit
+                    , label =
+                        if isPercent then
+                            formatPercent value
+
+                        else
+                            formatKm cfg.detail value
                     }
 
                 segmentEndValues =
@@ -2532,7 +2614,7 @@ viewCuesheetTab state tracks =
     in
     Html.div []
         [ liveNoPositionWarning state
-        , cuesheetSvg state.offRouteThreshold state.showOffRouteDistance (Maybe.map .distance positionWaypoint) scrollPosition waypointsWithPosition cs currentFinishDistance refPointEle refWaypoint
+        , cuesheetSvg state.offRouteThreshold state.showOffRouteDistance (Maybe.map .distance positionWaypoint) scrollPosition waypointsWithPosition cs currentFinishDistance tracks.current.gainLoss refPointEle refWaypoint
         ]
 
 
@@ -2711,8 +2793,8 @@ viewWaypointCategories idx waypointCategories allCategories newCatInput =
         ]
 
 
-cuesheetSvg : Float -> Bool -> Maybe Float -> Float -> List GpxApi.Waypoint -> CuesheetOptions -> Float -> ( Float, Float ) -> Maybe GpxApi.Waypoint -> Html Msg
-cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPosition waypoints cs finishDist refPointEle refWaypoint =
+cuesheetSvg : Float -> Bool -> Maybe Float -> Float -> List GpxApi.Waypoint -> CuesheetOptions -> Float -> ( Float, Float ) -> ( Float, Float ) -> Maybe GpxApi.Waypoint -> Html Msg
+cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPosition waypoints cs finishDist ( totalGain, totalLoss ) refPointEle refWaypoint =
     let
         info =
             waypointInfos positionDistance scrollPosition waypoints
@@ -2758,6 +2840,9 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                                     waypointDistance =
                                         if isReferencePoint then
                                             Nothing
+
+                                        else if displayIsPercent cs.totalDistanceDisplay then
+                                            Maybe.map formatPercent displayedDistance
 
                                         else
                                             Maybe.map (formatKm cs.distanceDetail) displayedDistance
@@ -2807,6 +2892,16 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                                                                     (waypoint.gain - rw.gain)
                                                                     (waypoint.loss - rw.loss)
                                                             )
+
+                                                PercentProgress ->
+                                                    Maybe.map2 formatEleGainLossPercent
+                                                        (safePercent waypoint.gain totalGain)
+                                                        (safePercent waypoint.loss totalLoss)
+
+                                                PercentRemaining ->
+                                                    Maybe.map2 formatEleGainLossPercent
+                                                        (safePercent (totalGain - waypoint.gain) totalGain)
+                                                        (safePercent (totalLoss - waypoint.loss) totalLoss)
 
                                     offRouteLabel =
                                         String.fromInt (round waypoint.offRoute) ++ "m off"
@@ -2928,9 +3023,17 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                                         , Svg.Attributes.fontSize "smaller"
                                         ]
                                         [ Svg.text <|
-                                            formatKm cs.distanceDetail dist
-                                                ++ " "
-                                                ++ formatEleGainLoss gain loss
+                                            if displayIsPercent cs.totalDistanceDisplay then
+                                                (safePercent dist finishDist |> Maybe.map formatPercent |> Maybe.withDefault "")
+                                                    ++ " "
+                                                    ++ formatEleGainLossPercent
+                                                        (safePercent gain totalGain |> Maybe.withDefault 0)
+                                                        (safePercent loss totalLoss |> Maybe.withDefault 0)
+
+                                            else
+                                                formatKm cs.distanceDetail dist
+                                                    ++ " "
+                                                    ++ formatEleGainLoss gain loss
                                         ]
                                     ]
                     )
@@ -2990,6 +3093,16 @@ formatM metres =
 formatEleGainLoss : Float -> Float -> String
 formatEleGainLoss gain loss =
     "↑" ++ formatM gain ++ " ↓" ++ formatM loss
+
+
+formatPercent : Float -> String
+formatPercent pct =
+    Round.round 0 pct ++ "%"
+
+
+formatEleGainLossPercent : Float -> Float -> String
+formatEleGainLossPercent gainPct lossPct =
+    "↑" ++ formatPercent gainPct ++ " ↓" ++ formatPercent lossPct
 
 
 cumulativeGainLossAtDistance : Float -> List GpxApi.TrackPoint -> Result String ( Float, Float )
@@ -3541,6 +3654,8 @@ viewTotalDistanceOptions state =
                 , Dropdown.Item (formatTotalDistanceDisplay ToPoint) (formatTotalDistanceDisplay ToPoint) True
                 , Dropdown.Item "to waypoint" "to waypoint" True
                 , Dropdown.Item "from waypoint" "from waypoint" True
+                , Dropdown.Item (formatTotalDistanceDisplay PercentProgress) (formatTotalDistanceDisplay PercentProgress) True
+                , Dropdown.Item (formatTotalDistanceDisplay PercentRemaining) (formatTotalDistanceDisplay PercentRemaining) True
                 , Dropdown.Item (formatTotalDistanceDisplay None) (formatTotalDistanceDisplay None) True
                 ]
                 Nothing
@@ -3784,6 +3899,12 @@ parseTotalDistanceDisplay v =
         "to point" ->
             Just ToPoint
 
+        "% progress" ->
+            Just PercentProgress
+
+        "% remaining" ->
+            Just PercentRemaining
+
         "hide" ->
             Just None
 
@@ -3825,6 +3946,12 @@ formatTotalDistanceDisplay v =
 
         FromWaypoint idx ->
             "from waypoint:" ++ String.fromInt idx
+
+        PercentProgress ->
+            "% progress"
+
+        PercentRemaining ->
+            "% remaining"
 
         None ->
             "hide"
