@@ -1,4 +1,9 @@
-const CACHE_VERSION = 'v2';
+---
+# Jekyll processes this file (frontmatter present) so CACHE_VERSION is stamped with the
+# build time on every deploy. A new version busts the service-worker caches automatically
+# for online consumers — see the "Service Worker" section in CLAUDE.md.
+---
+const CACHE_VERSION = '{{ site.time | date: "%Y%m%d%H%M%S" }}';
 const PRECACHE_NAME = 'precache-' + CACHE_VERSION;
 const RUNTIME_NAME = 'runtime-' + CACHE_VERSION;
 
@@ -14,10 +19,27 @@ const PRECACHE_URLS = [
 
 // On install: fetch and cache all precache URLs, then activate immediately
 // (skipWaiting bypasses waiting for existing tabs to close).
+//
+// We fetch with `cache: 'reload'` so a freshly-activated SW always precaches the latest
+// bytes rather than a copy still sitting in the browser's HTTP cache. Promise.all keeps
+// this all-or-nothing (like cache.addAll): if any asset fails to download — e.g. the
+// connection drops mid-update — install rejects, the new SW is discarded, and the
+// previous SW and its caches stay fully intact. There is no half-updated state.
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(PRECACHE_NAME)
-      .then((cache) => cache.addAll(PRECACHE_URLS))
+      .then((cache) =>
+        Promise.all(
+          PRECACHE_URLS.map((url) =>
+            fetch(url, { cache: 'reload' }).then((response) => {
+              if (!response.ok) {
+                throw new Error('precache failed for ' + url + ': ' + response.status);
+              }
+              return cache.put(url, response);
+            })
+          )
+        )
+      )
       .then(() => self.skipWaiting())
   );
 });
