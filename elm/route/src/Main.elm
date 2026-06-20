@@ -506,7 +506,7 @@ update msg model =
             ( updateState { s | stateDecodeError = Nothing }, Cmd.none )
 
         ShowOptions show ->
-            ( updateState { s | showOptions = show }, Cmd.none )
+            updateAndStoreModel (updateState { s | showOptions = show })
 
         SwitchTab tab ->
             updateAndStoreModel (updateState { s | activeTab = tab })
@@ -635,15 +635,21 @@ update msg model =
                                         |> Maybe.map (\tp -> Location.haversineDistance gpsPos (Location.LatLon tp.lat tp.lon))
                                         |> Maybe.withDefault 0
                             in
-                            ( updateState
-                                (withLiveSplit
-                                    { s
-                                        | location = Just (Location.LocationState gpsPos pos.accuracy matchedDist offRouteDist)
-                                        , locationError = Nothing
-                                        , position = Just matchedDist
-                                    }
-                                )
-                            , Cmd.none
+                            let
+                                locatedState =
+                                    withLiveSplit
+                                        { s
+                                            | location = Just (Location.LocationState gpsPos pos.accuracy matchedDist offRouteDist)
+                                            , locationError = Nothing
+                                            , position = Just matchedDist
+                                        }
+                            in
+                            -- A GPS-derived position is transient, so we never persist it: keeping it
+                            -- would mean a stale tracking position is shown when the app is reopened.
+                            -- We still store here (with position cleared) to drop any position that was
+                            -- previously persisted, so nothing stale survives a reload.
+                            ( updateState locatedState
+                            , storeState (encodeSavedState { locatedState | position = Nothing })
                             )
 
                         _ ->

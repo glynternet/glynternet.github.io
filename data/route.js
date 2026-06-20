@@ -8783,12 +8783,11 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 2:
 				var show = msg.a;
-				return _Utils_Tuple2(
+				return $author$project$Main$updateAndStoreModel(
 					updateState(
 						_Utils_update(
 							s,
-							{_: show})),
-					$elm$core$Platform$Cmd$none);
+							{_: show})));
 			case 10:
 				var tab = msg.a;
 				return $author$project$Main$updateAndStoreModel(
@@ -9024,18 +9023,22 @@ var $author$project$Main$update = F2(
 											A2($author$project$Location$LatLon, tp.bh, tp.bi));
 									},
 									nearest));
+							var locatedState = $author$project$Main$withLiveSplit(
+								_Utils_update(
+									s,
+									{
+										ag: $elm$core$Maybe$Just(
+											A4($author$project$Location$LocationState, gpsPos, pos.a_, matchedDist, offRouteDist)),
+										Y: $elm$core$Maybe$Nothing,
+										cg: $elm$core$Maybe$Just(matchedDist)
+									}));
 							return _Utils_Tuple2(
-								updateState(
-									$author$project$Main$withLiveSplit(
+								updateState(locatedState),
+								$author$project$Main$storeState(
+									$author$project$Main$encodeSavedState(
 										_Utils_update(
-											s,
-											{
-												ag: $elm$core$Maybe$Just(
-													A4($author$project$Location$LocationState, gpsPos, pos.a_, matchedDist, offRouteDist)),
-												Y: $elm$core$Maybe$Nothing,
-												cg: $elm$core$Maybe$Just(matchedDist)
-											}))),
-								$elm$core$Platform$Cmd$none);
+											locatedState,
+											{cg: $elm$core$Maybe$Nothing}))));
 						} else {
 							return _Utils_Tuple2(
 								updateState(
