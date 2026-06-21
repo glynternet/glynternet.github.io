@@ -137,6 +137,7 @@ type alias EditableTrack =
 type alias EditableWaypoint =
     { original : GpxApi.Waypoint
     , deleted : Bool
+    , created : Bool
     , overrides : WaypointOverrides
     }
 
@@ -156,7 +157,7 @@ emptyOverrides =
 editableTrackFromGpxTrack : GpxApi.Track -> EditableTrack
 editableTrackFromGpxTrack track =
     { trackpoints = track.trackpoints
-    , editableWaypoints = List.map (\w -> EditableWaypoint w False emptyOverrides) track.waypoints
+    , editableWaypoints = List.map (\w -> EditableWaypoint w False False emptyOverrides) track.waypoints
     , gainLoss = track.gainLoss
     }
 
@@ -421,6 +422,8 @@ type Msg
     | UpdateCategoryFilterEnabled Bool
     | SetAllCategoriesEnabled Bool
       -- Waypoint editing
+    | AddWaypoint
+    | RemoveWaypoint Int
     | WaypointDistanceChange Int Float
     | WaypointNameChange Int String
     | WaypointDeleted Int Bool
@@ -671,6 +674,54 @@ update msg model =
             updateSplitAndStore (updateState <| correctWaypointSelectionInState { s | filteredCategories = Dict.map (\_ _ -> enabled) s.filteredCategories })
 
         -- Waypoint editing
+        AddWaypoint ->
+            case s.tracks of
+                Loaded tracks ->
+                    let
+                        distance =
+                            s.position
+                                |> Maybe.withDefault 0
+                                |> clamp 0 (lastTrackpointDistance tracks.current.trackpoints)
+
+                        ( gain, loss ) =
+                            cumulativeGainLossAtDistance distance tracks.current.trackpoints
+                                |> Result.withDefault ( 0, 0 )
+                    in
+                    updateSplitAndStore
+                        (updateState
+                            { s
+                                | tracks =
+                                    Loaded <|
+                                        Zipper.updateCurrent
+                                            (\current ->
+                                                { current
+                                                    | editableWaypoints =
+                                                        current.editableWaypoints
+                                                            ++ [ { original =
+                                                                    { distance = distance
+                                                                    , name = ""
+                                                                    , categories = []
+                                                                    , gain = gain
+                                                                    , loss = loss
+                                                                    , offRoute = 0
+                                                                    }
+                                                                 , deleted = False
+                                                                 , created = True
+                                                                 , overrides = emptyOverrides
+                                                                 }
+                                                               ]
+                                                }
+                                            )
+                                            tracks
+                            }
+                        )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        RemoveWaypoint i ->
+            updateSplitAndStore (updateState (removeWaypointAt i s))
+
         WaypointNameChange i name ->
             case s.tracks of
                 Loaded tracks ->
@@ -859,22 +910,37 @@ update msg model =
         ResetWaypoints ->
             case s.tracks of
                 Loaded tracks ->
+                    let
+                        ep =
+                            s.elevationProfile
+
+                        -- Created waypoints are always appended after the source ones,
+                        -- so reverting to source keeps source indices 0..sourceCount-1
+                        -- intact; only split indices pointing at created waypoints are
+                        -- now stale.
+                        sourceCount =
+                            List.length (List.filter (not << .created) tracks.current.editableWaypoints)
+                    in
                     updateSplitAndStore
                         (updateState
-                            { s
-                                | tracks =
-                                    Loaded <|
-                                        Zipper.updateCurrent
-                                            (\current ->
-                                                { current
-                                                    | editableWaypoints =
-                                                        List.map
-                                                            (\ew -> { ew | deleted = False, overrides = emptyOverrides })
+                            (correctWaypointSelectionInState
+                                { s
+                                    | tracks =
+                                        Loaded <|
+                                            Zipper.updateCurrent
+                                                (\current ->
+                                                    { current
+                                                        | editableWaypoints =
                                                             current.editableWaypoints
-                                                }
-                                            )
-                                            tracks
-                            }
+                                                                |> List.filter (not << .created)
+                                                                |> List.map (\ew -> { ew | deleted = False, overrides = emptyOverrides })
+                                                    }
+                                                )
+                                                tracks
+                                    , elevationProfile =
+                                        { ep | splitWaypointIndices = List.filter (\idx -> idx < sourceCount) ep.splitWaypointIndices }
+                                }
+                            )
                         )
 
                 _ ->
@@ -1336,6 +1402,70 @@ updateEditableWaypoint track i fn =
 updateOverrides : (WaypointOverrides -> WaypointOverrides) -> EditableWaypoint -> EditableWaypoint
 updateOverrides fn ew =
     { ew | overrides = fn ew.overrides }
+
+
+{-| Physically removes the waypoint at index `i` (used for permanently deleting a
+user-created waypoint). Dropping a list element shifts every later index down by
+one, so the three index-based references into editableWaypoints must be remapped:
+the split selection, the cuesheet's reference waypoint, and the transient
+new-category inputs. correctWaypointSelectionInState then clamps the reference
+waypoint if the removed one was selected.
+-}
+removeWaypointAt : Int -> State -> State
+removeWaypointAt i s =
+    case s.tracks of
+        Loaded tracks ->
+            let
+                ep =
+                    s.elevationProfile
+
+                cs =
+                    s.cuesheet
+
+                shift idx =
+                    if idx > i then
+                        idx - 1
+
+                    else
+                        idx
+
+                shiftDisplay display =
+                    case display of
+                        ToWaypoint idx ->
+                            ToWaypoint (shift idx)
+
+                        FromWaypoint idx ->
+                            FromWaypoint (shift idx)
+
+                        other ->
+                            other
+            in
+            correctWaypointSelectionInState
+                { s
+                    | tracks =
+                        Loaded <|
+                            Zipper.updateCurrent
+                                (\current -> { current | editableWaypoints = List.Extra.removeAt i current.editableWaypoints })
+                                tracks
+                    , elevationProfile =
+                        { ep | splitWaypointIndices = ep.splitWaypointIndices |> List.filter ((/=) i) |> List.map shift }
+                    , cuesheet = { cs | totalDistanceDisplay = shiftDisplay cs.totalDistanceDisplay }
+                    , newCategoryInputs =
+                        s.newCategoryInputs
+                            |> Dict.toList
+                            |> List.filterMap
+                                (\( k, v ) ->
+                                    if k == i then
+                                        Nothing
+
+                                    else
+                                        Just ( shift k, v )
+                                )
+                            |> Dict.fromList
+                }
+
+        _ ->
+            s
 
 
 lastTrackpointDistance : List GpxApi.TrackPoint -> Float
@@ -2658,7 +2788,7 @@ viewWaypointsTab state tracks =
 
         anyWaypointEdited =
             List.any
-                (\ew -> ew.deleted || ew.overrides /= emptyOverrides)
+                (\ew -> ew.deleted || ew.created || ew.overrides /= emptyOverrides)
                 tracks.current.editableWaypoints
     in
     Html.div
@@ -2667,7 +2797,8 @@ viewWaypointsTab state tracks =
         , Html.Attributes.style "gap" "0.5em"
         , Html.Attributes.style "padding" "0.5em"
         ]
-        [ if anyWaypointEdited then
+        [ viewButton [] "Add waypoint" AddWaypoint
+        , if anyWaypointEdited then
             viewButton [] "Reset Waypoints" ResetWaypoints
 
           else
@@ -2729,7 +2860,11 @@ viewWaypointsTab state tracks =
                                             , Html.Attributes.style "min-width" "0"
                                             ]
                                             []
-                                        , viewButton [] "X" (WaypointDeleted i True)
+                                        , if ew.created then
+                                            viewButton [] "X" (RemoveWaypoint i)
+
+                                          else
+                                            viewButton [] "X" (WaypointDeleted i True)
                                         ]
                                     , viewWaypointCategories i wp.categories (List.filter (\c -> c /= unknownCategory) (Dict.keys state.filteredCategories)) (Dict.get i state.newCategoryInputs |> Maybe.withDefault "")
                                     ]
@@ -4054,6 +4189,11 @@ encodeEditableWaypoint ew =
         (List.filterMap identity
             [ Just ( "original", GpxApi.encodeWaypoint ew.original )
             , Just ( "deleted", Json.Encode.bool ew.deleted )
+            , if ew.created then
+                Just ( "created", Json.Encode.bool True )
+
+              else
+                Nothing
             , ew.overrides.name |> Maybe.map (\n -> ( "name", Json.Encode.string n ))
             , ew.overrides.distance |> Maybe.map (\d -> ( "distance", Json.Encode.float d ))
             , ew.overrides.categories |> Maybe.map (\cats -> ( "categories", Json.Encode.list Json.Encode.string cats ))
@@ -4074,9 +4214,10 @@ editableTrackDecoder =
 
 editableWaypointDecoder : Json.Decode.Decoder EditableWaypoint
 editableWaypointDecoder =
-    Json.Decode.map3 EditableWaypoint
+    Json.Decode.map4 EditableWaypoint
         (Json.Decode.field "original" GpxApi.decodeWaypoint)
         (Json.Decode.field "deleted" Json.Decode.bool)
+        (Json.Decode.oneOf [ Json.Decode.field "created" Json.Decode.bool, Json.Decode.succeed False ])
         (Json.Decode.map3 WaypointOverrides
             (Json.Decode.maybe (Json.Decode.field "name" Json.Decode.string))
             (Json.Decode.maybe (Json.Decode.field "distance" Json.Decode.float))
