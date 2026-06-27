@@ -39,5 +39,7 @@ Are there any specific gear requirements for the event?
 * Are they sorted?
 * When are they going to be sorted?
 
+* Bladder _and_ hydration pack?
+
 ### Misc
 Are there any specific entry requirements from the organisers?
