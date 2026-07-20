@@ -1,0 +1,4 @@
+# Pinned exactly: generate_ics.py targets the ics 0.8 API (Event.summary, Event.geo).
+# Stable 0.7.x uses Event.name and has no geo support, so an unpinned install breaks the build.
+ics==0.8.0.dev0
+PyYAML==6.0.2

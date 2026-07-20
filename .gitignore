@@ -5,3 +5,7 @@ _site
 .idea
 elm-stuff
 todo
+
+# Generated from _calendar/cycling-events.yml by `make calendars`, which now runs in CI.
+/_data/cycling_events.yml
+/data/calendars/cycling-events.ics

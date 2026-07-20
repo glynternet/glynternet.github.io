@@ -1,11 +1,23 @@
 #!/usr/bin/env python3
 """Generate .ics calendar file from cycling-events.yml."""
 
+import re
 import sys
 from datetime import datetime, timedelta, date
 
 import ics
 import yaml
+
+
+def event_uid(event_data: dict) -> str:
+    """Build a UID that stays the same across rebuilds.
+
+    Calendar clients key events by UID, so a UID that changed every build would make
+    subscribers delete and recreate every event on each deploy. Deriving it from the
+    summary and start year keeps it stable, and means an event moved within its year
+    is seen as moved rather than replaced.
+    """
+    return f"{re.sub(r'[^a-z0-9]+', '-', event_data['summary'].lower()).strip('-')}-{event_data['begin'].year}@glyn.io"
 
 
 def build_description(event: dict, series_map: dict) -> str:
@@ -42,6 +54,9 @@ def create_event(event_data: dict, series_map: dict) -> ics.Event:
         print(f"'begin' key expected to be a date in event: {event_data}", file=sys.stderr)
         sys.exit(1)
     e.begin = event_data["begin"]
+
+    # Built from the raw summary, not e.summary, so renaming a series doesn't change the UID
+    e.uid = event_uid(event_data)
 
     # End date (optional, defaults to begin + 1 day for all-day events)
     if end := event_data.get("end"):
@@ -82,11 +97,17 @@ def main():
 
     series_map = data["series"]
     calendar = ics.Calendar()
+    seen_uids = set()
 
     for event_data in data.get("events", []):
         if event_data.get("attending") is False:
             continue
-        calendar.events.append(create_event(event_data, series_map))
+        event = create_event(event_data, series_map)
+        if event.uid in seen_uids:
+            print(f"duplicate UID '{event.uid}' generated for event: {event_data}", file=sys.stderr)
+            sys.exit(1)
+        seen_uids.add(event.uid)
+        calendar.events.append(event)
 
     print(calendar.serialize())
 

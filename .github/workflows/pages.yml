@@ -3,6 +3,9 @@ name: Deploy Jekyll site to Pages
 on:
   push:
     branches: ["develop"]
+  # Calendars are no longer committed, so generation only ever runs here. Building on
+  # pull requests catches a malformed cycling-events.yml before it can break a deploy.
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -11,7 +14,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  # Scoped per ref so pull request builds never queue behind a develop deploy
+  group: "pages-${{ github.ref }}"
   cancel-in-progress: false
 
 jobs:
@@ -27,6 +31,21 @@ jobs:
           ruby-version: '3.3'
           bundler-cache: true
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: pip
+          cache-dependency-path: _calendar/requirements.txt
+
+      - name: Install calendar dependencies
+        run: pip install -r _calendar/requirements.txt
+
+      # Must precede the Jekyll build: it writes _data/cycling_events.yml, which Jekyll
+      # reads to render /cycling/calendar, and data/calendars/cycling-events.ics.
+      - name: Build calendars
+        run: make calendars
+
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
@@ -36,10 +55,17 @@ jobs:
         env:
           JEKYLL_ENV: production
 
+      # Jekyll exits 0 and publishes an empty calendar if the generated data is missing,
+      # so check the built output before it can be uploaded and deployed.
+      - name: Verify published calendar
+        run: python3 _calendar/verify_published_calendar.py _site
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
 
   deploy:
+    # Pull request runs build only, to validate; publishing stays limited to develop
+    if: github.event_name != 'pull_request'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
