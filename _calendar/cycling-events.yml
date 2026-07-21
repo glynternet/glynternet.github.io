@@ -152,23 +152,27 @@ events:
 - summary: TNGA (Trans North Georgia)
   begin: 2026-08-15
   location: Georgia
+  attending: false
   urls:
   - https://mulberrygap.com/tnga-info
 - summary: Tusayan Tussle
   begin: 2026-08-22
   location: Arizona
+  attending: false
   series: Arizona Endurance Series
   urls:
   - https://rockyroad5050.wordpress.com/the-tusayan-tussle/
 - summary: Colorado Trail Race
   begin: 2026-08-02
   end: 2026-08-09
+  attending: false
   location: Denver, CO to Durango, CO
   urls:
   - https://bikepacking.com/event/2026-colorado-trail-race-ctr/
   - https://jwookieone.com/colorado-trail-race/the-colorado-trail/
 - summary: Dark Divide 300
   begin: 2026-07-30
+  attending: false
   location: Washington
   urls:
   - https://evergreengravelracing.wordpress.com/the-dark-divide-300/
@@ -187,11 +191,13 @@ events:
 - summary: Watermelon Beat Down (MTB)
   begin: 2026-07-11
   location: New Mexico
+  attending: false
   series: New Mexico Endurance Series
   urls:
   - https://nm-es.weebly.com/watermelon-beat-down.html
 - summary: Fossil Ultimate
   begin: 2026-07-04
+  attending: false
   location: IOOF Park, Gunnison, CO
   description: 60 mile figure-8 self-supported MTB ride. 5AM start at IOOF Park downtown Gunnison.
   urls:
