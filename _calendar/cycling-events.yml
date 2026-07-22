@@ -220,10 +220,9 @@ events:
   series: Colorado Endurance Series
   urls:
   - https://coloradoes.wordpress.com/swes-event-list/colorado-trail-classic/
-- summary: 'DATE TBD: Monarch Mind Bender'
-  begin: 2026-08-24
+- summary: 'Monarch Mind Bender'
+  begin: 2026-08-22
   location: Colorado
-  description: Date taken from 2025 schedule for time of year approximation
   series: Colorado Endurance Series
   urls:
   - https://coloradoes.wordpress.com/swes-event-list/monarch-mind-bender-mmb/
