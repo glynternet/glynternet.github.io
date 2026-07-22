@@ -56,6 +56,10 @@ Nooooo I lost it 😣
 ### Span loop knot / midline loop
 - https://www.instagram.com/reel/DB3wxbCgraW/?igsh=d241MWhqZHg4ZTNw
 
+### Siberian hitch
+- https://www.animatedknots.com/siberian-hitch-knot
+
+
 References:
 * https://www.tegral.com.au/the-favorite-knot-types-of-every-trucker/
 * https://arktarps.com.au/5-knots-you-should-know-how-to-tie/
