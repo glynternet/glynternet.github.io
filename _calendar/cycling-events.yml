@@ -13,20 +13,102 @@ series:
     url: https://www.cloudcitywheelers.com/the-winter-bike-series
   New Mexico Endurance Series:
     url: https://nm-es.weebly.com/rides.html
+  Summit Mountain Challenge:
+    url: https://www.breckenridgerecreation.com/races/summit-mountain-challenge
   Texas Showdown Series:
     url: https://texasshowdownseries.com/
 
 events:
 
 ### 2027
+- summary: Summit Classic
+  begin: 2027-08-14
+  location: Arapahoe Basin Ski Area, CO
+  description: Summit Mountain Challenge race 6 of 6, season finale (previously the Breckenridge
+    Classic). Date based on the 2026 schedule (2nd Saturday of August) for time of
+    year approximation
+  series: Summit Mountain Challenge
+  urls:
+  - https://www.breckenridgerecreation.com/races/summit-mountain-challenge/summit-classic
+- summary: Swan River Rampage
+  begin: 2027-08-04
+  location: Good Times Dog Sledding, 6061 Tiger Rd, Breckenridge, CO
+  geo:
+    lat: 39.5080467
+    lon: -105.9459508
+  description: Summit Mountain Challenge race 5 of 6. Date based on the 2026 schedule for
+    time of year approximation
+  series: Summit Mountain Challenge
+  urls:
+  - https://www.breckenridgerecreation.com/races/summit-mountain-challenge/swan-river-rampage
+- summary: Aspen Attack
+  begin: 2027-07-21
+  location: Boreas Pass Trailhead, Breckenridge, CO (finish at Stephen C. West Ice Arena)
+  description: Summit Mountain Challenge race 4 of 6. Date based on the 2026 schedule for
+    time of year approximation
+  series: Summit Mountain Challenge
+  urls:
+  - https://www.breckenridgerecreation.com/races/summit-mountain-challenge/aspen-attack
+- summary: Firecracker 50
+  begin: 2027-07-04
+  location: Main St at Lincoln Ave, Breckenridge, CO
+  description: 50 mile MTB race that kicks off the 4th of July parade. Held on July
+    4th each year. 750 places
+  urls:
+  - https://www.breckenridgerecreation.com/races/firecracker-50
+- summary: Inde-Pond-ence Freedom Crossing
+  begin: 2027-07-03
+  location: Ollie's Pub & Grub, Breckenridge, CO
+  description: 'Bike pond crossing on a 2x4: best wipeout wins. Held the day before
+    July 4th; date based on the 2026 schedule'
+  urls:
+  - https://www.breckenridgerecreation.com/races/race-breck-pond-crossing
 - summary: Race in the Clouds
   begin: 2027-06-27
   location: Alma, CO
+- summary: Peaks Trail Time Trial
+  begin: 2027-06-23
+  location: Peaks Trailhead, Breckenridge, CO (finishes in Frisco)
+  geo:
+    lat: 39.4878271
+    lon: -106.0672276
+  description: Summit Mountain Challenge race 3 of 6, point-to-point time trial. Date based
+    on the 2026 schedule for time of year approximation
+  series: Summit Mountain Challenge
+  urls:
+  - https://www.breckenridgerecreation.com/races/summit-mountain-challenge/peaks-trail-time-trial
+- summary: Tour de French Gulch
+  begin: 2027-06-09
+  location: B&B Trailhead, French Gulch, Breckenridge, CO
+  description: Summit Mountain Challenge race 2 of 6. Date based on the 2026 schedule for
+    time of year approximation
+  series: Summit Mountain Challenge
+  urls:
+  - https://www.breckenridgerecreation.com/races/summit-mountain-challenge/tour-de-french-gulch
+- summary: Frisco Round Up
+  begin: 2027-05-26
+  location: Frisco Adventure Park, Frisco, CO
+  description: Summit Mountain Challenge race 1 of 6, series opener. Date based on the
+    2026 schedule (last Wednesday of May) for time of year approximation
+  series: Summit Mountain Challenge
+  urls:
+  - https://www.breckenridgerecreation.com/races/summit-mountain-challenge/frisco-round-up
 - summary: Fred Whitton Challenge
   begin: 2027-05-09
   location: Lake District, UK
   urls:
   - https://fredwhittonchallenge.co.uk/
+- summary: Imperial Challenge
+  begin: 2027-04-03
+  location: Breckenridge Recreation Center, Breckenridge, CO
+  geo:
+    lat: 39.495789
+    lon: -106.047764
+  description: Bike from the Rec Center to the base of Peak 7, skin to the top of Peak
+    8 (12,987ft), then ski back down to Peak 7. Organisers list 2027 as tentatively
+    Saturday 3rd April
+  urls:
+  - https://www.breckenridgerecreation.com/races/imperial-challenge
 - summary: Frisco Freeze
   begin: 2027-02-20
   location: Frisco Nordic Center
@@ -163,6 +245,24 @@ events:
   series: Arizona Endurance Series
   urls:
   - https://rockyroad5050.wordpress.com/the-tusayan-tussle/
+- summary: Summit Classic
+  begin: 2026-08-15
+  location: Arapahoe Basin Ski Area, CO
+  description: Summit Mountain Challenge race 6 of 6, season finale (previously the Breckenridge
+    Classic). Saturday, packet pickup from 7:00am at the A-Basin base area
+  series: Summit Mountain Challenge
+  urls:
+  - https://www.breckenridgerecreation.com/races/summit-mountain-challenge/summit-classic
+- summary: Swan River Rampage
+  begin: 2026-08-05
+  location: Good Times Dog Sledding, 6061 Tiger Rd, Breckenridge, CO
+  geo:
+    lat: 39.5080467
+    lon: -105.9459508
+  description: Summit Mountain Challenge race 5 of 6. Bib pickup from 3:30pm
+  series: Summit Mountain Challenge
+  urls:
+  - https://www.breckenridgerecreation.com/races/summit-mountain-challenge/swan-river-rampage
 - summary: Colorado Trail Race
   begin: 2026-08-02
   end: 2026-08-09
@@ -182,6 +282,15 @@ events:
   location: Minturn, Colorado
   description: 84 miles - 14,500ft
   series: Dark Timber MTB
+- summary: Aspen Attack
+  begin: 2026-07-22
+  location: Boreas Pass Trailhead, Breckenridge, CO (finish at Stephen C. West Ice Arena)
+  description: Summit Mountain Challenge race 4 of 6. Park at the Ice Arena and ride up
+    to the start; bib pickup from 4:00pm
+  series: Summit Mountain Challenge
+  attending: false
+  urls:
+  - https://www.breckenridgerecreation.com/races/summit-mountain-challenge/aspen-attack
 - summary: Mishigami Challenge
   begin: 2026-07-11
   location: Michigan
@@ -204,6 +313,21 @@ events:
   urls:
   - https://jwookieone.com/fossil-ultimate/
   - https://www.plotaroute.com/routeplayer/3020310
+- summary: Firecracker 50
+  begin: 2026-07-04
+  location: Main St at Lincoln Ave, Breckenridge, CO
+  description: 50 mile MTB race that kicks off the 4th of July parade. 750 places
+  attending: false
+  urls:
+  - https://www.breckenridgerecreation.com/races/firecracker-50
+- summary: Inde-Pond-ence Freedom Crossing
+  begin: 2026-07-03
+  location: Ollie's Pub & Grub, Breckenridge, CO
+  description: 'Bike pond crossing on a 2x4: best wipeout wins. 4:00pm youth, 5:00pm
+    adult'
+  attending: false
+  urls:
+  - https://www.breckenridgerecreation.com/races/race-breck-pond-crossing
 - summary: 'Pain In The Aspen (PIA)'
   begin: 2026-07-28
   location: Colorado
@@ -223,6 +347,18 @@ events:
   attending: false
   urls:
   - https://olympic420.weebly.com/
+- summary: Peaks Trail Time Trial
+  begin: 2026-06-24
+  location: Peaks Trailhead, Breckenridge, CO (finishes in Frisco)
+  geo:
+    lat: 39.4878271
+    lon: -106.0672276
+  description: Summit Mountain Challenge race 3 of 6, point-to-point time trial from Breckenridge
+    to Frisco. Juniors 12 & under race at Miner's Creek Trailhead
+  series: Summit Mountain Challenge
+  attending: false
+  urls:
+  - https://www.breckenridgerecreation.com/races/summit-mountain-challenge/peaks-trail-time-trial
 - summary: El Rito Epic
   begin: 2026-06-20
   location: El Rito, Carson NF, NM (https://goo.gl/maps/QwPLAkZvL1jqEaDA8)
@@ -249,6 +385,15 @@ events:
   attending: false
   urls:
   - https://tnca400.com/
+- summary: Tour de French Gulch
+  begin: 2026-06-10
+  location: B&B Trailhead, French Gulch, Breckenridge, CO
+  description: Summit Mountain Challenge race 2 of 6. No parking on French Gulch Road and
+    very limited parking at the B&B Trailhead - ride to the start if possible
+  series: Summit Mountain Challenge
+  attending: false
+  urls:
+  - https://www.breckenridgerecreation.com/races/summit-mountain-challenge/tour-de-french-gulch
 - summary: 'Salida Big Friggin Loop (SBFL)'
   begin: 2026-06-06
   location: Salida, CO
@@ -303,6 +448,15 @@ events:
   description: Date taken from 2025 schedule for time of year approximation
   urls:
   - https://wvbikepackingseries.com/
+- summary: Frisco Round Up
+  begin: 2026-05-27
+  location: Frisco Adventure Park, Frisco, CO
+  description: Summit Mountain Challenge race 1 of 6, series opener. Bib pickup from 4:00pm
+    at the Frisco baseball field parking lots
+  series: Summit Mountain Challenge
+  attending: false
+  urls:
+  - https://www.breckenridgerecreation.com/races/summit-mountain-challenge/frisco-round-up
 - summary: Cross-Washington (XWA)
   begin: 2026-05-17
   location: Washington
@@ -370,6 +524,17 @@ events:
   series: New Mexico Endurance Series
   urls:
   - https://nm-es.weebly.com/san-ysidro-dirty-century.html
+- summary: Imperial Challenge
+  begin: 2026-04-04
+  location: Breckenridge Recreation Center, Breckenridge, CO
+  geo:
+    lat: 39.495789
+    lon: -106.047764
+  description: Bike from the Rec Center to the base of Peak 7, skin to the top of Peak
+    8 (12,987ft), then ski back down to Peak 7
+  attending: false
+  urls:
+  - https://www.breckenridgerecreation.com/races/imperial-challenge
 - summary: Coronado Gold
   begin: 2026-04-04
   location: Patagonia, AZ
