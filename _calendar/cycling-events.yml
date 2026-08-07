@@ -198,6 +198,12 @@ events:
   series: Colorado Endurance Series
   urls:
   - https://coloradoes.wordpress.com/leadville-big-friggin-loop-2021/
+- summary: 'Colorado Trail Classic (CTC)'
+  begin: 2026-09-06
+  location: Colorado
+  series: Colorado Endurance Series
+  urls:
+  - https://coloradoes.wordpress.com/swes-event-list/colorado-trail-classic/
 - summary: 'DATE TBD: Dusty Roadrunner Gravel Series Round'
   begin: 2026-08-29
   location: TBD, near Pecos/Glorieta, NM (https://maps.app.goo.gl/E19E77EbNtTZvnkLA)
@@ -214,12 +220,6 @@ events:
   series: New Mexico Endurance Series
   urls:
   - https://nm-es.weebly.com/santa-fe-big-friggin-loop.html
-- summary: 'Colorado Trail Classic (CTC)'
-  begin: 2026-09-06
-  location: Colorado
-  series: Colorado Endurance Series
-  urls:
-  - https://coloradoes.wordpress.com/swes-event-list/colorado-trail-classic/
 - summary: 'Monarch Mind Bender'
   begin: 2026-08-22
   location: Colorado
@@ -252,6 +252,13 @@ events:
   series: Summit Mountain Challenge
   urls:
   - https://www.breckenridgerecreation.com/races/summit-mountain-challenge/summit-classic
+- summary: Wyoming Range Trail Adventure
+  begin: 2026-08-09
+  end:  2026-08-15
+  location: Kemmerer, Wyoming
+  description: Proof of concept route - BIG adventure in western Wyoming
+  urls:
+  - https://ultramtb.net/wyoming-range-trail/
 - summary: Swan River Rampage
   begin: 2026-08-05
   location: Good Times Dog Sledding, 6061 Tiger Rd, Breckenridge, CO
@@ -276,11 +283,14 @@ events:
   location: Washington
   urls:
   - https://evergreengravelracing.wordpress.com/the-dark-divide-300/
-- summary: Vail 84
+- summary: Vail 86er
   begin: 2026-07-25
   location: Minturn, Colorado
   description: 84 miles - 14,500ft
   series: Dark Timber MTB
+  urls:
+    - https://www.darktimbermtb.com/the-vail-86er
+    - https://ridewithgps.com/routes/56115056
 - summary: Aspen Attack
   begin: 2026-07-22
   location: Boreas Pass Trailhead, Breckenridge, CO (finish at Stephen C. West Ice Arena)
@@ -445,6 +455,7 @@ events:
   begin: 2026-05-31
   location: West Virginia
   description: Date taken from 2025 schedule for time of year approximation
+  attending: false
   urls:
   - https://wvbikepackingseries.com/
 - summary: Frisco Round Up
