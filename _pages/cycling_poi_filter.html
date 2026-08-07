@@ -701,12 +701,14 @@ tags: cycling
     for (let i = 0; i < pois.length; i++) {
       const k = isKept(pois[i]);
       pois[i]._kept = k;
+      // Count the filter's verdict, not the markers: a POI with no coordinates has
+      // no marker but is still kept, and is still written by exportJson().
+      if (k) kept++;
       const m = markers[i];
       if (!m) continue;
       if (k) {
         if (!map.hasLayer(m)) { m.addTo(map); attachIconFallback(m); }
         m.setOpacity(1);
-        kept++;
       } else if (showRemoved) {
         if (!map.hasLayer(m)) { m.addTo(map); attachIconFallback(m); }
         m.setOpacity(0.35);
