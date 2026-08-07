@@ -3,7 +3,7 @@ module github.com/glynternet/glynternet.github.io/elm/wasm
 go 1.25.0
 
 require (
-	github.com/glynternet/gpx v0.0.0-20260305034419-8c1ca392796e
+	github.com/glynternet/gpx v0.0.0-20260807014844-ab9f815ba37c
 	github.com/tkrajina/gpxgo v1.4.0
 )
 
