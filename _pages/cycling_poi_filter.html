@@ -97,6 +97,12 @@ tags: cycling
     #legend { font-size: 12px; columns: 2; }
     #legend .row { break-inside: avoid; display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
     #legend .dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 10px; }
+    /* Three segments, so collapse every seam rather than only the last one. The
+       active colours mirror the Counts boxes: neutral total, green kept, red removed. */
+    #legend-mode button:not(:first-child) { border-left: none; }
+    #legend-mode button.active { background: #555; color: #fff; border-color: #555; }
+    #legend-mode button.active[data-mode="kept"] { background: var(--include); border-color: var(--include); }
+    #legend-mode button.active[data-mode="removed"] { background: var(--exclude); border-color: var(--exclude); }
 
     #drop-overlay {
       position: fixed; inset: 0; background: rgba(21,101,192,.12);
@@ -212,6 +218,11 @@ tags: cycling
 
       <section>
         <h2>Legend</h2>
+        <div class="mode-toggle" id="legend-mode">
+          <button data-mode="total" class="active">Total</button>
+          <button data-mode="kept">Kept</button>
+          <button data-mode="removed">Removed</button>
+        </div>
         <div id="legend"></div>
       </section>
     </div>
@@ -413,6 +424,8 @@ tags: cycling
   const tagRules = [];      // { id, mode, key, value }  (value === null => any value)
   let tagIndex = new Map(); // key -> Map(value -> count) over the loaded POIs
 
+  let legendMode = "total"; // which POI group the legend counts: total|kept|removed
+
   const drawnItems = new L.FeatureGroup().addTo(map);
 
   // ---------- Geometry ----------
@@ -530,6 +543,7 @@ tags: cycling
     document.getElementById("c-kept").textContent = kept;
     document.getElementById("c-removed").textContent = pois.length - kept;
     document.getElementById("export-btn").disabled = pois.length === 0;
+    buildLegend(); // the kept/removed groups change with every filter change
     saveState();
   }
 
@@ -586,22 +600,37 @@ tags: cycling
       pts.push([p.lat, p.lon]);
     }
     if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(0.05));
-    buildLegend();
     buildTagIndex();
     populateTagKeySelect();
     refreshTagRuleList();
     applyFilter();
   }
 
+  // The legend shows one key per category present in the POI group selected by
+  // legendMode — the same total/kept/removed split as the Counts section. Relies
+  // on _kept, so it is (re)built from applyFilter() rather than at load time.
+  function poisInLegendMode() {
+    if (legendMode === "kept") return pois.filter((p) => p._kept);
+    if (legendMode === "removed") return pois.filter((p) => !p._kept);
+    return pois;
+  }
+
   function buildLegend() {
     const seen = new Map();
-    for (const p of pois) {
+    for (const p of poisInLegendMode()) {
       const c = p.category || "(none)";
       seen.set(c, (seen.get(c) || 0) + 1);
     }
     const el = document.getElementById("legend");
     el.innerHTML = "";
-    [...seen.entries()].sort((a, b) => b[1] - a[1]).forEach(([cat, n]) => {
+    if (!seen.size) {
+      const hint = document.createElement("p");
+      hint.className = "hint";
+      hint.textContent = pois.length ? `No ${legendMode} POIs.` : "Load POIs to see the legend.";
+      el.appendChild(hint);
+      return;
+    }
+    [...seen.entries()].sort(byCountThenName).forEach(([cat, n]) => {
       const row = document.createElement("div");
       row.className = "row";
       row.innerHTML = `<span class="dot" style="background:${colorForCategory(cat === "(none)" ? "" : cat)}"></span>` +
@@ -1007,6 +1036,18 @@ tags: cycling
   document.getElementById("tag-key").addEventListener("change", populateTagValueSelect);
   document.getElementById("tag-add-btn").addEventListener("click", addTagRule);
 
+  // ---------- Legend mode ----------
+  // Purely a view of the existing filter result: switching group re-keys the
+  // legend only, it never touches the filters or the map.
+  document.getElementById("legend-mode").addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    legendMode = btn.dataset.mode;
+    setToggleActive("legend-mode", legendMode);
+    buildLegend();
+    saveState();
+  });
+
   // ---------- Export ----------
   // Export the kept POIs as a GeoJSON FeatureCollection in the same schema the Go
   // tool emits (RFC 7946: [lon, lat], WGS84, namespaced feature id).
@@ -1072,6 +1113,7 @@ tags: cycling
       tagRuleSeq,
       drawMode,
       tagMode,
+      legendMode,
       showRemoved: document.getElementById("show-removed").checked,
       showLabels: document.getElementById("show-labels").checked,
       showAreas: document.getElementById("show-areas").checked,
@@ -1135,6 +1177,7 @@ tags: cycling
       }
       if (s.drawMode) { drawMode = s.drawMode; setToggleActive("mode-toggle", drawMode); }
       if (s.tagMode) { tagMode = s.tagMode; setToggleActive("tag-mode-toggle", tagMode); }
+      if (s.legendMode) { legendMode = s.legendMode; setToggleActive("legend-mode", legendMode); }
       if (s.showRemoved) document.getElementById("show-removed").checked = true;
       if (s.showLabels === false) document.getElementById("show-labels").checked = false;
       document.getElementById("map").classList.toggle(
@@ -1236,7 +1279,9 @@ tags: cycling
   });
 
   // Restore the previous session, if any, once everything above is wired up.
+  // Without a session there is no applyFilter() run, so seed the legend's empty state.
   if (restoreState()) setStatus("Restored previous session from this browser.");
+  else buildLegend();
   </script>
 </body>
 </html>
