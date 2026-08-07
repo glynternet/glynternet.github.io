@@ -73,13 +73,35 @@ tags: cycling
     ul#area-list .del, ul#tag-rule-list .del { border: none; background: none; color: #c62828; font-size: 16px; line-height: 1; padding: 0 4px; margin: 0; }
 
     /* Tag filter controls */
-    .tag-add { display: flex; gap: 4px; margin-bottom: 8px; }
+    .tag-add { display: flex; gap: 4px; margin-bottom: 6px; }
     .tag-add select {
       flex: 1 1 auto; min-width: 0; font-size: 13px; padding: 6px;
       border: 1px solid #bbb; border-radius: 6px; background: #fff; color: #222;
     }
     .tag-add select:disabled { opacity: .5; }
     .tag-add button { margin: 0; flex: 0 0 auto; }
+    /* Second line of the add form: the optional distance from the route. */
+    .tag-dist { display: flex; align-items: center; gap: 4px; margin-bottom: 8px; }
+    .tag-dist select, .tag-dist input {
+      font-size: 13px; padding: 6px; min-width: 0;
+      border: 1px solid #bbb; border-radius: 6px; background: #fff; color: #222;
+    }
+    .tag-dist select { flex: 0 0 auto; }
+    .tag-dist input { flex: 1 1 auto; width: 100%; }
+    .tag-dist select:disabled, .tag-dist input:disabled { opacity: .5; }
+    .tag-dist .unit { font-size: 12px; color: #666; white-space: nowrap; }
+    .tag-dist button { margin: 0; flex: 0 0 auto; }
+    /* A rule's distance editor wraps onto its own line within the rule's <li>. */
+    ul#tag-rule-list li { flex-wrap: wrap; row-gap: 6px; }
+    ul#tag-rule-list li.inactive { opacity: .6; }
+    ul#tag-rule-list .rule-dist { flex: 1 0 100%; display: flex; align-items: center; gap: 4px; }
+    ul#tag-rule-list .rule-dist input {
+      width: 62px; font-size: 12px; padding: 2px 4px;
+      border: 1px solid #ccc; border-radius: 4px; color: #222; background: #fff;
+    }
+    ul#tag-rule-list .rule-dist .unit { font-size: 11px; color: #888; }
+    ul#tag-rule-list .rule-dist .needs-route { color: var(--exclude); }
+    .dist-chip { background: #555; text-transform: none; min-width: 20px; text-align: center; }
     ul#tag-rule-list .rule-main { display: flex; align-items: center; gap: 6px; min-width: 0; }
     ul#tag-rule-list .rule-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     ul#tag-rule-list .rule-text code { font-size: 12px; }
@@ -185,6 +207,10 @@ tags: cycling
         <label class="check"><input type="checkbox" id="show-removed" /> Show removed POIs (faded)</label>
         <label class="check"><input type="checkbox" id="show-labels" checked /> Show name labels</label>
         <label class="check"><input type="checkbox" id="show-areas" checked /> Show filter areas</label>
+        <label class="check"><input type="checkbox" id="show-corridor" checked /> Show route corridor</label>
+        <p class="hint">The corridor is the band used by any tag filter with a distance. A
+          solid band is a <b>≤</b> filter (it matches inside); a hatched one is a <b>&gt;</b>
+          filter (it matches outside).</p>
       </section>
 
       <section>
@@ -202,13 +228,26 @@ tags: cycling
         <div class="tag-add">
           <select id="tag-key" disabled><option value="">tag key…</option></select>
           <select id="tag-value" disabled><option value="">(any value)</option></select>
+        </div>
+        <div class="tag-dist">
+          <select id="tag-dist-dir" title="Within (≤) or beyond (&gt;) the distance" disabled>
+            <option value="le">≤</option>
+            <option value="gt">&gt;</option>
+          </select>
+          <input type="number" id="tag-dist" min="1" step="10" placeholder="any" disabled />
+          <span class="unit">m from route</span>
           <button id="tag-add-btn" disabled>Add</button>
         </div>
+        <p class="hint" id="no-route-hint">Load a route GPX to filter by distance from it.</p>
         <ul id="tag-rule-list"></ul>
         <p class="hint" id="no-tag-rules">No tag filters. Load POIs to choose tags.</p>
         <p class="hint"><b>Exclude</b> drops POIs whose tags match. If any <b>Include</b>
           filter exists, only POIs matching an include filter are kept. Tag filters apply
           on top of (AND with) the area filters. Click a filter's chip to flip its mode.</p>
+        <p class="hint">A distance narrows a filter to POIs <b>≤</b> (within) or <b>&gt;</b>
+          (beyond) that far from the route — so <code>include ford=yes ≤50 m</code> keeps only
+          the fords you'd ride through, and <code>exclude ford=yes &gt;50 m</code> keeps
+          everything except the fords too far away. Leave it blank for no distance limit.</p>
       </section>
 
       <section>
@@ -393,6 +432,15 @@ tags: cycling
   map.createPane("routePane");
   map.getPane("routePane").style.zIndex = 350;
 
+  // The distance corridor sits below the route line it is drawn from. Same renderer
+  // reasoning as areaPane below — a canvas renderer hit-tests the whole viewport and
+  // would swallow every map click — except the corridor is never interactive at all,
+  // so the pane also opts out of pointer events entirely.
+  map.createPane("corridorPane");
+  map.getPane("corridorPane").style.zIndex = 340;
+  map.getPane("corridorPane").style.pointerEvents = "none";
+  const corridorRenderer = L.svg({ pane: "corridorPane" });
+
   // Filter areas render here: above the route line but BELOW the POI markers
   // (default markerPane = 600), for clean visual layering.
   //
@@ -421,7 +469,9 @@ tags: cycling
 
   let tagMode = "exclude";  // current mode for newly added tag filters
   let tagRuleSeq = 0;       // id counter for tag filters
-  const tagRules = [];      // { id, mode, key, value }  (value === null => any value)
+  // value === null => any value; maxDist === null => no distance limit, otherwise
+  // metres from the route, compared with dir ("le" = within, "gt" = beyond).
+  const tagRules = [];      // { id, mode, key, value, maxDist, dir }
   let tagIndex = new Map(); // key -> Map(value -> count) over the loaded POIs
 
   let legendMode = "total"; // which POI group the legend counts: total|kept|removed
@@ -462,6 +512,119 @@ tags: cycling
     return pointInRing(lat, lon, area.ring);
   }
 
+  // ---------- Route distance ----------
+  // How far each POI is from the loaded route, in metres, so tag filters can be
+  // narrowed to a locus around the track.
+  //
+  // Everything happens in a local equirectangular projection about the route's
+  // centre latitude: POIs and route points go through the same transform, so a
+  // *local* distance only carries that latitude's scale error (≲1.5% even across a
+  // 1°-tall route — well under a metre at a 50 m threshold), and plane geometry
+  // replaces spherical trigonometry in the inner loop.
+  const M_PER_DEG_LAT = 111132.95;
+  const M_PER_DEG_LON_EQ = 111319.49;
+  const CHUNK_POINTS = 128; // route points per bounding-box index chunk
+
+  let routeProj = null;     // Float64Array [x0,y0,x1,y1,…] of the projected route
+  let routeChunks = [];     // { start, end, minX, maxX, minY, maxY } spans of routeProj
+  let projLat0 = 0, projLon0 = 0, projLonScale = 0;
+
+  function projectX(lon) { return (lon - projLon0) * projLonScale; }
+  function projectY(lat) { return (lat - projLat0) * M_PER_DEG_LAT; }
+
+  // Chunks of consecutive route points, each with its bounding box. The boxes only
+  // ever prune candidates, so the distance they help compute is still exact.
+  function buildRouteIndex() {
+    routeProj = null;
+    routeChunks = [];
+    if (!routePts.length) return;
+
+    let minLat = Infinity, maxLat = -Infinity;
+    for (const [lat] of routePts) {
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+    }
+    projLat0 = (minLat + maxLat) / 2;
+    projLon0 = routePts[0][1];
+    projLonScale = M_PER_DEG_LON_EQ * Math.cos((projLat0 * Math.PI) / 180);
+
+    routeProj = new Float64Array(routePts.length * 2);
+    for (let i = 0; i < routePts.length; i++) {
+      routeProj[2 * i] = projectX(routePts[i][1]);
+      routeProj[2 * i + 1] = projectY(routePts[i][0]);
+    }
+    // `end` is both the exclusive segment index and the inclusive last point index
+    // of the chunk, since segment i runs from point i to point i+1.
+    for (let start = 0; start < routePts.length - 1; start += CHUNK_POINTS) {
+      const end = Math.min(start + CHUNK_POINTS, routePts.length - 1);
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (let i = start; i <= end; i++) {
+        const x = routeProj[2 * i], y = routeProj[2 * i + 1];
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+      routeChunks.push({ start, end, minX, maxX, minY, maxY });
+    }
+  }
+
+  // Squared distance from a point to a chunk's bounding box: 0 when inside, and
+  // always a lower bound on the distance to that chunk's segments.
+  function bboxDistSq(chunk, px, py) {
+    const dx = px < chunk.minX ? chunk.minX - px : px > chunk.maxX ? px - chunk.maxX : 0;
+    const dy = py < chunk.minY ? chunk.minY - py : py > chunk.maxY ? py - chunk.maxY : 0;
+    return dx * dx + dy * dy;
+  }
+
+  // Squared distance to the closest of a chunk's segments, or `best` if none beats it.
+  function chunkDistSq(chunk, px, py, best) {
+    for (let i = chunk.start; i < chunk.end; i++) {
+      const ax = routeProj[2 * i], ay = routeProj[2 * i + 1];
+      const vx = routeProj[2 * i + 2] - ax, vy = routeProj[2 * i + 3] - ay;
+      const len2 = vx * vx + vy * vy;
+      // Project onto the segment, clamped to its ends. Coincident points => len2 0.
+      let t = len2 > 0 ? ((px - ax) * vx + (py - ay) * vy) / len2 : 0;
+      t = t < 0 ? 0 : t > 1 ? 1 : t;
+      const dx = px - (ax + t * vx), dy = py - (ay + t * vy);
+      const d2 = dx * dx + dy * dy;
+      if (d2 < best) best = d2;
+    }
+    return best;
+  }
+
+  // Seed the best distance from the chunk whose box is nearest, then skip every
+  // chunk already further away than that. Allocation-free, so it stays cheap over
+  // thousands of POIs against a route of tens of thousands of points.
+  function distanceToRouteMeters(lat, lon) {
+    if (!routeProj || typeof lat !== "number" || typeof lon !== "number") return Infinity;
+    const px = projectX(lon), py = projectY(lat);
+    if (!routeChunks.length) return Math.hypot(px - routeProj[0], py - routeProj[1]); // single-point route
+
+    let nearest = 0, nearestLowerBound = Infinity;
+    for (let c = 0; c < routeChunks.length; c++) {
+      const lowerBound = bboxDistSq(routeChunks[c], px, py);
+      if (lowerBound < nearestLowerBound) { nearestLowerBound = lowerBound; nearest = c; }
+    }
+    let best = chunkDistSq(routeChunks[nearest], px, py, Infinity);
+    for (let c = 0; c < routeChunks.length; c++) {
+      if (c === nearest || bboxDistSq(routeChunks[c], px, py) >= best) continue;
+      best = chunkDistSq(routeChunks[c], px, py, best);
+    }
+    return Math.sqrt(best);
+  }
+
+  // _routeDist is derived (and so stripped from the saved session by cleanPoi), and
+  // is refreshed whenever either half of the pair — route or POIs — arrives.
+  function computeRouteDistances() {
+    for (const p of pois) p._routeDist = distanceToRouteMeters(p.lat, p.lon);
+  }
+
+  function formatDist(m) {
+    if (!Number.isFinite(m)) return "—";
+    return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`;
+  }
+
   // ---------- Tags ----------
   // tagsOf returns a POI's OSM tags as a plain object from the structured `tags`
   // property. Cached on the POI so repeated filtering does not re-read.
@@ -489,23 +652,36 @@ tags: cycling
     return true;
   }
 
-  // matchTagRule reports whether a POI's tags satisfy a single rule. A rule with
+  // matchTagRule reports whether a POI satisfies a single rule. A rule with
   // value === null matches whenever the key is present; otherwise the value must
-  // match exactly (compared as strings).
+  // match exactly (compared as strings). A rule with a maxDist additionally requires
+  // the POI to be within (dir "le") or beyond (dir "gt") that many metres of the route.
   function matchTagRule(p, rule) {
     const tags = tagsOf(p);
     if (!(rule.key in tags)) return false;
-    if (rule.value === null) return true;
-    return String(tags[rule.key]) === rule.value;
+    if (rule.value !== null && String(tags[rule.key]) !== rule.value) return false;
+    if (rule.maxDist === null) return true;
+    // A POI with no coordinates satisfies no spatial predicate — without this it
+    // would count as "beyond" every threshold, since its distance is Infinity.
+    if (!Number.isFinite(p._routeDist)) return false;
+    const within = p._routeDist <= rule.maxDist;
+    return rule.dir === "gt" ? !within : within;
+  }
+
+  // A distance rule cannot be evaluated with no route loaded. Skipping it entirely
+  // (rather than treating it as unmatched) keeps an include rule from emptying the
+  // map the moment the session is restored without its GPX.
+  function ruleIsActive(rule) {
+    return rule.maxDist === null || routePts.length > 0;
   }
 
   function passesTagFilter(p) {
     let hasInclude = false, includedHit = false;
     for (const r of tagRules) {
-      if (r.mode === "include") hasInclude = true;
+      if (r.mode === "include" && ruleIsActive(r)) hasInclude = true;
     }
     for (const r of tagRules) {
-      if (matchTagRule(p, r)) {
+      if (ruleIsActive(r) && matchTagRule(p, r)) {
         if (r.mode === "exclude") return false; // exclude wins, mirrors area logic
         if (r.mode === "include") includedHit = true;
       }
@@ -543,7 +719,8 @@ tags: cycling
     document.getElementById("c-kept").textContent = kept;
     document.getElementById("c-removed").textContent = pois.length - kept;
     document.getElementById("export-btn").disabled = pois.length === 0;
-    buildLegend(); // the kept/removed groups change with every filter change
+    buildLegend();      // the kept/removed groups change with every filter change
+    refreshCorridor();  // as do the distances any tag filter is using
     saveState();
   }
 
@@ -566,11 +743,14 @@ tags: cycling
       const ref = `${p.osm_type}/${p.osmid}`;
       osm = `<a href="https://www.openstreetmap.org/${escapeHtml(ref)}" target="_blank" rel="noopener">${escapeHtml(ref)}</a>`;
     }
+    const dist = routePts.length
+      ? `<br><span style="color:#666">from route:</span> ${formatDist(p._routeDist)}`
+      : "";
     return `<div class="poi-pop">
       <b>${escapeHtml(p.name || "(unnamed)")}</b><br>
       <span style="color:#666">category:</span> ${escapeHtml(p.category || "—")}
       &nbsp; <span style="color:#666">all:</span> ${cats}<br>
-      <span style="color:#666">osm:</span> ${osm}
+      <span style="color:#666">osm:</span> ${osm}${dist}
       <table>${rows}</table>
     </div>`;
   }
@@ -584,6 +764,7 @@ tags: cycling
   function renderPois(data) {
     clearPois();
     pois = data;
+    computeRouteDistances(); // POIs can arrive after the route, or on session restore
     const pts = [];
     for (let i = 0; i < pois.length; i++) {
       const p = pois[i];
@@ -706,15 +887,32 @@ tags: cycling
     if (valSel.disabled || valSel.selectedIndex <= 0) return null;
     return valSel.value;
   }
+  // null => blank or non-positive, i.e. no distance limit.
+  function selectedDistance() {
+    const m = parseFloat(document.getElementById("tag-dist").value);
+    return Number.isFinite(m) && m > 0 ? m : null;
+  }
+  function selectedDistDir() {
+    return document.getElementById("tag-dist-dir").value === "gt" ? "gt" : "le";
+  }
   function updateTagAddState() {
     document.getElementById("tag-add-btn").disabled = !document.getElementById("tag-key").value;
+    // A distance is only meaningful against a route, so those controls follow the GPX.
+    const noRoute = routePts.length === 0;
+    document.getElementById("tag-dist").disabled = noRoute;
+    document.getElementById("tag-dist-dir").disabled = noRoute;
+    document.getElementById("no-route-hint").style.display = noRoute ? "block" : "none";
   }
   function addTagRule() {
     const key = document.getElementById("tag-key").value;
     if (!key) return;
     const value = selectedTagValue();
-    if (tagRules.some((r) => r.mode === tagMode && r.key === key && r.value === value)) return;
-    tagRules.push({ id: ++tagRuleSeq, mode: tagMode, key, value });
+    const maxDist = routePts.length ? selectedDistance() : null;
+    const dir = selectedDistDir();
+    // The direction only distinguishes rules that actually carry a distance.
+    if (tagRules.some((r) => r.mode === tagMode && r.key === key && r.value === value &&
+        r.maxDist === maxDist && (maxDist === null || r.dir === dir))) return;
+    tagRules.push({ id: ++tagRuleSeq, mode: tagMode, key, value, maxDist, dir });
     refreshTagRuleList();
     applyFilter();
   }
@@ -733,6 +931,8 @@ tags: cycling
       for (const p of pois) if (matchTagRule(p, rule)) n++;
 
       const li = document.createElement("li");
+      const active = ruleIsActive(rule);
+      li.classList.toggle("inactive", !active);
       const main = document.createElement("div");
       main.className = "rule-main";
 
@@ -777,9 +977,121 @@ tags: cycling
 
       li.appendChild(main);
       li.appendChild(right);
+      if (rule.maxDist !== null) li.appendChild(buildRuleDistanceRow(rule, active));
       list.appendChild(li);
     }
   }
+
+  // Both halves of a rule's distance predicate are editable in place, since finding
+  // the right threshold is a matter of trying a few. The direction reuses the same
+  // click-to-toggle chip as include/exclude.
+  function buildRuleDistanceRow(rule, active) {
+    const row = document.createElement("div");
+    row.className = "rule-dist";
+
+    const dirChip = document.createElement("button");
+    dirChip.className = "mode-chip dist-chip";
+    dirChip.title = "Click to toggle within (≤) / beyond (>) the route";
+    dirChip.textContent = rule.dir === "gt" ? ">" : "≤";
+    dirChip.addEventListener("click", () => {
+      rule.dir = rule.dir === "gt" ? "le" : "gt";
+      refreshTagRuleList();
+      applyFilter();
+    });
+
+    const input = document.createElement("input");
+    input.type = "number";
+    input.min = "1";
+    input.step = "10";
+    input.value = rule.maxDist;
+    input.title = "Distance from the route, in metres";
+    input.addEventListener("change", () => {
+      const m = parseFloat(input.value);
+      if (!Number.isFinite(m) || m <= 0) { input.value = rule.maxDist; return; } // reject, keep the rule
+      rule.maxDist = m;
+      refreshTagRuleList();
+      applyFilter();
+    });
+
+    const unit = document.createElement("span");
+    unit.className = active ? "unit" : "unit needs-route";
+    unit.textContent = active ? "m from route" : "m from route — load a route GPX";
+
+    row.appendChild(dirChip);
+    row.appendChild(input);
+    row.appendChild(unit);
+    return row;
+  }
+
+  // ---------- Route corridor ----------
+  // The set of points within d of a polyline IS that polyline stroked at width 2d
+  // with round joins and caps, so the band needs no polygon offsetting — it is just
+  // a very thick copy of the route. Leaflet's weight is in pixels, hence the
+  // metres-per-pixel conversion and the rescale on every zoom.
+  const corridorBands = []; // { layer, meters }
+
+  function metresPerPixel() {
+    const y = map.getSize().y / 2;
+    return map.distance(map.containerPointToLatLng([0, y]), map.containerPointToLatLng([100, y])) / 100;
+  }
+  function cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  // One band per distinct distance+direction in play, coloured by the modes of the
+  // rules using it. The value pending in the add form is drawn too, so a distance
+  // can be judged against the map before committing it to a rule.
+  function corridorSpecs() {
+    const byKey = new Map();
+    const add = (meters, dir, mode) => {
+      const key = `${meters}|${dir}`;
+      let spec = byKey.get(key);
+      if (!spec) { spec = { meters, dir, include: false, exclude: false }; byKey.set(key, spec); }
+      if (mode === "include") spec.include = true;
+      else if (mode === "exclude") spec.exclude = true;
+    };
+    for (const r of tagRules) if (r.maxDist !== null) add(r.maxDist, r.dir, r.mode);
+    const pending = selectedDistance();
+    if (pending !== null) add(pending, selectedDistDir(), null);
+    return [...byKey.values()];
+  }
+
+  function corridorStyle(spec, metresPerPx) {
+    return {
+      pane: "corridorPane", renderer: corridorRenderer, interactive: false, fill: false,
+      color: spec.include && spec.exclude ? "#555"
+        : spec.include ? cssVar("--include")
+        : spec.exclude ? cssVar("--exclude")
+        : "#1565c0", // pending, not yet attached to any rule
+      // A ">" rule matches OUTSIDE the band, so hatch it to read as a dead zone.
+      opacity: spec.dir === "gt" ? 0.08 : spec.include || spec.exclude ? 0.15 : 0.1,
+      dashArray: spec.dir === "gt" ? "14 12" : null,
+      weight: (2 * spec.meters) / metresPerPx,
+      lineCap: "round", lineJoin: "round",
+    };
+  }
+
+  function refreshCorridor() {
+    for (const band of corridorBands) map.removeLayer(band.layer);
+    corridorBands.length = 0;
+    if (!routePts.length || !document.getElementById("show-corridor").checked) return;
+    const metresPerPx = metresPerPixel();
+    for (const spec of corridorSpecs()) {
+      corridorBands.push({
+        layer: L.polyline(routePts, corridorStyle(spec, metresPerPx)).addTo(map),
+        meters: spec.meters,
+      });
+    }
+  }
+
+  // Only the pixel width changes with the view, so the geometry is left alone.
+  function rescaleCorridor() {
+    if (!corridorBands.length) return;
+    const metresPerPx = metresPerPixel();
+    for (const band of corridorBands) band.layer.setStyle({ weight: (2 * band.meters) / metresPerPx });
+  }
+  map.on("zoomend", rescaleCorridor);
+  map.on("moveend", rescaleCorridor); // metres-per-pixel drifts with latitude
 
   // ---------- GPX route ----------
   // clearRoute/drawRoute manage the polyline plus the start/end flag markers as a
@@ -801,6 +1113,9 @@ tags: cycling
   function drawRoute(pts) {
     clearRoute();
     routePts = pts;
+    buildRouteIndex();
+    computeRouteDistances(); // the route can arrive after the POIs
+    updateTagAddState();     // distance filters need a route to measure against
     routeLayer = L.polyline(pts, { pane: "routePane", color: "#1565c0", weight: 3, opacity: 0.75 }).addTo(map);
     const start = pts[0], end = pts[pts.length - 1];
     // zIndexOffset keeps the flags above POI markers so they're always visible.
@@ -816,6 +1131,7 @@ tags: cycling
       routeStartMarker = addFlag(start, "Route Start", "Start");
       routeEndMarker = addFlag(end, "Route End", "Finish");
     }
+    refreshCorridor();
   }
 
   function renderGpx(xmlText) {
@@ -831,14 +1147,13 @@ tags: cycling
     if (!pts.length) throw new Error("no <trkpt> points found in GPX");
     drawRoute(pts);
     if (!pois.length) map.fitBounds(routeLayer.getBounds().pad(0.05));
-    saveState();
+    applyFilter(); // distance rules become live as soon as the route lands (and it saves)
     return pts.length;
   }
 
   // ---------- Drawing controls ----------
   function styleForMode(mode) {
-    const c = mode === "include" ? getComputedStyle(document.documentElement).getPropertyValue("--include").trim()
-                                 : getComputedStyle(document.documentElement).getPropertyValue("--exclude").trim();
+    const c = cssVar(mode === "include" ? "--include" : "--exclude");
     return { color: c, weight: 2, fillColor: c, fillOpacity: 0.1 };
   }
 
@@ -1008,6 +1323,13 @@ tags: cycling
   }
   document.getElementById("show-areas").addEventListener("change", applyAreaVisibility);
 
+  // The corridor is rebuilt rather than hidden, since refreshCorridor() already
+  // treats the checkbox as the switch for drawing anything at all.
+  document.getElementById("show-corridor").addEventListener("change", () => {
+    refreshCorridor();
+    saveState();
+  });
+
   // While a draw OR edit session is active, force the area pane visible so the
   // shape being drawn/edited is always seen — otherwise, with "Show filter areas"
   // off, the pane is display:none and the live rectangle/polygon (which renders
@@ -1035,6 +1357,9 @@ tags: cycling
   });
   document.getElementById("tag-key").addEventListener("change", populateTagValueSelect);
   document.getElementById("tag-add-btn").addEventListener("click", addTagRule);
+  // Live corridor preview while a distance is being chosen, before any rule exists.
+  document.getElementById("tag-dist").addEventListener("input", refreshCorridor);
+  document.getElementById("tag-dist-dir").addEventListener("change", refreshCorridor);
 
   // ---------- Legend mode ----------
   // Purely a view of the existing filter result: switching group re-keys the
@@ -1109,7 +1434,9 @@ tags: cycling
       // Areas are stored as plain rings; their Leaflet layers are rebuilt on load.
       areas: areas.map((a) => ({ id: a.id, mode: a.mode, name: a.name || "", ring: a.ring })),
       areaSeq,
-      tagRules: tagRules.map((r) => ({ id: r.id, mode: r.mode, key: r.key, value: r.value })),
+      tagRules: tagRules.map((r) => ({
+        id: r.id, mode: r.mode, key: r.key, value: r.value, maxDist: r.maxDist, dir: r.dir,
+      })),
       tagRuleSeq,
       drawMode,
       tagMode,
@@ -1117,6 +1444,7 @@ tags: cycling
       showRemoved: document.getElementById("show-removed").checked,
       showLabels: document.getElementById("show-labels").checked,
       showAreas: document.getElementById("show-areas").checked,
+      showCorridor: document.getElementById("show-corridor").checked,
     };
   }
 
@@ -1171,7 +1499,13 @@ tags: cycling
         refreshAreaList();
       }
       if (Array.isArray(s.tagRules)) {
-        for (const r of s.tagRules) tagRules.push({ id: r.id, mode: r.mode, key: r.key, value: r.value });
+        // maxDist/dir postdate the first version of the format, so default them.
+        for (const r of s.tagRules) {
+          tagRules.push({
+            id: r.id, mode: r.mode, key: r.key, value: r.value,
+            maxDist: typeof r.maxDist === "number" ? r.maxDist : null, dir: r.dir || "le",
+          });
+        }
         tagRuleSeq = s.tagRuleSeq || tagRules.reduce((m, r) => Math.max(m, r.id), 0);
         refreshTagRuleList();
       }
@@ -1186,6 +1520,7 @@ tags: cycling
         document.getElementById("show-areas").checked = false;
         map.getPane("areaPane").style.display = "none";
       }
+      if (s.showCorridor === false) document.getElementById("show-corridor").checked = false;
     } finally {
       restoring = false;
     }
