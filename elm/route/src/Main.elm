@@ -126,7 +126,7 @@ type ViewMode
 
 type ActiveSplitMode
     = EquidistantMode
-    | WaypointsMode
+    | PointsMode
 
 
 type alias EditableTrack =
@@ -237,9 +237,9 @@ routePositionName =
     "Position on route"
 
 
-{-| A waypoint reference formats as its bare index, which is what `TotalDistanceDisplay`
-stored before a position was selectable — so old saved state still reads back.
-Doubles as the option value in `viewPointSelector`.
+{-| The stored form of a reference: a waypoint as its bare index, a position as "position",
+which no index can collide with. Doubles as the option value in `viewPointSelector`, and as
+the suffix after the colon in a `TotalDistanceDisplay` — so it must stay colon-free.
 -}
 formatPointRef : PointRef -> String
 formatPointRef ref =
@@ -349,7 +349,7 @@ type alias ElevationProfileOptions =
 
 type alias CuesheetOptions =
     { totalDistanceDisplay : TotalDistanceDisplay
-    , referencePoint : Float
+    , referenceDistance : Float
     , itemSpacing : Int
     , distanceDetail : Int
     , showStartFinish : Bool
@@ -367,9 +367,9 @@ type alias RelativeOptions =
 type TotalDistanceDisplay
     = FromZero
     | ToFinish
-    | ToPoint
-    | ToWaypoint PointRef
-    | FromWaypoint PointRef
+    | ToDistance
+    | ToPoint PointRef
+    | FromPoint PointRef
     | PercentProgress
     | PercentRemaining
     | None
@@ -396,7 +396,7 @@ defaultElevationProfileOptions =
 defaultCuesheetOptions : CuesheetOptions
 defaultCuesheetOptions =
     { totalDistanceDisplay = FromZero
-    , referencePoint = 1000
+    , referenceDistance = 1000
     , itemSpacing = defaultSpacing
     , distanceDetail = defaultDistanceDetail
     , showStartFinish = False
@@ -567,7 +567,7 @@ type Msg
     | UpdatePosition (Maybe Float)
       -- Cuesheet
     | UpdateTotalDistanceDisplay (Maybe TotalDistanceDisplay)
-    | UpdateReferencePoint Float
+    | UpdateReferenceDistance Float
     | UpdateItemSpacing Int
     | UpdateDistanceDetail Int
     | UpdateShowStartFinish Bool
@@ -1239,12 +1239,12 @@ update msg model =
                     )
                 |> Maybe.withDefault ( model, Cmd.none )
 
-        UpdateReferencePoint point ->
+        UpdateReferenceDistance distance ->
             let
                 cs =
                     s.cuesheet
             in
-            updateAndStoreModel (updateState { s | cuesheet = { cs | referencePoint = point } })
+            updateAndStoreModel (updateState { s | cuesheet = { cs | referenceDistance = distance } })
 
         UpdateItemSpacing spacing ->
             let
@@ -1277,11 +1277,11 @@ update msg model =
 
                 newDisplay =
                     case cs.totalDistanceDisplay of
-                        ToWaypoint _ ->
-                            ToWaypoint ref
+                        ToPoint _ ->
+                            ToPoint ref
 
-                        FromWaypoint _ ->
-                            FromWaypoint ref
+                        FromPoint _ ->
+                            FromPoint ref
 
                         other ->
                             other
@@ -1426,13 +1426,17 @@ requestSplitCmdWasm state =
                                         , ( "count", Json.Encode.int state.elevationProfile.splitEquidistantCount )
                                         ]
 
-                                    WaypointsMode ->
+                                    PointsMode ->
                                         let
                                             distances =
                                                 state.elevationProfile.splitPoints
                                                     |> List.filterMap (refDistance state.position tracks.current)
                                                     |> List.sort
                                         in
+                                        -- "waypoints" is the WASM module's vocabulary, not
+                                        -- ours: elevation.SplitRequest is defined in
+                                        -- github.com/glynternet/gpx, and the mode splits at
+                                        -- the distances given whatever they came from.
                                         [ ( "mode", Json.Encode.string "waypoints" )
                                         , ( "distances", Json.Encode.list Json.Encode.float distances )
                                         ]
@@ -1560,11 +1564,11 @@ removeWaypointAt i s =
 
                 shiftDisplay display =
                     case display of
-                        ToWaypoint ref ->
-                            ToWaypoint (shiftPointRef i ref)
+                        ToPoint ref ->
+                            ToPoint (shiftPointRef i ref)
 
-                        FromWaypoint ref ->
-                            FromWaypoint (shiftPointRef i ref)
+                        FromPoint ref ->
+                            FromPoint (shiftPointRef i ref)
 
                         other ->
                             other
@@ -1791,11 +1795,11 @@ correctWaypointSelection display indexed =
                         display
     in
     case display of
-        ToWaypoint ref ->
-            correct ToWaypoint List.Extra.last ref
+        ToPoint ref ->
+            correct ToPoint List.Extra.last ref
 
-        FromWaypoint ref ->
-            correct FromWaypoint List.head ref
+        FromPoint ref ->
+            correct FromPoint List.head ref
 
         _ ->
             display
@@ -1807,10 +1811,10 @@ one. Shared by the cuesheet and the elevation profile's distance markers.
 referenceWaypoint : State -> EditableTrack -> Maybe GpxApi.Waypoint
 referenceWaypoint state track =
     case state.cuesheet.totalDistanceDisplay of
-        ToWaypoint ref ->
+        ToPoint ref ->
             resolvePointRef state.position state.location track ref
 
-        FromWaypoint ref ->
+        FromPoint ref ->
             resolvePointRef state.position state.location track ref
 
         _ ->
@@ -2210,7 +2214,7 @@ viewElevationProfileTab state tracks =
                                         distanceMarkers
                                             { mode = cs.totalDistanceDisplay
                                             , finishDist = currentFinishDistance
-                                            , referencePoint = cs.referencePoint
+                                            , referenceDistance = cs.referenceDistance
                                             , refWaypoint = refWaypoint
                                             , detail = cs.distanceDetail
                                             , interval = ep.distanceMarkerInterval
@@ -2275,7 +2279,7 @@ display mode. Returns Nothing when nothing should be shown (None, or an unresolv
 reference waypoint). Shared by the cuesheet and the elevation profile distance markers.
 -}
 displayedDistanceValue : TotalDistanceDisplay -> Float -> Float -> Maybe GpxApi.Waypoint -> Float -> Maybe Float
-displayedDistanceValue mode finishDist referencePoint refWaypoint distance =
+displayedDistanceValue mode finishDist referenceDistance refWaypoint distance =
     case mode of
         None ->
             Nothing
@@ -2286,13 +2290,13 @@ displayedDistanceValue mode finishDist referencePoint refWaypoint distance =
         ToFinish ->
             Just (finishDist - distance)
 
-        ToPoint ->
-            Just (referencePoint - distance)
+        ToDistance ->
+            Just (referenceDistance - distance)
 
-        ToWaypoint _ ->
+        ToPoint _ ->
             refWaypoint |> Maybe.map (\rw -> rw.distance - distance)
 
-        FromWaypoint _ ->
+        FromPoint _ ->
             refWaypoint |> Maybe.map (\rw -> distance - rw.distance)
 
         PercentProgress ->
@@ -2380,7 +2384,7 @@ returned distance is segment-local (metres), ready for the segment's XYCalculato
 distanceMarkers :
     { mode : TotalDistanceDisplay
     , finishDist : Float
-    , referencePoint : Float
+    , referenceDistance : Float
     , refWaypoint : Maybe GpxApi.Waypoint
     , detail : Int
     , interval : Maybe Float
@@ -2392,7 +2396,7 @@ distanceMarkers :
 distanceMarkers cfg =
     let
         displayed dist =
-            displayedDistanceValue cfg.mode cfg.finishDist cfg.referencePoint cfg.refWaypoint dist
+            displayedDistanceValue cfg.mode cfg.finishDist cfg.referenceDistance cfg.refWaypoint dist
     in
     case ( displayed cfg.segStart, displayed (cfg.segStart + cfg.segMaxDistance) ) of
         ( Just vStart, Just vEnd ) ->
@@ -2994,7 +2998,7 @@ viewCuesheetTab state tracks =
                     ( wp.gain, wp.loss )
 
                 Nothing ->
-                    cumulativeGainLossAtDistance cs.referencePoint tracks.current.trackpoints
+                    cumulativeGainLossAtDistance cs.referenceDistance tracks.current.trackpoints
                         |> Result.withDefault ( 0, 0 )
     in
     Html.div []
@@ -3220,7 +3224,7 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                             renderWaypointItem showOffRoute fillAttrs waypoint =
                                 let
                                     displayedDistance =
-                                        displayedDistanceValue cs.totalDistanceDisplay finishDist cs.referencePoint refWaypoint waypoint.distance
+                                        displayedDistanceValue cs.totalDistanceDisplay finishDist cs.referenceDistance refWaypoint waypoint.distance
 
                                     -- This waypoint is the point the total distance is measured to/from,
                                     -- so its to/from distance and elevation are both 0 and not worth showing.
@@ -3258,14 +3262,14 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                                                                     (last.loss - waypoint.loss)
                                                             )
 
-                                                ToPoint ->
+                                                ToDistance ->
                                                     Just
                                                         (formatEleGainLoss
                                                             (Tuple.first refPointEle - waypoint.gain)
                                                             (Tuple.second refPointEle - waypoint.loss)
                                                         )
 
-                                                ToWaypoint _ ->
+                                                ToPoint _ ->
                                                     refWaypoint
                                                         |> Maybe.map
                                                             (\rw ->
@@ -3274,7 +3278,7 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                                                                     (rw.loss - waypoint.loss)
                                                             )
 
-                                                FromWaypoint _ ->
+                                                FromPoint _ ->
                                                     refWaypoint
                                                         |> Maybe.map
                                                             (\rw ->
@@ -4327,8 +4331,8 @@ viewElevationProfileOptions state =
                     [ Html.Events.onInput
                         (\v ->
                             case v of
-                                "waypoints" ->
-                                    SetSplitMode WaypointsMode
+                                "points" ->
+                                    SetSplitMode PointsMode
 
                                 _ ->
                                     SetSplitMode EquidistantMode
@@ -4340,10 +4344,10 @@ viewElevationProfileOptions state =
                         ]
                         [ Html.text "Equidistant" ]
                     , Html.option
-                        [ Html.Attributes.value "waypoints"
-                        , Html.Attributes.selected (ep.activeSplitMode == WaypointsMode)
+                        [ Html.Attributes.value "points"
+                        , Html.Attributes.selected (ep.activeSplitMode == PointsMode)
                         ]
-                        [ Html.text "By waypoints" ]
+                        [ Html.text "By points" ]
                     ]
               ]
             , case ep.activeSplitMode of
@@ -4359,7 +4363,7 @@ viewElevationProfileOptions state =
                     , Html.text (String.fromInt ep.splitEquidistantCount)
                     ]
 
-                WaypointsMode ->
+                PointsMode ->
                     let
                         selectable =
                             maybeFromloadableResource state.tracks
@@ -4479,11 +4483,11 @@ viewTotalDistanceOptions state =
         -- below, so switching into a point mode starts from a default reference.
         parseModeDropdown maybeStr =
             case maybeStr of
-                Just "to waypoint" ->
-                    UpdateTotalDistanceDisplay (Just (ToWaypoint defaultRef))
+                Just "to point" ->
+                    UpdateTotalDistanceDisplay (Just (ToPoint defaultRef))
 
-                Just "from waypoint" ->
-                    UpdateTotalDistanceDisplay (Just (FromWaypoint defaultRef))
+                Just "from point" ->
+                    UpdateTotalDistanceDisplay (Just (FromPoint defaultRef))
 
                 _ ->
                     maybeStr
@@ -4492,7 +4496,7 @@ viewTotalDistanceOptions state =
                         |> UpdateTotalDistanceDisplay
 
         modeItem mode =
-            Dropdown.Item (formatTotalDistanceDisplayMode mode) (formatTotalDistanceDisplayLabel mode) True
+            Dropdown.Item (formatTotalDistanceDisplayMode mode) (formatTotalDistanceDisplayMode mode) True
 
         pointSelector ref =
             [ viewPointSelector
@@ -4506,9 +4510,9 @@ viewTotalDistanceOptions state =
             (Dropdown.Options
                 [ modeItem FromZero
                 , modeItem ToFinish
-                , modeItem ToPoint
-                , modeItem (ToWaypoint defaultRef)
-                , modeItem (FromWaypoint defaultRef)
+                , modeItem ToDistance
+                , modeItem (ToPoint defaultRef)
+                , modeItem (FromPoint defaultRef)
                 , modeItem PercentProgress
                 , modeItem PercentRemaining
                 , modeItem None
@@ -4520,23 +4524,23 @@ viewTotalDistanceOptions state =
             (Just <| formatTotalDistanceDisplayMode cs.totalDistanceDisplay)
          ]
             ++ (case cs.totalDistanceDisplay of
-                    ToPoint ->
+                    ToDistance ->
                         [ Html.p []
                             [ Html.input
                                 [ Html.Attributes.type_ "number"
                                 , Html.Attributes.min "0"
                                 , maxDistance |> Maybe.map (String.fromFloat >> Html.Attributes.max) |> Maybe.withDefault (Html.Attributes.disabled True)
-                                , Html.Attributes.value <| String.fromFloat cs.referencePoint
-                                , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1000 >> UpdateReferencePoint)
+                                , Html.Attributes.value <| String.fromFloat cs.referenceDistance
+                                , Html.Events.onInput (String.toFloat >> Maybe.withDefault 1000 >> UpdateReferenceDistance)
                                 ]
                                 []
                             ]
                         ]
 
-                    ToWaypoint ref ->
+                    ToPoint ref ->
                         pointSelector ref
 
-                    FromWaypoint ref ->
+                    FromPoint ref ->
                         pointSelector ref
 
                     _ ->
@@ -4764,8 +4768,8 @@ parseTotalDistanceDisplay v =
         "to finish" ->
             Just ToFinish
 
-        "to point" ->
-            Just ToPoint
+        "to distance" ->
+            Just ToDistance
 
         "% progress" ->
             Just PercentProgress
@@ -4777,32 +4781,25 @@ parseTotalDistanceDisplay v =
             Just None
 
         _ ->
-            -- The reference suffix was written by formatPointRef, so a stored
-            -- "to waypoint:3" from before a position was selectable still parses.
+            -- The two point-referring modes store which point after a colon, written by
+            -- formatPointRef
             case String.split ":" v of
                 [ mode, refStr ] ->
                     parsePointRef refStr
                         |> Maybe.andThen
                             (\ref ->
-                                if mode == "to waypoint" then
-                                    Just (ToWaypoint ref)
+                                if mode == "to point" then
+                                    Just (ToPoint ref)
 
-                                else if mode == "from waypoint" then
-                                    Just (FromWaypoint ref)
+                                else if mode == "from point" then
+                                    Just (FromPoint ref)
 
                                 else
                                     Nothing
                             )
 
                 _ ->
-                    if String.startsWith "to waypoint" v then
-                        Just (ToWaypoint (AtWaypoint 0))
-
-                    else if String.startsWith "from waypoint" v then
-                        Just (FromWaypoint (AtWaypoint 0))
-
-                    else
-                        Nothing
+                    Nothing
 
 
 {-| The stored form of a display mode, including which point it refers to.
@@ -4810,10 +4807,10 @@ parseTotalDistanceDisplay v =
 formatTotalDistanceDisplay : TotalDistanceDisplay -> String
 formatTotalDistanceDisplay v =
     case v of
-        ToWaypoint ref ->
+        ToPoint ref ->
             formatTotalDistanceDisplayMode v ++ ":" ++ formatPointRef ref
 
-        FromWaypoint ref ->
+        FromPoint ref ->
             formatTotalDistanceDisplayMode v ++ ":" ++ formatPointRef ref
 
         other ->
@@ -4832,14 +4829,14 @@ formatTotalDistanceDisplayMode v =
         ToFinish ->
             "to finish"
 
-        ToPoint ->
+        ToDistance ->
+            "to distance"
+
+        ToPoint _ ->
             "to point"
 
-        ToWaypoint _ ->
-            "to waypoint"
-
-        FromWaypoint _ ->
-            "from waypoint"
+        FromPoint _ ->
+            "from point"
 
         PercentProgress ->
             "% progress"
@@ -4849,28 +4846,6 @@ formatTotalDistanceDisplayMode v =
 
         None ->
             "hide"
-
-
-{-| What the user reads in the mode dropdown. Deliberately diverges from the stored form:
-`ToWaypoint`/`FromWaypoint` can now refer to a route position as well as a waypoint, and
-"to point" reads better for that than "to waypoint" — which leaves "to distance" as the
-clearer name for the freeform-metres mode that used to be called "to point".
--}
-formatTotalDistanceDisplayLabel : TotalDistanceDisplay -> String
-formatTotalDistanceDisplayLabel v =
-    case v of
-        ToPoint ->
-            "to distance"
-
-        ToWaypoint _ ->
-            "to point"
-
-        FromWaypoint _ ->
-            "from point"
-
-        other ->
-            formatTotalDistanceDisplayMode other
-
 
 
 -- TAB SERIALIZATION
@@ -5012,8 +4987,8 @@ encodeSavedState state =
                         EquidistantMode ->
                             "equidistant"
 
-                        WaypointsMode ->
-                            "waypoints"
+                        PointsMode ->
+                            "points"
                     )
                 )
             , Just ( "splitEquidistantCount", Json.Encode.int ep.splitEquidistantCount )
@@ -5024,7 +4999,7 @@ encodeSavedState state =
             , ep.distanceMarkerInterval |> Maybe.map (\m -> ( "distanceMarkerInterval", Json.Encode.float m ))
             , Just ( "distanceMarkerSegmentEnds", Json.Encode.bool ep.distanceMarkerSegmentEnds )
             , Just ( "totalDistanceDisplay", Json.Encode.string (formatTotalDistanceDisplay cs.totalDistanceDisplay) )
-            , Just ( "referencePoint", Json.Encode.float cs.referencePoint )
+            , Just ( "referenceDistance", Json.Encode.float cs.referenceDistance )
             , Just ( "itemSpacing", Json.Encode.int cs.itemSpacing )
             , Just ( "distanceDetail", Json.Encode.int cs.distanceDetail )
             , Just ( "showStartFinish", Json.Encode.bool cs.showStartFinish )
@@ -5054,7 +5029,7 @@ stateDecoder =
             defaultRelativeOptions
     in
     Json.Decode.succeed
-        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau position viewMode splitMode splitEquidistantCount splitPoints legacySplitWaypointIndices liveLookahead liveLookbehind labelHeightGain distanceMarkerInterval distanceMarkerSegmentEnds totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints relativeStart relativeEnd ->
+        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau position viewMode splitMode splitEquidistantCount splitPoints liveLookahead liveLookbehind labelHeightGain distanceMarkerInterval distanceMarkerSegmentEnds totalDistanceDisplay referenceDistance itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints relativeStart relativeEnd ->
             { tracks = loadableResourceFromMaybe tracks
             , showOptions = showOptions |> Maybe.withDefault defaultState.showOptions
             , activeTab = activeTab |> Maybe.andThen parseTab |> Maybe.withDefault defaultState.activeTab
@@ -5084,20 +5059,13 @@ stateDecoder =
                 , intensityTau = intensityTau |> Maybe.withDefault defEp.intensityTau
                 , activeSplitMode =
                     case splitMode of
-                        Just "waypoints" ->
-                            WaypointsMode
+                        Just "points" ->
+                            PointsMode
 
                         _ ->
                             EquidistantMode
                 , splitEquidistantCount = splitEquidistantCount |> Maybe.withDefault 1
-                , splitPoints =
-                    case splitPoints of
-                        Just refs ->
-                            List.filterMap parsePointRef refs
-
-                        -- State saved before split boundaries could be a route position
-                        Nothing ->
-                            legacySplitWaypointIndices |> Maybe.withDefault [] |> List.map AtWaypoint
+                , splitPoints = splitPoints |> Maybe.withDefault [] |> List.filterMap parsePointRef
                 , liveLookahead = liveLookahead |> Maybe.withDefault defEp.liveLookahead
                 , liveLookbehind = liveLookbehind |> Maybe.withDefault defEp.liveLookbehind
                 , labelHeightGain = labelHeightGain |> Maybe.withDefault defEp.labelHeightGain
@@ -5106,7 +5074,7 @@ stateDecoder =
                 }
             , cuesheet =
                 { totalDistanceDisplay = totalDistanceDisplay |> Maybe.andThen parseTotalDistanceDisplay |> Maybe.withDefault defCs.totalDistanceDisplay
-                , referencePoint = referencePoint |> Maybe.withDefault defCs.referencePoint
+                , referenceDistance = referenceDistance |> Maybe.withDefault defCs.referenceDistance
                 , itemSpacing = itemSpacing |> Maybe.withDefault defCs.itemSpacing
                 , distanceDetail = distanceDetail |> Maybe.withDefault defCs.distanceDetail
                 , showStartFinish = showStartFinish |> Maybe.withDefault defCs.showStartFinish
@@ -5136,14 +5104,13 @@ stateDecoder =
         |> andMap (maybeField "splitMode" Json.Decode.string)
         |> andMap (maybeField "splitEquidistantCount" Json.Decode.int)
         |> andMap (maybeField "splitPoints" (Json.Decode.list Json.Decode.string))
-        |> andMap (maybeField "splitWaypointIndices" (Json.Decode.list Json.Decode.int))
         |> andMap (maybeField "liveLookahead" Json.Decode.float)
         |> andMap (maybeField "liveLookbehind" Json.Decode.float)
         |> andMap (maybeField "labelHeightGain" Json.Decode.float)
         |> andMap (maybeField "distanceMarkerInterval" Json.Decode.float)
         |> andMap (maybeField "distanceMarkerSegmentEnds" Json.Decode.bool)
         |> andMap (maybeField "totalDistanceDisplay" Json.Decode.string)
-        |> andMap (maybeField "referencePoint" Json.Decode.float)
+        |> andMap (maybeField "referenceDistance" Json.Decode.float)
         |> andMap (maybeField "itemSpacing" Json.Decode.int)
         |> andMap (maybeField "distanceDetail" Json.Decode.int)
         |> andMap (maybeField "showStartFinish" Json.Decode.bool)

@@ -6974,7 +6974,7 @@ var $author$project$Main$requestSplitCmd = function (state) {
 	}
 };
 var $author$project$Main$LiveView = 0;
-var $author$project$Main$WaypointsMode = 1;
+var $author$project$Main$PointsMode = 1;
 var $author$project$Main$andMap = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $author$project$Zipper$Zipper = F3(
@@ -7165,15 +7165,15 @@ var $author$project$Main$parseTab = function (s) {
 			return $elm$core$Maybe$Nothing;
 	}
 };
-var $author$project$Main$FromWaypoint = function (a) {
+var $author$project$Main$FromPoint = function (a) {
 	return {$: 4, a: a};
 };
 var $author$project$Main$None = {$: 7};
 var $author$project$Main$PercentProgress = {$: 5};
 var $author$project$Main$PercentRemaining = {$: 6};
+var $author$project$Main$ToDistance = {$: 2};
 var $author$project$Main$ToFinish = {$: 1};
-var $author$project$Main$ToPoint = {$: 2};
-var $author$project$Main$ToWaypoint = function (a) {
+var $author$project$Main$ToPoint = function (a) {
 	return {$: 3, a: a};
 };
 var $author$project$Main$parseTotalDistanceDisplay = function (v) {
@@ -7182,8 +7182,8 @@ var $author$project$Main$parseTotalDistanceDisplay = function (v) {
 			return $elm$core$Maybe$Just($author$project$Main$FromZero);
 		case 'to finish':
 			return $elm$core$Maybe$Just($author$project$Main$ToFinish);
-		case 'to point':
-			return $elm$core$Maybe$Just($author$project$Main$ToPoint);
+		case 'to distance':
+			return $elm$core$Maybe$Just($author$project$Main$ToDistance);
 		case '% progress':
 			return $elm$core$Maybe$Just($author$project$Main$PercentProgress);
 		case '% remaining':
@@ -7199,17 +7199,13 @@ var $author$project$Main$parseTotalDistanceDisplay = function (v) {
 				return A2(
 					$elm$core$Maybe$andThen,
 					function (ref) {
-						return (mode === 'to waypoint') ? $elm$core$Maybe$Just(
-							$author$project$Main$ToWaypoint(ref)) : ((mode === 'from waypoint') ? $elm$core$Maybe$Just(
-							$author$project$Main$FromWaypoint(ref)) : $elm$core$Maybe$Nothing);
+						return (mode === 'to point') ? $elm$core$Maybe$Just(
+							$author$project$Main$ToPoint(ref)) : ((mode === 'from point') ? $elm$core$Maybe$Just(
+							$author$project$Main$FromPoint(ref)) : $elm$core$Maybe$Nothing);
 					},
 					$author$project$Main$parsePointRef(refStr));
 			} else {
-				return A2($elm$core$String$startsWith, 'to waypoint', v) ? $elm$core$Maybe$Just(
-					$author$project$Main$ToWaypoint(
-						$author$project$Main$AtWaypoint(0))) : (A2($elm$core$String$startsWith, 'from waypoint', v) ? $elm$core$Maybe$Just(
-					$author$project$Main$FromWaypoint(
-						$author$project$Main$AtWaypoint(0))) : $elm$core$Maybe$Nothing);
+				return $elm$core$Maybe$Nothing;
 			}
 	}
 };
@@ -7248,7 +7244,7 @@ var $author$project$Main$stateDecoder = function () {
 									A2(maybeField, 'itemSpacing', $elm$json$Json$Decode$int),
 									A2(
 										$author$project$Main$andMap,
-										A2(maybeField, 'referencePoint', $elm$json$Json$Decode$float),
+										A2(maybeField, 'referenceDistance', $elm$json$Json$Decode$float),
 										A2(
 											$author$project$Main$andMap,
 											A2(maybeField, 'totalDistanceDisplay', $elm$json$Json$Decode$string),
@@ -7271,179 +7267,163 @@ var $author$project$Main$stateDecoder = function () {
 																	$author$project$Main$andMap,
 																	A2(
 																		maybeField,
-																		'splitWaypointIndices',
-																		$elm$json$Json$Decode$list($elm$json$Json$Decode$int)),
+																		'splitPoints',
+																		$elm$json$Json$Decode$list($elm$json$Json$Decode$string)),
 																	A2(
 																		$author$project$Main$andMap,
-																		A2(
-																			maybeField,
-																			'splitPoints',
-																			$elm$json$Json$Decode$list($elm$json$Json$Decode$string)),
+																		A2(maybeField, 'splitEquidistantCount', $elm$json$Json$Decode$int),
 																		A2(
 																			$author$project$Main$andMap,
-																			A2(maybeField, 'splitEquidistantCount', $elm$json$Json$Decode$int),
+																			A2(maybeField, 'splitMode', $elm$json$Json$Decode$string),
 																			A2(
 																				$author$project$Main$andMap,
-																				A2(maybeField, 'splitMode', $elm$json$Json$Decode$string),
+																				A2(maybeField, 'viewMode', $elm$json$Json$Decode$string),
 																				A2(
 																					$author$project$Main$andMap,
-																					A2(maybeField, 'viewMode', $elm$json$Json$Decode$string),
+																					A2(maybeField, 'position', $elm$json$Json$Decode$float),
 																					A2(
 																						$author$project$Main$andMap,
-																						A2(maybeField, 'position', $elm$json$Json$Decode$float),
+																						A2(maybeField, 'intensityTau', $elm$json$Json$Decode$float),
 																						A2(
 																							$author$project$Main$andMap,
-																							A2(maybeField, 'intensityTau', $elm$json$Json$Decode$float),
+																							A2(maybeField, 'showIntensity', $elm$json$Json$Decode$bool),
 																							A2(
 																								$author$project$Main$andMap,
-																								A2(maybeField, 'showIntensity', $elm$json$Json$Decode$bool),
+																								A2(maybeField, 'trackThickness', $elm$json$Json$Decode$float),
 																								A2(
 																									$author$project$Main$andMap,
-																									A2(maybeField, 'trackThickness', $elm$json$Json$Decode$float),
+																									A2(maybeField, 'trackHeight', $elm$json$Json$Decode$int),
 																									A2(
 																										$author$project$Main$andMap,
-																										A2(maybeField, 'trackHeight', $elm$json$Json$Decode$int),
+																										A2(maybeField, 'fontSize', $elm$json$Json$Decode$float),
 																										A2(
 																											$author$project$Main$andMap,
-																											A2(maybeField, 'fontSize', $elm$json$Json$Decode$float),
+																											A2(
+																												maybeField,
+																												'filteredCategories',
+																												$elm$json$Json$Decode$dict($elm$json$Json$Decode$bool)),
 																											A2(
 																												$author$project$Main$andMap,
-																												A2(
-																													maybeField,
-																													'filteredCategories',
-																													$elm$json$Json$Decode$dict($elm$json$Json$Decode$bool)),
+																												A2(maybeField, 'categoryFilterEnabled', $elm$json$Json$Decode$bool),
 																												A2(
 																													$author$project$Main$andMap,
-																													A2(maybeField, 'categoryFilterEnabled', $elm$json$Json$Decode$bool),
+																													A2(maybeField, 'trackingIntervalSec', $elm$json$Json$Decode$int),
 																													A2(
 																														$author$project$Main$andMap,
-																														A2(maybeField, 'trackingIntervalSec', $elm$json$Json$Decode$int),
+																														A2(maybeField, 'showOptions', $elm$json$Json$Decode$bool),
 																														A2(
 																															$author$project$Main$andMap,
-																															A2(maybeField, 'showOptions', $elm$json$Json$Decode$bool),
+																															A2(maybeField, 'activeTab', $elm$json$Json$Decode$string),
 																															A2(
 																																$author$project$Main$andMap,
-																																A2(maybeField, 'activeTab', $elm$json$Json$Decode$string),
 																																A2(
-																																	$author$project$Main$andMap,
-																																	A2(
-																																		maybeField,
-																																		'tracks',
-																																		$author$project$Zipper$decoder($author$project$Main$editableTrackDecoder)),
-																																	$elm$json$Json$Decode$succeed(
-																																		function (tracks) {
-																																			return function (activeTab) {
-																																				return function (showOptions) {
-																																					return function (trackingIntervalSec) {
-																																						return function (categoryFilterEnabled) {
-																																							return function (filteredCategories) {
-																																								return function (fontSize) {
-																																									return function (trackHeight) {
-																																										return function (trackThickness) {
-																																											return function (showIntensity) {
-																																												return function (intensityTau) {
-																																													return function (position) {
-																																														return function (viewMode) {
-																																															return function (splitMode) {
-																																																return function (splitEquidistantCount) {
-																																																	return function (splitPoints) {
-																																																		return function (legacySplitWaypointIndices) {
-																																																			return function (liveLookahead) {
-																																																				return function (liveLookbehind) {
-																																																					return function (labelHeightGain) {
-																																																						return function (distanceMarkerInterval) {
-																																																							return function (distanceMarkerSegmentEnds) {
-																																																								return function (totalDistanceDisplay) {
-																																																									return function (referencePoint) {
-																																																										return function (itemSpacing) {
-																																																											return function (distanceDetail) {
-																																																												return function (showStartFinish) {
-																																																													return function (showOffRouteDistance) {
-																																																														return function (offRouteThreshold) {
-																																																															return function (showOffRouteWaypoints) {
-																																																																return function (relativeStart) {
-																																																																	return function (relativeEnd) {
-																																																																		return {
-																																																																			R: A2(
-																																																																				$elm$core$Maybe$withDefault,
-																																																																				$author$project$Main$defaultState.R,
-																																																																				A2($elm$core$Maybe$andThen, $author$project$Main$parseTab, activeTab)),
-																																																																			F: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.F, categoryFilterEnabled),
-																																																																			d: {
-																																																																				H: A2($elm$core$Maybe$withDefault, defCs.H, distanceDetail),
-																																																																				n: A2($elm$core$Maybe$withDefault, defCs.n, itemSpacing),
-																																																																				y: A2($elm$core$Maybe$withDefault, defCs.y, referencePoint),
-																																																																				O: A2($elm$core$Maybe$withDefault, defCs.O, showStartFinish),
-																																																																				h: A2(
-																																																																					$elm$core$Maybe$withDefault,
-																																																																					defCs.h,
-																																																																					A2($elm$core$Maybe$andThen, $author$project$Main$parseTotalDistanceDisplay, totalDistanceDisplay))
-																																																																			},
-																																																																			a: {
-																																																																				Q: function () {
-																																																																					if ((!splitMode.$) && (splitMode.a === 'waypoints')) {
-																																																																						return 1;
-																																																																					} else {
-																																																																						return 0;
-																																																																					}
-																																																																				}(),
-																																																																				S: distanceMarkerInterval,
-																																																																				T: A2($elm$core$Maybe$withDefault, defEp.T, distanceMarkerSegmentEnds),
-																																																																				aa: A2($elm$core$Maybe$withDefault, defEp.aa, fontSize),
-																																																																				U: A2($elm$core$Maybe$withDefault, defEp.U, intensityTau),
-																																																																				ab: A2($elm$core$Maybe$withDefault, defEp.ab, labelHeightGain),
-																																																																				I: A2($elm$core$Maybe$withDefault, defEp.I, liveLookahead),
-																																																																				J: A2($elm$core$Maybe$withDefault, defEp.J, liveLookbehind),
-																																																																				N: A2($elm$core$Maybe$withDefault, defEp.N, showIntensity),
-																																																																				af: A2($elm$core$Maybe$withDefault, 1, splitEquidistantCount),
-																																																																				f: function () {
-																																																																					if (!splitPoints.$) {
-																																																																						var refs = splitPoints.a;
-																																																																						return A2($elm$core$List$filterMap, $author$project$Main$parsePointRef, refs);
-																																																																					} else {
-																																																																						return A2(
-																																																																							$elm$core$List$map,
-																																																																							$author$project$Main$AtWaypoint,
-																																																																							A2($elm$core$Maybe$withDefault, _List_Nil, legacySplitWaypointIndices));
-																																																																					}
-																																																																				}(),
-																																																																				ah: A2($elm$core$Maybe$withDefault, defEp.ah, trackHeight),
-																																																																				ai: A2($elm$core$Maybe$withDefault, defEp.ai, trackThickness)
-																																																																			},
-																																																																			e: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.e, filteredCategories),
-																																																																			A: $elm$core$Maybe$Nothing,
-																																																																			ac: $elm$core$Maybe$Nothing,
-																																																																			C: $elm$core$Dict$empty,
-																																																																			D: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.D, offRouteThreshold),
-																																																																			cp: position,
-																																																																			an: $elm$core$Maybe$Nothing,
-																																																																			t: {
-																																																																				r: A2(
-																																																																					$elm$core$Maybe$withDefault,
-																																																																					defRel.r,
-																																																																					A2($elm$core$Maybe$andThen, $author$project$Main$parsePointRef, relativeEnd)),
-																																																																				u: A2(
-																																																																					$elm$core$Maybe$withDefault,
-																																																																					defRel.u,
-																																																																					A2($elm$core$Maybe$andThen, $author$project$Main$parsePointRef, relativeStart))
-																																																																			},
-																																																																			X: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.X, showOffRouteDistance),
-																																																																			Y: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.Y, showOffRouteWaypoints),
-																																																																			ae: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.ae, showOptions),
-																																																																			P: $elm$core$Maybe$Nothing,
-																																																																			ag: $elm$core$Maybe$Nothing,
-																																																																			E: false,
-																																																																			Z: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.Z, trackingIntervalSec),
-																																																																			c: $author$project$Main$loadableResourceFromMaybe(tracks),
-																																																																			v: function () {
-																																																																				if ((!viewMode.$) && (viewMode.a === 'live')) {
-																																																																					return 0;
-																																																																				} else {
-																																																																					return 1;
-																																																																				}
-																																																																			}()
-																																																																		};
-																																																																	};
+																																	maybeField,
+																																	'tracks',
+																																	$author$project$Zipper$decoder($author$project$Main$editableTrackDecoder)),
+																																$elm$json$Json$Decode$succeed(
+																																	function (tracks) {
+																																		return function (activeTab) {
+																																			return function (showOptions) {
+																																				return function (trackingIntervalSec) {
+																																					return function (categoryFilterEnabled) {
+																																						return function (filteredCategories) {
+																																							return function (fontSize) {
+																																								return function (trackHeight) {
+																																									return function (trackThickness) {
+																																										return function (showIntensity) {
+																																											return function (intensityTau) {
+																																												return function (position) {
+																																													return function (viewMode) {
+																																														return function (splitMode) {
+																																															return function (splitEquidistantCount) {
+																																																return function (splitPoints) {
+																																																	return function (liveLookahead) {
+																																																		return function (liveLookbehind) {
+																																																			return function (labelHeightGain) {
+																																																				return function (distanceMarkerInterval) {
+																																																					return function (distanceMarkerSegmentEnds) {
+																																																						return function (totalDistanceDisplay) {
+																																																							return function (referenceDistance) {
+																																																								return function (itemSpacing) {
+																																																									return function (distanceDetail) {
+																																																										return function (showStartFinish) {
+																																																											return function (showOffRouteDistance) {
+																																																												return function (offRouteThreshold) {
+																																																													return function (showOffRouteWaypoints) {
+																																																														return function (relativeStart) {
+																																																															return function (relativeEnd) {
+																																																																return {
+																																																																	R: A2(
+																																																																		$elm$core$Maybe$withDefault,
+																																																																		$author$project$Main$defaultState.R,
+																																																																		A2($elm$core$Maybe$andThen, $author$project$Main$parseTab, activeTab)),
+																																																																	F: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.F, categoryFilterEnabled),
+																																																																	d: {
+																																																																		H: A2($elm$core$Maybe$withDefault, defCs.H, distanceDetail),
+																																																																		n: A2($elm$core$Maybe$withDefault, defCs.n, itemSpacing),
+																																																																		y: A2($elm$core$Maybe$withDefault, defCs.y, referenceDistance),
+																																																																		O: A2($elm$core$Maybe$withDefault, defCs.O, showStartFinish),
+																																																																		h: A2(
+																																																																			$elm$core$Maybe$withDefault,
+																																																																			defCs.h,
+																																																																			A2($elm$core$Maybe$andThen, $author$project$Main$parseTotalDistanceDisplay, totalDistanceDisplay))
+																																																																	},
+																																																																	a: {
+																																																																		Q: function () {
+																																																																			if ((!splitMode.$) && (splitMode.a === 'points')) {
+																																																																				return 1;
+																																																																			} else {
+																																																																				return 0;
+																																																																			}
+																																																																		}(),
+																																																																		S: distanceMarkerInterval,
+																																																																		T: A2($elm$core$Maybe$withDefault, defEp.T, distanceMarkerSegmentEnds),
+																																																																		aa: A2($elm$core$Maybe$withDefault, defEp.aa, fontSize),
+																																																																		U: A2($elm$core$Maybe$withDefault, defEp.U, intensityTau),
+																																																																		ab: A2($elm$core$Maybe$withDefault, defEp.ab, labelHeightGain),
+																																																																		I: A2($elm$core$Maybe$withDefault, defEp.I, liveLookahead),
+																																																																		J: A2($elm$core$Maybe$withDefault, defEp.J, liveLookbehind),
+																																																																		N: A2($elm$core$Maybe$withDefault, defEp.N, showIntensity),
+																																																																		af: A2($elm$core$Maybe$withDefault, 1, splitEquidistantCount),
+																																																																		f: A2(
+																																																																			$elm$core$List$filterMap,
+																																																																			$author$project$Main$parsePointRef,
+																																																																			A2($elm$core$Maybe$withDefault, _List_Nil, splitPoints)),
+																																																																		ah: A2($elm$core$Maybe$withDefault, defEp.ah, trackHeight),
+																																																																		ai: A2($elm$core$Maybe$withDefault, defEp.ai, trackThickness)
+																																																																	},
+																																																																	e: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.e, filteredCategories),
+																																																																	A: $elm$core$Maybe$Nothing,
+																																																																	ac: $elm$core$Maybe$Nothing,
+																																																																	C: $elm$core$Dict$empty,
+																																																																	D: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.D, offRouteThreshold),
+																																																																	cp: position,
+																																																																	an: $elm$core$Maybe$Nothing,
+																																																																	t: {
+																																																																		r: A2(
+																																																																			$elm$core$Maybe$withDefault,
+																																																																			defRel.r,
+																																																																			A2($elm$core$Maybe$andThen, $author$project$Main$parsePointRef, relativeEnd)),
+																																																																		u: A2(
+																																																																			$elm$core$Maybe$withDefault,
+																																																																			defRel.u,
+																																																																			A2($elm$core$Maybe$andThen, $author$project$Main$parsePointRef, relativeStart))
+																																																																	},
+																																																																	X: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.X, showOffRouteDistance),
+																																																																	Y: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.Y, showOffRouteWaypoints),
+																																																																	ae: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.ae, showOptions),
+																																																																	P: $elm$core$Maybe$Nothing,
+																																																																	ag: $elm$core$Maybe$Nothing,
+																																																																	E: false,
+																																																																	Z: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.Z, trackingIntervalSec),
+																																																																	c: $author$project$Main$loadableResourceFromMaybe(tracks),
+																																																																	v: function () {
+																																																																		if ((!viewMode.$) && (viewMode.a === 'live')) {
+																																																																			return 0;
+																																																																		} else {
+																																																																			return 1;
+																																																																		}
+																																																																	}()
 																																																																};
 																																																															};
 																																																														};
@@ -7474,7 +7454,8 @@ var $author$project$Main$stateDecoder = function () {
 																																					};
 																																				};
 																																			};
-																																		})))))))))))))))))))))))))))))))));
+																																		};
+																																	}))))))))))))))))))))))))))))))));
 }();
 var $author$project$Main$computeGainLoss = function (tps) {
 	var _v0 = $elm$core$List$reverse(tps);
@@ -7991,10 +7972,10 @@ var $author$project$Main$correctWaypointSelection = F2(
 		switch (display.$) {
 			case 3:
 				var ref = display.a;
-				return A3(correct, $author$project$Main$ToWaypoint, $elm_community$list_extra$List$Extra$last, ref);
+				return A3(correct, $author$project$Main$ToPoint, $elm_community$list_extra$List$Extra$last, ref);
 			case 4:
 				var ref = display.a;
-				return A3(correct, $author$project$Main$FromWaypoint, $elm$core$List$head, ref);
+				return A3(correct, $author$project$Main$FromPoint, $elm$core$List$head, ref);
 			default:
 				return display;
 		}
@@ -8333,11 +8314,11 @@ var $author$project$Main$formatTotalDistanceDisplayMode = function (v) {
 		case 1:
 			return 'to finish';
 		case 2:
-			return 'to point';
+			return 'to distance';
 		case 3:
-			return 'to waypoint';
+			return 'to point';
 		case 4:
-			return 'from waypoint';
+			return 'from point';
 		case 5:
 			return '% progress';
 		case 6:
@@ -8450,7 +8431,7 @@ var $author$project$Main$encodeSavedState = function (state) {
 									if (!_v1) {
 										return 'equidistant';
 									} else {
-										return 'waypoints';
+										return 'points';
 									}
 								}()))),
 						$elm$core$Maybe$Just(
@@ -8495,7 +8476,7 @@ var $author$project$Main$encodeSavedState = function (state) {
 								$author$project$Main$formatTotalDistanceDisplay(cs.h)))),
 						$elm$core$Maybe$Just(
 						_Utils_Tuple2(
-							'referencePoint',
+							'referenceDistance',
 							$elm$json$Json$Encode$float(cs.y))),
 						$elm$core$Maybe$Just(
 						_Utils_Tuple2(
@@ -8860,11 +8841,11 @@ var $author$project$Main$removeWaypointAt = F2(
 				switch (display.$) {
 					case 3:
 						var ref = display.a;
-						return $author$project$Main$ToWaypoint(
+						return $author$project$Main$ToPoint(
 							A2($author$project$Main$shiftPointRef, i, ref));
 					case 4:
 						var ref = display.a;
-						return $author$project$Main$FromWaypoint(
+						return $author$project$Main$FromPoint(
 							A2($author$project$Main$shiftPointRef, i, ref));
 					default:
 						var other = display;
@@ -10028,7 +10009,7 @@ var $author$project$Main$update = F2(
 						},
 						maybeSelection));
 			case 46:
-				var point = msg.a;
+				var distance = msg.a;
 				var cs = s.d;
 				return $author$project$Main$updateAndStoreModel(
 					updateState(
@@ -10037,7 +10018,7 @@ var $author$project$Main$update = F2(
 							{
 								d: _Utils_update(
 									cs,
-									{y: point})
+									{y: distance})
 							})));
 			case 47:
 				var spacing = msg.a;
@@ -10089,9 +10070,9 @@ var $author$project$Main$update = F2(
 					var _v23 = cs.h;
 					switch (_v23.$) {
 						case 3:
-							return $author$project$Main$ToWaypoint(ref);
+							return $author$project$Main$ToPoint(ref);
 						case 4:
-							return $author$project$Main$FromWaypoint(ref);
+							return $author$project$Main$FromPoint(ref);
 						default:
 							var other = _v23;
 							return other;
@@ -10295,7 +10276,7 @@ var $author$project$Main$safePercent = F2(
 		return (total > 0) ? $elm$core$Maybe$Just((part / total) * 100) : $elm$core$Maybe$Nothing;
 	});
 var $author$project$Main$displayedDistanceValue = F5(
-	function (mode, finishDist, referencePoint, refWaypoint, distance) {
+	function (mode, finishDist, referenceDistance, refWaypoint, distance) {
 		switch (mode.$) {
 			case 7:
 				return $elm$core$Maybe$Nothing;
@@ -10304,7 +10285,7 @@ var $author$project$Main$displayedDistanceValue = F5(
 			case 1:
 				return $elm$core$Maybe$Just(finishDist - distance);
 			case 2:
-				return $elm$core$Maybe$Just(referencePoint - distance);
+				return $elm$core$Maybe$Just(referenceDistance - distance);
 			case 3:
 				return A2(
 					$elm$core$Maybe$map,
@@ -12348,7 +12329,7 @@ var $abadi199$elm_input_extra$Dropdown$Options = F3(
 	function (items, emptyItem, onChange) {
 		return {aK: emptyItem, aN: items, a$: onChange};
 	});
-var $author$project$Main$UpdateReferencePoint = function (a) {
+var $author$project$Main$UpdateReferenceDistance = function (a) {
 	return {$: 46, a: a};
 };
 var $author$project$Main$UpdateSelectedPoint = function (a) {
@@ -12430,19 +12411,6 @@ var $abadi199$elm_input_extra$Dropdown$dropdown = F3(
 					])),
 			A2($elm$core$List$map, toOption, itemsWithEmptyItems));
 	});
-var $author$project$Main$formatTotalDistanceDisplayLabel = function (v) {
-	switch (v.$) {
-		case 2:
-			return 'to distance';
-		case 3:
-			return 'to point';
-		case 4:
-			return 'from point';
-		default:
-			var other = v;
-			return $author$project$Main$formatTotalDistanceDisplayMode(other);
-	}
-};
 var $author$project$Main$waypointDisplayName = function (waypoint) {
 	return $elm$core$String$isEmpty(
 		$elm$core$String$trim(waypoint.bw)) ? ('Unnamed waypoint (' + (A2($author$project$Main$formatKm, 1, waypoint.aJ) + ')')) : waypoint.bw;
@@ -12494,7 +12462,7 @@ var $author$project$Main$viewTotalDistanceOptions = function (state) {
 		return A3(
 			$abadi199$elm_input_extra$Dropdown$Item,
 			$author$project$Main$formatTotalDistanceDisplayMode(mode),
-			$author$project$Main$formatTotalDistanceDisplayLabel(mode),
+			$author$project$Main$formatTotalDistanceDisplayMode(mode),
 			true);
 	};
 	var maybeTracks = $author$project$Main$maybeFromloadableResource(state.c);
@@ -12551,14 +12519,14 @@ var $author$project$Main$viewTotalDistanceOptions = function (state) {
 		while (true) {
 			if (!maybeStr.$) {
 				switch (maybeStr.a) {
-					case 'to waypoint':
+					case 'to point':
 						return $author$project$Main$UpdateTotalDistanceDisplay(
 							$elm$core$Maybe$Just(
-								$author$project$Main$ToWaypoint(defaultRef)));
-					case 'from waypoint':
+								$author$project$Main$ToPoint(defaultRef)));
+					case 'from point':
 						return $author$project$Main$UpdateTotalDistanceDisplay(
 							$elm$core$Maybe$Just(
-								$author$project$Main$FromWaypoint(defaultRef)));
+								$author$project$Main$FromPoint(defaultRef)));
 					default:
 						break _v1$2;
 				}
@@ -12599,11 +12567,11 @@ var $author$project$Main$viewTotalDistanceOptions = function (state) {
 							[
 								modeItem($author$project$Main$FromZero),
 								modeItem($author$project$Main$ToFinish),
-								modeItem($author$project$Main$ToPoint),
+								modeItem($author$project$Main$ToDistance),
 								modeItem(
-								$author$project$Main$ToWaypoint(defaultRef)),
+								$author$project$Main$ToPoint(defaultRef)),
 								modeItem(
-								$author$project$Main$FromWaypoint(defaultRef)),
+								$author$project$Main$FromPoint(defaultRef)),
 								modeItem($author$project$Main$PercentProgress),
 								modeItem($author$project$Main$PercentRemaining),
 								modeItem($author$project$Main$None)
@@ -12647,7 +12615,7 @@ var $author$project$Main$viewTotalDistanceOptions = function (state) {
 													A2(
 														$elm$core$Basics$composeR,
 														$elm$core$Maybe$withDefault(1000),
-														$author$project$Main$UpdateReferencePoint)))
+														$author$project$Main$UpdateReferenceDistance)))
 											]),
 										_List_Nil)
 									]))
@@ -12936,7 +12904,7 @@ var $author$project$Main$viewElevationProfileOptions = function (state) {
 								[
 									$elm$html$Html$Events$onInput(
 									function (v) {
-										if (v === 'waypoints') {
+										if (v === 'points') {
 											return $author$project$Main$SetSplitMode(1);
 										} else {
 											return $author$project$Main$SetSplitMode(0);
@@ -12960,12 +12928,12 @@ var $author$project$Main$viewElevationProfileOptions = function (state) {
 									$elm$html$Html$option,
 									_List_fromArray(
 										[
-											$elm$html$Html$Attributes$value('waypoints'),
+											$elm$html$Html$Attributes$value('points'),
 											$elm$html$Html$Attributes$selected(ep.Q === 1)
 										]),
 									_List_fromArray(
 										[
-											$elm$html$Html$text('By waypoints')
+											$elm$html$Html$text('By points')
 										]))
 								]))
 						]),
