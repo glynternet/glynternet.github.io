@@ -92,6 +92,7 @@ type alias State =
     -- View-specific options
     , elevationProfile : ElevationProfileOptions
     , cuesheet : CuesheetOptions
+    , relative : RelativeOptions
 
     -- Off-route
     , offRouteThreshold : Float
@@ -115,6 +116,7 @@ type Tab
     = ElevationProfileTab
     | CuesheetTab
     | WaypointsTab
+    | RelativeTab
 
 
 type ViewMode
@@ -256,6 +258,24 @@ type alias CuesheetOptions =
     }
 
 
+{-| The Relative tab compares two points on the route: a start, which is either the current
+position or a chosen waypoint, and an end waypoint. `startWaypointIndex` is only used when
+`reference` is `ReferenceWaypoint`, but is kept across a switch to `ReferenceCurrentPosition`
+so switching back restores the previous choice. Both indices address the current track's
+`effectiveWaypoints`, the same index space as `ToWaypoint`/`FromWaypoint`.
+-}
+type alias RelativeOptions =
+    { reference : RelativeReference
+    , startWaypointIndex : Int
+    , endWaypointIndex : Int
+    }
+
+
+type RelativeReference
+    = ReferenceCurrentPosition
+    | ReferenceWaypoint
+
+
 type TotalDistanceDisplay
     = FromZero
     | ToFinish
@@ -295,6 +315,14 @@ defaultCuesheetOptions =
     }
 
 
+defaultRelativeOptions : RelativeOptions
+defaultRelativeOptions =
+    { reference = ReferenceCurrentPosition
+    , startWaypointIndex = 0
+    , endWaypointIndex = 0
+    }
+
+
 defaultSpacing : Int
 defaultSpacing =
     25
@@ -325,6 +353,7 @@ defaultState =
     , viewMode = StaticView
     , elevationProfile = defaultElevationProfileOptions
     , cuesheet = defaultCuesheetOptions
+    , relative = defaultRelativeOptions
     , offRouteThreshold = 100
     , showOffRouteWaypoints = True
     , showOffRouteDistance = False
@@ -459,6 +488,10 @@ type Msg
     | UpdateSelectedWaypoint Int
     | UpdateOffRouteThreshold Float
     | UpdateShowOffRouteWaypoints Bool
+      -- Relative
+    | SetRelativeReference RelativeReference
+    | SetRelativeStartWaypoint Int
+    | SetRelativeEndWaypoint Int
       -- State export/import
     | ExportState
     | DownloadSplitsGpx
@@ -1177,6 +1210,27 @@ update msg model =
         UpdateShowOffRouteWaypoints show ->
             updateAndStoreModel (updateState { s | showOffRouteWaypoints = show })
 
+        SetRelativeReference reference ->
+            let
+                rel =
+                    s.relative
+            in
+            updateAndStoreModel (updateState { s | relative = { rel | reference = reference } })
+
+        SetRelativeStartWaypoint idx ->
+            let
+                rel =
+                    s.relative
+            in
+            updateAndStoreModel (updateState { s | relative = { rel | startWaypointIndex = idx } })
+
+        SetRelativeEndWaypoint idx ->
+            let
+                rel =
+                    s.relative
+            in
+            updateAndStoreModel (updateState { s | relative = { rel | endWaypointIndex = idx } })
+
         ExportState ->
             ( model, downloadState (encodeSavedState { s | showOptions = False }) )
 
@@ -1412,10 +1466,10 @@ updateOverrides fn ew =
 
 {-| Physically removes the waypoint at index `i` (used for permanently deleting a
 user-created waypoint). Dropping a list element shifts every later index down by
-one, so the three index-based references into editableWaypoints must be remapped:
-the split selection, the cuesheet's reference waypoint, and the transient
-new-category inputs. correctWaypointSelectionInState then clamps the reference
-waypoint if the removed one was selected.
+one, so the index-based references into editableWaypoints must be remapped: the
+split selection, the cuesheet's reference waypoint, the Relative tab's start/end
+waypoints, and the transient new-category inputs. correctWaypointSelectionInState
+then clamps any selection whose waypoint was the one removed.
 -}
 removeWaypointAt : Int -> State -> State
 removeWaypointAt i s =
@@ -1427,6 +1481,9 @@ removeWaypointAt i s =
 
                 cs =
                     s.cuesheet
+
+                rel =
+                    s.relative
 
                 shift idx =
                     if idx > i then
@@ -1456,6 +1513,11 @@ removeWaypointAt i s =
                     , elevationProfile =
                         { ep | splitWaypointIndices = ep.splitWaypointIndices |> List.filter ((/=) i) |> List.map shift }
                     , cuesheet = { cs | totalDistanceDisplay = shiftDisplay cs.totalDistanceDisplay }
+                    , relative =
+                        { rel
+                            | startWaypointIndex = shift rel.startWaypointIndex
+                            , endWaypointIndex = shift rel.endWaypointIndex
+                        }
                     , newCategoryInputs =
                         s.newCategoryInputs
                             |> Dict.toList
@@ -1518,8 +1580,13 @@ filterWaypoints filters =
     List.filter (\waypoint -> List.all (\filter -> filter waypoint) filters)
 
 
-waypointPredicates : State -> List (GpxApi.Waypoint -> Bool)
-waypointPredicates state =
+{-| The filters that decide whether a waypoint exists as far as the user is concerned:
+category filtering and off-route hiding. Kept separate from the live-view window in
+`waypointPredicates` so that flows which pick a waypoint out of the whole route (the
+Relative tab) are not limited to the stretch currently on screen.
+-}
+waypointSelectionPredicates : State -> List (GpxApi.Waypoint -> Bool)
+waypointSelectionPredicates state =
     List.filterMap identity
         [ if state.categoryFilterEnabled then
             Just (categoryPredicate state.filteredCategories)
@@ -1531,17 +1598,23 @@ waypointPredicates state =
 
           else
             Just (offRoutePredicate state.offRouteThreshold)
-        , case ( state.viewMode, state.position ) of
-            ( LiveView, Just pos ) ->
-                let
-                    ep =
-                        state.elevationProfile
-                in
-                Just (\wp -> wp.distance >= pos - ep.liveLookbehind && wp.distance <= pos + ep.liveLookahead)
-
-            _ ->
-                Nothing
         ]
+
+
+waypointPredicates : State -> List (GpxApi.Waypoint -> Bool)
+waypointPredicates state =
+    waypointSelectionPredicates state
+        ++ (case ( state.viewMode, state.position ) of
+                ( LiveView, Just pos ) ->
+                    let
+                        ep =
+                            state.elevationProfile
+                    in
+                    [ \wp -> wp.distance >= pos - ep.liveLookbehind && wp.distance <= pos + ep.liveLookahead ]
+
+                _ ->
+                    []
+           )
 
 
 categoryPredicate : Dict.Dict String Bool -> GpxApi.Waypoint -> Bool
@@ -1581,6 +1654,19 @@ indexedFilteredWaypoints allWaypoints filtered =
     allWaypoints
         |> List.indexedMap Tuple.pair
         |> List.filter (\( _, wp ) -> List.member wp filtered)
+
+
+{-| The waypoints the Relative tab offers for selection, paired with their index into the
+track's `effectiveWaypoints`.
+-}
+selectableRelativeWaypoints : State -> EditableTrack -> List ( Int, GpxApi.Waypoint )
+selectableRelativeWaypoints state track =
+    let
+        allWaypoints =
+            effectiveWaypoints track
+    in
+    indexedFilteredWaypoints allWaypoints
+        (filterWaypoints (waypointSelectionPredicates state) allWaypoints)
 
 
 correctWaypointSelection : TotalDistanceDisplay -> List ( Int, GpxApi.Waypoint ) -> TotalDistanceDisplay
@@ -1636,8 +1722,30 @@ correctWaypointSelectionInState s =
 
                 corrected =
                     correctWaypointSelection cs.totalDistanceDisplay indexed
+
+                rel =
+                    s.relative
+
+                -- The Relative tab can target waypoints outside the live window, so its
+                -- selection is validated against its own, wider list.
+                relativeSelectable =
+                    selectableRelativeWaypoints s tracks.current
+
+                clampToSelectable fallback idx =
+                    if List.any (\( i, _ ) -> i == idx) relativeSelectable then
+                        idx
+
+                    else
+                        fallback relativeSelectable |> Maybe.map Tuple.first |> Maybe.withDefault idx
             in
-            { s | cuesheet = { cs | totalDistanceDisplay = corrected } }
+            { s
+                | cuesheet = { cs | totalDistanceDisplay = corrected }
+                , relative =
+                    { rel
+                        | startWaypointIndex = clampToSelectable List.head rel.startWaypointIndex
+                        , endWaypointIndex = clampToSelectable List.Extra.last rel.endWaypointIndex
+                    }
+            }
 
 
 injectStartFinish : Float -> ( Float, Float ) -> List GpxApi.Waypoint -> List GpxApi.Waypoint
@@ -1740,6 +1848,9 @@ view { state } =
 
                                     WaypointsTab ->
                                         viewWaypointsTab state tracks
+
+                                    RelativeTab ->
+                                        viewRelativeTab state tracks
                                 ]
                             ]
                    )
@@ -1840,7 +1951,7 @@ viewTabBar activeTab =
         , Html.button
             [ Html.Events.onClick (SwitchTab WaypointsTab)
             , Html.Attributes.class "button-4"
-            , Html.Attributes.style "border-radius" "0 4px 4px 0"
+            , Html.Attributes.style "border-radius" "0"
             , if activeTab == WaypointsTab then
                 Html.Attributes.style "font-weight" "bold"
 
@@ -1848,6 +1959,17 @@ viewTabBar activeTab =
                 Html.Attributes.style "opacity" "0.7"
             ]
             [ Html.text "Waypoints" ]
+        , Html.button
+            [ Html.Events.onClick (SwitchTab RelativeTab)
+            , Html.Attributes.class "button-4"
+            , Html.Attributes.style "border-radius" "0 4px 4px 0"
+            , if activeTab == RelativeTab then
+                Html.Attributes.style "font-weight" "bold"
+
+              else
+                Html.Attributes.style "opacity" "0.7"
+            ]
+            [ Html.text "Relative" ]
         ]
 
 
@@ -3253,6 +3375,334 @@ waypointInfos positionDistance position waypoints =
         |> List.reverse
 
 
+-- RELATIVE VIEW
+
+
+{-| One end of the Relative tab's comparison, resolved onto the route.
+-}
+type alias RelativePoint =
+    { name : String
+    , distance : Float
+    , latLon : Location.LatLon
+    , elevation : Float
+    , gain : Float
+    , loss : Float
+    }
+
+
+{-| Resolves a route distance into a comparable point, taking its coordinates and elevation
+from the trackpoint the distance lands on unless a truer position is given.
+
+Waypoints carry no coordinates of their own (`GpxApi.Waypoint` is distance, name,
+categories, gain, loss and off-route distance), so an off-route waypoint resolves to its
+matched point on the route and the crow-flies figures are measured to there rather than to
+the waypoint itself. The waypoint card shows its off-route distance so the gap is visible.
+
+-}
+relativePointAtDistance : List GpxApi.TrackPoint -> String -> Maybe Location.LatLon -> Float -> Maybe RelativePoint
+relativePointAtDistance trackpoints name knownLatLon distance =
+    trackpointAtDistance distance trackpoints
+        |> Maybe.map
+            (\tp ->
+                { name = name
+                , distance = distance
+                , latLon = Maybe.withDefault (Location.LatLon tp.lat tp.lon) knownLatLon
+                , elevation = tp.elevation
+                , gain = tp.gain
+                , loss = tp.loss
+                }
+            )
+
+
+viewRelativeTab : State -> Zipper EditableTrack -> Html Msg
+viewRelativeTab state tracks =
+    let
+        rel =
+            state.relative
+
+        selectable =
+            selectableRelativeWaypoints state tracks.current
+
+        waypointAt idx =
+            selectable |> List.Extra.find (\( i, _ ) -> i == idx) |> Maybe.map Tuple.second
+
+        relativePoint =
+            relativePointAtDistance tracks.current.trackpoints
+
+        relativeWaypointPoint idx =
+            waypointAt idx
+                |> Maybe.andThen (\wp -> relativePoint (waypointDisplayName wp) Nothing wp.distance)
+
+        start =
+            case rel.reference of
+                ReferenceCurrentPosition ->
+                    -- A stored location always belongs to the current position, because
+                    -- setting the position by hand clears it (see UpdatePosition). So when
+                    -- one is present, the GPS fix is a truer origin for the crow-flies
+                    -- figures than the point it was matched to on the route.
+                    state.position
+                        |> Maybe.andThen (relativePoint "Current position" (Maybe.map .position state.location))
+
+                ReferenceWaypoint ->
+                    relativeWaypointPoint rel.startWaypointIndex
+
+        body =
+            if List.isEmpty selectable then
+                [ relativeNotice "No waypoints to compare. Add one in the Waypoints tab, or check the waypoint category filter in the options panel." ]
+
+            else
+                case waypointAt rel.endWaypointIndex of
+                    Nothing ->
+                        [ relativeNotice "Choose an end waypoint." ]
+
+                    Just endWaypoint ->
+                        viewRelativeWaypointCard tracks.current endWaypoint
+                            :: (case ( rel.reference, state.position, Maybe.map2 Tuple.pair start (relativeWaypointPoint rel.endWaypointIndex) ) of
+                                    ( ReferenceCurrentPosition, Nothing, _ ) ->
+                                        [ relativeNotice "Comparing against your current position needs a position. Set one with the Position slider in the options panel, or start tracking." ]
+
+                                    ( _, _, Just ( startPoint, endPoint ) ) ->
+                                        [ viewRelativeComparison tracks.current selectable startPoint endPoint ]
+
+                                    _ ->
+                                        [ relativeNotice "Choose a start waypoint." ]
+                               )
+    in
+    Html.div
+        [ Html.Attributes.style "display" "flex"
+        , Html.Attributes.style "flex-direction" "column"
+        , Html.Attributes.style "gap" "0.75em"
+        , Html.Attributes.style "padding" "0.5em"
+        ]
+        (viewRelativeControls rel selectable :: body)
+
+
+viewRelativeControls : RelativeOptions -> List ( Int, GpxApi.Waypoint ) -> Html Msg
+viewRelativeControls rel selectable =
+    Html.div
+        [ Html.Attributes.style "display" "flex"
+        , Html.Attributes.style "flex-wrap" "wrap"
+        , Html.Attributes.style "gap" "1em"
+        , Html.Attributes.style "align-items" "flex-end"
+        ]
+        (List.concat
+            [ [ relativeControl "Relative to"
+                    (Html.select
+                        [ Html.Events.onInput
+                            (\v ->
+                                SetRelativeReference
+                                    (if v == "waypoint" then
+                                        ReferenceWaypoint
+
+                                     else
+                                        ReferenceCurrentPosition
+                                    )
+                            )
+                        ]
+                        [ Html.option
+                            [ Html.Attributes.value "position"
+                            , Html.Attributes.selected (rel.reference == ReferenceCurrentPosition)
+                            ]
+                            [ Html.text "Current position" ]
+                        , Html.option
+                            [ Html.Attributes.value "waypoint"
+                            , Html.Attributes.selected (rel.reference == ReferenceWaypoint)
+                            ]
+                            [ Html.text "Waypoint" ]
+                        ]
+                    )
+              ]
+            , case rel.reference of
+                ReferenceCurrentPosition ->
+                    []
+
+                ReferenceWaypoint ->
+                    [ relativeControl "Start" (viewWaypointSelector SetRelativeStartWaypoint selectable rel.startWaypointIndex) ]
+            , [ relativeControl "End" (viewWaypointSelector SetRelativeEndWaypoint selectable rel.endWaypointIndex) ]
+            ]
+        )
+
+
+viewRelativeWaypointCard : EditableTrack -> GpxApi.Waypoint -> Html Msg
+viewRelativeWaypointCard track waypoint =
+    let
+        ( totalGain, totalLoss ) =
+            track.gainLoss
+    in
+    relativeCard (waypointDisplayName waypoint)
+        (List.filterMap identity
+            [ case waypoint.categories of
+                [] ->
+                    Nothing
+
+                categories ->
+                    Just (relativeRow "Categories" (String.join ", " categories))
+            , trackpointAtDistance waypoint.distance track.trackpoints
+                |> Maybe.map (\tp -> relativeRow "Elevation" (formatM tp.elevation))
+            , Just (relativeRow "From start" (formatKm 1 waypoint.distance ++ " · " ++ formatEleGainLoss waypoint.gain waypoint.loss))
+            , Just
+                (relativeRow "To finish"
+                    (formatKm 1 (lastTrackpointDistance track.trackpoints - waypoint.distance)
+                        ++ " · "
+                        ++ formatEleGainLoss (totalGain - waypoint.gain) (totalLoss - waypoint.loss)
+                    )
+                )
+            , if waypoint.offRoute > 0 then
+                Just (relativeRow "Off route" (formatM waypoint.offRoute ++ " from the route"))
+
+              else
+                Nothing
+            ]
+        )
+
+
+viewRelativeComparison : EditableTrack -> List ( Int, GpxApi.Waypoint ) -> RelativePoint -> RelativePoint -> Html Msg
+viewRelativeComparison track selectable start end =
+    let
+        crowFlies =
+            Location.haversineDistance start.latLon end.latLon
+
+        elevationDifference =
+            end.elevation - start.elevation
+
+        alongRoute =
+            end.distance - start.distance
+
+        -- Travelling from start to end against the route's direction turns its climbs into
+        -- descents and its descents into climbs
+        ( gain, loss ) =
+            if alongRoute < 0 then
+                ( start.loss - end.loss, start.gain - end.gain )
+
+            else
+                ( end.gain - start.gain, end.loss - start.loss )
+
+        waypointsBetween =
+            selectable
+                |> List.filter
+                    (\( _, wp ) ->
+                        wp.distance > min start.distance end.distance && wp.distance < max start.distance end.distance
+                    )
+                |> List.length
+    in
+    relativeCard (start.name ++ " → " ++ end.name)
+        [ relativeSection "As the crow flies"
+            (List.filterMap identity
+                [ Just (relativeRow "Distance" (formatKm 2 crowFlies))
+                , Just (relativeRow "Bearing" (formatBearing (Location.bearing start.latLon end.latLon)))
+                , Just (relativeRow "Elevation" (formatSignedM elevationDifference))
+                , if crowFlies > 0 then
+                    Just (relativeRow "Gradient" (formatGradient (elevationDifference / crowFlies * 100)))
+
+                  else
+                    Nothing
+                ]
+            )
+        , relativeSection "Along the route"
+            (List.filterMap identity
+                [ Just
+                    (relativeRow "Distance"
+                        (formatSignedKm 1 alongRoute
+                            ++ (if alongRoute < 0 then
+                                    " (behind you)"
+
+                                else
+                                    ""
+                               )
+                        )
+                    )
+                , Just (relativeRow "Climb" (formatEleGainLoss gain loss))
+                , if alongRoute /= 0 then
+                    Just (relativeRow "Climbing rate" (formatClimbRate (gain / abs alongRoute * 1000)))
+
+                  else
+                    Nothing
+                , Maybe.map2
+                    (\distanceShare climbShare ->
+                        relativeRow "Share of route" (formatPercent distanceShare ++ " of distance · " ++ formatPercent climbShare ++ " of climbing")
+                    )
+                    (safePercent (abs alongRoute) (lastTrackpointDistance track.trackpoints))
+                    -- Riding a segment backwards climbs what the route descends, so the
+                    -- share is against the route's total descent to compare like with like
+                    (safePercent gain
+                        (if alongRoute < 0 then
+                            Tuple.second track.gainLoss
+
+                         else
+                            Tuple.first track.gainLoss
+                        )
+                    )
+                , Just (relativeRow "Waypoints between" (String.fromInt waypointsBetween))
+                ]
+            )
+        ]
+
+
+relativeNotice : String -> Html Msg
+relativeNotice text =
+    Html.div [ Html.Attributes.class "warning_panel" ] [ Html.text text ]
+
+
+relativeControl : String -> Html Msg -> Html Msg
+relativeControl label control =
+    Html.label
+        [ Html.Attributes.style "display" "inline-flex"
+        , Html.Attributes.style "flex-direction" "column"
+        , Html.Attributes.style "gap" "0.2em"
+        ]
+        [ Html.span
+            [ Html.Attributes.style "font-size" "0.85em"
+            , Html.Attributes.style "opacity" "0.7"
+            ]
+            [ Html.text label ]
+        , control
+        ]
+
+
+relativeCard : String -> List (Html Msg) -> Html Msg
+relativeCard title contents =
+    Html.div
+        [ Html.Attributes.style "border" "1px solid #ddd"
+        , Html.Attributes.style "border-radius" "6px"
+        , Html.Attributes.style "padding" "0.5em 0.75em"
+        , Html.Attributes.style "background" "#fafafa"
+        , Html.Attributes.style "display" "flex"
+        , Html.Attributes.style "flex-direction" "column"
+        , Html.Attributes.style "gap" "0.5em"
+        ]
+        (Html.h3 [ Html.Attributes.style "margin" "0" ] [ Html.text title ] :: contents)
+
+
+relativeSection : String -> List (Html Msg) -> Html Msg
+relativeSection title rows =
+    Html.div
+        [ Html.Attributes.style "display" "flex"
+        , Html.Attributes.style "flex-direction" "column"
+        , Html.Attributes.style "gap" "0.15em"
+        ]
+        (Html.div
+            [ Html.Attributes.style "font-size" "0.85em"
+            , Html.Attributes.style "opacity" "0.7"
+            , Html.Attributes.style "border-bottom" "1px solid #ddd"
+            ]
+            [ Html.text title ]
+            :: rows
+        )
+
+
+relativeRow : String -> String -> Html Msg
+relativeRow label value =
+    Html.div
+        [ Html.Attributes.style "display" "flex"
+        , Html.Attributes.style "flex-wrap" "wrap"
+        , Html.Attributes.style "gap" "0.5em"
+        , Html.Attributes.style "justify-content" "space-between"
+        ]
+        [ Html.span [ Html.Attributes.style "opacity" "0.7" ] [ Html.text label ]
+        , Html.span [] [ Html.text value ]
+        ]
+
+
 formatKm : Int -> Float -> String
 formatKm decimalPlaces metres =
     Round.round decimalPlaces (metres / 1000) ++ "km"
@@ -3278,21 +3728,85 @@ formatEleGainLossPercent gainPct lossPct =
     "↑" ++ formatPercent gainPct ++ " ↓" ++ formatPercent lossPct
 
 
-cumulativeGainLossAtDistance : Float -> List GpxApi.TrackPoint -> Result String ( Float, Float )
-cumulativeGainLossAtDistance dist trackpoints =
-    -- TODO: interpolate between bracketing trackpoints when dist falls between two points,
-    -- rather than snapping to the next one (could use interpolateTrackpointAt)
+{-| Signs a formatted value so a reader can tell "132m higher" from "132m lower" at a
+glance. Round to the displayed precision first, so a value that displays as zero is not
+given a misleading sign.
+-}
+withSign : (Float -> String) -> Float -> String
+withSign format value =
+    if value > 0 then
+        "+" ++ format value
+
+    else
+        format value
+
+
+formatSignedM : Float -> String
+formatSignedM =
+    withSign formatM << roundTo 0
+
+
+formatSignedKm : Int -> Float -> String
+formatSignedKm decimalPlaces =
+    roundTo (decimalPlaces - 3) >> withSign (formatKm decimalPlaces)
+
+
+formatGradient : Float -> String
+formatGradient =
+    roundTo 1 >> withSign (\pct -> Round.round 1 pct ++ "%")
+
+
+formatClimbRate : Float -> String
+formatClimbRate metresPerKm =
+    Round.round 0 metresPerKm ++ "m/km"
+
+
+roundTo : Int -> Float -> Float
+roundTo decimalPlaces value =
+    let
+        factor =
+            10 ^ toFloat decimalPlaces
+    in
+    toFloat (round (value * factor)) / factor
+
+
+{-| Compass bearing as degrees plus the nearest of the 16 compass points, e.g. "143° (SE)".
+-}
+formatBearing : Float -> String
+formatBearing degreesFromNorth =
+    let
+        points =
+            [ "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW" ]
+
+        point =
+            List.Extra.getAt (modBy 16 (round (degreesFromNorth / 22.5))) points
+                |> Maybe.withDefault "N"
+    in
+    Round.round 0 degreesFromNorth ++ "° (" ++ point ++ ")"
+
+
+{-| The first trackpoint at or beyond `dist`, falling back to the last trackpoint for a
+distance past the end of the route. Nothing only when the track has no points at all.
+
+TODO: interpolate between bracketing trackpoints when dist falls between two points,
+rather than snapping to the next one (could use interpolateTrackpointAt)
+
+-}
+trackpointAtDistance : Float -> List GpxApi.TrackPoint -> Maybe GpxApi.TrackPoint
+trackpointAtDistance dist trackpoints =
     case List.Extra.find (\tp -> tp.distance >= dist) trackpoints of
         Just tp ->
-            Ok ( tp.gain, tp.loss )
+            Just tp
 
         Nothing ->
-            case List.Extra.last trackpoints of
-                Just tp ->
-                    Ok ( tp.gain, tp.loss )
+            List.Extra.last trackpoints
 
-                Nothing ->
-                    Err "no trackpoints found for gain/loss lookup"
+
+cumulativeGainLossAtDistance : Float -> List GpxApi.TrackPoint -> Result String ( Float, Float )
+cumulativeGainLossAtDistance dist trackpoints =
+    trackpointAtDistance dist trackpoints
+        |> Maybe.map (\tp -> Ok ( tp.gain, tp.loss ))
+        |> Maybe.withDefault (Err "no trackpoints found for gain/loss lookup")
 
 
 
@@ -3421,6 +3935,11 @@ viewOptionsPanel state =
                             viewCuesheetOptionsPanel state
 
                         WaypointsTab ->
+                            []
+
+                        -- The Relative tab's controls live in the tab itself, beside the
+                        -- figures they drive.
+                        RelativeTab ->
                             []
 
                     -- Location tracking
@@ -3851,10 +4370,10 @@ viewTotalDistanceOptions state =
                         ]
 
                     ToWaypoint selectedIdx ->
-                        [ viewWaypointSelector indexedFiltered selectedIdx ]
+                        [ viewWaypointSelector UpdateSelectedWaypoint indexedFiltered selectedIdx ]
 
                     FromWaypoint selectedIdx ->
-                        [ viewWaypointSelector indexedFiltered selectedIdx ]
+                        [ viewWaypointSelector UpdateSelectedWaypoint indexedFiltered selectedIdx ]
 
                     _ ->
                         []
@@ -4013,25 +4532,33 @@ viewButton attrs text onClickMsg =
         [ Html.text text ]
 
 
-viewWaypointSelector : List ( Int, GpxApi.Waypoint ) -> Int -> Html Msg
-viewWaypointSelector indexed selectedIdx =
+{-| Waypoints can be unnamed — `AddWaypoint` creates them with an empty name — so fall back
+to something that still identifies which one is meant.
+-}
+waypointDisplayName : GpxApi.Waypoint -> String
+waypointDisplayName waypoint =
+    if String.isEmpty (String.trim waypoint.name) then
+        "Unnamed waypoint (" ++ formatKm 1 waypoint.distance ++ ")"
+
+    else
+        waypoint.name
+
+
+viewWaypointSelector : (Int -> Msg) -> List ( Int, GpxApi.Waypoint ) -> Int -> Html Msg
+viewWaypointSelector onSelect indexed selectedIdx =
     Dropdown.dropdown
         (Dropdown.Options
             (indexed
                 |> List.map
                     (\( idx, wp ) ->
-                        let
-                            label =
-                                wp.name ++ " (km " ++ formatKm 1 wp.distance ++ ")"
-                        in
-                        Dropdown.Item (String.fromInt idx) label True
+                        Dropdown.Item (String.fromInt idx) (waypointDisplayName wp ++ " (" ++ formatKm 1 wp.distance ++ ")") True
                     )
             )
             Nothing
             (\maybeStr ->
                 case maybeStr |> Maybe.andThen String.toInt of
                     Just idx ->
-                        UpdateSelectedWaypoint idx
+                        onSelect idx
 
                     Nothing ->
                         Ignore
@@ -4158,6 +4685,9 @@ parseTab s =
         "waypoints" ->
             Just WaypointsTab
 
+        "relative" ->
+            Just RelativeTab
+
         _ ->
             Nothing
 
@@ -4174,9 +4704,35 @@ formatTab tab =
         WaypointsTab ->
             "waypoints"
 
+        RelativeTab ->
+            "relative"
+
 
 
 -- ENCODE/DECODE STATE
+
+
+formatRelativeReference : RelativeReference -> String
+formatRelativeReference reference =
+    case reference of
+        ReferenceCurrentPosition ->
+            "position"
+
+        ReferenceWaypoint ->
+            "waypoint"
+
+
+parseRelativeReference : String -> Maybe RelativeReference
+parseRelativeReference s =
+    case s of
+        "position" ->
+            Just ReferenceCurrentPosition
+
+        "waypoint" ->
+            Just ReferenceWaypoint
+
+        _ ->
+            Nothing
 
 
 encodeEditableTrack : EditableTrack -> Json.Encode.Value
@@ -4239,6 +4795,9 @@ encodeSavedState state =
 
         cs =
             state.cuesheet
+
+        rel =
+            state.relative
     in
     Json.Encode.object
         (List.filterMap
@@ -4292,6 +4851,9 @@ encodeSavedState state =
             , Just ( "offRouteThreshold", Json.Encode.float state.offRouteThreshold )
             , Just ( "showOffRouteWaypoints", Json.Encode.bool state.showOffRouteWaypoints )
             , Just ( "showOffRouteDistance", Json.Encode.bool state.showOffRouteDistance )
+            , Just ( "relativeReference", Json.Encode.string (formatRelativeReference rel.reference) )
+            , Just ( "relativeStartWaypoint", Json.Encode.int rel.startWaypointIndex )
+            , Just ( "relativeEndWaypoint", Json.Encode.int rel.endWaypointIndex )
             ]
         )
         |> Json.Encode.encode 0
@@ -4308,9 +4870,12 @@ stateDecoder =
 
         defCs =
             defaultCuesheetOptions
+
+        defRel =
+            defaultRelativeOptions
     in
     Json.Decode.succeed
-        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau position viewMode splitMode splitEquidistantCount splitWaypointIndices liveLookahead liveLookbehind labelHeightGain distanceMarkerInterval distanceMarkerSegmentEnds totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints ->
+        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau position viewMode splitMode splitEquidistantCount splitWaypointIndices liveLookahead liveLookbehind labelHeightGain distanceMarkerInterval distanceMarkerSegmentEnds totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints relativeReference relativeStartWaypoint relativeEndWaypoint ->
             { tracks = loadableResourceFromMaybe tracks
             , showOptions = showOptions |> Maybe.withDefault defaultState.showOptions
             , activeTab = activeTab |> Maybe.andThen parseTab |> Maybe.withDefault defaultState.activeTab
@@ -4360,6 +4925,11 @@ stateDecoder =
                 , distanceDetail = distanceDetail |> Maybe.withDefault defCs.distanceDetail
                 , showStartFinish = showStartFinish |> Maybe.withDefault defCs.showStartFinish
                 }
+            , relative =
+                { reference = relativeReference |> Maybe.andThen parseRelativeReference |> Maybe.withDefault defRel.reference
+                , startWaypointIndex = relativeStartWaypoint |> Maybe.withDefault defRel.startWaypointIndex
+                , endWaypointIndex = relativeEndWaypoint |> Maybe.withDefault defRel.endWaypointIndex
+                }
             , stateDecodeError = Nothing
             , splitSegments = Nothing
             , profilePixelWidth = Nothing
@@ -4394,6 +4964,9 @@ stateDecoder =
         |> andMap (maybeField "showOffRouteDistance" Json.Decode.bool)
         |> andMap (maybeField "offRouteThreshold" Json.Decode.float)
         |> andMap (maybeField "showOffRouteWaypoints" Json.Decode.bool)
+        |> andMap (maybeField "relativeReference" Json.Decode.string)
+        |> andMap (maybeField "relativeStartWaypoint" Json.Decode.int)
+        |> andMap (maybeField "relativeEndWaypoint" Json.Decode.int)
 
 
 andMap : Json.Decode.Decoder a -> Json.Decode.Decoder (a -> b) -> Json.Decode.Decoder b

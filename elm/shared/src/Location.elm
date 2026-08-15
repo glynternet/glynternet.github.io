@@ -1,4 +1,4 @@
-module Location exposing (LatLon, LocationError(..), LocationState, decodeLocationResult, findNearestTrackPoint, haversineDistance, locationErrorToString)
+module Location exposing (LatLon, LocationError(..), LocationState, bearing, decodeLocationResult, findNearestTrackPoint, haversineDistance, locationErrorToString)
 
 import GpxApi
 import Json.Decode
@@ -49,6 +49,36 @@ haversineDistance a b =
             sinDLat * sinDLat + cos (toRad a.lat) * cos (toRad b.lat) * sinDLon * sinDLon
     in
     2 * r * asin (sqrt h)
+
+
+{-| Initial great-circle bearing from `a` to `b`, as a compass bearing in degrees
+(0 = north, clockwise). Note this is the bearing at the start of the path: over a long
+distance a great circle curves, so arriving at `b` you would be pointing elsewhere.
+-}
+bearing : LatLon -> LatLon -> Float
+bearing a b =
+    let
+        toRad deg =
+            deg * pi / 180
+
+        dLon =
+            toRad (b.lon - a.lon)
+
+        y =
+            sin dLon * cos (toRad b.lat)
+
+        x =
+            cos (toRad a.lat) * sin (toRad b.lat) - sin (toRad a.lat) * cos (toRad b.lat) * cos dLon
+
+        degreesFromNorth =
+            atan2 y x * 180 / pi
+    in
+    -- atan2 gives (-180, 180]; compass bearings run 0-360
+    if degreesFromNorth < 0 then
+        degreesFromNorth + 360
+
+    else
+        degreesFromNorth
 
 
 findNearestTrackPoint : LatLon -> List GpxApi.TrackPoint -> Maybe GpxApi.TrackPoint
