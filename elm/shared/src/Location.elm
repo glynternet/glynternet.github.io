@@ -15,6 +15,9 @@ type alias LocationState =
     , accuracy : Float
     , matchedDistance : Float
     , offRouteDistance : Float
+
+    -- Absent on most devices without a barometer, so anything reading it needs a fallback
+    , altitude : Maybe Float
     }
 
 
@@ -90,7 +93,7 @@ findNearestTrackPoint pos trackpoints =
         |> Maybe.map Tuple.second
 
 
-decodeLocationResult : Json.Decode.Decoder (Result LocationError { lat : Float, lon : Float, accuracy : Float })
+decodeLocationResult : Json.Decode.Decoder (Result LocationError { lat : Float, lon : Float, accuracy : Float, altitude : Maybe Float })
 decodeLocationResult =
     Json.Decode.oneOf
         [ Json.Decode.field "error" Json.Decode.string
@@ -108,10 +111,12 @@ decodeLocationResult =
                                 PositionUnavailable
                         )
                 )
-        , Json.Decode.map3 (\lat lon acc -> Ok { lat = lat, lon = lon, accuracy = acc })
+        , Json.Decode.map4 (\lat lon acc altitude -> Ok { lat = lat, lon = lon, accuracy = acc, altitude = altitude })
             (Json.Decode.field "lat" Json.Decode.float)
             (Json.Decode.field "lon" Json.Decode.float)
             (Json.Decode.field "accuracy" Json.Decode.float)
+            -- Nothing for both a null altitude and an older page that never sends the field
+            (Json.Decode.maybe (Json.Decode.field "altitude" Json.Decode.float))
         ]
 
 

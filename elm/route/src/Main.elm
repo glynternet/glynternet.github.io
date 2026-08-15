@@ -754,7 +754,7 @@ update msg model =
                                 locatedState =
                                     withLiveSplit
                                         { s
-                                            | location = Just (Location.LocationState gpsPos pos.accuracy matchedDist offRouteDist)
+                                            | location = Just (Location.LocationState gpsPos pos.accuracy matchedDist offRouteDist pos.altitude)
                                             , locationError = Nothing
                                             , position = Just matchedDist
                                         }
@@ -3472,38 +3472,44 @@ waypointInfos positionDistance position waypoints =
 -- RELATIVE VIEW
 
 
-{-| One end of the Relative tab's comparison, resolved onto the route.
+{-| One end of the Relative tab's comparison: the waypoint it stands for, plus where that
+actually is in the world.
+
+`coordsFromGps` / `elevationFromGps` record whether each came from a real fix or was read off
+the route, so the view can say which — the two disagree whenever the rider is off route, and
+a figure whose origin is invisible is a figure that misleads.
+
 -}
 type alias RelativePoint =
-    { name : String
-    , distance : Float
+    { waypoint : GpxApi.Waypoint
     , latLon : Location.LatLon
     , elevation : Float
-    , gain : Float
-    , loss : Float
+    , coordsFromGps : Bool
+    , elevationFromGps : Bool
     }
 
 
-{-| Resolves a route distance into a comparable point, taking its coordinates and elevation
-from the trackpoint the distance lands on unless a truer position is given.
+{-| Places a resolved waypoint in the world. A GPS fix locates the rider exactly, so it wins
+for the current position; everything else is read off the trackpoint the point's route
+distance lands on.
 
-Waypoints carry no coordinates of their own (`GpxApi.Waypoint` is distance, name,
-categories, gain, loss and off-route distance), so an off-route waypoint resolves to its
-matched point on the route and the crow-flies figures are measured to there rather than to
-the waypoint itself. The waypoint card shows its off-route distance so the gap is visible.
+That fallback is the only option for a waypoint: `GpxApi.Waypoint` is distance, name,
+categories, gain, loss and off-route distance, with no coordinates of its own. So an
+off-route waypoint resolves to its matched point on the route and the direct figures reach
+there rather than the waypoint itself — its context card shows the off-route distance, which
+is exactly the gap being glossed over.
 
 -}
-relativePointAtDistance : List GpxApi.TrackPoint -> String -> Maybe Location.LatLon -> Float -> Maybe RelativePoint
-relativePointAtDistance trackpoints name knownLatLon distance =
-    trackpointAtDistance distance trackpoints
+relativePointFor : List GpxApi.TrackPoint -> Maybe Location.LocationState -> GpxApi.Waypoint -> Maybe RelativePoint
+relativePointFor trackpoints fix waypoint =
+    trackpointAtDistance waypoint.distance trackpoints
         |> Maybe.map
             (\tp ->
-                { name = name
-                , distance = distance
-                , latLon = Maybe.withDefault (Location.LatLon tp.lat tp.lon) knownLatLon
-                , elevation = tp.elevation
-                , gain = tp.gain
-                , loss = tp.loss
+                { waypoint = waypoint
+                , latLon = fix |> Maybe.map .position |> Maybe.withDefault (Location.LatLon tp.lat tp.lon)
+                , elevation = fix |> Maybe.andThen .altitude |> Maybe.withDefault tp.elevation
+                , coordsFromGps = fix /= Nothing
+                , elevationFromGps = (fix |> Maybe.andThen .altitude) /= Nothing
                 }
             )
 
@@ -3528,25 +3534,21 @@ viewRelativeTab state tracks =
                 AtCurrentPosition ->
                     resolvePointRef state.position state.location tracks.current AtCurrentPosition
 
-        relativePointFor ref =
+        pointFor ref =
             waypointFor ref
                 |> Maybe.andThen
-                    (\wp ->
-                        relativePointAtDistance tracks.current.trackpoints
-                            (waypointDisplayName wp)
-                            (case ref of
-                                -- A stored location always belongs to the current position,
-                                -- because setting the position by hand clears it (see
-                                -- UpdatePosition). So when one is present, the GPS fix is a
-                                -- truer origin for the crow-flies figures than the point it
-                                -- was matched to on the route.
-                                AtCurrentPosition ->
-                                    Maybe.map .position state.location
+                    (relativePointFor tracks.current.trackpoints
+                        (case ref of
+                            -- A stored location always belongs to the current position,
+                            -- because setting the position by hand clears it (see
+                            -- UpdatePosition). A position set by hand is only ever a route
+                            -- distance, so it has no fix to offer and reads off the route.
+                            AtCurrentPosition ->
+                                state.location
 
-                                AtWaypoint _ ->
-                                    Nothing
-                            )
-                            wp.distance
+                            AtWaypoint _ ->
+                                Nothing
+                        )
                     )
 
         unresolvedNotice ref fallback =
@@ -3557,24 +3559,32 @@ viewRelativeTab state tracks =
                 AtWaypoint _ ->
                     fallback
 
+        contextCardOrNotice role fallback ref =
+            case pointFor ref of
+                Just point ->
+                    viewRelativeContextCard tracks.current role point
+
+                Nothing ->
+                    relativeNotice (unresolvedNotice ref fallback)
+
         body =
             if List.isEmpty selectable then
                 [ relativeNotice "No waypoints to compare. Add one in the Waypoints tab, or check the waypoint category filter in the options panel." ]
 
             else
-                case waypointFor rel.end of
-                    Nothing ->
-                        [ relativeNotice (unresolvedNotice rel.end "Choose an end point.") ]
+                List.concat
+                    [ [ contextCardOrNotice "Start" "Choose a start point." rel.start ]
 
-                    Just endWaypoint ->
-                        viewRelativeWaypointCard tracks.current endWaypoint
-                            :: (case Maybe.map2 Tuple.pair (relativePointFor rel.start) (relativePointFor rel.end) of
-                                    Just ( startPoint, endPoint ) ->
-                                        [ viewRelativeComparison tracks.current selectable startPoint endPoint ]
+                    -- Only travel between two points that both resolve; the notices in
+                    -- their place say which one still needs choosing.
+                    , case Maybe.map2 Tuple.pair (pointFor rel.start) (pointFor rel.end) of
+                        Just ( startPoint, endPoint ) ->
+                            [ viewRelativeTravelCard tracks.current selectable startPoint endPoint ]
 
-                                    Nothing ->
-                                        [ relativeNotice (unresolvedNotice rel.start "Choose a start point.") ]
-                               )
+                        Nothing ->
+                            []
+                    , [ contextCardOrNotice "End" "Choose an end point." rel.end ]
+                    ]
     in
     Html.div
         [ Html.Attributes.style "display" "flex"
@@ -3598,41 +3608,61 @@ viewRelativeControls hasPosition rel selectable =
         ]
 
 
-viewRelativeWaypointCard : EditableTrack -> GpxApi.Waypoint -> Html Msg
-viewRelativeWaypointCard track waypoint =
+{-| Where one end of the comparison sits on the route, under a heading naming the role it
+plays ("Start" / "End") so the two cards either side of the travel figures are told apart at
+a glance. Takes a resolved waypoint, so the current position — which `resolvePointRef` hands
+back as a synthetic waypoint — reads exactly like a chosen waypoint.
+-}
+viewRelativeContextCard : EditableTrack -> String -> RelativePoint -> Html Msg
+viewRelativeContextCard track role point =
     let
+        waypoint =
+            point.waypoint
+
         ( totalGain, totalLoss ) =
             track.gainLoss
     in
-    relativeCard (waypointDisplayName waypoint)
-        (List.filterMap identity
-            [ case waypoint.categories of
-                [] ->
-                    Nothing
+    relativeCard role
+        (Html.div [ Html.Attributes.style "font-weight" "bold" ] [ Html.text (waypointDisplayName waypoint) ]
+            :: List.filterMap identity
+                [ case waypoint.categories of
+                    [] ->
+                        Nothing
 
-                categories ->
-                    Just (relativeRow "Categories" (String.join ", " categories))
-            , trackpointAtDistance waypoint.distance track.trackpoints
-                |> Maybe.map (\tp -> relativeRow "Elevation" (formatM tp.elevation))
-            , Just (relativeRow "From start" (formatKm 1 waypoint.distance ++ " · " ++ formatEleGainLoss waypoint.gain waypoint.loss))
-            , Just
-                (relativeRow "To finish"
-                    (formatKm 1 (lastTrackpointDistance track.trackpoints - waypoint.distance)
-                        ++ " · "
-                        ++ formatEleGainLoss (totalGain - waypoint.gain) (totalLoss - waypoint.loss)
+                    categories ->
+                        Just (relativeRow "Categories" (String.join ", " categories))
+                , Just (relativeRow (elevationLabel point.elevationFromGps) (formatM point.elevation))
+                , Just (relativeRow "From start" (formatKm 1 waypoint.distance ++ " · " ++ formatEleGainLoss waypoint.gain waypoint.loss))
+                , Just
+                    (relativeRow "To finish"
+                        (formatKm 1 (lastTrackpointDistance track.trackpoints - waypoint.distance)
+                            ++ " · "
+                            ++ formatEleGainLoss (totalGain - waypoint.gain) (totalLoss - waypoint.loss)
+                        )
                     )
-                )
-            , if waypoint.offRoute > 0 then
-                Just (relativeRow "Off route" (formatM waypoint.offRoute ++ " from the route"))
+                , if waypoint.offRoute > 0 then
+                    Just (relativeRow "Off route" (formatM waypoint.offRoute ++ " from the route"))
 
-              else
-                Nothing
-            ]
+                  else
+                    Nothing
+                ]
         )
 
 
-viewRelativeComparison : EditableTrack -> List ( Int, GpxApi.Waypoint ) -> RelativePoint -> RelativePoint -> Html Msg
-viewRelativeComparison track selectable start end =
+elevationLabel : Bool -> String
+elevationLabel fromGps =
+    if fromGps then
+        "Elevation (GPS)"
+
+    else
+        "Elevation"
+
+
+{-| What it takes to get from the start point to the end point, both ways of measuring it:
+straight there, and following the route.
+-}
+viewRelativeTravelCard : EditableTrack -> List ( Int, GpxApi.Waypoint ) -> RelativePoint -> RelativePoint -> Html Msg
+viewRelativeTravelCard track selectable start end =
     let
         crowFlies =
             Location.haversineDistance start.latLon end.latLon
@@ -3641,31 +3671,43 @@ viewRelativeComparison track selectable start end =
             end.elevation - start.elevation
 
         alongRoute =
-            end.distance - start.distance
+            end.waypoint.distance - start.waypoint.distance
 
         -- Travelling from start to end against the route's direction turns its climbs into
         -- descents and its descents into climbs
         ( gain, loss ) =
             if alongRoute < 0 then
-                ( start.loss - end.loss, start.gain - end.gain )
+                ( start.waypoint.loss - end.waypoint.loss, start.waypoint.gain - end.waypoint.gain )
 
             else
-                ( end.gain - start.gain, end.loss - start.loss )
+                ( end.waypoint.gain - start.waypoint.gain, end.waypoint.loss - start.waypoint.loss )
+
+        usingFix =
+            start.coordsFromGps || end.coordsFromGps
 
         waypointsBetween =
             selectable
                 |> List.filter
                     (\( _, wp ) ->
-                        wp.distance > min start.distance end.distance && wp.distance < max start.distance end.distance
+                        wp.distance
+                            > min start.waypoint.distance end.waypoint.distance
+                            && wp.distance
+                            < max start.waypoint.distance end.waypoint.distance
                     )
                 |> List.length
     in
-    relativeCard (start.name ++ " → " ++ end.name)
-        [ relativeSection "As the crow flies"
+    relativeCard "Travel"
+        [ relativeSection "Direct"
+            (if usingFix then
+                "from your GPS fix"
+
+             else
+                "between points on the route"
+            )
             (List.filterMap identity
                 [ Just (relativeRow "Distance" (formatKm 2 crowFlies))
                 , Just (relativeRow "Bearing" (formatBearing (Location.bearing start.latLon end.latLon)))
-                , Just (relativeRow "Elevation" (formatSignedM elevationDifference))
+                , Just (relativeRow (elevationLabel (start.elevationFromGps || end.elevationFromGps)) (formatSignedM elevationDifference))
                 , if crowFlies > 0 then
                     Just (relativeRow "Gradient" (formatGradient (elevationDifference / crowFlies * 100)))
 
@@ -3673,7 +3715,15 @@ viewRelativeComparison track selectable start end =
                     Nothing
                 ]
             )
-        , relativeSection "Along the route"
+        , relativeSection "Along route"
+            -- Only the route can say how far along it something is, so a GPS fix has to be
+            -- taken as the route point it matched — worth saying when the two differ.
+            (if usingFix then
+                "your position taken as the nearest route point"
+
+             else
+                ""
+            )
             (List.filterMap identity
                 [ Just
                     (relativeRow "Distance"
@@ -3748,8 +3798,11 @@ relativeCard title contents =
         (Html.h3 [ Html.Attributes.style "margin" "0" ] [ Html.text title ] :: contents)
 
 
-relativeSection : String -> List (Html Msg) -> Html Msg
-relativeSection title rows =
+{-| A titled group of rows. `note` says where the section's figures were measured from, and
+is empty when there is nothing to disambiguate.
+-}
+relativeSection : String -> String -> List (Html Msg) -> Html Msg
+relativeSection title note rows =
     Html.div
         [ Html.Attributes.style "display" "flex"
         , Html.Attributes.style "flex-direction" "column"
@@ -3759,8 +3812,14 @@ relativeSection title rows =
             [ Html.Attributes.style "font-size" "0.85em"
             , Html.Attributes.style "opacity" "0.7"
             , Html.Attributes.style "border-bottom" "1px solid #ddd"
+            , Html.Attributes.style "display" "flex"
+            , Html.Attributes.style "flex-wrap" "wrap"
+            , Html.Attributes.style "gap" "0.5em"
+            , Html.Attributes.style "justify-content" "space-between"
             ]
-            [ Html.text title ]
+            [ Html.text title
+            , Html.span [ Html.Attributes.style "font-style" "italic" ] [ Html.text note ]
+            ]
             :: rows
         )
 

@@ -102,7 +102,10 @@ layout: default
 								app.ports.receiveLocation.send({
 									lat: pos.coords.latitude,
 									lon: pos.coords.longitude,
-									accuracy: pos.coords.accuracy
+									accuracy: pos.coords.accuracy,
+									// null on most devices without a barometer; the Elm side
+									// falls back to the route's elevation when it is missing
+									altitude: pos.coords.altitude
 								});
 							},
 							function(err) {
