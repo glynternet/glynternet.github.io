@@ -144,6 +144,120 @@ type alias EditableWaypoint =
     }
 
 
+{-| A point on the route the user has picked out: either one of the track's waypoints, or
+wherever they currently are.
+
+Every flow that asks the user to choose a point on the route stores one of these, so the
+same selector serves all of them. `AtCurrentPosition` resolves against `state.position`,
+which may be unset — hence the `Maybe` on the resolvers below.
+
+`AtWaypoint` indexes `editableWaypoints`, deliberately including the deleted ones: that index
+is stable, whereas a position in the resolved-and-filtered list shifts under the user as soon
+as an earlier waypoint is marked deleted or filtered out. It is also the index space the
+edit flows already maintain — see `removeWaypointAt`, `WaypointDeleted` and `ResetWaypoints`.
+
+-}
+type PointRef
+    = AtWaypoint Int
+    | AtCurrentPosition
+
+
+{-| Resolves a reference to the waypoint it stands for, or Nothing when it no longer stands
+for one — a deleted waypoint, or the current position with no position set.
+`AtCurrentPosition` becomes a synthetic waypoint at the position, carrying the cumulative
+climb to there and, when a GPS fix is what set the position, how far off route that fix is.
+
+Returning a `GpxApi.Waypoint` rather than a bespoke record is what lets the cuesheet and
+elevation profile treat a chosen position exactly like a chosen waypoint.
+
+-}
+resolvePointRef : Maybe Float -> Maybe Location.LocationState -> EditableTrack -> PointRef -> Maybe GpxApi.Waypoint
+resolvePointRef position location track ref =
+    case ref of
+        AtWaypoint i ->
+            List.Extra.getAt i track.editableWaypoints
+                |> Maybe.andThen
+                    (\ew ->
+                        if ew.deleted then
+                            Nothing
+
+                        else
+                            Just (effectiveWaypoint track.trackpoints ew)
+                    )
+
+        AtCurrentPosition ->
+            position
+                |> Maybe.andThen
+                    (\pos ->
+                        cumulativeGainLossAtDistance pos track.trackpoints
+                            |> Result.toMaybe
+                            |> Maybe.map
+                                (\( gain, loss ) ->
+                                    GpxApi.Waypoint pos
+                                        currentPositionName
+                                        []
+                                        gain
+                                        loss
+                                        (location |> Maybe.map .offRouteDistance |> Maybe.withDefault 0)
+                                )
+                    )
+
+
+{-| The route distance a reference stands for, for the flows that only need to place the
+point along the route. Defined through `resolvePointRef` so there is a single answer to what
+an `AtWaypoint` index means; a GPS fix cannot move a point along the route, so none is needed.
+-}
+refDistance : Maybe Float -> EditableTrack -> PointRef -> Maybe Float
+refDistance position track =
+    resolvePointRef position Nothing track >> Maybe.map .distance
+
+
+{-| Remaps a reference after the waypoint at `removedIndex` has been dropped from
+`editableWaypoints`, which shifts every later index down by one. The current position is not
+addressed by index, so it survives untouched.
+-}
+shiftPointRef : Int -> PointRef -> PointRef
+shiftPointRef removedIndex ref =
+    case ref of
+        AtWaypoint i ->
+            if i > removedIndex then
+                AtWaypoint (i - 1)
+
+            else
+                ref
+
+        AtCurrentPosition ->
+            ref
+
+
+currentPositionName : String
+currentPositionName =
+    "Current position"
+
+
+{-| A waypoint reference formats as its bare index, which is what `TotalDistanceDisplay`
+stored before the current position was selectable — so old saved state still reads back.
+Doubles as the option value in `viewPointSelector`.
+-}
+formatPointRef : PointRef -> String
+formatPointRef ref =
+    case ref of
+        AtWaypoint idx ->
+            String.fromInt idx
+
+        AtCurrentPosition ->
+            "position"
+
+
+parsePointRef : String -> Maybe PointRef
+parsePointRef s =
+    if s == "position" then
+        Just AtCurrentPosition
+
+    else
+        String.toInt s |> Maybe.map AtWaypoint
+
+
 type alias WaypointOverrides =
     { name : Maybe String
     , distance : Maybe Float
@@ -214,24 +328,6 @@ effectiveWaypoints track =
         track.editableWaypoints
 
 
-{-| Pairs each non-deleted waypoint with its stable index in the editableWaypoints list.
-Editing flows (e.g. split-at-waypoint selection) reference waypoints by this index, so the
-original order is preserved here even though viewing flows resolve and re-sort by distance.
--}
-indexedEffectiveWaypoints : EditableTrack -> List ( Int, GpxApi.Waypoint )
-indexedEffectiveWaypoints track =
-    track.editableWaypoints
-        |> List.indexedMap Tuple.pair
-        |> List.filterMap
-            (\( i, ew ) ->
-                if ew.deleted then
-                    Nothing
-
-                else
-                    Just ( i, effectiveWaypoint track.trackpoints ew )
-            )
-
-
 type alias ElevationProfileOptions =
     { fontSize : Float
     , trackHeight : Int
@@ -240,7 +336,7 @@ type alias ElevationProfileOptions =
     , intensityTau : Float
     , activeSplitMode : ActiveSplitMode
     , splitEquidistantCount : Int
-    , splitWaypointIndices : List Int
+    , splitPoints : List PointRef
     , liveLookahead : Float
     , liveLookbehind : Float
     , labelHeightGain : Float
@@ -258,30 +354,21 @@ type alias CuesheetOptions =
     }
 
 
-{-| The Relative tab compares two points on the route: a start, which is either the current
-position or a chosen waypoint, and an end waypoint. `startWaypointIndex` is only used when
-`reference` is `ReferenceWaypoint`, but is kept across a switch to `ReferenceCurrentPosition`
-so switching back restores the previous choice. Both indices address the current track's
-`effectiveWaypoints`, the same index space as `ToWaypoint`/`FromWaypoint`.
+{-| The Relative tab compares two points on the route, either of which can be a waypoint or
+the current position.
 -}
 type alias RelativeOptions =
-    { reference : RelativeReference
-    , startWaypointIndex : Int
-    , endWaypointIndex : Int
+    { start : PointRef
+    , end : PointRef
     }
-
-
-type RelativeReference
-    = ReferenceCurrentPosition
-    | ReferenceWaypoint
 
 
 type TotalDistanceDisplay
     = FromZero
     | ToFinish
     | ToPoint
-    | ToWaypoint Int
-    | FromWaypoint Int
+    | ToWaypoint PointRef
+    | FromWaypoint PointRef
     | PercentProgress
     | PercentRemaining
     | None
@@ -296,7 +383,7 @@ defaultElevationProfileOptions =
     , intensityTau = 500
     , activeSplitMode = EquidistantMode
     , splitEquidistantCount = 1
-    , splitWaypointIndices = []
+    , splitPoints = []
     , liveLookahead = 5000
     , liveLookbehind = 2000
     , labelHeightGain = 1.0
@@ -317,9 +404,8 @@ defaultCuesheetOptions =
 
 defaultRelativeOptions : RelativeOptions
 defaultRelativeOptions =
-    { reference = ReferenceCurrentPosition
-    , startWaypointIndex = 0
-    , endWaypointIndex = 0
+    { start = AtCurrentPosition
+    , end = AtWaypoint 0
     }
 
 
@@ -470,9 +556,9 @@ type Msg
     | UpdateSplits Int
     | SetViewMode ViewMode
     | SetSplitMode ActiveSplitMode
-    | AddSplitWaypoint
-    | UpdateSplitWaypoint Int Int
-    | RemoveSplitWaypoint Int
+    | AddSplitPoint
+    | UpdateSplitPoint Int PointRef
+    | RemoveSplitPoint Int
     | UpdateLiveLookahead Float
     | UpdateLiveLookbehind Float
     | UpdateDistanceMarkerInterval (Maybe Float)
@@ -485,13 +571,12 @@ type Msg
     | UpdateDistanceDetail Int
     | UpdateShowStartFinish Bool
     | UpdateShowOffRouteDistance Bool
-    | UpdateSelectedWaypoint Int
+    | UpdateSelectedPoint PointRef
     | UpdateOffRouteThreshold Float
     | UpdateShowOffRouteWaypoints Bool
       -- Relative
-    | SetRelativeReference RelativeReference
-    | SetRelativeStartWaypoint Int
-    | SetRelativeEndWaypoint Int
+    | SetRelativeStart PointRef
+    | SetRelativeEnd PointRef
       -- State export/import
     | ExportState
     | DownloadSplitsGpx
@@ -507,15 +592,9 @@ type Msg
 -- UPDATE
 
 
-sortWaypointIndices : List EditableWaypoint -> List Int -> List Int
-sortWaypointIndices editableWps indices =
-    List.sortBy
-        (\idx ->
-            List.Extra.getAt idx editableWps
-                |> Maybe.map effectiveDistance
-                |> Maybe.withDefault 0
-        )
-        indices
+sortPointRefs : Maybe Float -> EditableTrack -> List PointRef -> List PointRef
+sortPointRefs position track =
+    List.sortBy (refDistance position track >> Maybe.withDefault 0)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -592,7 +671,7 @@ update msg model =
                                                 ep =
                                                     s.elevationProfile
                                             in
-                                            { ep | splitWaypointIndices = [] }
+                                            { ep | splitPoints = [] }
                                     }
                                 )
 
@@ -804,23 +883,28 @@ update msg model =
                     in
                     updateSplitAndStore
                         (updateState
-                            { s
-                                | tracks =
-                                    Loaded <|
-                                        Zipper.updateCurrent
-                                            (\current -> updateEditableWaypoint current i (\ew -> { ew | deleted = deleted }))
-                                            tracks
-                                , elevationProfile =
-                                    { ep
-                                        | splitWaypointIndices =
-                                            if deleted then
-                                                -- remove split waypoint if it no longer exists
-                                                List.filter (\idx -> idx /= i) ep.splitWaypointIndices
+                            -- A reference to the deleted waypoint no longer resolves, so
+                            -- repoint the cuesheet and Relative selections at something that
+                            -- does rather than leaving them showing nothing.
+                            (correctWaypointSelectionInState
+                                { s
+                                    | tracks =
+                                        Loaded <|
+                                            Zipper.updateCurrent
+                                                (\current -> updateEditableWaypoint current i (\ew -> { ew | deleted = deleted }))
+                                                tracks
+                                    , elevationProfile =
+                                        { ep
+                                            | splitPoints =
+                                                if deleted then
+                                                    -- remove split point if its waypoint no longer exists
+                                                    List.filter ((/=) (AtWaypoint i)) ep.splitPoints
 
-                                            else
-                                                ep.splitWaypointIndices
-                                    }
-                            }
+                                                else
+                                                    ep.splitPoints
+                                        }
+                                }
+                            )
                         )
 
                 _ ->
@@ -955,8 +1039,8 @@ update msg model =
 
                         -- Created waypoints are always appended after the source ones,
                         -- so reverting to source keeps source indices 0..sourceCount-1
-                        -- intact; only split indices pointing at created waypoints are
-                        -- now stale.
+                        -- intact; only split points aimed at created waypoints are
+                        -- now stale. A split at the current position is never stale.
                         sourceCount =
                             List.length (List.filter (not << .created) tracks.current.editableWaypoints)
                     in
@@ -977,7 +1061,19 @@ update msg model =
                                                 )
                                                 tracks
                                     , elevationProfile =
-                                        { ep | splitWaypointIndices = List.filter (\idx -> idx < sourceCount) ep.splitWaypointIndices }
+                                        { ep
+                                            | splitPoints =
+                                                List.filter
+                                                    (\ref ->
+                                                        case ref of
+                                                            AtWaypoint idx ->
+                                                                idx < sourceCount
+
+                                                            AtCurrentPosition ->
+                                                                True
+                                                    )
+                                                    ep.splitPoints
+                                        }
                                 }
                             )
                         )
@@ -1049,70 +1145,57 @@ update msg model =
             in
             updateSplitAndStore (updateState { s | elevationProfile = { ep | activeSplitMode = mode } })
 
-        AddSplitWaypoint ->
+        AddSplitPoint ->
             let
                 ep =
                     s.elevationProfile
-
-                editableWps =
-                    maybeFromloadableResource s.tracks
-                        |> Maybe.map (.current >> .editableWaypoints)
-                        |> Maybe.withDefault []
-
-                availableIndices =
-                    maybeFromloadableResource s.tracks
-                        |> Maybe.map (.current >> indexedEffectiveWaypoints >> List.map Tuple.first)
-                        |> Maybe.withDefault []
-
-                indices =
-                    ep.splitWaypointIndices
-
-                firstAvailable =
-                    availableIndices
-                        |> List.filter (\i -> not (List.member i indices))
-                        |> List.head
             in
-            case firstAvailable of
-                Just idx ->
-                    let
-                        newIndices =
-                            sortWaypointIndices editableWps (idx :: indices)
-                    in
-                    updateSplitAndStore (updateState { s | elevationProfile = { ep | splitWaypointIndices = newIndices } })
+            case maybeFromloadableResource s.tracks of
+                Just tracks ->
+                    case
+                        selectableSplitPoints s tracks.current
+                            |> List.filter (\ref -> not (List.member ref ep.splitPoints))
+                            |> List.head
+                    of
+                        Just ref ->
+                            updateSplitAndStore
+                                (updateState
+                                    { s
+                                        | elevationProfile =
+                                            { ep | splitPoints = sortPointRefs s.position tracks.current (ref :: ep.splitPoints) }
+                                    }
+                                )
+
+                        Nothing ->
+                            ( model, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
 
-        -- splitWaypointIndices holds a list of waypoint indices (into editableWaypoints).
-        -- splitListPos is a position within that list; newWaypointIdx is an editableWaypoints index.
-        UpdateSplitWaypoint splitListPos newWaypointIdx ->
+        -- splitListPos is a position within the splitPoints list, not a waypoint index.
+        UpdateSplitPoint splitListPos newRef ->
             let
                 ep =
                     s.elevationProfile
 
-                newIndices =
+                newPoints =
                     maybeFromloadableResource s.tracks
                         |> Maybe.map
-                            (.current
-                                >> .editableWaypoints
-                                >> (\editableWaypoints ->
-                                        List.Extra.setAt splitListPos newWaypointIdx ep.splitWaypointIndices
-                                            |> sortWaypointIndices editableWaypoints
-                                   )
+                            (\tracks ->
+                                List.Extra.setAt splitListPos newRef ep.splitPoints
+                                    |> sortPointRefs s.position tracks.current
                             )
                         |> Maybe.withDefault []
             in
-            updateSplitAndStore (updateState { s | elevationProfile = { ep | splitWaypointIndices = newIndices } })
+            updateSplitAndStore (updateState { s | elevationProfile = { ep | splitPoints = newPoints } })
 
-        RemoveSplitWaypoint splitListPos ->
+        RemoveSplitPoint splitListPos ->
             let
                 ep =
                     s.elevationProfile
-
-                newIndices =
-                    List.Extra.removeAt splitListPos ep.splitWaypointIndices
             in
-            updateSplitAndStore (updateState { s | elevationProfile = { ep | splitWaypointIndices = newIndices } })
+            updateSplitAndStore
+                (updateState { s | elevationProfile = { ep | splitPoints = List.Extra.removeAt splitListPos ep.splitPoints } })
 
         UpdateLiveLookahead val ->
             let
@@ -1186,7 +1269,7 @@ update msg model =
         UpdateShowOffRouteDistance show ->
             updateAndStoreModel (updateState { s | showOffRouteDistance = show })
 
-        UpdateSelectedWaypoint idx ->
+        UpdateSelectedPoint ref ->
             let
                 cs =
                     s.cuesheet
@@ -1194,10 +1277,10 @@ update msg model =
                 newDisplay =
                     case cs.totalDistanceDisplay of
                         ToWaypoint _ ->
-                            ToWaypoint idx
+                            ToWaypoint ref
 
                         FromWaypoint _ ->
-                            FromWaypoint idx
+                            FromWaypoint ref
 
                         other ->
                             other
@@ -1210,26 +1293,19 @@ update msg model =
         UpdateShowOffRouteWaypoints show ->
             updateAndStoreModel (updateState { s | showOffRouteWaypoints = show })
 
-        SetRelativeReference reference ->
+        SetRelativeStart ref ->
             let
                 rel =
                     s.relative
             in
-            updateAndStoreModel (updateState { s | relative = { rel | reference = reference } })
+            updateAndStoreModel (updateState { s | relative = { rel | start = ref } })
 
-        SetRelativeStartWaypoint idx ->
+        SetRelativeEnd ref ->
             let
                 rel =
                     s.relative
             in
-            updateAndStoreModel (updateState { s | relative = { rel | startWaypointIndex = idx } })
-
-        SetRelativeEndWaypoint idx ->
-            let
-                rel =
-                    s.relative
-            in
-            updateAndStoreModel (updateState { s | relative = { rel | endWaypointIndex = idx } })
+            updateAndStoreModel (updateState { s | relative = { rel | end = ref } })
 
         ExportState ->
             ( model, downloadState (encodeSavedState { s | showOptions = False }) )
@@ -1352,19 +1428,8 @@ requestSplitCmdWasm state =
                                     WaypointsMode ->
                                         let
                                             distances =
-                                                state.elevationProfile.splitWaypointIndices
-                                                    |> List.filterMap
-                                                        (\i ->
-                                                            List.Extra.getAt i tracks.current.editableWaypoints
-                                                                |> Maybe.andThen
-                                                                    (\ew ->
-                                                                        if ew.deleted then
-                                                                            Nothing
-
-                                                                        else
-                                                                            Just (effectiveDistance ew)
-                                                                    )
-                                                        )
+                                                state.elevationProfile.splitPoints
+                                                    |> List.filterMap (refDistance state.position tracks.current)
                                                     |> List.sort
                                         in
                                         [ ( "mode", Json.Encode.string "waypoints" )
@@ -1467,9 +1532,9 @@ updateOverrides fn ew =
 {-| Physically removes the waypoint at index `i` (used for permanently deleting a
 user-created waypoint). Dropping a list element shifts every later index down by
 one, so the index-based references into editableWaypoints must be remapped: the
-split selection, the cuesheet's reference waypoint, the Relative tab's start/end
-waypoints, and the transient new-category inputs. correctWaypointSelectionInState
-then clamps any selection whose waypoint was the one removed.
+split points, the cuesheet's reference point, the Relative tab's start/end points,
+and the transient new-category inputs. correctWaypointSelectionInState then clamps
+any selection whose waypoint was the one removed.
 -}
 removeWaypointAt : Int -> State -> State
 removeWaypointAt i s =
@@ -1494,11 +1559,11 @@ removeWaypointAt i s =
 
                 shiftDisplay display =
                     case display of
-                        ToWaypoint idx ->
-                            ToWaypoint (shift idx)
+                        ToWaypoint ref ->
+                            ToWaypoint (shiftPointRef i ref)
 
-                        FromWaypoint idx ->
-                            FromWaypoint (shift idx)
+                        FromWaypoint ref ->
+                            FromWaypoint (shiftPointRef i ref)
 
                         other ->
                             other
@@ -1511,12 +1576,12 @@ removeWaypointAt i s =
                                 (\current -> { current | editableWaypoints = List.Extra.removeAt i current.editableWaypoints })
                                 tracks
                     , elevationProfile =
-                        { ep | splitWaypointIndices = ep.splitWaypointIndices |> List.filter ((/=) i) |> List.map shift }
+                        { ep | splitPoints = ep.splitPoints |> List.filter ((/=) (AtWaypoint i)) |> List.map (shiftPointRef i) }
                     , cuesheet = { cs | totalDistanceDisplay = shiftDisplay cs.totalDistanceDisplay }
                     , relative =
                         { rel
-                            | startWaypointIndex = shift rel.startWaypointIndex
-                            , endWaypointIndex = shift rel.endWaypointIndex
+                            | start = shiftPointRef i rel.start
+                            , end = shiftPointRef i rel.end
                         }
                     , newCategoryInputs =
                         s.newCategoryInputs
@@ -1649,55 +1714,106 @@ offRoutePredicate threshold w =
     w.offRoute <= threshold
 
 
-indexedFilteredWaypoints : List GpxApi.Waypoint -> List GpxApi.Waypoint -> List ( Int, GpxApi.Waypoint )
-indexedFilteredWaypoints allWaypoints filtered =
-    allWaypoints
+{-| Pairs each waypoint that survived filtering with the index a `PointRef` would name it by,
+so a selector's options carry references the rest of the app can resolve. See `PointRef` for
+why that is the `editableWaypoints` index rather than a position in this list.
+-}
+indexedFilteredWaypoints : EditableTrack -> List GpxApi.Waypoint -> List ( Int, GpxApi.Waypoint )
+indexedFilteredWaypoints track filtered =
+    track.editableWaypoints
         |> List.indexedMap Tuple.pair
+        |> List.filter (Tuple.second >> .deleted >> not)
+        |> List.map (Tuple.mapSecond (effectiveWaypoint track.trackpoints))
         |> List.filter (\( _, wp ) -> List.member wp filtered)
 
 
-{-| The waypoints the Relative tab offers for selection, paired with their index into the
-track's `effectiveWaypoints`.
+{-| The waypoints offered for selection to the flows that pick a point out of the whole
+route — the Relative tab and the elevation profile's split boundaries.
+
+Deliberately filtered by `waypointSelectionPredicates` rather than the full
+`waypointPredicates`: a selection must not disappear just because the live-view window has
+moved past the waypoint it names.
+
 -}
-selectableRelativeWaypoints : State -> EditableTrack -> List ( Int, GpxApi.Waypoint )
-selectableRelativeWaypoints state track =
-    let
-        allWaypoints =
-            effectiveWaypoints track
-    in
-    indexedFilteredWaypoints allWaypoints
-        (filterWaypoints (waypointSelectionPredicates state) allWaypoints)
+selectableWaypoints : State -> EditableTrack -> List ( Int, GpxApi.Waypoint )
+selectableWaypoints state track =
+    indexedFilteredWaypoints track
+        (filterWaypoints (waypointSelectionPredicates state) (effectiveWaypoints track))
 
 
+{-| The points the elevation profile offers as split boundaries. Waypoints come first so
+that "Add" keeps working through them in route order before reaching for the position.
+-}
+selectableSplitPoints : State -> EditableTrack -> List PointRef
+selectableSplitPoints state track =
+    List.map (Tuple.first >> AtWaypoint) (selectableWaypoints state track)
+        ++ positionRefIfSet state
+
+
+{-| `AtCurrentPosition` as a one-element list when a position is set, so selector option
+lists can simply append it.
+-}
+positionRefIfSet : State -> List PointRef
+positionRefIfSet state =
+    case state.position of
+        Just _ ->
+            [ AtCurrentPosition ]
+
+        Nothing ->
+            []
+
+
+{-| Repoints a display mode whose reference waypoint has been filtered away or deleted. The
+current position is never filtered away, so it is always left alone.
+-}
 correctWaypointSelection : TotalDistanceDisplay -> List ( Int, GpxApi.Waypoint ) -> TotalDistanceDisplay
 correctWaypointSelection display indexed =
+    let
+        isSelectable ref =
+            case ref of
+                AtWaypoint idx ->
+                    List.any (\( i, _ ) -> i == idx) indexed
+
+                AtCurrentPosition ->
+                    True
+
+        correct rebuild fallback ref =
+            if isSelectable ref then
+                display
+
+            else
+                case fallback indexed of
+                    Just ( fallbackIdx, _ ) ->
+                        rebuild (AtWaypoint fallbackIdx)
+
+                    Nothing ->
+                        display
+    in
     case display of
-        ToWaypoint idx ->
-            if List.any (\( i, _ ) -> i == idx) indexed then
-                display
+        ToWaypoint ref ->
+            correct ToWaypoint List.Extra.last ref
 
-            else
-                case List.Extra.last indexed of
-                    Just ( lastIdx, _ ) ->
-                        ToWaypoint lastIdx
-
-                    Nothing ->
-                        display
-
-        FromWaypoint idx ->
-            if List.any (\( i, _ ) -> i == idx) indexed then
-                display
-
-            else
-                case List.head indexed of
-                    Just ( firstIdx, _ ) ->
-                        FromWaypoint firstIdx
-
-                    Nothing ->
-                        display
+        FromWaypoint ref ->
+            correct FromWaypoint List.head ref
 
         _ ->
             display
+
+
+{-| The point the current display mode measures to or from, resolved for the modes that have
+one. Shared by the cuesheet and the elevation profile's distance markers.
+-}
+referenceWaypoint : State -> EditableTrack -> Maybe GpxApi.Waypoint
+referenceWaypoint state track =
+    case state.cuesheet.totalDistanceDisplay of
+        ToWaypoint ref ->
+            resolvePointRef state.position state.location track ref
+
+        FromWaypoint ref ->
+            resolvePointRef state.position state.location track ref
+
+        _ ->
+            Nothing
 
 
 correctWaypointSelectionInState : State -> State
@@ -1708,14 +1824,9 @@ correctWaypointSelectionInState s =
 
         Just tracks ->
             let
-                allWaypoints =
-                    effectiveWaypoints tracks.current
-
-                filtered =
-                    filterWaypoints (waypointPredicates s) allWaypoints
-
                 indexed =
-                    indexedFilteredWaypoints allWaypoints filtered
+                    indexedFilteredWaypoints tracks.current
+                        (filterWaypoints (waypointPredicates s) (effectiveWaypoints tracks.current))
 
                 cs =
                     s.cuesheet
@@ -1729,21 +1840,29 @@ correctWaypointSelectionInState s =
                 -- The Relative tab can target waypoints outside the live window, so its
                 -- selection is validated against its own, wider list.
                 relativeSelectable =
-                    selectableRelativeWaypoints s tracks.current
+                    selectableWaypoints s tracks.current
 
-                clampToSelectable fallback idx =
-                    if List.any (\( i, _ ) -> i == idx) relativeSelectable then
-                        idx
+                clampToSelectable fallback ref =
+                    case ref of
+                        -- The position is always available, whatever the waypoint filters do
+                        AtCurrentPosition ->
+                            ref
 
-                    else
-                        fallback relativeSelectable |> Maybe.map Tuple.first |> Maybe.withDefault idx
+                        AtWaypoint idx ->
+                            if List.any (\( i, _ ) -> i == idx) relativeSelectable then
+                                ref
+
+                            else
+                                fallback relativeSelectable
+                                    |> Maybe.map (Tuple.first >> AtWaypoint)
+                                    |> Maybe.withDefault ref
             in
             { s
                 | cuesheet = { cs | totalDistanceDisplay = corrected }
                 , relative =
                     { rel
-                        | startWaypointIndex = clampToSelectable List.head rel.startWaypointIndex
-                        , endWaypointIndex = clampToSelectable List.Extra.last rel.endWaypointIndex
+                        | start = clampToSelectable List.head rel.start
+                        , end = clampToSelectable List.Extra.last rel.end
                     }
             }
 
@@ -2040,22 +2159,11 @@ viewElevationProfileTab state tracks =
         cs =
             state.cuesheet
 
-        currentEffectiveWaypoints =
-            effectiveWaypoints tracks.current
-
         currentFinishDistance =
             lastTrackpointDistance tracks.current.trackpoints
 
         refWaypoint =
-            case cs.totalDistanceDisplay of
-                ToWaypoint idx ->
-                    List.Extra.getAt idx currentEffectiveWaypoints
-
-                FromWaypoint idx ->
-                    List.Extra.getAt idx currentEffectiveWaypoints
-
-                _ ->
-                    Nothing
+            referenceWaypoint state tracks.current
     in
     case state.splitSegments of
         Nothing ->
@@ -2853,13 +2961,7 @@ viewCuesheetTab state tracks =
                 |> trimWaypointCategories state.filteredCategories
 
         positionWaypoint =
-            state.position
-                |> Maybe.andThen
-                    (\pos ->
-                        cumulativeGainLossAtDistance pos tracks.current.trackpoints
-                            |> Result.toMaybe
-                            |> Maybe.map (\( g, l ) -> GpxApi.Waypoint pos "Current position" [] g l (state.location |> Maybe.map .offRouteDistance |> Maybe.withDefault 0))
-                    )
+            resolvePointRef state.position state.location tracks.current AtCurrentPosition
 
         -- Sort by distance so edited waypoint distances reorder the list (the original
         -- waypoint order no longer matches distance once a distance override is applied)
@@ -2883,15 +2985,7 @@ viewCuesheetTab state tracks =
                     0
 
         refWaypoint =
-            case cs.totalDistanceDisplay of
-                ToWaypoint idx ->
-                    List.Extra.getAt idx currentEffectiveWaypoints
-
-                FromWaypoint idx ->
-                    List.Extra.getAt idx currentEffectiveWaypoints
-
-                _ ->
-                    Nothing
+            referenceWaypoint state tracks.current
 
         refPointEle =
             case refWaypoint of
@@ -3421,51 +3515,65 @@ viewRelativeTab state tracks =
             state.relative
 
         selectable =
-            selectableRelativeWaypoints state tracks.current
+            selectableWaypoints state tracks.current
 
-        waypointAt idx =
-            selectable |> List.Extra.find (\( i, _ ) -> i == idx) |> Maybe.map Tuple.second
+        -- Resolved through `selectable` rather than the whole track, so a reference to a
+        -- waypoint the filters have hidden reads as "nothing chosen" instead of silently
+        -- comparing against something that is not in the dropdown.
+        waypointFor ref =
+            case ref of
+                AtWaypoint idx ->
+                    selectable |> List.Extra.find (\( i, _ ) -> i == idx) |> Maybe.map Tuple.second
 
-        relativePoint =
-            relativePointAtDistance tracks.current.trackpoints
+                AtCurrentPosition ->
+                    resolvePointRef state.position state.location tracks.current AtCurrentPosition
 
-        relativeWaypointPoint idx =
-            waypointAt idx
-                |> Maybe.andThen (\wp -> relativePoint (waypointDisplayName wp) Nothing wp.distance)
+        relativePointFor ref =
+            waypointFor ref
+                |> Maybe.andThen
+                    (\wp ->
+                        relativePointAtDistance tracks.current.trackpoints
+                            (waypointDisplayName wp)
+                            (case ref of
+                                -- A stored location always belongs to the current position,
+                                -- because setting the position by hand clears it (see
+                                -- UpdatePosition). So when one is present, the GPS fix is a
+                                -- truer origin for the crow-flies figures than the point it
+                                -- was matched to on the route.
+                                AtCurrentPosition ->
+                                    Maybe.map .position state.location
 
-        start =
-            case rel.reference of
-                ReferenceCurrentPosition ->
-                    -- A stored location always belongs to the current position, because
-                    -- setting the position by hand clears it (see UpdatePosition). So when
-                    -- one is present, the GPS fix is a truer origin for the crow-flies
-                    -- figures than the point it was matched to on the route.
-                    state.position
-                        |> Maybe.andThen (relativePoint "Current position" (Maybe.map .position state.location))
+                                AtWaypoint _ ->
+                                    Nothing
+                            )
+                            wp.distance
+                    )
 
-                ReferenceWaypoint ->
-                    relativeWaypointPoint rel.startWaypointIndex
+        unresolvedNotice ref fallback =
+            case ref of
+                AtCurrentPosition ->
+                    "Comparing against your current position needs a position. Set one with the Position slider in the options panel, or start tracking."
+
+                AtWaypoint _ ->
+                    fallback
 
         body =
             if List.isEmpty selectable then
                 [ relativeNotice "No waypoints to compare. Add one in the Waypoints tab, or check the waypoint category filter in the options panel." ]
 
             else
-                case waypointAt rel.endWaypointIndex of
+                case waypointFor rel.end of
                     Nothing ->
-                        [ relativeNotice "Choose an end waypoint." ]
+                        [ relativeNotice (unresolvedNotice rel.end "Choose an end point.") ]
 
                     Just endWaypoint ->
                         viewRelativeWaypointCard tracks.current endWaypoint
-                            :: (case ( rel.reference, state.position, Maybe.map2 Tuple.pair start (relativeWaypointPoint rel.endWaypointIndex) ) of
-                                    ( ReferenceCurrentPosition, Nothing, _ ) ->
-                                        [ relativeNotice "Comparing against your current position needs a position. Set one with the Position slider in the options panel, or start tracking." ]
-
-                                    ( _, _, Just ( startPoint, endPoint ) ) ->
+                            :: (case Maybe.map2 Tuple.pair (relativePointFor rel.start) (relativePointFor rel.end) of
+                                    Just ( startPoint, endPoint ) ->
                                         [ viewRelativeComparison tracks.current selectable startPoint endPoint ]
 
-                                    _ ->
-                                        [ relativeNotice "Choose a start waypoint." ]
+                                    Nothing ->
+                                        [ relativeNotice (unresolvedNotice rel.start "Choose a start point.") ]
                                )
     in
     Html.div
@@ -3474,53 +3582,20 @@ viewRelativeTab state tracks =
         , Html.Attributes.style "gap" "0.75em"
         , Html.Attributes.style "padding" "0.5em"
         ]
-        (viewRelativeControls rel selectable :: body)
+        (viewRelativeControls (state.position /= Nothing) rel selectable :: body)
 
 
-viewRelativeControls : RelativeOptions -> List ( Int, GpxApi.Waypoint ) -> Html Msg
-viewRelativeControls rel selectable =
+viewRelativeControls : Bool -> RelativeOptions -> List ( Int, GpxApi.Waypoint ) -> Html Msg
+viewRelativeControls hasPosition rel selectable =
     Html.div
         [ Html.Attributes.style "display" "flex"
         , Html.Attributes.style "flex-wrap" "wrap"
         , Html.Attributes.style "gap" "1em"
         , Html.Attributes.style "align-items" "flex-end"
         ]
-        (List.concat
-            [ [ relativeControl "Relative to"
-                    (Html.select
-                        [ Html.Events.onInput
-                            (\v ->
-                                SetRelativeReference
-                                    (if v == "waypoint" then
-                                        ReferenceWaypoint
-
-                                     else
-                                        ReferenceCurrentPosition
-                                    )
-                            )
-                        ]
-                        [ Html.option
-                            [ Html.Attributes.value "position"
-                            , Html.Attributes.selected (rel.reference == ReferenceCurrentPosition)
-                            ]
-                            [ Html.text "Current position" ]
-                        , Html.option
-                            [ Html.Attributes.value "waypoint"
-                            , Html.Attributes.selected (rel.reference == ReferenceWaypoint)
-                            ]
-                            [ Html.text "Waypoint" ]
-                        ]
-                    )
-              ]
-            , case rel.reference of
-                ReferenceCurrentPosition ->
-                    []
-
-                ReferenceWaypoint ->
-                    [ relativeControl "Start" (viewWaypointSelector SetRelativeStartWaypoint selectable rel.startWaypointIndex) ]
-            , [ relativeControl "End" (viewWaypointSelector SetRelativeEndWaypoint selectable rel.endWaypointIndex) ]
-            ]
-        )
+        [ relativeControl "Start" (viewPointSelector { onSelect = SetRelativeStart, hasPosition = hasPosition } selectable rel.start)
+        , relativeControl "End" (viewPointSelector { onSelect = SetRelativeEnd, hasPosition = hasPosition } selectable rel.end)
+        ]
 
 
 viewRelativeWaypointCard : EditableTrack -> GpxApi.Waypoint -> Html Msg
@@ -4192,46 +4267,33 @@ viewElevationProfileOptions state =
 
                 WaypointsMode ->
                     let
-                        selectedIndices =
-                            ep.splitWaypointIndices
-
-                        indexed =
+                        selectable =
                             maybeFromloadableResource state.tracks
-                                |> Maybe.map (.current >> indexedEffectiveWaypoints)
+                                |> Maybe.map (.current >> selectableWaypoints state)
                                 |> Maybe.withDefault []
 
-                        -- splitListPos = position in the splits list; selectedWaypointIdx = editableWaypoints index at that position
-                        dropdownRow splitListPos selectedWaypointIdx =
-                            let
-                                waypointOption ( waypointIdx, wp ) =
-                                    Html.option
-                                        [ Html.Attributes.value (String.fromInt waypointIdx)
-                                        , Html.Attributes.selected (waypointIdx == selectedWaypointIdx)
-                                        ]
-                                        [ Html.text (wp.name ++ " (" ++ formatKm 1 wp.distance ++ ")") ]
-                            in
+                        availableCount =
+                            List.length selectable + List.length (positionRefIfSet state)
+
+                        -- splitListPos is a position in the splits list, not a waypoint index
+                        dropdownRow splitListPos selectedRef =
                             Html.div [ Html.Attributes.style "display" "flex", Html.Attributes.style "gap" "0.5em", Html.Attributes.style "align-items" "center" ]
-                                [ Html.select
-                                    [ Html.Events.onInput
-                                        (\val ->
-                                            String.toInt val
-                                                |> Maybe.map (UpdateSplitWaypoint splitListPos)
-                                                |> Maybe.withDefault Ignore
-                                        )
-                                    ]
-                                    (List.map waypointOption indexed)
+                                [ viewPointSelector
+                                    { onSelect = UpdateSplitPoint splitListPos, hasPosition = state.position /= Nothing }
+                                    selectable
+                                    selectedRef
                                 , Html.button
-                                    [ Html.Events.onClick (RemoveSplitWaypoint splitListPos)
+                                    [ Html.Events.onClick (RemoveSplitPoint splitListPos)
                                     , Html.Attributes.class "button-4"
                                     ]
                                     [ Html.text "Remove" ]
                                 ]
                     in
-                    List.indexedMap dropdownRow selectedIndices
+                    List.indexedMap dropdownRow ep.splitPoints
                         ++ [ Html.button
-                                [ Html.Events.onClick AddSplitWaypoint
+                                [ Html.Events.onClick AddSplitPoint
                                 , Html.Attributes.class "button-4"
-                                , Html.Attributes.disabled (List.length selectedIndices >= List.length indexed)
+                                , Html.Attributes.disabled (List.length ep.splitPoints >= availableCount)
                                 ]
                                 [ Html.text "Add" ]
                            ]
@@ -4275,7 +4337,7 @@ viewElevationProfileOptions state =
     ]
 
 
-{-| The "Total distance" selector (mode dropdown plus the reference-point / reference-waypoint
+{-| The "Total distance" selector (mode dropdown plus the reference-distance / reference-point
 input it implies). Shared by the cuesheet and the elevation profile so the single
 `state.cuesheet.totalDistanceDisplay` setting can be changed from either panel.
 -}
@@ -4313,47 +4375,55 @@ viewTotalDistanceOptions state =
 
         indexedFiltered =
             maybeTracks
-                |> Maybe.map
-                    (.current
-                        >> effectiveWaypoints
-                        >> (\waypoints -> indexedFilteredWaypoints waypoints filteredWps)
-                    )
+                |> Maybe.map (.current >> (\track -> indexedFilteredWaypoints track filteredWps))
                 |> Maybe.withDefault []
 
-        defaultWaypointIdx =
-            List.head indexedFiltered |> Maybe.map Tuple.first |> Maybe.withDefault 0
+        defaultRef =
+            List.head indexedFiltered |> Maybe.map (Tuple.first >> AtWaypoint) |> Maybe.withDefault AtCurrentPosition
 
+        -- The mode dropdown only picks the mode; which point it refers to is the selector
+        -- below, so switching into a point mode starts from a default reference.
         parseModeDropdown maybeStr =
             case maybeStr of
                 Just "to waypoint" ->
-                    UpdateTotalDistanceDisplay (Just (ToWaypoint defaultWaypointIdx))
+                    UpdateTotalDistanceDisplay (Just (ToWaypoint defaultRef))
 
                 Just "from waypoint" ->
-                    UpdateTotalDistanceDisplay (Just (FromWaypoint defaultWaypointIdx))
+                    UpdateTotalDistanceDisplay (Just (FromWaypoint defaultRef))
 
                 _ ->
                     maybeStr
                         |> Maybe.map parseTotalDistanceDisplay
                         |> Maybe.withDefault Nothing
                         |> UpdateTotalDistanceDisplay
+
+        modeItem mode =
+            Dropdown.Item (formatTotalDistanceDisplayMode mode) (formatTotalDistanceDisplayLabel mode) True
+
+        pointSelector ref =
+            [ viewPointSelector
+                { onSelect = UpdateSelectedPoint, hasPosition = state.position /= Nothing }
+                indexedFiltered
+                ref
+            ]
     in
     optionGroup "Total distance"
         ([ Dropdown.dropdown
             (Dropdown.Options
-                [ Dropdown.Item (formatTotalDistanceDisplay FromZero) (formatTotalDistanceDisplay FromZero) True
-                , Dropdown.Item (formatTotalDistanceDisplay ToFinish) (formatTotalDistanceDisplay ToFinish) True
-                , Dropdown.Item (formatTotalDistanceDisplay ToPoint) (formatTotalDistanceDisplay ToPoint) True
-                , Dropdown.Item "to waypoint" "to waypoint" True
-                , Dropdown.Item "from waypoint" "from waypoint" True
-                , Dropdown.Item (formatTotalDistanceDisplay PercentProgress) (formatTotalDistanceDisplay PercentProgress) True
-                , Dropdown.Item (formatTotalDistanceDisplay PercentRemaining) (formatTotalDistanceDisplay PercentRemaining) True
-                , Dropdown.Item (formatTotalDistanceDisplay None) (formatTotalDistanceDisplay None) True
+                [ modeItem FromZero
+                , modeItem ToFinish
+                , modeItem ToPoint
+                , modeItem (ToWaypoint defaultRef)
+                , modeItem (FromWaypoint defaultRef)
+                , modeItem PercentProgress
+                , modeItem PercentRemaining
+                , modeItem None
                 ]
                 Nothing
                 parseModeDropdown
             )
             []
-            (Just <| formatTotalDistanceDisplayLabel cs.totalDistanceDisplay)
+            (Just <| formatTotalDistanceDisplayMode cs.totalDistanceDisplay)
          ]
             ++ (case cs.totalDistanceDisplay of
                     ToPoint ->
@@ -4369,11 +4439,11 @@ viewTotalDistanceOptions state =
                             ]
                         ]
 
-                    ToWaypoint selectedIdx ->
-                        [ viewWaypointSelector UpdateSelectedWaypoint indexedFiltered selectedIdx ]
+                    ToWaypoint ref ->
+                        pointSelector ref
 
-                    FromWaypoint selectedIdx ->
-                        [ viewWaypointSelector UpdateSelectedWaypoint indexedFiltered selectedIdx ]
+                    FromWaypoint ref ->
+                        pointSelector ref
 
                     _ ->
                         []
@@ -4544,28 +4614,33 @@ waypointDisplayName waypoint =
         waypoint.name
 
 
-viewWaypointSelector : (Int -> Msg) -> List ( Int, GpxApi.Waypoint ) -> Int -> Html Msg
-viewWaypointSelector onSelect indexed selectedIdx =
+{-| The one control for picking a point on the route. Offers the given waypoints plus the
+current position, the latter disabled — rather than hidden — when no position is set, so the
+option stays discoverable and the list does not change shape as a fix comes and goes.
+-}
+viewPointSelector : { onSelect : PointRef -> Msg, hasPosition : Bool } -> List ( Int, GpxApi.Waypoint ) -> PointRef -> Html Msg
+viewPointSelector { onSelect, hasPosition } indexed selected =
     Dropdown.dropdown
         (Dropdown.Options
-            (indexed
-                |> List.map
+            (Dropdown.Item (formatPointRef AtCurrentPosition) currentPositionName hasPosition
+                :: List.map
                     (\( idx, wp ) ->
-                        Dropdown.Item (String.fromInt idx) (waypointDisplayName wp ++ " (" ++ formatKm 1 wp.distance ++ ")") True
+                        Dropdown.Item (formatPointRef (AtWaypoint idx)) (waypointDisplayName wp ++ " (" ++ formatKm 1 wp.distance ++ ")") True
                     )
+                    indexed
             )
             Nothing
             (\maybeStr ->
-                case maybeStr |> Maybe.andThen String.toInt of
-                    Just idx ->
-                        onSelect idx
+                case maybeStr |> Maybe.andThen parsePointRef of
+                    Just ref ->
+                        onSelect ref
 
                     Nothing ->
                         Ignore
             )
         )
         []
-        (Just (String.fromInt selectedIdx))
+        (Just (formatPointRef selected))
 
 
 optionGroup : String -> List (Html Msg) -> Html Msg
@@ -4608,28 +4683,54 @@ parseTotalDistanceDisplay v =
             Just None
 
         _ ->
-            if String.startsWith "to waypoint" v then
-                case String.split ":" v of
-                    [ _, idxStr ] ->
-                        String.toInt idxStr |> Maybe.map ToWaypoint
+            -- The reference suffix was written by formatPointRef, so a stored
+            -- "to waypoint:3" from before the current position was selectable still parses.
+            case String.split ":" v of
+                [ mode, refStr ] ->
+                    parsePointRef refStr
+                        |> Maybe.andThen
+                            (\ref ->
+                                if mode == "to waypoint" then
+                                    Just (ToWaypoint ref)
 
-                    _ ->
-                        Just (ToWaypoint 0)
+                                else if mode == "from waypoint" then
+                                    Just (FromWaypoint ref)
 
-            else if String.startsWith "from waypoint" v then
-                case String.split ":" v of
-                    [ _, idxStr ] ->
-                        String.toInt idxStr |> Maybe.map FromWaypoint
+                                else
+                                    Nothing
+                            )
 
-                    _ ->
-                        Just (FromWaypoint 0)
+                _ ->
+                    if String.startsWith "to waypoint" v then
+                        Just (ToWaypoint (AtWaypoint 0))
 
-            else
-                Nothing
+                    else if String.startsWith "from waypoint" v then
+                        Just (FromWaypoint (AtWaypoint 0))
+
+                    else
+                        Nothing
 
 
+{-| The stored form of a display mode, including which point it refers to.
+-}
 formatTotalDistanceDisplay : TotalDistanceDisplay -> String
 formatTotalDistanceDisplay v =
+    case v of
+        ToWaypoint ref ->
+            formatTotalDistanceDisplayMode v ++ ":" ++ formatPointRef ref
+
+        FromWaypoint ref ->
+            formatTotalDistanceDisplayMode v ++ ":" ++ formatPointRef ref
+
+        other ->
+            formatTotalDistanceDisplayMode other
+
+
+{-| The mode alone, without the point it refers to. This is what the mode dropdown's options
+are keyed by, since choosing a mode there does not choose a point.
+-}
+formatTotalDistanceDisplayMode : TotalDistanceDisplay -> String
+formatTotalDistanceDisplayMode v =
     case v of
         FromZero ->
             "from zero"
@@ -4640,11 +4741,11 @@ formatTotalDistanceDisplay v =
         ToPoint ->
             "to point"
 
-        ToWaypoint idx ->
-            "to waypoint:" ++ String.fromInt idx
+        ToWaypoint _ ->
+            "to waypoint"
 
-        FromWaypoint idx ->
-            "from waypoint:" ++ String.fromInt idx
+        FromWaypoint _ ->
+            "from waypoint"
 
         PercentProgress ->
             "% progress"
@@ -4656,17 +4757,25 @@ formatTotalDistanceDisplay v =
             "hide"
 
 
+{-| What the user reads in the mode dropdown. Deliberately diverges from the stored form:
+`ToWaypoint`/`FromWaypoint` can now refer to the current position as well as a waypoint, and
+"to point" reads better for that than "to waypoint" — which leaves "to distance" as the
+clearer name for the freeform-metres mode that used to be called "to point".
+-}
 formatTotalDistanceDisplayLabel : TotalDistanceDisplay -> String
 formatTotalDistanceDisplayLabel v =
     case v of
+        ToPoint ->
+            "to distance"
+
         ToWaypoint _ ->
-            "to waypoint"
+            "to point"
 
         FromWaypoint _ ->
-            "from waypoint"
+            "from point"
 
         other ->
-            formatTotalDistanceDisplay other
+            formatTotalDistanceDisplayMode other
 
 
 
@@ -4710,29 +4819,6 @@ formatTab tab =
 
 
 -- ENCODE/DECODE STATE
-
-
-formatRelativeReference : RelativeReference -> String
-formatRelativeReference reference =
-    case reference of
-        ReferenceCurrentPosition ->
-            "position"
-
-        ReferenceWaypoint ->
-            "waypoint"
-
-
-parseRelativeReference : String -> Maybe RelativeReference
-parseRelativeReference s =
-    case s of
-        "position" ->
-            Just ReferenceCurrentPosition
-
-        "waypoint" ->
-            Just ReferenceWaypoint
-
-        _ ->
-            Nothing
 
 
 encodeEditableTrack : EditableTrack -> Json.Encode.Value
@@ -4837,7 +4923,7 @@ encodeSavedState state =
                     )
                 )
             , Just ( "splitEquidistantCount", Json.Encode.int ep.splitEquidistantCount )
-            , Just ( "splitWaypointIndices", Json.Encode.list Json.Encode.int ep.splitWaypointIndices )
+            , Just ( "splitPoints", Json.Encode.list (formatPointRef >> Json.Encode.string) ep.splitPoints )
             , Just ( "liveLookahead", Json.Encode.float ep.liveLookahead )
             , Just ( "liveLookbehind", Json.Encode.float ep.liveLookbehind )
             , Just ( "labelHeightGain", Json.Encode.float ep.labelHeightGain )
@@ -4851,9 +4937,8 @@ encodeSavedState state =
             , Just ( "offRouteThreshold", Json.Encode.float state.offRouteThreshold )
             , Just ( "showOffRouteWaypoints", Json.Encode.bool state.showOffRouteWaypoints )
             , Just ( "showOffRouteDistance", Json.Encode.bool state.showOffRouteDistance )
-            , Just ( "relativeReference", Json.Encode.string (formatRelativeReference rel.reference) )
-            , Just ( "relativeStartWaypoint", Json.Encode.int rel.startWaypointIndex )
-            , Just ( "relativeEndWaypoint", Json.Encode.int rel.endWaypointIndex )
+            , Just ( "relativeStart", Json.Encode.string (formatPointRef rel.start) )
+            , Just ( "relativeEnd", Json.Encode.string (formatPointRef rel.end) )
             ]
         )
         |> Json.Encode.encode 0
@@ -4875,7 +4960,7 @@ stateDecoder =
             defaultRelativeOptions
     in
     Json.Decode.succeed
-        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau position viewMode splitMode splitEquidistantCount splitWaypointIndices liveLookahead liveLookbehind labelHeightGain distanceMarkerInterval distanceMarkerSegmentEnds totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints relativeReference relativeStartWaypoint relativeEndWaypoint ->
+        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau position viewMode splitMode splitEquidistantCount splitPoints legacySplitWaypointIndices liveLookahead liveLookbehind labelHeightGain distanceMarkerInterval distanceMarkerSegmentEnds totalDistanceDisplay referencePoint itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints relativeStart relativeEnd ->
             { tracks = loadableResourceFromMaybe tracks
             , showOptions = showOptions |> Maybe.withDefault defaultState.showOptions
             , activeTab = activeTab |> Maybe.andThen parseTab |> Maybe.withDefault defaultState.activeTab
@@ -4911,7 +4996,14 @@ stateDecoder =
                         _ ->
                             EquidistantMode
                 , splitEquidistantCount = splitEquidistantCount |> Maybe.withDefault 1
-                , splitWaypointIndices = splitWaypointIndices |> Maybe.withDefault []
+                , splitPoints =
+                    case splitPoints of
+                        Just refs ->
+                            List.filterMap parsePointRef refs
+
+                        -- State saved before split boundaries could be the current position
+                        Nothing ->
+                            legacySplitWaypointIndices |> Maybe.withDefault [] |> List.map AtWaypoint
                 , liveLookahead = liveLookahead |> Maybe.withDefault defEp.liveLookahead
                 , liveLookbehind = liveLookbehind |> Maybe.withDefault defEp.liveLookbehind
                 , labelHeightGain = labelHeightGain |> Maybe.withDefault defEp.labelHeightGain
@@ -4926,9 +5018,8 @@ stateDecoder =
                 , showStartFinish = showStartFinish |> Maybe.withDefault defCs.showStartFinish
                 }
             , relative =
-                { reference = relativeReference |> Maybe.andThen parseRelativeReference |> Maybe.withDefault defRel.reference
-                , startWaypointIndex = relativeStartWaypoint |> Maybe.withDefault defRel.startWaypointIndex
-                , endWaypointIndex = relativeEndWaypoint |> Maybe.withDefault defRel.endWaypointIndex
+                { start = relativeStart |> Maybe.andThen parsePointRef |> Maybe.withDefault defRel.start
+                , end = relativeEnd |> Maybe.andThen parsePointRef |> Maybe.withDefault defRel.end
                 }
             , stateDecodeError = Nothing
             , splitSegments = Nothing
@@ -4950,6 +5041,7 @@ stateDecoder =
         |> andMap (maybeField "viewMode" Json.Decode.string)
         |> andMap (maybeField "splitMode" Json.Decode.string)
         |> andMap (maybeField "splitEquidistantCount" Json.Decode.int)
+        |> andMap (maybeField "splitPoints" (Json.Decode.list Json.Decode.string))
         |> andMap (maybeField "splitWaypointIndices" (Json.Decode.list Json.Decode.int))
         |> andMap (maybeField "liveLookahead" Json.Decode.float)
         |> andMap (maybeField "liveLookbehind" Json.Decode.float)
@@ -4964,9 +5056,8 @@ stateDecoder =
         |> andMap (maybeField "showOffRouteDistance" Json.Decode.bool)
         |> andMap (maybeField "offRouteThreshold" Json.Decode.float)
         |> andMap (maybeField "showOffRouteWaypoints" Json.Decode.bool)
-        |> andMap (maybeField "relativeReference" Json.Decode.string)
-        |> andMap (maybeField "relativeStartWaypoint" Json.Decode.int)
-        |> andMap (maybeField "relativeEndWaypoint" Json.Decode.int)
+        |> andMap (maybeField "relativeStart" Json.Decode.string)
+        |> andMap (maybeField "relativeEnd" Json.Decode.string)
 
 
 andMap : Json.Decode.Decoder a -> Json.Decode.Decoder (a -> b) -> Json.Decode.Decoder b
