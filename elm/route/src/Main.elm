@@ -145,11 +145,13 @@ type alias EditableWaypoint =
 
 
 {-| A point on the route the user has picked out: either one of the track's waypoints, or
-wherever they currently are.
+wherever they are.
 
 Every flow that asks the user to choose a point on the route stores one of these, so the
-same selector serves all of them. `AtCurrentPosition` resolves against `state.position`,
-which may be unset — hence the `Maybe` on the resolvers below.
+same selector serves all of them. `AtRoutePosition` resolves against `state.position`,
+which may be unset — hence the `Maybe` on the resolvers below. It is the point on the route
+nearest the rider, not the rider: a GPS fix off the route resolves to what it matched, and
+the gap is the resolved waypoint's off-route distance.
 
 `AtWaypoint` indexes `editableWaypoints`, deliberately including the deleted ones: that index
 is stable, whereas a position in the resolved-and-filtered list shifts under the user as soon
@@ -159,13 +161,13 @@ edit flows already maintain — see `removeWaypointAt`, `WaypointDeleted` and `R
 -}
 type PointRef
     = AtWaypoint Int
-    | AtCurrentPosition
+    | AtRoutePosition
 
 
 {-| Resolves a reference to the waypoint it stands for, or Nothing when it no longer stands
-for one — a deleted waypoint, or the current position with no position set.
-`AtCurrentPosition` becomes a synthetic waypoint at the position, carrying the cumulative
-climb to there and, when a GPS fix is what set the position, how far off route that fix is.
+for one — a deleted waypoint, or `AtRoutePosition` with no position set. A position becomes a
+synthetic waypoint, carrying the cumulative climb to there and, when a GPS fix is what set
+the position, how far off route that fix is.
 
 Returning a `GpxApi.Waypoint` rather than a bespoke record is what lets the cuesheet and
 elevation profile treat a chosen position exactly like a chosen waypoint.
@@ -185,7 +187,7 @@ resolvePointRef position location track ref =
                             Just (effectiveWaypoint track.trackpoints ew)
                     )
 
-        AtCurrentPosition ->
+        AtRoutePosition ->
             position
                 |> Maybe.andThen
                     (\pos ->
@@ -194,7 +196,7 @@ resolvePointRef position location track ref =
                             |> Maybe.map
                                 (\( gain, loss ) ->
                                     GpxApi.Waypoint pos
-                                        currentPositionName
+                                        routePositionName
                                         []
                                         gain
                                         loss
@@ -213,8 +215,8 @@ refDistance position track =
 
 
 {-| Remaps a reference after the waypoint at `removedIndex` has been dropped from
-`editableWaypoints`, which shifts every later index down by one. The current position is not
-addressed by index, so it survives untouched.
+`editableWaypoints`, which shifts every later index down by one. A position is not addressed
+by index, so it survives untouched.
 -}
 shiftPointRef : Int -> PointRef -> PointRef
 shiftPointRef removedIndex ref =
@@ -226,17 +228,17 @@ shiftPointRef removedIndex ref =
             else
                 ref
 
-        AtCurrentPosition ->
+        AtRoutePosition ->
             ref
 
 
-currentPositionName : String
-currentPositionName =
-    "Current position"
+routePositionName : String
+routePositionName =
+    "Position on route"
 
 
 {-| A waypoint reference formats as its bare index, which is what `TotalDistanceDisplay`
-stored before the current position was selectable — so old saved state still reads back.
+stored before a position was selectable — so old saved state still reads back.
 Doubles as the option value in `viewPointSelector`.
 -}
 formatPointRef : PointRef -> String
@@ -245,14 +247,14 @@ formatPointRef ref =
         AtWaypoint idx ->
             String.fromInt idx
 
-        AtCurrentPosition ->
+        AtRoutePosition ->
             "position"
 
 
 parsePointRef : String -> Maybe PointRef
 parsePointRef s =
     if s == "position" then
-        Just AtCurrentPosition
+        Just AtRoutePosition
 
     else
         String.toInt s |> Maybe.map AtWaypoint
@@ -354,8 +356,7 @@ type alias CuesheetOptions =
     }
 
 
-{-| The Relative tab compares two points on the route, either of which can be a waypoint or
-the current position.
+{-| The two points the Relative tab compares.
 -}
 type alias RelativeOptions =
     { start : PointRef
@@ -404,7 +405,7 @@ defaultCuesheetOptions =
 
 defaultRelativeOptions : RelativeOptions
 defaultRelativeOptions =
-    { start = AtCurrentPosition
+    { start = AtRoutePosition
     , end = AtWaypoint 0
     }
 
@@ -1040,7 +1041,7 @@ update msg model =
                         -- Created waypoints are always appended after the source ones,
                         -- so reverting to source keeps source indices 0..sourceCount-1
                         -- intact; only split points aimed at created waypoints are
-                        -- now stale. A split at the current position is never stale.
+                        -- now stale. A split at a route position is never stale.
                         sourceCount =
                             List.length (List.filter (not << .created) tracks.current.editableWaypoints)
                     in
@@ -1069,7 +1070,7 @@ update msg model =
                                                             AtWaypoint idx ->
                                                                 idx < sourceCount
 
-                                                            AtCurrentPosition ->
+                                                            AtRoutePosition ->
                                                                 True
                                                     )
                                                     ep.splitPoints
@@ -1750,21 +1751,21 @@ selectableSplitPoints state track =
         ++ positionRefIfSet state
 
 
-{-| `AtCurrentPosition` as a one-element list when a position is set, so selector option
+{-| `AtRoutePosition` as a one-element list when a position is set, so selector option
 lists can simply append it.
 -}
 positionRefIfSet : State -> List PointRef
 positionRefIfSet state =
     case state.position of
         Just _ ->
-            [ AtCurrentPosition ]
+            [ AtRoutePosition ]
 
         Nothing ->
             []
 
 
-{-| Repoints a display mode whose reference waypoint has been filtered away or deleted. The
-current position is never filtered away, so it is always left alone.
+{-| Repoints a display mode whose reference waypoint has been filtered away or deleted. A
+route position is never filtered away, so it is always left alone.
 -}
 correctWaypointSelection : TotalDistanceDisplay -> List ( Int, GpxApi.Waypoint ) -> TotalDistanceDisplay
 correctWaypointSelection display indexed =
@@ -1774,7 +1775,7 @@ correctWaypointSelection display indexed =
                 AtWaypoint idx ->
                     List.any (\( i, _ ) -> i == idx) indexed
 
-                AtCurrentPosition ->
+                AtRoutePosition ->
                     True
 
         correct rebuild fallback ref =
@@ -1845,7 +1846,7 @@ correctWaypointSelectionInState s =
                 clampToSelectable fallback ref =
                     case ref of
                         -- The position is always available, whatever the waypoint filters do
-                        AtCurrentPosition ->
+                        AtRoutePosition ->
                             ref
 
                         AtWaypoint idx ->
@@ -2961,7 +2962,7 @@ viewCuesheetTab state tracks =
                 |> trimWaypointCategories state.filteredCategories
 
         positionWaypoint =
-            resolvePointRef state.position state.location tracks.current AtCurrentPosition
+            resolvePointRef state.position state.location tracks.current AtRoutePosition
 
         -- Sort by distance so edited waypoint distances reorder the list (the original
         -- waypoint order no longer matches distance once a distance override is applied)
@@ -3490,14 +3491,13 @@ type alias RelativePoint =
 
 
 {-| Places a resolved waypoint in the world. A GPS fix locates the rider exactly, so it wins
-for the current position; everything else is read off the trackpoint the point's route
-distance lands on.
+when there is one; everything else is read off the trackpoint the point's route distance
+lands on.
 
 That fallback is the only option for a waypoint: `GpxApi.Waypoint` is distance, name,
 categories, gain, loss and off-route distance, with no coordinates of its own. So an
 off-route waypoint resolves to its matched point on the route and the direct figures reach
-there rather than the waypoint itself — its context card shows the off-route distance, which
-is exactly the gap being glossed over.
+there rather than the waypoint itself — `snapNote` reports that gap rather than glossing it.
 
 -}
 relativePointFor : List GpxApi.TrackPoint -> Maybe Location.LocationState -> GpxApi.Waypoint -> Maybe RelativePoint
@@ -3531,19 +3531,19 @@ viewRelativeTab state tracks =
                 AtWaypoint idx ->
                     selectable |> List.Extra.find (\( i, _ ) -> i == idx) |> Maybe.map Tuple.second
 
-                AtCurrentPosition ->
-                    resolvePointRef state.position state.location tracks.current AtCurrentPosition
+                AtRoutePosition ->
+                    resolvePointRef state.position state.location tracks.current AtRoutePosition
 
         pointFor ref =
             waypointFor ref
                 |> Maybe.andThen
                     (relativePointFor tracks.current.trackpoints
                         (case ref of
-                            -- A stored location always belongs to the current position,
-                            -- because setting the position by hand clears it (see
-                            -- UpdatePosition). A position set by hand is only ever a route
-                            -- distance, so it has no fix to offer and reads off the route.
-                            AtCurrentPosition ->
+                            -- A stored location can only belong to the position, because
+                            -- setting the position by hand clears it (see UpdatePosition) —
+                            -- and a hand-set position is only ever a route distance, so it
+                            -- offers no fix and reads off the route.
+                            AtRoutePosition ->
                                 state.location
 
                             AtWaypoint _ ->
@@ -3553,8 +3553,8 @@ viewRelativeTab state tracks =
 
         unresolvedNotice ref fallback =
             case ref of
-                AtCurrentPosition ->
-                    "Comparing against your current position needs a position. Set one with the Position slider in the options panel, or start tracking."
+                AtRoutePosition ->
+                    "This needs a position on the route. Set one with the Position slider in the options panel, or start tracking."
 
                 AtWaypoint _ ->
                     fallback
@@ -3610,8 +3610,9 @@ viewRelativeControls hasPosition rel selectable =
 
 {-| Where one end of the comparison sits on the route, under a heading naming the role it
 plays ("Start" / "End") so the two cards either side of the travel figures are told apart at
-a glance. Takes a resolved waypoint, so the current position — which `resolvePointRef` hands
-back as a synthetic waypoint — reads exactly like a chosen waypoint.
+a glance. Built from the resolved point, so a route position — which `resolvePointRef` hands
+back as a synthetic waypoint — reads exactly like a chosen waypoint, and the elevation shown
+is the same one the travel figures were computed from.
 -}
 viewRelativeContextCard : EditableTrack -> String -> RelativePoint -> Html Msg
 viewRelativeContextCard track role point =
@@ -3623,30 +3624,64 @@ viewRelativeContextCard track role point =
             track.gainLoss
     in
     relativeCard role
-        (Html.div [ Html.Attributes.style "font-weight" "bold" ] [ Html.text (waypointDisplayName waypoint) ]
-            :: List.filterMap identity
-                [ case waypoint.categories of
-                    [] ->
-                        Nothing
-
-                    categories ->
-                        Just (relativeRow "Categories" (String.join ", " categories))
-                , Just (relativeRow (elevationLabel point.elevationFromGps) (formatM point.elevation))
-                , Just (relativeRow "From start" (formatKm 1 waypoint.distance ++ " · " ++ formatEleGainLoss waypoint.gain waypoint.loss))
-                , Just
-                    (relativeRow "To finish"
-                        (formatKm 1 (lastTrackpointDistance track.trackpoints - waypoint.distance)
-                            ++ " · "
-                            ++ formatEleGainLoss (totalGain - waypoint.gain) (totalLoss - waypoint.loss)
-                        )
+        (List.filterMap identity
+            [ Just (Html.div [ Html.Attributes.style "font-weight" "bold" ] [ Html.text (waypointDisplayName waypoint) ])
+            , snapNote point
+                |> Maybe.map
+                    (\note ->
+                        Html.div
+                            [ Html.Attributes.style "font-size" "0.85em"
+                            , Html.Attributes.style "opacity" "0.7"
+                            , Html.Attributes.style "font-style" "italic"
+                            ]
+                            [ Html.text note ]
                     )
-                , if waypoint.offRoute > 0 then
-                    Just (relativeRow "Off route" (formatM waypoint.offRoute ++ " from the route"))
-
-                  else
+            , case waypoint.categories of
+                [] ->
                     Nothing
-                ]
+
+                categories ->
+                    Just (relativeRow "Categories" (String.join ", " categories))
+            , Just (relativeRow (elevationLabel point.elevationFromGps) (formatM point.elevation))
+            , Just (relativeRow "From start" (formatKm 1 waypoint.distance ++ " · " ++ formatEleGainLoss waypoint.gain waypoint.loss))
+            , Just
+                (relativeRow "To finish"
+                    (formatKm 1 (lastTrackpointDistance track.trackpoints - waypoint.distance)
+                        ++ " · "
+                        ++ formatEleGainLoss (totalGain - waypoint.gain) (totalLoss - waypoint.loss)
+                    )
+                )
+            ]
         )
+
+
+{-| Names the gap between where the point really is and the route point its figures were read
+at. Both a GPS fix and an off-route waypoint sit beside the route rather than on it, so both
+get the same treatment; a point already on the route has no gap to report.
+
+This replaces a plain "off route" row: the distance is the same number, but what matters is
+not that the point is off the route, it is that everything else on the card was measured
+somewhere else.
+
+-}
+snapNote : RelativePoint -> Maybe String
+snapNote point =
+    if point.waypoint.offRoute > 0 then
+        Just
+            ("nearest route point to "
+                ++ (if point.coordsFromGps then
+                        "your fix"
+
+                    else
+                        "the waypoint"
+                   )
+                ++ ", "
+                ++ formatM point.waypoint.offRoute
+                ++ " away"
+            )
+
+    else
+        Nothing
 
 
 elevationLabel : Bool -> String
@@ -4438,7 +4473,7 @@ viewTotalDistanceOptions state =
                 |> Maybe.withDefault []
 
         defaultRef =
-            List.head indexedFiltered |> Maybe.map (Tuple.first >> AtWaypoint) |> Maybe.withDefault AtCurrentPosition
+            List.head indexedFiltered |> Maybe.map (Tuple.first >> AtWaypoint) |> Maybe.withDefault AtRoutePosition
 
         -- The mode dropdown only picks the mode; which point it refers to is the selector
         -- below, so switching into a point mode starts from a default reference.
@@ -4641,8 +4676,8 @@ viewErrorPanel error =
     Html.div [ Html.Attributes.class "error_panel" ] [ Html.text error ]
 
 
-{-| Warns that live view is active without a position, so the whole route is shown
-rather than a window around the current position. Empty when a position is set or in static view.
+{-| Warns that live view is active without a position, so the whole route is shown rather
+than a window around it. Empty when a position is set or in static view.
 -}
 liveNoPositionWarning : State -> Html Msg
 liveNoPositionWarning state =
@@ -4674,14 +4709,14 @@ waypointDisplayName waypoint =
 
 
 {-| The one control for picking a point on the route. Offers the given waypoints plus the
-current position, the latter disabled — rather than hidden — when no position is set, so the
+rider's position, the latter disabled — rather than hidden — when no position is set, so the
 option stays discoverable and the list does not change shape as a fix comes and goes.
 -}
 viewPointSelector : { onSelect : PointRef -> Msg, hasPosition : Bool } -> List ( Int, GpxApi.Waypoint ) -> PointRef -> Html Msg
 viewPointSelector { onSelect, hasPosition } indexed selected =
     Dropdown.dropdown
         (Dropdown.Options
-            (Dropdown.Item (formatPointRef AtCurrentPosition) currentPositionName hasPosition
+            (Dropdown.Item (formatPointRef AtRoutePosition) routePositionName hasPosition
                 :: List.map
                     (\( idx, wp ) ->
                         Dropdown.Item (formatPointRef (AtWaypoint idx)) (waypointDisplayName wp ++ " (" ++ formatKm 1 wp.distance ++ ")") True
@@ -4743,7 +4778,7 @@ parseTotalDistanceDisplay v =
 
         _ ->
             -- The reference suffix was written by formatPointRef, so a stored
-            -- "to waypoint:3" from before the current position was selectable still parses.
+            -- "to waypoint:3" from before a position was selectable still parses.
             case String.split ":" v of
                 [ mode, refStr ] ->
                     parsePointRef refStr
@@ -4817,7 +4852,7 @@ formatTotalDistanceDisplayMode v =
 
 
 {-| What the user reads in the mode dropdown. Deliberately diverges from the stored form:
-`ToWaypoint`/`FromWaypoint` can now refer to the current position as well as a waypoint, and
+`ToWaypoint`/`FromWaypoint` can now refer to a route position as well as a waypoint, and
 "to point" reads better for that than "to waypoint" — which leaves "to distance" as the
 clearer name for the freeform-metres mode that used to be called "to point".
 -}
@@ -5060,7 +5095,7 @@ stateDecoder =
                         Just refs ->
                             List.filterMap parsePointRef refs
 
-                        -- State saved before split boundaries could be the current position
+                        -- State saved before split boundaries could be a route position
                         Nothing ->
                             legacySplitWaypointIndices |> Maybe.withDefault [] |> List.map AtWaypoint
                 , liveLookahead = liveLookahead |> Maybe.withDefault defEp.liveLookahead
