@@ -10829,8 +10829,6 @@ var $author$project$Main$displayedDistanceValue = F5(
 	});
 var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
 var $elm$svg$Svg$Attributes$dy = _VirtualDom_attribute('dy');
-var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
-var $elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
 var $elm$core$Basics$abs = function (n) {
 	return (n < 0) ? (-n) : n;
 };
@@ -11055,27 +11053,29 @@ var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
 				}
 			}
 		}));
-var $author$project$Main$formatM = function (metres) {
+var $author$project$Format$m = function (metres) {
 	return A2($myrho$elm_round$Round$round, 0, metres) + 'm';
 };
-var $author$project$Main$formatEleGainLoss = F2(
+var $author$project$Format$eleGainLoss = F2(
 	function (gain, loss) {
-		return '↑' + ($author$project$Main$formatM(gain) + (' ↓' + $author$project$Main$formatM(loss)));
+		return '↑' + ($author$project$Format$m(gain) + (' ↓' + $author$project$Format$m(loss)));
 	});
-var $author$project$Main$formatPercent = function (pct) {
+var $author$project$Format$percent = function (pct) {
 	return A2($myrho$elm_round$Round$round, 0, pct) + '%';
 };
-var $author$project$Main$formatEleGainLossPercent = F2(
+var $author$project$Format$eleGainLossPercent = F2(
 	function (gainPct, lossPct) {
-		return '↑' + ($author$project$Main$formatPercent(gainPct) + (' ↓' + $author$project$Main$formatPercent(lossPct)));
+		return '↑' + ($author$project$Format$percent(gainPct) + (' ↓' + $author$project$Format$percent(lossPct)));
 	});
-var $author$project$Main$formatKm = F2(
-	function (decimalPlaces, metres) {
-		return A2($myrho$elm_round$Round$round, decimalPlaces, metres / 1000) + 'km';
-	});
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $author$project$Format$km = F2(
+	function (decimalPlaces, metres) {
+		return A2($myrho$elm_round$Round$round, decimalPlaces, metres / 1000) + 'km';
+	});
 var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
 var $elm$core$Maybe$map2 = F3(
 	function (func, ma, mb) {
@@ -11216,49 +11216,49 @@ var $author$project$Main$cuesheetSvg = function (offRouteThreshold) {
 																						return $elm$core$Maybe$Nothing;
 																					case 0:
 																						return $elm$core$Maybe$Just(
-																							A2($author$project$Main$formatEleGainLoss, waypoint.ba, waypoint.be));
+																							A2($author$project$Format$eleGainLoss, waypoint.ba, waypoint.be));
 																					case 1:
 																						return A2(
 																							$elm$core$Maybe$map,
 																							function (last) {
-																								return A2($author$project$Main$formatEleGainLoss, last.ba - waypoint.ba, last.be - waypoint.be);
+																								return A2($author$project$Format$eleGainLoss, last.ba - waypoint.ba, last.be - waypoint.be);
 																							},
 																							lastWaypoint);
 																					case 2:
 																						return $elm$core$Maybe$Just(
-																							A2($author$project$Main$formatEleGainLoss, refPointEle.a - waypoint.ba, refPointEle.b - waypoint.be));
+																							A2($author$project$Format$eleGainLoss, refPointEle.a - waypoint.ba, refPointEle.b - waypoint.be));
 																					case 3:
 																						return A2(
 																							$elm$core$Maybe$map,
 																							function (rw) {
-																								return A2($author$project$Main$formatEleGainLoss, rw.ba - waypoint.ba, rw.be - waypoint.be);
+																								return A2($author$project$Format$eleGainLoss, rw.ba - waypoint.ba, rw.be - waypoint.be);
 																							},
 																							refWaypoint);
 																					case 4:
 																						return A2(
 																							$elm$core$Maybe$map,
 																							function (rw) {
-																								return A2($author$project$Main$formatEleGainLoss, waypoint.ba - rw.ba, waypoint.be - rw.be);
+																								return A2($author$project$Format$eleGainLoss, waypoint.ba - rw.ba, waypoint.be - rw.be);
 																							},
 																							refWaypoint);
 																					case 5:
 																						return A3(
 																							$elm$core$Maybe$map2,
-																							$author$project$Main$formatEleGainLossPercent,
+																							$author$project$Format$eleGainLossPercent,
 																							A2($author$project$Main$safePercent, waypoint.ba, totalGain),
 																							A2($author$project$Main$safePercent, waypoint.be, totalLoss));
 																					default:
 																						return A3(
 																							$elm$core$Maybe$map2,
-																							$author$project$Main$formatEleGainLossPercent,
+																							$author$project$Format$eleGainLossPercent,
 																							A2($author$project$Main$safePercent, totalGain - waypoint.ba, totalGain),
 																							A2($author$project$Main$safePercent, totalLoss - waypoint.be, totalLoss));
 																				}
 																			}
 																		}();
-																		var waypointDistance = isReferencePoint ? $elm$core$Maybe$Nothing : ($author$project$Main$displayIsPercent(cs.n) ? A2($elm$core$Maybe$map, $author$project$Main$formatPercent, displayedDistance) : A2(
+																		var waypointDistance = isReferencePoint ? $elm$core$Maybe$Nothing : ($author$project$Main$displayIsPercent(cs.n) ? A2($elm$core$Maybe$map, $author$project$Format$percent, displayedDistance) : A2(
 																			$elm$core$Maybe$map,
-																			$author$project$Main$formatKm(cs._),
+																			$author$project$Format$km(cs._),
 																			displayedDistance));
 																		var waypointInfo = A2(
 																			$elm$core$List$filterMap,
@@ -11448,9 +11448,9 @@ var $author$project$Main$cuesheetSvg = function (offRouteThreshold) {
 																								'',
 																								A2(
 																									$elm$core$Maybe$map,
-																									$author$project$Main$formatPercent,
+																									$author$project$Format$percent,
 																									A2($author$project$Main$safePercent, dist, finishDist))) + (' ' + A2(
-																								$author$project$Main$formatEleGainLossPercent,
+																								$author$project$Format$eleGainLossPercent,
 																								A2(
 																									$elm$core$Maybe$withDefault,
 																									0,
@@ -11458,7 +11458,7 @@ var $author$project$Main$cuesheetSvg = function (offRouteThreshold) {
 																								A2(
 																									$elm$core$Maybe$withDefault,
 																									0,
-																									A2($author$project$Main$safePercent, loss, totalLoss))))) : (A2($author$project$Main$formatKm, cs._, dist) + (' ' + A2($author$project$Main$formatEleGainLoss, gain, loss))))
+																									A2($author$project$Main$safePercent, loss, totalLoss))))) : (A2($author$project$Format$km, cs._, dist) + (' ' + A2($author$project$Format$eleGainLoss, gain, loss))))
 																						]))
 																				]));
 																}
@@ -11693,7 +11693,7 @@ var $author$project$Main$distanceMarkers = function (cfg) {
 		var toMarker = function (value) {
 			return {
 				a8: ((_Utils_cmp(vStart, vEnd) < 1) ? (value - vStart) : (vStart - value)) * metresPerDisplayedUnit,
-				cx: isPercent ? $author$project$Main$formatPercent(value) : A2($author$project$Main$formatKm, cfg.ch, value)
+				cx: isPercent ? $author$project$Format$percent(value) : A2($author$project$Format$km, cfg.ch, value)
 			};
 		};
 		var _v1 = _Utils_Tuple2(
@@ -12036,7 +12036,7 @@ var $author$project$Main$profile = function (segmentIndex) {
 																				_List_fromArray(
 																					[
 																						$elm$html$Html$text(
-																						A2($author$project$Main$formatKm, 1, maxDistance) + (' ' + A2($author$project$Main$formatEleGainLoss, gain, loss)))
+																						A2($author$project$Format$km, 1, maxDistance) + (' ' + A2($author$project$Format$eleGainLoss, gain, loss)))
 																					]));
 																		}(),
 																			A2(
@@ -12898,7 +12898,7 @@ var $abadi199$elm_input_extra$Dropdown$dropdown = F3(
 	});
 var $author$project$Main$waypointDisplayName = function (waypoint) {
 	return $elm$core$String$isEmpty(
-		$elm$core$String$trim(waypoint.cC)) ? ('Unnamed waypoint (' + (A2($author$project$Main$formatKm, 1, waypoint.a8) + ')')) : waypoint.cC;
+		$elm$core$String$trim(waypoint.cC)) ? ('Unnamed waypoint (' + (A2($author$project$Format$km, 1, waypoint.a8) + ')')) : waypoint.cC;
 };
 var $author$project$Main$viewPointSelector = F3(
 	function (_v0, indexed, selected) {
@@ -12941,7 +12941,7 @@ var $author$project$Main$viewPointSelector = F3(
 									$abadi199$elm_input_extra$Dropdown$Item,
 									$author$project$Main$formatPointRef(
 										$author$project$Main$AtWaypoint(idx)),
-									$author$project$Main$waypointDisplayName(wp) + (' (' + (A2($author$project$Main$formatKm, 1, wp.a8) + ')')),
+									$author$project$Main$waypointDisplayName(wp) + (' (' + (A2($author$project$Format$km, 1, wp.a8) + ')')),
 									true);
 							},
 							indexed),
@@ -13653,7 +13653,7 @@ var $author$project$Main$viewElevationProfileOptions = function (state) {
 										]),
 									_List_Nil),
 									$elm$html$Html$text(
-									A2($author$project$Main$formatKm, 0, interval))
+									A2($author$project$Format$km, 0, interval))
 								]);
 						} else {
 							return _List_Nil;
@@ -14136,7 +14136,7 @@ var $author$project$Main$viewOptionsPanel = function (state) {
 										_List_fromArray(
 											[
 												$elm$html$Html$text(
-												'Lookbehind: ' + A2($author$project$Main$formatKm, 1, ep.ab)),
+												'Lookbehind: ' + A2($author$project$Format$km, 1, ep.ab)),
 												A2(
 												$elm$html$Html$input,
 												_List_fromArray(
@@ -14158,7 +14158,7 @@ var $author$project$Main$viewOptionsPanel = function (state) {
 													]),
 												_List_Nil),
 												$elm$html$Html$text(
-												'Lookahead: ' + A2($author$project$Main$formatKm, 1, ep.aa)),
+												'Lookahead: ' + A2($author$project$Format$km, 1, ep.aa)),
 												A2(
 												$elm$html$Html$input,
 												_List_fromArray(
@@ -15001,12 +15001,12 @@ var $author$project$Main$viewArrivalCard = F5(
 						A2(
 							$author$project$Main$infoRow,
 							'Distance to go',
-							A2($author$project$Main$formatKm, 1, distanceToGo))),
+							A2($author$project$Format$km, 1, distanceToGo))),
 						$elm$core$Maybe$Just(
 						A2(
 							$author$project$Main$infoRow,
 							'Climb to go',
-							A2($author$project$Main$formatEleGainLoss, end.ba - start.ba, end.be - start.be))),
+							A2($author$project$Format$eleGainLoss, end.ba - start.ba, end.be - start.be))),
 						$elm$core$Maybe$Just(
 						A2(
 							$author$project$Main$infoRow,
@@ -15088,7 +15088,7 @@ var $author$project$Main$viewPaceCard = F2(
 							return _List_fromArray(
 								[
 									$author$project$Main$infoNote(
-									'averaged over ' + (A2($author$project$Main$formatKm, 1, position) + (' in ' + ($author$project$Wallclock$duration(elapsed) + ', stops included'))))
+									'averaged over ' + (A2($author$project$Format$km, 1, position) + (' in ' + ($author$project$Wallclock$duration(elapsed) + ', stops included'))))
 								]);
 						}
 					}())));
@@ -15218,7 +15218,7 @@ var $author$project$Main$elevationLabel = function (fromGps) {
 };
 var $author$project$Main$snapNote = function (point) {
 	return (point.q.cH > 0) ? $elm$core$Maybe$Just(
-		'nearest route point to ' + ((point.a6 ? 'your fix' : 'the waypoint') + (', ' + ($author$project$Main$formatM(point.q.cH) + ' away')))) : $elm$core$Maybe$Nothing;
+		'nearest route point to ' + ((point.a6 ? 'your fix' : 'the waypoint') + (', ' + ($author$project$Format$m(point.q.cH) + ' away')))) : $elm$core$Maybe$Nothing;
 };
 var $author$project$Main$viewRelativeContextCard = F3(
 	function (track, card, point) {
@@ -15307,20 +15307,20 @@ var $author$project$Main$viewRelativeContextCard = F3(
 						A2(
 							$author$project$Main$infoRow,
 							$author$project$Main$elevationLabel(point.a9),
-							$author$project$Main$formatM(point.bB))),
+							$author$project$Format$m(point.bB))),
 						$elm$core$Maybe$Just(
 						A2(
 							$author$project$Main$infoRow,
 							'From start',
-							A2($author$project$Main$formatKm, 1, waypoint.a8) + (' · ' + A2($author$project$Main$formatEleGainLoss, waypoint.ba, waypoint.be)))),
+							A2($author$project$Format$km, 1, waypoint.a8) + (' · ' + A2($author$project$Format$eleGainLoss, waypoint.ba, waypoint.be)))),
 						$elm$core$Maybe$Just(
 						A2(
 							$author$project$Main$infoRow,
 							'To finish',
 							A2(
-								$author$project$Main$formatKm,
+								$author$project$Format$km,
 								1,
-								$author$project$Main$lastTrackpointDistance(track.c9) - waypoint.a8) + (' · ' + A2($author$project$Main$formatEleGainLoss, totalGain - waypoint.ba, totalLoss - waypoint.be))))
+								$author$project$Main$lastTrackpointDistance(track.c9) - waypoint.a8) + (' · ' + A2($author$project$Format$eleGainLoss, totalGain - waypoint.ba, totalLoss - waypoint.be))))
 					])));
 	});
 var $author$project$Main$SetRelativeEnd = function (a) {
@@ -15360,6 +15360,20 @@ var $author$project$Main$viewRelativeControls = F3(
 						rel.k))
 				]));
 	});
+var $author$project$Format$bearing = function (degreesFromNorth) {
+	var points = _List_fromArray(
+		['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']);
+	return A2($myrho$elm_round$Round$round, 0, degreesFromNorth) + ('° (' + (A2(
+		$elm$core$Maybe$withDefault,
+		'N',
+		A2(
+			$elm_community$list_extra$List$Extra$getAt,
+			A2(
+				$elm$core$Basics$modBy,
+				16,
+				$elm$core$Basics$round(degreesFromNorth / 22.5)),
+			points)) + ')'));
+};
 var $elm$core$Basics$atan2 = _Basics_atan2;
 var $author$project$Location$bearing = F2(
 	function (a, b) {
@@ -15377,51 +15391,25 @@ var $author$project$Location$bearing = F2(
 		var degreesFromNorth = (A2($elm$core$Basics$atan2, y, x) * 180) / $elm$core$Basics$pi;
 		return (degreesFromNorth < 0) ? (degreesFromNorth + 360) : degreesFromNorth;
 	});
-var $author$project$Main$formatBearing = function (degreesFromNorth) {
-	var points = _List_fromArray(
-		['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']);
-	var point = A2(
-		$elm$core$Maybe$withDefault,
-		'N',
-		A2(
-			$elm_community$list_extra$List$Extra$getAt,
-			A2(
-				$elm$core$Basics$modBy,
-				16,
-				$elm$core$Basics$round(degreesFromNorth / 22.5)),
-			points));
-	return A2($myrho$elm_round$Round$round, 0, degreesFromNorth) + ('° (' + (point + ')'));
-};
-var $author$project$Main$formatClimbRate = function (metresPerKm) {
+var $author$project$Format$climbRate = function (metresPerKm) {
 	return A2($myrho$elm_round$Round$round, 0, metresPerKm) + 'm/km';
 };
-var $author$project$Main$roundTo = F2(
+var $author$project$Format$roundTo = F2(
 	function (decimalPlaces, value) {
 		var factor = A2($elm$core$Basics$pow, 10, decimalPlaces);
 		return $elm$core$Basics$round(value * factor) / factor;
 	});
-var $author$project$Main$withSign = F2(
+var $author$project$Format$withSign = F2(
 	function (format, value) {
 		return (value > 0) ? ('+' + format(value)) : format(value);
 	});
-var $author$project$Main$formatGradient = A2(
+var $author$project$Format$gradient = A2(
 	$elm$core$Basics$composeR,
-	$author$project$Main$roundTo(1),
-	$author$project$Main$withSign(
+	$author$project$Format$roundTo(1),
+	$author$project$Format$withSign(
 		function (pct) {
 			return A2($myrho$elm_round$Round$round, 1, pct) + '%';
 		}));
-var $author$project$Main$formatSignedKm = function (decimalPlaces) {
-	return A2(
-		$elm$core$Basics$composeR,
-		$author$project$Main$roundTo(decimalPlaces - 3),
-		$author$project$Main$withSign(
-			$author$project$Main$formatKm(decimalPlaces)));
-};
-var $author$project$Main$formatSignedM = A2(
-	$elm$core$Basics$composeL,
-	$author$project$Main$withSign($author$project$Main$formatM),
-	$author$project$Main$roundTo(0));
 var $author$project$Main$infoSection = F3(
 	function (title, note, rows) {
 		return A2(
@@ -15462,6 +15450,17 @@ var $author$project$Main$infoSection = F3(
 						])),
 				rows));
 	});
+var $author$project$Format$signedKm = function (decimalPlaces) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$author$project$Format$roundTo(decimalPlaces - 3),
+		$author$project$Format$withSign(
+			$author$project$Format$km(decimalPlaces)));
+};
+var $author$project$Format$signedM = A2(
+	$elm$core$Basics$composeL,
+	$author$project$Format$withSign($author$project$Format$m),
+	$author$project$Format$roundTo(0));
 var $author$project$Main$viewRelativeTravelCard = F4(
 	function (track, selectable, start, end) {
 		var waypointsBetween = $elm$core$List$length(
@@ -15507,23 +15506,23 @@ var $author$project$Main$viewRelativeTravelCard = F4(
 								A2(
 									$author$project$Main$infoRow,
 									'Distance',
-									A2($author$project$Main$formatKm, 2, crowFlies))),
+									A2($author$project$Format$km, 2, crowFlies))),
 								$elm$core$Maybe$Just(
 								A2(
 									$author$project$Main$infoRow,
 									'Bearing',
-									$author$project$Main$formatBearing(
+									$author$project$Format$bearing(
 										A2($author$project$Location$bearing, start.aX, end.aX)))),
 								$elm$core$Maybe$Just(
 								A2(
 									$author$project$Main$infoRow,
 									$author$project$Main$elevationLabel(start.a9 || end.a9),
-									$author$project$Main$formatSignedM(elevationDifference))),
+									$author$project$Format$signedM(elevationDifference))),
 								(crowFlies > 0) ? $elm$core$Maybe$Just(
 								A2(
 									$author$project$Main$infoRow,
 									'Gradient',
-									$author$project$Main$formatGradient((elevationDifference / crowFlies) * 100))) : $elm$core$Maybe$Nothing
+									$author$project$Format$gradient((elevationDifference / crowFlies) * 100))) : $elm$core$Maybe$Nothing
 							]))),
 					A3(
 					$author$project$Main$infoSection,
@@ -15539,18 +15538,18 @@ var $author$project$Main$viewRelativeTravelCard = F4(
 									$author$project$Main$infoRow,
 									'Distance',
 									_Utils_ap(
-										A2($author$project$Main$formatSignedKm, 1, alongRoute),
+										A2($author$project$Format$signedKm, 1, alongRoute),
 										(alongRoute < 0) ? ' (behind you)' : ''))),
 								$elm$core$Maybe$Just(
 								A2(
 									$author$project$Main$infoRow,
 									'Climb',
-									A2($author$project$Main$formatEleGainLoss, gain, loss))),
+									A2($author$project$Format$eleGainLoss, gain, loss))),
 								(!(!alongRoute)) ? $elm$core$Maybe$Just(
 								A2(
 									$author$project$Main$infoRow,
 									'Climbing rate',
-									$author$project$Main$formatClimbRate(
+									$author$project$Format$climbRate(
 										(gain / $elm$core$Basics$abs(alongRoute)) * 1000))) : $elm$core$Maybe$Nothing,
 								A3(
 								$elm$core$Maybe$map2,
@@ -15559,7 +15558,7 @@ var $author$project$Main$viewRelativeTravelCard = F4(
 										return A2(
 											$author$project$Main$infoRow,
 											'Share of route',
-											$author$project$Main$formatPercent(distanceShare) + (' of distance · ' + ($author$project$Main$formatPercent(climbShare) + ' of climbing')));
+											$author$project$Format$percent(distanceShare) + (' of distance · ' + ($author$project$Format$percent(climbShare) + ' of climbing')));
 									}),
 								A2(
 									$author$project$Main$safePercent,

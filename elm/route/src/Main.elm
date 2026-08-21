@@ -16,7 +16,6 @@ import Json.Decode
 import Json.Encode
 import List.Extra
 import Location
-import Round
 import String
 import Svg
 import Svg.Attributes
@@ -2805,10 +2804,10 @@ distanceMarkers cfg =
                             * metresPerDisplayedUnit
                     , label =
                         if isPercent then
-                            formatPercent value
+                            Format.percent value
 
                         else
-                            formatKm cfg.detail value
+                            Format.km cfg.detail value
                     }
 
                 segmentEndValues =
@@ -2870,7 +2869,7 @@ profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation
             , Html.Attributes.style "font-size" "1em"
             , Html.Attributes.style "padding" "4px 0"
             ]
-            [ Html.text <| formatKm 1 maxDistance ++ " " ++ formatEleGainLoss gain loss ]
+            [ Html.text <| Format.km 1 maxDistance ++ " " ++ Format.eleGainLoss gain loss ]
         , Svg.svg
             [ Svg.Attributes.viewBox <| "-50 -5 " ++ String.fromInt (profileSvgWidth + 55) ++ " " ++ (String.fromInt <| svgHeight + 10)
             ]
@@ -3593,10 +3592,10 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                                             Nothing
 
                                         else if displayIsPercent cs.totalDistanceDisplay then
-                                            Maybe.map formatPercent displayedDistance
+                                            Maybe.map Format.percent displayedDistance
 
                                         else
-                                            Maybe.map (formatKm cs.distanceDetail) displayedDistance
+                                            Maybe.map (Format.km cs.distanceDetail) displayedDistance
 
                                     waypointEle =
                                         if isReferencePoint then
@@ -3608,20 +3607,20 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                                                     Nothing
 
                                                 FromZero ->
-                                                    Just (formatEleGainLoss waypoint.gain waypoint.loss)
+                                                    Just (Format.eleGainLoss waypoint.gain waypoint.loss)
 
                                                 ToFinish ->
                                                     lastWaypoint
                                                         |> Maybe.map
                                                             (\last ->
-                                                                formatEleGainLoss
+                                                                Format.eleGainLoss
                                                                     (last.gain - waypoint.gain)
                                                                     (last.loss - waypoint.loss)
                                                             )
 
                                                 ToDistance ->
                                                     Just
-                                                        (formatEleGainLoss
+                                                        (Format.eleGainLoss
                                                             (Tuple.first refPointEle - waypoint.gain)
                                                             (Tuple.second refPointEle - waypoint.loss)
                                                         )
@@ -3630,7 +3629,7 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                                                     refWaypoint
                                                         |> Maybe.map
                                                             (\rw ->
-                                                                formatEleGainLoss
+                                                                Format.eleGainLoss
                                                                     (rw.gain - waypoint.gain)
                                                                     (rw.loss - waypoint.loss)
                                                             )
@@ -3639,18 +3638,18 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                                                     refWaypoint
                                                         |> Maybe.map
                                                             (\rw ->
-                                                                formatEleGainLoss
+                                                                Format.eleGainLoss
                                                                     (waypoint.gain - rw.gain)
                                                                     (waypoint.loss - rw.loss)
                                                             )
 
                                                 PercentProgress ->
-                                                    Maybe.map2 formatEleGainLossPercent
+                                                    Maybe.map2 Format.eleGainLossPercent
                                                         (safePercent waypoint.gain totalGain)
                                                         (safePercent waypoint.loss totalLoss)
 
                                                 PercentRemaining ->
-                                                    Maybe.map2 formatEleGainLossPercent
+                                                    Maybe.map2 Format.eleGainLossPercent
                                                         (safePercent (totalGain - waypoint.gain) totalGain)
                                                         (safePercent (totalLoss - waypoint.loss) totalLoss)
 
@@ -3775,16 +3774,16 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                                         ]
                                         [ Svg.text <|
                                             if displayIsPercent cs.totalDistanceDisplay then
-                                                (safePercent dist finishDist |> Maybe.map formatPercent |> Maybe.withDefault "")
+                                                (safePercent dist finishDist |> Maybe.map Format.percent |> Maybe.withDefault "")
                                                     ++ " "
-                                                    ++ formatEleGainLossPercent
+                                                    ++ Format.eleGainLossPercent
                                                         (safePercent gain totalGain |> Maybe.withDefault 0)
                                                         (safePercent loss totalLoss |> Maybe.withDefault 0)
 
                                             else
-                                                formatKm cs.distanceDetail dist
+                                                Format.km cs.distanceDetail dist
                                                     ++ " "
-                                                    ++ formatEleGainLoss gain loss
+                                                    ++ Format.eleGainLoss gain loss
                                         ]
                                     ]
                     )
@@ -4031,13 +4030,13 @@ viewRelativeContextCard track card point =
 
                     categories ->
                         Just (infoRow "Categories" (String.join ", " categories))
-                , Just (infoRow (elevationLabel point.elevationFromGps) (formatM point.elevation))
-                , Just (infoRow "From start" (formatKm 1 waypoint.distance ++ " · " ++ formatEleGainLoss waypoint.gain waypoint.loss))
+                , Just (infoRow (elevationLabel point.elevationFromGps) (Format.m point.elevation))
+                , Just (infoRow "From start" (Format.km 1 waypoint.distance ++ " · " ++ Format.eleGainLoss waypoint.gain waypoint.loss))
                 , Just
                     (infoRow "To finish"
-                        (formatKm 1 (lastTrackpointDistance track.trackpoints - waypoint.distance)
+                        (Format.km 1 (lastTrackpointDistance track.trackpoints - waypoint.distance)
                             ++ " · "
-                            ++ formatEleGainLoss (totalGain - waypoint.gain) (totalLoss - waypoint.loss)
+                            ++ Format.eleGainLoss (totalGain - waypoint.gain) (totalLoss - waypoint.loss)
                         )
                     )
                 ]
@@ -4065,7 +4064,7 @@ snapNote point =
                         "the waypoint"
                    )
                 ++ ", "
-                ++ formatM point.waypoint.offRoute
+                ++ Format.m point.waypoint.offRoute
                 ++ " away"
             )
 
@@ -4129,11 +4128,11 @@ viewRelativeTravelCard track selectable start end =
                 "between points on the route"
             )
             (List.filterMap identity
-                [ Just (infoRow "Distance" (formatKm 2 crowFlies))
-                , Just (infoRow "Bearing" (formatBearing (Location.bearing start.latLon end.latLon)))
-                , Just (infoRow (elevationLabel (start.elevationFromGps || end.elevationFromGps)) (formatSignedM elevationDifference))
+                [ Just (infoRow "Distance" (Format.km 2 crowFlies))
+                , Just (infoRow "Bearing" (Format.bearing (Location.bearing start.latLon end.latLon)))
+                , Just (infoRow (elevationLabel (start.elevationFromGps || end.elevationFromGps)) (Format.signedM elevationDifference))
                 , if crowFlies > 0 then
-                    Just (infoRow "Gradient" (formatGradient (elevationDifference / crowFlies * 100)))
+                    Just (infoRow "Gradient" (Format.gradient (elevationDifference / crowFlies * 100)))
 
                   else
                     Nothing
@@ -4151,7 +4150,7 @@ viewRelativeTravelCard track selectable start end =
             (List.filterMap identity
                 [ Just
                     (infoRow "Distance"
-                        (formatSignedKm 1 alongRoute
+                        (Format.signedKm 1 alongRoute
                             ++ (if alongRoute < 0 then
                                     " (behind you)"
 
@@ -4160,15 +4159,15 @@ viewRelativeTravelCard track selectable start end =
                                )
                         )
                     )
-                , Just (infoRow "Climb" (formatEleGainLoss gain loss))
+                , Just (infoRow "Climb" (Format.eleGainLoss gain loss))
                 , if alongRoute /= 0 then
-                    Just (infoRow "Climbing rate" (formatClimbRate (gain / abs alongRoute * 1000)))
+                    Just (infoRow "Climbing rate" (Format.climbRate (gain / abs alongRoute * 1000)))
 
                   else
                     Nothing
                 , Maybe.map2
                     (\distanceShare climbShare ->
-                        infoRow "Share of route" (formatPercent distanceShare ++ " of distance · " ++ formatPercent climbShare ++ " of climbing")
+                        infoRow "Share of route" (Format.percent distanceShare ++ " of distance · " ++ Format.percent climbShare ++ " of climbing")
                     )
                     (safePercent (abs alongRoute) (lastTrackpointDistance track.trackpoints))
                     -- Riding a segment backwards climbs what the route descends, so the
@@ -4288,88 +4287,6 @@ infoRow label value =
         [ Html.span [ Html.Attributes.style "opacity" "0.7" ] [ Html.text label ]
         , Html.span [] [ Html.text value ]
         ]
-
-
-formatKm : Int -> Float -> String
-formatKm decimalPlaces metres =
-    Round.round decimalPlaces (metres / 1000) ++ "km"
-
-
-formatM : Float -> String
-formatM metres =
-    Round.round 0 metres ++ "m"
-
-
-formatEleGainLoss : Float -> Float -> String
-formatEleGainLoss gain loss =
-    "↑" ++ formatM gain ++ " ↓" ++ formatM loss
-
-
-formatPercent : Float -> String
-formatPercent pct =
-    Round.round 0 pct ++ "%"
-
-
-formatEleGainLossPercent : Float -> Float -> String
-formatEleGainLossPercent gainPct lossPct =
-    "↑" ++ formatPercent gainPct ++ " ↓" ++ formatPercent lossPct
-
-
-{-| Signs a formatted value so a reader can tell "132m higher" from "132m lower" at a
-glance. Round to the displayed precision first, so a value that displays as zero is not
-given a misleading sign.
--}
-withSign : (Float -> String) -> Float -> String
-withSign format value =
-    if value > 0 then
-        "+" ++ format value
-
-    else
-        format value
-
-
-formatSignedM : Float -> String
-formatSignedM =
-    withSign formatM << roundTo 0
-
-
-formatSignedKm : Int -> Float -> String
-formatSignedKm decimalPlaces =
-    roundTo (decimalPlaces - 3) >> withSign (formatKm decimalPlaces)
-
-
-formatGradient : Float -> String
-formatGradient =
-    roundTo 1 >> withSign (\pct -> Round.round 1 pct ++ "%")
-
-
-formatClimbRate : Float -> String
-formatClimbRate metresPerKm =
-    Round.round 0 metresPerKm ++ "m/km"
-
-
-roundTo : Int -> Float -> Float
-roundTo decimalPlaces value =
-    let
-        factor =
-            10 ^ toFloat decimalPlaces
-    in
-    toFloat (round (value * factor)) / factor
-
-
-{-| Compass bearing as degrees plus the nearest of the 16 compass points, e.g. "143° (SE)".
--}
-formatBearing : Float -> String
-formatBearing degreesFromNorth =
-    let
-        points =
-            [ "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW" ]
-
-        point =
-            List.Extra.getAt (modBy 16 (round (degreesFromNorth / 22.5))) points
-                |> Maybe.withDefault "N"
-    in
-    Round.round 0 degreesFromNorth ++ "° (" ++ point ++ ")"
 
 
 trackpointAtDistance : Float -> List GpxApi.TrackPoint -> Maybe GpxApi.TrackPoint
@@ -4681,7 +4598,7 @@ viewPaceCard state speed =
                     Just ( position, elapsed ) ->
                         [ infoNote
                             ("averaged over "
-                                ++ formatKm 1 position
+                                ++ Format.km 1 position
                                 ++ " in "
                                 ++ Wallclock.duration elapsed
                                 ++ ", stops included"
@@ -4704,8 +4621,8 @@ viewArrivalCard state start end distanceToGo secondsToGo =
             ]
         )
         (List.filterMap identity
-            [ Just (infoRow "Distance to go" (formatKm 1 distanceToGo))
-            , Just (infoRow "Climb to go" (formatEleGainLoss (end.gain - start.gain) (end.loss - start.loss)))
+            [ Just (infoRow "Distance to go" (Format.km 1 distanceToGo))
+            , Just (infoRow "Climb to go" (Format.eleGainLoss (end.gain - start.gain) (end.loss - start.loss)))
             , Just (infoRow "Time to go" (Wallclock.duration secondsToGo))
             , state.now |> Maybe.map (\now -> infoRow "Arrives at" (Wallclock.timeOfDayAfter state.zone now secondsToGo))
             , elapsedSoFar state
@@ -4827,7 +4744,7 @@ viewOptionsPanel state =
                                     state.elevationProfile
                             in
                             [ optionGroup "Live window"
-                                [ Html.text ("Lookbehind: " ++ formatKm 1 ep.liveLookbehind)
+                                [ Html.text ("Lookbehind: " ++ Format.km 1 ep.liveLookbehind)
                                 , Html.input
                                     [ Html.Attributes.type_ "range"
                                     , Html.Attributes.min "0"
@@ -4837,7 +4754,7 @@ viewOptionsPanel state =
                                     , Html.Events.onInput (String.toFloat >> Maybe.withDefault 2000 >> UpdateLiveLookbehind)
                                     ]
                                     []
-                                , Html.text ("Lookahead: " ++ formatKm 1 ep.liveLookahead)
+                                , Html.text ("Lookahead: " ++ Format.km 1 ep.liveLookahead)
                                 , Html.input
                                     [ Html.Attributes.type_ "range"
                                     , Html.Attributes.min "0"
@@ -5225,7 +5142,7 @@ viewElevationProfileOptions state =
                         , Html.Events.onInput (String.toFloat >> Maybe.withDefault 10 >> (\km -> UpdateDistanceMarkerInterval (Just (km * 1000))))
                         ]
                         []
-                    , Html.text (formatKm 0 interval)
+                    , Html.text (Format.km 0 interval)
                     ]
 
                 Nothing ->
@@ -5508,7 +5425,7 @@ to something that still identifies which one is meant.
 waypointDisplayName : GpxApi.Waypoint -> String
 waypointDisplayName waypoint =
     if String.isEmpty (String.trim waypoint.name) then
-        "Unnamed waypoint (" ++ formatKm 1 waypoint.distance ++ ")"
+        "Unnamed waypoint (" ++ Format.km 1 waypoint.distance ++ ")"
 
     else
         waypoint.name
@@ -5541,7 +5458,7 @@ viewPointSelector { onSelect, hasPosition, offerRouteEnds } indexed selected =
                 , routeEndItem AtRouteStart routeStartName
                 , List.map
                     (\( idx, wp ) ->
-                        Dropdown.Item (formatPointRef (AtWaypoint idx)) (waypointDisplayName wp ++ " (" ++ formatKm 1 wp.distance ++ ")") True
+                        Dropdown.Item (formatPointRef (AtWaypoint idx)) (waypointDisplayName wp ++ " (" ++ Format.km 1 wp.distance ++ ")") True
                     )
                     indexed
                 , routeEndItem AtRouteEnd routeEndName
