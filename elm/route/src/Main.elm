@@ -147,8 +147,8 @@ type alias EditableWaypoint =
     }
 
 
-{-| A point on the route the user has picked out: either one of the track's waypoints, or
-wherever they are.
+{-| A point on the route the user has picked out: one of the track's waypoints, wherever they
+are, or either end of the route.
 
 Every flow that asks the user to choose a point on the route stores one of these, so the
 same selector serves all of them. `AtRoutePosition` resolves against `state.position`,
@@ -161,16 +161,24 @@ is stable, whereas a position in the resolved-and-filtered list shifts under the
 as an earlier waypoint is marked deleted or filtered out. It is also the index space the
 edit flows already maintain — see `removeWaypointAt`, `WaypointDeleted` and `ResetWaypoints`.
 
+`AtRouteStart` / `AtRouteEnd` are the ends of the track itself, so they stand whether or not
+the GPX puts a waypoint there and whatever the waypoint filters hide. Only the flows that
+compare two arbitrary points offer them — see `viewPointSelector`'s `offerRouteEnds` for why
+the split and cuesheet selectors do not.
+
 -}
 type PointRef
     = AtWaypoint Int
     | AtRoutePosition
+    | AtRouteStart
+    | AtRouteEnd
 
 
 {-| Resolves a reference to the waypoint it stands for, or Nothing when it no longer stands
 for one — a deleted waypoint, or `AtRoutePosition` with no position set. A position becomes a
 synthetic waypoint, carrying the cumulative climb to there and, when a GPS fix is what set
-the position, how far off route that fix is.
+the position, how far off route that fix is. The route's own ends become synthetic waypoints
+too, with no categories of their own — nothing in the file gave them any.
 
 Returning a `GpxApi.Waypoint` rather than a bespoke record is what lets the cuesheet and
 elevation profile treat a chosen position exactly like a chosen waypoint.
@@ -207,6 +215,19 @@ resolvePointRef position location track ref =
                                 )
                     )
 
+        AtRouteStart ->
+            Just (GpxApi.Waypoint 0 routeStartName [] 0 0 0)
+
+        AtRouteEnd ->
+            Just
+                (GpxApi.Waypoint (lastTrackpointDistance track.trackpoints)
+                    routeEndName
+                    []
+                    (Tuple.first track.gainLoss)
+                    (Tuple.second track.gainLoss)
+                    0
+                )
+
 
 {-| The route distance a reference stands for, for the flows that only need to place the
 point along the route. Defined through `resolvePointRef` so there is a single answer to what
@@ -218,8 +239,8 @@ refDistance position track =
 
 
 {-| Remaps a reference after the waypoint at `removedIndex` has been dropped from
-`editableWaypoints`, which shifts every later index down by one. A position is not addressed
-by index, so it survives untouched.
+`editableWaypoints`, which shifts every later index down by one. Only `AtWaypoint` is
+addressed by index, so every other reference survives untouched.
 -}
 shiftPointRef : Int -> PointRef -> PointRef
 shiftPointRef removedIndex ref =
@@ -234,15 +255,31 @@ shiftPointRef removedIndex ref =
         AtRoutePosition ->
             ref
 
+        AtRouteStart ->
+            ref
+
+        AtRouteEnd ->
+            ref
+
 
 routePositionName : String
 routePositionName =
     "Position on route"
 
 
-{-| The stored form of a reference: a waypoint as its bare index, a position as "position",
-which no index can collide with. Doubles as the option value in `viewPointSelector`, and as
-the suffix after the colon in a `TotalDistanceDisplay` — so it must stay colon-free.
+routeStartName : String
+routeStartName =
+    "Start of route"
+
+
+routeEndName : String
+routeEndName =
+    "End of route"
+
+
+{-| The stored form of a reference: a waypoint as its bare index, everything else as a word no
+index can collide with. Doubles as the option value in `viewPointSelector`, and as the suffix
+after the colon in a `TotalDistanceDisplay` — so it must stay colon-free.
 -}
 formatPointRef : PointRef -> String
 formatPointRef ref =
@@ -253,14 +290,27 @@ formatPointRef ref =
         AtRoutePosition ->
             "position"
 
+        AtRouteStart ->
+            "start"
+
+        AtRouteEnd ->
+            "end"
+
 
 parsePointRef : String -> Maybe PointRef
 parsePointRef s =
-    if s == "position" then
-        Just AtRoutePosition
+    case s of
+        "position" ->
+            Just AtRoutePosition
 
-    else
-        String.toInt s |> Maybe.map AtWaypoint
+        "start" ->
+            Just AtRouteStart
+
+        "end" ->
+            Just AtRouteEnd
+
+        _ ->
+            String.toInt s |> Maybe.map AtWaypoint
 
 
 type alias WaypointOverrides =
@@ -1077,7 +1127,7 @@ update msg model =
                         -- Created waypoints are always appended after the source ones,
                         -- so reverting to source keeps source indices 0..sourceCount-1
                         -- intact; only split points aimed at created waypoints are
-                        -- now stale. A split at a route position is never stale.
+                        -- now stale. A split that names no waypoint is never stale.
                         sourceCount =
                             List.length (List.filter (not << .created) tracks.current.editableWaypoints)
                     in
@@ -1106,7 +1156,7 @@ update msg model =
                                                             AtWaypoint idx ->
                                                                 idx < sourceCount
 
-                                                            AtRoutePosition ->
+                                                            _ ->
                                                                 True
                                                     )
                                                     ep.splitPoints
@@ -1882,8 +1932,8 @@ positionRefIfSet state =
             []
 
 
-{-| Repoints a display mode whose reference waypoint has been filtered away or deleted. A
-route position is never filtered away, so it is always left alone.
+{-| Repoints a display mode whose reference waypoint has been filtered away or deleted. Only
+a waypoint can be filtered away, so every other reference is left alone.
 -}
 correctWaypointSelection : TotalDistanceDisplay -> List ( Int, GpxApi.Waypoint ) -> TotalDistanceDisplay
 correctWaypointSelection display indexed =
@@ -1894,6 +1944,12 @@ correctWaypointSelection display indexed =
                     List.any (\( i, _ ) -> i == idx) indexed
 
                 AtRoutePosition ->
+                    True
+
+                AtRouteStart ->
+                    True
+
+                AtRouteEnd ->
                     True
 
         correct rebuild fallback ref =
@@ -1963,8 +2019,15 @@ correctWaypointSelectionInState s =
 
                 clampToSelectable fallback ref =
                     case ref of
-                        -- The position is always available, whatever the waypoint filters do
+                        -- The position and the route's ends are always available, whatever
+                        -- the waypoint filters do
                         AtRoutePosition ->
+                            ref
+
+                        AtRouteStart ->
+                            ref
+
+                        AtRouteEnd ->
                             ref
 
                         AtWaypoint idx ->
@@ -3642,16 +3705,17 @@ viewRelativeTab state tracks =
         selectable =
             selectableWaypoints state tracks.current
 
-        -- Resolved through `selectable` rather than the whole track, so a reference to a
-        -- waypoint the filters have hidden reads as "nothing chosen" instead of silently
-        -- comparing against something that is not in the dropdown.
+        -- A waypoint is resolved through `selectable` rather than the whole track, so a
+        -- reference to one the filters have hidden reads as "nothing chosen" instead of
+        -- silently comparing against something that is not in the dropdown. Nothing else in
+        -- the dropdown is a waypoint of the track's, so nothing else can be filtered away.
         waypointFor ref =
             case ref of
                 AtWaypoint idx ->
                     selectable |> List.Extra.find (\( i, _ ) -> i == idx) |> Maybe.map Tuple.second
 
-                AtRoutePosition ->
-                    resolvePointRef state.position state.location tracks.current AtRoutePosition
+                _ ->
+                    resolvePointRef state.position state.location tracks.current ref
 
         pointFor ref =
             waypointFor ref
@@ -3665,7 +3729,7 @@ viewRelativeTab state tracks =
                             AtRoutePosition ->
                                 state.location
 
-                            AtWaypoint _ ->
+                            _ ->
                                 Nothing
                         )
                     )
@@ -3675,7 +3739,7 @@ viewRelativeTab state tracks =
                 AtRoutePosition ->
                     "This needs a position on the route. Set one with the Position slider in the options panel, or start tracking."
 
-                AtWaypoint _ ->
+                _ ->
                     fallback
 
         contextCardOrNotice card ref =
@@ -3686,38 +3750,37 @@ viewRelativeTab state tracks =
                 Nothing ->
                     relativeNotice (unresolvedNotice ref card.fallback)
 
+        -- No check for an empty waypoint list: the route's own ends are always there to
+        -- compare, so the tab has something to say about a track carrying no waypoints at
+        -- all — or none the category filter lets through.
         body =
-            if List.isEmpty selectable then
-                [ relativeNotice "No waypoints to compare. Add one in the Waypoints tab, or check the waypoint category filter in the options panel." ]
+            List.concat
+                [ [ contextCardOrNotice
+                        { role = "Start"
+                        , fallback = "Choose a start point."
+                        , collapsed = rel.startCollapsed
+                        , onToggle = SetRelativeStartCollapsed (not rel.startCollapsed)
+                        }
+                        rel.start
+                  ]
 
-            else
-                List.concat
-                    [ [ contextCardOrNotice
-                            { role = "Start"
-                            , fallback = "Choose a start point."
-                            , collapsed = rel.startCollapsed
-                            , onToggle = SetRelativeStartCollapsed (not rel.startCollapsed)
-                            }
-                            rel.start
-                      ]
+                -- Only travel between two points that both resolve; the notices in
+                -- their place say which one still needs choosing.
+                , case Maybe.map2 Tuple.pair (pointFor rel.start) (pointFor rel.end) of
+                    Just ( startPoint, endPoint ) ->
+                        [ viewRelativeTravelCard tracks.current selectable startPoint endPoint ]
 
-                    -- Only travel between two points that both resolve; the notices in
-                    -- their place say which one still needs choosing.
-                    , case Maybe.map2 Tuple.pair (pointFor rel.start) (pointFor rel.end) of
-                        Just ( startPoint, endPoint ) ->
-                            [ viewRelativeTravelCard tracks.current selectable startPoint endPoint ]
-
-                        Nothing ->
-                            []
-                    , [ contextCardOrNotice
-                            { role = "End"
-                            , fallback = "Choose an end point."
-                            , collapsed = rel.endCollapsed
-                            , onToggle = SetRelativeEndCollapsed (not rel.endCollapsed)
-                            }
-                            rel.end
-                      ]
-                    ]
+                    Nothing ->
+                        []
+                , [ contextCardOrNotice
+                        { role = "End"
+                        , fallback = "Choose an end point."
+                        , collapsed = rel.endCollapsed
+                        , onToggle = SetRelativeEndCollapsed (not rel.endCollapsed)
+                        }
+                        rel.end
+                  ]
+                ]
     in
     Html.div
         [ Html.Attributes.style "display" "flex"
@@ -3736,8 +3799,8 @@ viewRelativeControls hasPosition rel selectable =
         , Html.Attributes.style "gap" "1em"
         , Html.Attributes.style "align-items" "flex-end"
         ]
-        [ relativeControl "Start" (viewPointSelector { onSelect = SetRelativeStart, hasPosition = hasPosition } selectable rel.start)
-        , relativeControl "End" (viewPointSelector { onSelect = SetRelativeEnd, hasPosition = hasPosition } selectable rel.end)
+        [ relativeControl "Start" (viewPointSelector { onSelect = SetRelativeStart, hasPosition = hasPosition, offerRouteEnds = True } selectable rel.start)
+        , relativeControl "End" (viewPointSelector { onSelect = SetRelativeEnd, hasPosition = hasPosition, offerRouteEnds = True } selectable rel.end)
         ]
 
 
@@ -4570,7 +4633,7 @@ viewElevationProfileOptions state =
                         dropdownRow splitListPos selectedRef =
                             Html.div [ Html.Attributes.style "display" "flex", Html.Attributes.style "gap" "0.5em", Html.Attributes.style "align-items" "center" ]
                                 [ viewPointSelector
-                                    { onSelect = UpdateSplitPoint splitListPos, hasPosition = state.position /= Nothing }
+                                    { onSelect = UpdateSplitPoint splitListPos, hasPosition = state.position /= Nothing, offerRouteEnds = False }
                                     selectable
                                     selectedRef
                                 , Html.button
@@ -4725,7 +4788,7 @@ viewTotalDistanceOptions state =
 
         pointSelector ref =
             [ viewPointSelector
-                { onSelect = UpdateSelectedPoint, hasPosition = state.position /= Nothing }
+                { onSelect = UpdateSelectedPoint, hasPosition = state.position /= Nothing, offerRouteEnds = False }
                 indexedFiltered
                 ref
             ]
@@ -4940,17 +5003,35 @@ waypointDisplayName waypoint =
 {-| The one control for picking a point on the route. Offers the given waypoints plus the
 rider's position, the latter disabled — rather than hidden — when no position is set, so the
 option stays discoverable and the list does not change shape as a fix comes and goes.
+
+`offerRouteEnds` adds the route's own two ends, in route order around the waypoints. Only the
+flows that compare two arbitrary points want them: a split there is dropped by
+`splitDistances` as it sits on a route end, and a cuesheet total measured to one is what
+`ToFinish` and `FromZero` already say.
+
 -}
-viewPointSelector : { onSelect : PointRef -> Msg, hasPosition : Bool } -> List ( Int, GpxApi.Waypoint ) -> PointRef -> Html Msg
-viewPointSelector { onSelect, hasPosition } indexed selected =
+viewPointSelector : { onSelect : PointRef -> Msg, hasPosition : Bool, offerRouteEnds : Bool } -> List ( Int, GpxApi.Waypoint ) -> PointRef -> Html Msg
+viewPointSelector { onSelect, hasPosition, offerRouteEnds } indexed selected =
+    let
+        routeEndItem ref name =
+            if offerRouteEnds then
+                [ Dropdown.Item (formatPointRef ref) name True ]
+
+            else
+                []
+    in
     Dropdown.dropdown
         (Dropdown.Options
-            (Dropdown.Item (formatPointRef AtRoutePosition) routePositionName hasPosition
-                :: List.map
+            (List.concat
+                [ [ Dropdown.Item (formatPointRef AtRoutePosition) routePositionName hasPosition ]
+                , routeEndItem AtRouteStart routeStartName
+                , List.map
                     (\( idx, wp ) ->
                         Dropdown.Item (formatPointRef (AtWaypoint idx)) (waypointDisplayName wp ++ " (" ++ formatKm 1 wp.distance ++ ")") True
                     )
                     indexed
+                , routeEndItem AtRouteEnd routeEndName
+                ]
             )
             Nothing
             (\maybeStr ->
