@@ -119,6 +119,11 @@ wall-clock times without a timezone database**, so a span crossing a daylight-sa
 out by that hour — documented on `elapsedSinceRideStart`, and immaterial next to the accuracy
 of a pace estimate.
 
+`docs/module-extraction.md` records what has been extracted and the two extractions still
+outstanding — the Pace arithmetic and the `PointRef`/track model — with the call-site counts,
+the snag each one runs into, and the tests the Pace one should arrive with. Pick either up
+from there.
+
 The Elm toolchain is pinned in `elm.Dockerfile` (`elm@0.19.1-6`, `elm-test@0.19.1-revision12`).
 Leave it pinned: `npm install -g elm` now resolves to 0.19.2, which refuses to build an
 `elm.json` that asks for 0.19.1, so an unpinned rebuild breaks `make route.js` with no change
