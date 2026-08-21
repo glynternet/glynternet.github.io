@@ -358,11 +358,15 @@ type alias CuesheetOptions =
     }
 
 
-{-| The two points the Relative tab compares.
+{-| The two points the Relative tab compares, and whether each one's card is folded down to
+its heading. The folds sit beside the points because they are the same tab's view state, and
+are saved with the rest of it so a tab tidied for the road stays that way.
 -}
 type alias RelativeOptions =
     { start : PointRef
     , end : PointRef
+    , startCollapsed : Bool
+    , endCollapsed : Bool
     }
 
 
@@ -409,6 +413,8 @@ defaultRelativeOptions : RelativeOptions
 defaultRelativeOptions =
     { start = AtRoutePosition
     , end = AtWaypoint 0
+    , startCollapsed = False
+    , endCollapsed = False
     }
 
 
@@ -583,6 +589,8 @@ type Msg
       -- Relative
     | SetRelativeStart PointRef
     | SetRelativeEnd PointRef
+    | SetRelativeStartCollapsed Bool
+    | SetRelativeEndCollapsed Bool
       -- State export/import
     | ExportState
     | DownloadSplitsGpx
@@ -1318,6 +1326,20 @@ update msg model =
                     s.relative
             in
             updateAndStoreModel (updateState { s | relative = { rel | end = ref } })
+
+        SetRelativeStartCollapsed collapsed ->
+            let
+                rel =
+                    s.relative
+            in
+            updateAndStoreModel (updateState { s | relative = { rel | startCollapsed = collapsed } })
+
+        SetRelativeEndCollapsed collapsed ->
+            let
+                rel =
+                    s.relative
+            in
+            updateAndStoreModel (updateState { s | relative = { rel | endCollapsed = collapsed } })
 
         ExportState ->
             ( model, downloadState (encodeSavedState { s | showOptions = False }) )
@@ -3575,13 +3597,13 @@ viewRelativeTab state tracks =
                 AtWaypoint _ ->
                     fallback
 
-        contextCardOrNotice role fallback ref =
+        contextCardOrNotice card ref =
             case pointFor ref of
                 Just point ->
-                    viewRelativeContextCard tracks.current role point
+                    viewRelativeContextCard tracks.current card point
 
                 Nothing ->
-                    relativeNotice (unresolvedNotice ref fallback)
+                    relativeNotice (unresolvedNotice ref card.fallback)
 
         body =
             if List.isEmpty selectable then
@@ -3589,7 +3611,14 @@ viewRelativeTab state tracks =
 
             else
                 List.concat
-                    [ [ contextCardOrNotice "Start" "Choose a start point." rel.start ]
+                    [ [ contextCardOrNotice
+                            { role = "Start"
+                            , fallback = "Choose a start point."
+                            , collapsed = rel.startCollapsed
+                            , onToggle = SetRelativeStartCollapsed (not rel.startCollapsed)
+                            }
+                            rel.start
+                      ]
 
                     -- Only travel between two points that both resolve; the notices in
                     -- their place say which one still needs choosing.
@@ -3599,7 +3628,14 @@ viewRelativeTab state tracks =
 
                         Nothing ->
                             []
-                    , [ contextCardOrNotice "End" "Choose an end point." rel.end ]
+                    , [ contextCardOrNotice
+                            { role = "End"
+                            , fallback = "Choose an end point."
+                            , collapsed = rel.endCollapsed
+                            , onToggle = SetRelativeEndCollapsed (not rel.endCollapsed)
+                            }
+                            rel.end
+                      ]
                     ]
     in
     Html.div
@@ -3629,9 +3665,13 @@ plays ("Start" / "End") so the two cards either side of the travel figures are t
 a glance. Built from the resolved point, so a route position — which `resolvePointRef` hands
 back as a synthetic waypoint — reads exactly like a chosen waypoint, and the elevation shown
 is the same one the travel figures were computed from.
+
+Collapsed, the card keeps only its heading, and the point's name moves up into it so a card
+folded out of the way still says which point it holds. The whole heading is the toggle.
+
 -}
-viewRelativeContextCard : EditableTrack -> String -> RelativePoint -> Html Msg
-viewRelativeContextCard track role point =
+viewRelativeContextCard : EditableTrack -> { card | role : String, collapsed : Bool, onToggle : Msg } -> RelativePoint -> Html Msg
+viewRelativeContextCard track card point =
     let
         waypoint =
             point.waypoint
@@ -3639,35 +3679,71 @@ viewRelativeContextCard track role point =
         ( totalGain, totalLoss ) =
             track.gainLoss
     in
-    relativeCard role
-        (List.filterMap identity
-            [ Just (Html.div [ Html.Attributes.style "font-weight" "bold" ] [ Html.text (waypointDisplayName waypoint) ])
-            , snapNote point
-                |> Maybe.map
-                    (\note ->
-                        Html.div
-                            [ Html.Attributes.style "font-size" "0.85em"
-                            , Html.Attributes.style "opacity" "0.7"
-                            , Html.Attributes.style "font-style" "italic"
-                            ]
-                            [ Html.text note ]
-                    )
-            , case waypoint.categories of
-                [] ->
-                    Nothing
-
-                categories ->
-                    Just (relativeRow "Categories" (String.join ", " categories))
-            , Just (relativeRow (elevationLabel point.elevationFromGps) (formatM point.elevation))
-            , Just (relativeRow "From start" (formatKm 1 waypoint.distance ++ " · " ++ formatEleGainLoss waypoint.gain waypoint.loss))
-            , Just
-                (relativeRow "To finish"
-                    (formatKm 1 (lastTrackpointDistance track.trackpoints - waypoint.distance)
-                        ++ " · "
-                        ++ formatEleGainLoss (totalGain - waypoint.gain) (totalLoss - waypoint.loss)
-                    )
-                )
+    relativeCard
+        (relativeCardHeading
+            [ Html.Events.onClick card.onToggle
+            , Html.Attributes.style "cursor" "pointer"
+            , Html.Attributes.style "user-select" "none"
+            , Html.Attributes.style "-webkit-user-select" "none"
             ]
+            (Html.span
+                [ Html.Attributes.style "font-size" "0.8em"
+                , Html.Attributes.style "opacity" "0.6"
+                ]
+                [ Html.text
+                    (if card.collapsed then
+                        "▸"
+
+                     else
+                        "▾"
+                    )
+                ]
+                :: Html.text card.role
+                :: (if card.collapsed then
+                        [ Html.span
+                            [ Html.Attributes.style "font-weight" "normal"
+                            , Html.Attributes.style "opacity" "0.75"
+                            ]
+                            [ Html.text (waypointDisplayName waypoint) ]
+                        ]
+
+                    else
+                        []
+                   )
+            )
+        )
+        (if card.collapsed then
+            []
+
+         else
+            List.filterMap identity
+                [ Just (Html.div [ Html.Attributes.style "font-weight" "bold" ] [ Html.text (waypointDisplayName waypoint) ])
+                , snapNote point
+                    |> Maybe.map
+                        (\note ->
+                            Html.div
+                                [ Html.Attributes.style "font-size" "0.85em"
+                                , Html.Attributes.style "opacity" "0.7"
+                                , Html.Attributes.style "font-style" "italic"
+                                ]
+                                [ Html.text note ]
+                        )
+                , case waypoint.categories of
+                    [] ->
+                        Nothing
+
+                    categories ->
+                        Just (relativeRow "Categories" (String.join ", " categories))
+                , Just (relativeRow (elevationLabel point.elevationFromGps) (formatM point.elevation))
+                , Just (relativeRow "From start" (formatKm 1 waypoint.distance ++ " · " ++ formatEleGainLoss waypoint.gain waypoint.loss))
+                , Just
+                    (relativeRow "To finish"
+                        (formatKm 1 (lastTrackpointDistance track.trackpoints - waypoint.distance)
+                            ++ " · "
+                            ++ formatEleGainLoss (totalGain - waypoint.gain) (totalLoss - waypoint.loss)
+                        )
+                    )
+                ]
         )
 
 
@@ -3747,7 +3823,7 @@ viewRelativeTravelCard track selectable start end =
                     )
                 |> List.length
     in
-    relativeCard "Travel"
+    relativeCard (relativeCardHeading [] [ Html.text "Travel" ])
         [ relativeSection "Direct"
             (if usingFix then
                 "from your GPS fix"
@@ -3835,8 +3911,8 @@ relativeControl label control =
         ]
 
 
-relativeCard : String -> List (Html Msg) -> Html Msg
-relativeCard title contents =
+relativeCard : Html Msg -> List (Html Msg) -> Html Msg
+relativeCard heading contents =
     Html.div
         [ Html.Attributes.style "border" "1px solid #ddd"
         , Html.Attributes.style "border-radius" "6px"
@@ -3846,7 +3922,23 @@ relativeCard title contents =
         , Html.Attributes.style "flex-direction" "column"
         , Html.Attributes.style "gap" "0.5em"
         ]
-        (Html.h3 [ Html.Attributes.style "margin" "0" ] [ Html.text title ] :: contents)
+        (heading :: contents)
+
+
+{-| A card's title row, laid out so a card with more to say than its title — a collapsed one
+naming the point it holds, say — can put it on the same line.
+-}
+relativeCardHeading : List (Html.Attribute Msg) -> List (Html Msg) -> Html Msg
+relativeCardHeading attributes contents =
+    Html.h3
+        (Html.Attributes.style "margin" "0"
+            :: Html.Attributes.style "display" "flex"
+            :: Html.Attributes.style "flex-wrap" "wrap"
+            :: Html.Attributes.style "gap" "0.4em"
+            :: Html.Attributes.style "align-items" "baseline"
+            :: attributes
+        )
+        contents
 
 
 {-| A titled group of rows. `note` says where the section's figures were measured from, and
@@ -5020,6 +5112,8 @@ encodeSavedState state =
             , Just ( "showOffRouteDistance", Json.Encode.bool state.showOffRouteDistance )
             , Just ( "relativeStart", Json.Encode.string (formatPointRef rel.start) )
             , Just ( "relativeEnd", Json.Encode.string (formatPointRef rel.end) )
+            , Just ( "relativeStartCollapsed", Json.Encode.bool rel.startCollapsed )
+            , Just ( "relativeEndCollapsed", Json.Encode.bool rel.endCollapsed )
             ]
         )
         |> Json.Encode.encode 0
@@ -5041,7 +5135,7 @@ stateDecoder =
             defaultRelativeOptions
     in
     Json.Decode.succeed
-        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau position viewMode splitMode splitEquidistantCount splitPoints liveLookahead liveLookbehind labelHeightGain distanceMarkerInterval distanceMarkerSegmentEnds totalDistanceDisplay referenceDistance itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints relativeStart relativeEnd ->
+        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau position viewMode splitMode splitEquidistantCount splitPoints liveLookahead liveLookbehind labelHeightGain distanceMarkerInterval distanceMarkerSegmentEnds totalDistanceDisplay referenceDistance itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints relativeStart relativeEnd relativeStartCollapsed relativeEndCollapsed ->
             { tracks = loadableResourceFromMaybe tracks
             , showOptions = showOptions |> Maybe.withDefault defaultState.showOptions
             , activeTab = activeTab |> Maybe.andThen parseTab |> Maybe.withDefault defaultState.activeTab
@@ -5094,6 +5188,8 @@ stateDecoder =
             , relative =
                 { start = relativeStart |> Maybe.andThen parsePointRef |> Maybe.withDefault defRel.start
                 , end = relativeEnd |> Maybe.andThen parsePointRef |> Maybe.withDefault defRel.end
+                , startCollapsed = relativeStartCollapsed |> Maybe.withDefault defRel.startCollapsed
+                , endCollapsed = relativeEndCollapsed |> Maybe.withDefault defRel.endCollapsed
                 }
             , stateDecodeError = Nothing
             , storageError = Nothing
@@ -5132,6 +5228,8 @@ stateDecoder =
         |> andMap (maybeField "showOffRouteWaypoints" Json.Decode.bool)
         |> andMap (maybeField "relativeStart" Json.Decode.string)
         |> andMap (maybeField "relativeEnd" Json.Decode.string)
+        |> andMap (maybeField "relativeStartCollapsed" Json.Decode.bool)
+        |> andMap (maybeField "relativeEndCollapsed" Json.Decode.bool)
 
 
 andMap : Json.Decode.Decoder a -> Json.Decode.Decoder (a -> b) -> Json.Decode.Decoder b
