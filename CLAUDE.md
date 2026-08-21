@@ -97,8 +97,6 @@ The route app is one monolithic Elm file (~5800 lines). To orient quickly:
   - Relative rendering: `viewRelativeTab`, `viewRelativeTravelCard`, `relativePointFor`
   - Pace rendering: `viewPaceTab`, `paceMetresPerSecond`, `viewArrivalCard`
   - Distance/elevation display logic: `displayedDistanceValue`, `displayIsPercent`
-  - Format helpers: `formatKm`, `formatM`, `formatEleGainLoss`, `formatPercent`
-  - Card primitives shared by the Relative and Pace tabs: `infoCard`, `infoSection`, `infoRow`, `infoNote`, `noticePanel`, `labelledControl`
   - Serialization: `parseTotalDistanceDisplay` / `formatTotalDistanceDisplay`, plus the encode/decode of `State`
 - **`TotalDistanceDisplay` is the central enum for distance/elevation display.** Both the cuesheet and the elevation profile key off the single `state.cuesheet.totalDistanceDisplay`. To find everything affected by a display mode, grep `TotalDistanceDisplay` / `totalDistanceDisplay`; the Elm compiler's exhaustive `case` checking then flags every site to update when you add a constructor.
 - **`PointRef` is the vocabulary for "a point on the route"** — a waypoint, the current position, or either end of the track. Every flow that asks the user to choose one stores a `PointRef` and shows `viewPointSelector`; `resolvePointRef` turns it into a `GpxApi.Waypoint`, and `selectedWaypointFor` does the same but only ever resolves to a waypoint the dropdown is still offering (so a filtered-out one reads as "nothing chosen"). Adding a constructor makes the compiler point at every flow that has to answer for it.
@@ -110,9 +108,10 @@ The route app is one monolithic Elm file (~5800 lines). To orient quickly:
 
 `elm/shared/src/` holds the parts that know nothing about the app: `GpxApi`, `Location`,
 `Zipper`, plus `Wallclock` (times of day, durations, and the wall-clock datetime a
-`datetime-local` input deals in) and `Format` (figures in the units they are read in). Both
-`elm/route/elm.json` source-directories point there, so a module dropped in is importable
-with no further wiring.
+`datetime-local` input deals in), `Format` (figures in the units they are read in) and `Ui`
+(the card, section, row, note and notice the Relative and Pace tabs are built from — all
+`Html msg`, so they stay ignorant of `Msg`). `elm/route/elm.json`'s source-directories point
+there, so a module dropped in is importable with no further wiring.
 
 `Wallclock` is the one with tests (`elm/route/tests/`), because `daysFromCivil` is arithmetic
 that could be subtly wrong for years without ever looking wrong. **`Wallclock` differences two

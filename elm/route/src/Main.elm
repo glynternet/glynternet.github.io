@@ -21,6 +21,7 @@ import Svg
 import Svg.Attributes
 import Task
 import Time
+import Ui
 import Url
 import Wallclock
 import Zipper exposing (Zipper)
@@ -3909,7 +3910,7 @@ viewRelativeTab state tracks =
                     viewRelativeContextCard tracks.current card point
 
                 Nothing ->
-                    noticePanel (unresolvedPointNotice ref card.fallback)
+                    Ui.noticePanel (unresolvedPointNotice ref card.fallback)
 
         -- No check for an empty waypoint list: the route's own ends are always there to
         -- compare, so the tab has something to say about a track carrying no waypoints at
@@ -3960,8 +3961,8 @@ viewRelativeControls hasPosition rel selectable =
         , Html.Attributes.style "gap" "1em"
         , Html.Attributes.style "align-items" "flex-end"
         ]
-        [ labelledControl "Start" (viewPointSelector { onSelect = SetRelativeStart, hasPosition = hasPosition, offerRouteEnds = True } selectable rel.start)
-        , labelledControl "End" (viewPointSelector { onSelect = SetRelativeEnd, hasPosition = hasPosition, offerRouteEnds = True } selectable rel.end)
+        [ Ui.labelledControl "Start" (viewPointSelector { onSelect = SetRelativeStart, hasPosition = hasPosition, offerRouteEnds = True } selectable rel.start)
+        , Ui.labelledControl "End" (viewPointSelector { onSelect = SetRelativeEnd, hasPosition = hasPosition, offerRouteEnds = True } selectable rel.end)
         ]
 
 
@@ -3984,8 +3985,8 @@ viewRelativeContextCard track card point =
         ( totalGain, totalLoss ) =
             track.gainLoss
     in
-    infoCard
-        (infoCardHeading
+    Ui.card
+        (Ui.cardHeading
             [ Html.Events.onClick card.onToggle
             , Html.Attributes.style "cursor" "pointer"
             , Html.Attributes.style "user-select" "none"
@@ -4023,17 +4024,17 @@ viewRelativeContextCard track card point =
          else
             List.filterMap identity
                 [ Just (Html.div [ Html.Attributes.style "font-weight" "bold" ] [ Html.text (waypointDisplayName waypoint) ])
-                , snapNote point |> Maybe.map infoNote
+                , snapNote point |> Maybe.map Ui.note
                 , case waypoint.categories of
                     [] ->
                         Nothing
 
                     categories ->
-                        Just (infoRow "Categories" (String.join ", " categories))
-                , Just (infoRow (elevationLabel point.elevationFromGps) (Format.m point.elevation))
-                , Just (infoRow "From start" (Format.km 1 waypoint.distance ++ " · " ++ Format.eleGainLoss waypoint.gain waypoint.loss))
+                        Just (Ui.row "Categories" (String.join ", " categories))
+                , Just (Ui.row (elevationLabel point.elevationFromGps) (Format.m point.elevation))
+                , Just (Ui.row "From start" (Format.km 1 waypoint.distance ++ " · " ++ Format.eleGainLoss waypoint.gain waypoint.loss))
                 , Just
-                    (infoRow "To finish"
+                    (Ui.row "To finish"
                         (Format.km 1 (lastTrackpointDistance track.trackpoints - waypoint.distance)
                             ++ " · "
                             ++ Format.eleGainLoss (totalGain - waypoint.gain) (totalLoss - waypoint.loss)
@@ -4119,8 +4120,8 @@ viewRelativeTravelCard track selectable start end =
                     )
                 |> List.length
     in
-    infoCard (infoCardHeading [] [ Html.text "Travel" ])
-        [ infoSection "Direct"
+    Ui.card (Ui.cardHeading [] [ Html.text "Travel" ])
+        [ Ui.section "Direct"
             (if usingFix then
                 "from your GPS fix"
 
@@ -4128,17 +4129,17 @@ viewRelativeTravelCard track selectable start end =
                 "between points on the route"
             )
             (List.filterMap identity
-                [ Just (infoRow "Distance" (Format.km 2 crowFlies))
-                , Just (infoRow "Bearing" (Format.bearing (Location.bearing start.latLon end.latLon)))
-                , Just (infoRow (elevationLabel (start.elevationFromGps || end.elevationFromGps)) (Format.signedM elevationDifference))
+                [ Just (Ui.row "Distance" (Format.km 2 crowFlies))
+                , Just (Ui.row "Bearing" (Format.bearing (Location.bearing start.latLon end.latLon)))
+                , Just (Ui.row (elevationLabel (start.elevationFromGps || end.elevationFromGps)) (Format.signedM elevationDifference))
                 , if crowFlies > 0 then
-                    Just (infoRow "Gradient" (Format.gradient (elevationDifference / crowFlies * 100)))
+                    Just (Ui.row "Gradient" (Format.gradient (elevationDifference / crowFlies * 100)))
 
                   else
                     Nothing
                 ]
             )
-        , infoSection "Along route"
+        , Ui.section "Along route"
             -- Only the route can say how far along it something is, so a GPS fix has to be
             -- taken as the route point it matched — worth saying when the two differ.
             (if usingFix then
@@ -4149,7 +4150,7 @@ viewRelativeTravelCard track selectable start end =
             )
             (List.filterMap identity
                 [ Just
-                    (infoRow "Distance"
+                    (Ui.row "Distance"
                         (Format.signedKm 1 alongRoute
                             ++ (if alongRoute < 0 then
                                     " (behind you)"
@@ -4159,15 +4160,15 @@ viewRelativeTravelCard track selectable start end =
                                )
                         )
                     )
-                , Just (infoRow "Climb" (Format.eleGainLoss gain loss))
+                , Just (Ui.row "Climb" (Format.eleGainLoss gain loss))
                 , if alongRoute /= 0 then
-                    Just (infoRow "Climbing rate" (Format.climbRate (gain / abs alongRoute * 1000)))
+                    Just (Ui.row "Climbing rate" (Format.climbRate (gain / abs alongRoute * 1000)))
 
                   else
                     Nothing
                 , Maybe.map2
                     (\distanceShare climbShare ->
-                        infoRow "Share of route" (Format.percent distanceShare ++ " of distance · " ++ Format.percent climbShare ++ " of climbing")
+                        Ui.row "Share of route" (Format.percent distanceShare ++ " of distance · " ++ Format.percent climbShare ++ " of climbing")
                     )
                     (safePercent (abs alongRoute) (lastTrackpointDistance track.trackpoints))
                     -- Riding a segment backwards climbs what the route descends, so the
@@ -4180,112 +4181,9 @@ viewRelativeTravelCard track selectable start end =
                             Tuple.first track.gainLoss
                         )
                     )
-                , Just (infoRow "Waypoints between" (String.fromInt waypointsBetween))
+                , Just (Ui.row "Waypoints between" (String.fromInt waypointsBetween))
                 ]
             )
-        ]
-
-
-noticePanel : String -> Html Msg
-noticePanel text =
-    Html.div [ Html.Attributes.class "warning_panel" ] [ Html.text text ]
-
-
-labelledControl : String -> Html Msg -> Html Msg
-labelledControl label control =
-    Html.label
-        [ Html.Attributes.style "display" "inline-flex"
-        , Html.Attributes.style "flex-direction" "column"
-        , Html.Attributes.style "gap" "0.2em"
-        ]
-        [ Html.span
-            [ Html.Attributes.style "font-size" "0.85em"
-            , Html.Attributes.style "opacity" "0.7"
-            ]
-            [ Html.text label ]
-        , control
-        ]
-
-
-infoCard : Html Msg -> List (Html Msg) -> Html Msg
-infoCard heading contents =
-    Html.div
-        [ Html.Attributes.style "border" "1px solid #ddd"
-        , Html.Attributes.style "border-radius" "6px"
-        , Html.Attributes.style "padding" "0.5em 0.75em"
-        , Html.Attributes.style "background" "#fafafa"
-        , Html.Attributes.style "display" "flex"
-        , Html.Attributes.style "flex-direction" "column"
-        , Html.Attributes.style "gap" "0.5em"
-        ]
-        (heading :: contents)
-
-
-{-| A card's title row, laid out so a card with more to say than its title — a collapsed one
-naming the point it holds, say — can put it on the same line.
--}
-infoCardHeading : List (Html.Attribute Msg) -> List (Html Msg) -> Html Msg
-infoCardHeading attributes contents =
-    Html.h3
-        (Html.Attributes.style "margin" "0"
-            :: Html.Attributes.style "display" "flex"
-            :: Html.Attributes.style "flex-wrap" "wrap"
-            :: Html.Attributes.style "gap" "0.4em"
-            :: Html.Attributes.style "align-items" "baseline"
-            :: attributes
-        )
-        contents
-
-
-{-| A titled group of rows. `note` says where the section's figures were measured from, and
-is empty when there is nothing to disambiguate.
--}
-infoSection : String -> String -> List (Html Msg) -> Html Msg
-infoSection title note rows =
-    Html.div
-        [ Html.Attributes.style "display" "flex"
-        , Html.Attributes.style "flex-direction" "column"
-        , Html.Attributes.style "gap" "0.15em"
-        ]
-        (Html.div
-            [ Html.Attributes.style "font-size" "0.85em"
-            , Html.Attributes.style "opacity" "0.7"
-            , Html.Attributes.style "border-bottom" "1px solid #ddd"
-            , Html.Attributes.style "display" "flex"
-            , Html.Attributes.style "flex-wrap" "wrap"
-            , Html.Attributes.style "gap" "0.5em"
-            , Html.Attributes.style "justify-content" "space-between"
-            ]
-            [ Html.text title
-            , Html.span [ Html.Attributes.style "font-style" "italic" ] [ Html.text note ]
-            ]
-            :: rows
-        )
-
-
-{-| An aside under a card's rows, for saying something about where the figures above it came
-from rather than adding another figure of its own.
--}
-infoNote : String -> Html Msg
-infoNote text =
-    Html.div
-        [ Html.Attributes.style "font-size" "0.85em"
-        , Html.Attributes.style "opacity" "0.7"
-        , Html.Attributes.style "font-style" "italic"
-        ]
-        [ Html.text text ]
-
-
-infoRow : String -> String -> Html Msg
-infoRow label value =
-    Html.div
-        [ Html.Attributes.style "display" "flex"
-        , Html.Attributes.style "flex-wrap" "wrap"
-        , Html.Attributes.style "gap" "0.5em"
-        , Html.Attributes.style "justify-content" "space-between"
-        ]
-        [ Html.span [ Html.Attributes.style "opacity" "0.7" ] [ Html.text label ]
-        , Html.span [] [ Html.text value ]
         ]
 
 
@@ -4400,10 +4298,10 @@ viewPaceTab state tracks =
                     viewPaceEstimate state start end
 
                 ( Nothing, _ ) ->
-                    [ noticePanel (unresolvedPointNotice pace.start "Choose a start point.") ]
+                    [ Ui.noticePanel (unresolvedPointNotice pace.start "Choose a start point.") ]
 
                 ( _, Nothing ) ->
-                    [ noticePanel (unresolvedPointNotice pace.end "Choose an end point.") ]
+                    [ Ui.noticePanel (unresolvedPointNotice pace.end "Choose an end point.") ]
     in
     Html.div
         [ Html.Attributes.style "display" "flex"
@@ -4439,9 +4337,9 @@ viewPaceControls hasPosition pace selectable =
         , Html.Attributes.style "gap" "1em"
         , Html.Attributes.style "align-items" "flex-end"
         ]
-        [ labelledControl "Start" (pointSelector SetPaceStart pace.start)
-        , labelledControl "End" (pointSelector SetPaceEnd pace.end)
-        , labelledControl "Pace from"
+        [ Ui.labelledControl "Start" (pointSelector SetPaceStart pace.start)
+        , Ui.labelledControl "End" (pointSelector SetPaceEnd pace.end)
+        , Ui.labelledControl "Pace from"
             (Dropdown.dropdown
                 (Dropdown.Options
                     [ sourceItem SetSpeed, sourceItem FromRideStart, sourceItem FromElapsed ]
@@ -4453,7 +4351,7 @@ viewPaceControls hasPosition pace selectable =
             )
         , case pace.activePaceSource of
             SetSpeed ->
-                labelledControl "Speed (km/h)"
+                Ui.labelledControl "Speed (km/h)"
                     (numberInput
                         [ Html.Attributes.step "0.5", Html.Attributes.style "width" "6em" ]
                         (String.fromFloat pace.speedKmh)
@@ -4461,7 +4359,7 @@ viewPaceControls hasPosition pace selectable =
                     )
 
             FromRideStart ->
-                labelledControl "Set off at"
+                Ui.labelledControl "Set off at"
                     (Html.input
                         [ Html.Attributes.type_ "datetime-local"
                         , Html.Attributes.value pace.rideStart
@@ -4485,7 +4383,7 @@ viewElapsedInput numberInput elapsedSec =
             round (elapsedSec / 60)
 
         part label value change =
-            labelledControl label
+            Ui.labelledControl label
                 (numberInput
                     [ Html.Attributes.style "width" "4.5em" ]
                     (String.fromInt value)
@@ -4526,7 +4424,7 @@ viewPaceEstimate state start end =
             end.distance - start.distance
     in
     if distanceToGo <= 0 then
-        [ noticePanel
+        [ Ui.noticePanel
             ("“"
                 ++ waypointDisplayName end
                 ++ "” is not ahead of “"
@@ -4538,7 +4436,7 @@ viewPaceEstimate state start end =
     else
         case paceMetresPerSecond state of
             Nothing ->
-                [ noticePanel (noPaceNotice state) ]
+                [ Ui.noticePanel (noPaceNotice state) ]
 
             Just speed ->
                 [ viewPaceCard state speed
@@ -4586,9 +4484,9 @@ rideSoFarNotice state timeProblem =
 
 viewPaceCard : State -> Float -> Html Msg
 viewPaceCard state speed =
-    infoCard (infoCardHeading [] [ Html.text "Pace" ])
-        (infoRow "Speed" (Format.speedKmh speed)
-            :: infoRow "Pace" (Format.paceMinPerKm speed)
+    Ui.card (Ui.cardHeading [] [ Html.text "Pace" ])
+        (Ui.row "Speed" (Format.speedKmh speed)
+            :: Ui.row "Pace" (Format.paceMinPerKm speed)
             -- Says what the speed was divided out of, so a figure that looks wrong points
             -- straight at the ride it was read from.
             :: (case Maybe.map2 Tuple.pair state.position (elapsedSoFar state) of
@@ -4596,7 +4494,7 @@ viewPaceCard state speed =
                         []
 
                     Just ( position, elapsed ) ->
-                        [ infoNote
+                        [ Ui.note
                             ("averaged over "
                                 ++ Format.km 1 position
                                 ++ " in "
@@ -4610,8 +4508,8 @@ viewPaceCard state speed =
 
 viewArrivalCard : State -> GpxApi.Waypoint -> GpxApi.Waypoint -> Float -> Float -> Html Msg
 viewArrivalCard state start end distanceToGo secondsToGo =
-    infoCard
-        (infoCardHeading []
+    Ui.card
+        (Ui.cardHeading []
             [ Html.text "Arrival"
             , Html.span
                 [ Html.Attributes.style "font-weight" "normal"
@@ -4621,13 +4519,13 @@ viewArrivalCard state start end distanceToGo secondsToGo =
             ]
         )
         (List.filterMap identity
-            [ Just (infoRow "Distance to go" (Format.km 1 distanceToGo))
-            , Just (infoRow "Climb to go" (Format.eleGainLoss (end.gain - start.gain) (end.loss - start.loss)))
-            , Just (infoRow "Time to go" (Wallclock.duration secondsToGo))
-            , state.now |> Maybe.map (\now -> infoRow "Arrives at" (Wallclock.timeOfDayAfter state.zone now secondsToGo))
+            [ Just (Ui.row "Distance to go" (Format.km 1 distanceToGo))
+            , Just (Ui.row "Climb to go" (Format.eleGainLoss (end.gain - start.gain) (end.loss - start.loss)))
+            , Just (Ui.row "Time to go" (Wallclock.duration secondsToGo))
+            , state.now |> Maybe.map (\now -> Ui.row "Arrives at" (Wallclock.timeOfDayAfter state.zone now secondsToGo))
             , elapsedSoFar state
-                |> Maybe.map (\elapsed -> infoRow "Elapsed at arrival" (Wallclock.duration (elapsed + secondsToGo)))
-            , Just (infoNote (arrivalAssumption state start))
+                |> Maybe.map (\elapsed -> Ui.row "Elapsed at arrival" (Wallclock.duration (elapsed + secondsToGo)))
+            , Just (Ui.note (arrivalAssumption state start))
             ]
         )
 

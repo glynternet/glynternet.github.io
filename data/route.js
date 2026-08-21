@@ -14212,7 +14212,7 @@ var $author$project$Main$viewOptionsPanel = function (state) {
 						])))
 			]));
 };
-var $author$project$Main$noticePanel = function (text) {
+var $author$project$Ui$noticePanel = function (text) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -14266,7 +14266,7 @@ var $author$project$Main$UpdatePaceSpeed = function (a) {
 	return {$: 64, a: a};
 };
 var $elm$html$Html$span = _VirtualDom_node('span');
-var $author$project$Main$labelledControl = F2(
+var $author$project$Ui$labelledControl = F2(
 	function (label, control) {
 		return A2(
 			$elm$html$Html$label,
@@ -14312,7 +14312,7 @@ var $author$project$Main$viewElapsedInput = F2(
 		var part = F3(
 			function (label, value, change) {
 				return A2(
-					$author$project$Main$labelledControl,
+					$author$project$Ui$labelledControl,
 					label,
 					A3(
 						numberInput,
@@ -14401,15 +14401,15 @@ var $author$project$Main$viewPaceControls = F3(
 			_List_fromArray(
 				[
 					A2(
-					$author$project$Main$labelledControl,
+					$author$project$Ui$labelledControl,
 					'Start',
 					A2(pointSelector, $author$project$Main$SetPaceStart, pace.i)),
 					A2(
-					$author$project$Main$labelledControl,
+					$author$project$Ui$labelledControl,
 					'End',
 					A2(pointSelector, $author$project$Main$SetPaceEnd, pace.k)),
 					A2(
-					$author$project$Main$labelledControl,
+					$author$project$Ui$labelledControl,
 					'Pace from',
 					A3(
 						$abadi199$elm_input_extra$Dropdown$dropdown,
@@ -14437,7 +14437,7 @@ var $author$project$Main$viewPaceControls = F3(
 					switch (_v0) {
 						case 0:
 							return A2(
-								$author$project$Main$labelledControl,
+								$author$project$Ui$labelledControl,
 								'Speed (km/h)',
 								A3(
 									numberInput,
@@ -14456,7 +14456,7 @@ var $author$project$Main$viewPaceControls = F3(
 											$author$project$Main$UpdatePaceSpeed))));
 						case 2:
 							return A2(
-								$author$project$Main$labelledControl,
+								$author$project$Ui$labelledControl,
 								'Set off at',
 								A2(
 									$elm$html$Html$input,
@@ -14876,16 +14876,7 @@ var $author$project$Main$arrivalAssumption = F2(
 			}(),
 			clockNote);
 	});
-var $author$project$Wallclock$duration = function (seconds) {
-	var totalMinutes = $elm$core$Basics$round(seconds / 60);
-	return (totalMinutes < 60) ? ($elm$core$String$fromInt(totalMinutes) + 'm') : ($elm$core$String$fromInt((totalMinutes / 60) | 0) + ('h ' + (A3(
-		$elm$core$String$padLeft,
-		2,
-		'0',
-		$elm$core$String$fromInt(
-			A2($elm$core$Basics$modBy, 60, totalMinutes))) + 'm')));
-};
-var $author$project$Main$infoCard = F2(
+var $author$project$Ui$card = F2(
 	function (heading, contents) {
 		return A2(
 			$elm$html$Html$div,
@@ -14901,7 +14892,7 @@ var $author$project$Main$infoCard = F2(
 				]),
 			A2($elm$core$List$cons, heading, contents));
 	});
-var $author$project$Main$infoCardHeading = F2(
+var $author$project$Ui$cardHeading = F2(
 	function (attributes, contents) {
 		return A2(
 			$elm$html$Html$h3,
@@ -14923,7 +14914,16 @@ var $author$project$Main$infoCardHeading = F2(
 								attributes))))),
 			contents);
 	});
-var $author$project$Main$infoNote = function (text) {
+var $author$project$Wallclock$duration = function (seconds) {
+	var totalMinutes = $elm$core$Basics$round(seconds / 60);
+	return (totalMinutes < 60) ? ($elm$core$String$fromInt(totalMinutes) + 'm') : ($elm$core$String$fromInt((totalMinutes / 60) | 0) + ('h ' + (A3(
+		$elm$core$String$padLeft,
+		2,
+		'0',
+		$elm$core$String$fromInt(
+			A2($elm$core$Basics$modBy, 60, totalMinutes))) + 'm')));
+};
+var $author$project$Ui$note = function (text) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -14937,7 +14937,7 @@ var $author$project$Main$infoNote = function (text) {
 				$elm$html$Html$text(text)
 			]));
 };
-var $author$project$Main$infoRow = F2(
+var $author$project$Ui$row = F2(
 	function (label, value) {
 		return A2(
 			$elm$html$Html$div,
@@ -14972,9 +14972,9 @@ var $author$project$Main$infoRow = F2(
 var $author$project$Main$viewArrivalCard = F5(
 	function (state, start, end, distanceToGo, secondsToGo) {
 		return A2(
-			$author$project$Main$infoCard,
+			$author$project$Ui$card,
 			A2(
-				$author$project$Main$infoCardHeading,
+				$author$project$Ui$cardHeading,
 				_List_Nil,
 				_List_fromArray(
 					[
@@ -14999,24 +14999,24 @@ var $author$project$Main$viewArrivalCard = F5(
 					[
 						$elm$core$Maybe$Just(
 						A2(
-							$author$project$Main$infoRow,
+							$author$project$Ui$row,
 							'Distance to go',
 							A2($author$project$Format$km, 1, distanceToGo))),
 						$elm$core$Maybe$Just(
 						A2(
-							$author$project$Main$infoRow,
+							$author$project$Ui$row,
 							'Climb to go',
 							A2($author$project$Format$eleGainLoss, end.ba - start.ba, end.be - start.be))),
 						$elm$core$Maybe$Just(
 						A2(
-							$author$project$Main$infoRow,
+							$author$project$Ui$row,
 							'Time to go',
 							$author$project$Wallclock$duration(secondsToGo))),
 						A2(
 						$elm$core$Maybe$map,
 						function (now) {
 							return A2(
-								$author$project$Main$infoRow,
+								$author$project$Ui$row,
 								'Arrives at',
 								A3($author$project$Wallclock$timeOfDayAfter, state.au, now, secondsToGo));
 						},
@@ -15025,13 +15025,13 @@ var $author$project$Main$viewArrivalCard = F5(
 						$elm$core$Maybe$map,
 						function (elapsed) {
 							return A2(
-								$author$project$Main$infoRow,
+								$author$project$Ui$row,
 								'Elapsed at arrival',
 								$author$project$Wallclock$duration(elapsed + secondsToGo));
 						},
 						$author$project$Main$elapsedSoFar(state)),
 						$elm$core$Maybe$Just(
-						$author$project$Main$infoNote(
+						$author$project$Ui$note(
 							A2($author$project$Main$arrivalAssumption, state, start)))
 					])));
 	});
@@ -15053,9 +15053,9 @@ var $author$project$Format$speedKmh = function (metresPerSecond) {
 var $author$project$Main$viewPaceCard = F2(
 	function (state, speed) {
 		return A2(
-			$author$project$Main$infoCard,
+			$author$project$Ui$card,
 			A2(
-				$author$project$Main$infoCardHeading,
+				$author$project$Ui$cardHeading,
 				_List_Nil,
 				_List_fromArray(
 					[
@@ -15064,13 +15064,13 @@ var $author$project$Main$viewPaceCard = F2(
 			A2(
 				$elm$core$List$cons,
 				A2(
-					$author$project$Main$infoRow,
+					$author$project$Ui$row,
 					'Speed',
 					$author$project$Format$speedKmh(speed)),
 				A2(
 					$elm$core$List$cons,
 					A2(
-						$author$project$Main$infoRow,
+						$author$project$Ui$row,
 						'Pace',
 						$author$project$Format$paceMinPerKm(speed)),
 					function () {
@@ -15087,7 +15087,7 @@ var $author$project$Main$viewPaceCard = F2(
 							var elapsed = _v1.b;
 							return _List_fromArray(
 								[
-									$author$project$Main$infoNote(
+									$author$project$Ui$note(
 									'averaged over ' + (A2($author$project$Format$km, 1, position) + (' in ' + ($author$project$Wallclock$duration(elapsed) + ', stops included'))))
 								]);
 						}
@@ -15099,7 +15099,7 @@ var $author$project$Main$viewPaceEstimate = F3(
 		if (distanceToGo <= 0) {
 			return _List_fromArray(
 				[
-					$author$project$Main$noticePanel(
+					$author$project$Ui$noticePanel(
 					'“' + ($author$project$Main$waypointDisplayName(end) + ('” is not ahead of “' + ($author$project$Main$waypointDisplayName(start) + '”, so there is no arrival to estimate. Choose an end point further along the route.'))))
 				]);
 		} else {
@@ -15107,7 +15107,7 @@ var $author$project$Main$viewPaceEstimate = F3(
 			if (_v0.$ === 1) {
 				return _List_fromArray(
 					[
-						$author$project$Main$noticePanel(
+						$author$project$Ui$noticePanel(
 						$author$project$Main$noPaceNotice(state))
 					]);
 			} else {
@@ -15138,7 +15138,7 @@ var $author$project$Main$viewPaceTab = F2(
 					var _v2 = _v0.b;
 					return _List_fromArray(
 						[
-							$author$project$Main$noticePanel(
+							$author$project$Ui$noticePanel(
 							A2($author$project$Main$unresolvedPointNotice, pace.k, 'Choose an end point.'))
 						]);
 				}
@@ -15146,7 +15146,7 @@ var $author$project$Main$viewPaceTab = F2(
 				var _v1 = _v0.a;
 				return _List_fromArray(
 					[
-						$author$project$Main$noticePanel(
+						$author$project$Ui$noticePanel(
 						A2($author$project$Main$unresolvedPointNotice, pace.i, 'Choose a start point.'))
 					]);
 			}
@@ -15227,9 +15227,9 @@ var $author$project$Main$viewRelativeContextCard = F3(
 		var totalGain = _v0.a;
 		var totalLoss = _v0.b;
 		return A2(
-			$author$project$Main$infoCard,
+			$author$project$Ui$card,
 			A2(
-				$author$project$Main$infoCardHeading,
+				$author$project$Ui$cardHeading,
 				_List_fromArray(
 					[
 						$elm$html$Html$Events$onClick(card.bW),
@@ -15288,7 +15288,7 @@ var $author$project$Main$viewRelativeContextCard = F3(
 								]))),
 						A2(
 						$elm$core$Maybe$map,
-						$author$project$Main$infoNote,
+						$author$project$Ui$note,
 						$author$project$Main$snapNote(point)),
 						function () {
 						var _v1 = waypoint.cd;
@@ -15298,24 +15298,24 @@ var $author$project$Main$viewRelativeContextCard = F3(
 							var categories = _v1;
 							return $elm$core$Maybe$Just(
 								A2(
-									$author$project$Main$infoRow,
+									$author$project$Ui$row,
 									'Categories',
 									A2($elm$core$String$join, ', ', categories)));
 						}
 					}(),
 						$elm$core$Maybe$Just(
 						A2(
-							$author$project$Main$infoRow,
+							$author$project$Ui$row,
 							$author$project$Main$elevationLabel(point.a9),
 							$author$project$Format$m(point.bB))),
 						$elm$core$Maybe$Just(
 						A2(
-							$author$project$Main$infoRow,
+							$author$project$Ui$row,
 							'From start',
 							A2($author$project$Format$km, 1, waypoint.a8) + (' · ' + A2($author$project$Format$eleGainLoss, waypoint.ba, waypoint.be)))),
 						$elm$core$Maybe$Just(
 						A2(
-							$author$project$Main$infoRow,
+							$author$project$Ui$row,
 							'To finish',
 							A2(
 								$author$project$Format$km,
@@ -15343,7 +15343,7 @@ var $author$project$Main$viewRelativeControls = F3(
 			_List_fromArray(
 				[
 					A2(
-					$author$project$Main$labelledControl,
+					$author$project$Ui$labelledControl,
 					'Start',
 					A3(
 						$author$project$Main$viewPointSelector,
@@ -15351,7 +15351,7 @@ var $author$project$Main$viewRelativeControls = F3(
 						selectable,
 						rel.i)),
 					A2(
-					$author$project$Main$labelledControl,
+					$author$project$Ui$labelledControl,
 					'End',
 					A3(
 						$author$project$Main$viewPointSelector,
@@ -15410,8 +15410,8 @@ var $author$project$Format$gradient = A2(
 		function (pct) {
 			return A2($myrho$elm_round$Round$round, 1, pct) + '%';
 		}));
-var $author$project$Main$infoSection = F3(
-	function (title, note, rows) {
+var $author$project$Ui$section = F3(
+	function (title, sectionNote, rows) {
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -15445,7 +15445,7 @@ var $author$project$Main$infoSection = F3(
 								]),
 							_List_fromArray(
 								[
-									$elm$html$Html$text(note)
+									$elm$html$Html$text(sectionNote)
 								]))
 						])),
 				rows));
@@ -15483,9 +15483,9 @@ var $author$project$Main$viewRelativeTravelCard = F4(
 		var gain = _v0.a;
 		var loss = _v0.b;
 		return A2(
-			$author$project$Main$infoCard,
+			$author$project$Ui$card,
 			A2(
-				$author$project$Main$infoCardHeading,
+				$author$project$Ui$cardHeading,
 				_List_Nil,
 				_List_fromArray(
 					[
@@ -15494,7 +15494,7 @@ var $author$project$Main$viewRelativeTravelCard = F4(
 			_List_fromArray(
 				[
 					A3(
-					$author$project$Main$infoSection,
+					$author$project$Ui$section,
 					'Direct',
 					usingFix ? 'from your GPS fix' : 'between points on the route',
 					A2(
@@ -15504,28 +15504,28 @@ var $author$project$Main$viewRelativeTravelCard = F4(
 							[
 								$elm$core$Maybe$Just(
 								A2(
-									$author$project$Main$infoRow,
+									$author$project$Ui$row,
 									'Distance',
 									A2($author$project$Format$km, 2, crowFlies))),
 								$elm$core$Maybe$Just(
 								A2(
-									$author$project$Main$infoRow,
+									$author$project$Ui$row,
 									'Bearing',
 									$author$project$Format$bearing(
 										A2($author$project$Location$bearing, start.aX, end.aX)))),
 								$elm$core$Maybe$Just(
 								A2(
-									$author$project$Main$infoRow,
+									$author$project$Ui$row,
 									$author$project$Main$elevationLabel(start.a9 || end.a9),
 									$author$project$Format$signedM(elevationDifference))),
 								(crowFlies > 0) ? $elm$core$Maybe$Just(
 								A2(
-									$author$project$Main$infoRow,
+									$author$project$Ui$row,
 									'Gradient',
 									$author$project$Format$gradient((elevationDifference / crowFlies) * 100))) : $elm$core$Maybe$Nothing
 							]))),
 					A3(
-					$author$project$Main$infoSection,
+					$author$project$Ui$section,
 					'Along route',
 					usingFix ? 'your position taken as the nearest route point' : '',
 					A2(
@@ -15535,19 +15535,19 @@ var $author$project$Main$viewRelativeTravelCard = F4(
 							[
 								$elm$core$Maybe$Just(
 								A2(
-									$author$project$Main$infoRow,
+									$author$project$Ui$row,
 									'Distance',
 									_Utils_ap(
 										A2($author$project$Format$signedKm, 1, alongRoute),
 										(alongRoute < 0) ? ' (behind you)' : ''))),
 								$elm$core$Maybe$Just(
 								A2(
-									$author$project$Main$infoRow,
+									$author$project$Ui$row,
 									'Climb',
 									A2($author$project$Format$eleGainLoss, gain, loss))),
 								(!(!alongRoute)) ? $elm$core$Maybe$Just(
 								A2(
-									$author$project$Main$infoRow,
+									$author$project$Ui$row,
 									'Climbing rate',
 									$author$project$Format$climbRate(
 										(gain / $elm$core$Basics$abs(alongRoute)) * 1000))) : $elm$core$Maybe$Nothing,
@@ -15556,7 +15556,7 @@ var $author$project$Main$viewRelativeTravelCard = F4(
 								F2(
 									function (distanceShare, climbShare) {
 										return A2(
-											$author$project$Main$infoRow,
+											$author$project$Ui$row,
 											'Share of route',
 											$author$project$Format$percent(distanceShare) + (' of distance · ' + ($author$project$Format$percent(climbShare) + ' of climbing')));
 									}),
@@ -15570,7 +15570,7 @@ var $author$project$Main$viewRelativeTravelCard = F4(
 									(alongRoute < 0) ? track.bG.b : track.bG.a)),
 								$elm$core$Maybe$Just(
 								A2(
-									$author$project$Main$infoRow,
+									$author$project$Ui$row,
 									'Waypoints between',
 									$elm$core$String$fromInt(waypointsBetween)))
 							])))
@@ -15603,7 +15603,7 @@ var $author$project$Main$viewRelativeTab = F2(
 					var point = _v2.a;
 					return A3($author$project$Main$viewRelativeContextCard, tracks.c, card, point);
 				} else {
-					return $author$project$Main$noticePanel(
+					return $author$project$Ui$noticePanel(
 						A2($author$project$Main$unresolvedPointNotice, ref, card.bC));
 				}
 			});
