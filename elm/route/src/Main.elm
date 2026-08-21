@@ -129,6 +129,7 @@ type ViewMode
 type ActiveSplitMode
     = EquidistantMode
     | PointsMode
+    | CategoriesMode
 
 
 type alias EditableTrack =
@@ -341,6 +342,7 @@ type alias ElevationProfileOptions =
     , activeSplitMode : ActiveSplitMode
     , splitEquidistantCount : Int
     , splitPoints : List PointRef
+    , splitCategories : List String
     , liveLookahead : Float
     , liveLookbehind : Float
     , labelHeightGain : Float
@@ -391,6 +393,7 @@ defaultElevationProfileOptions =
     , activeSplitMode = EquidistantMode
     , splitEquidistantCount = 1
     , splitPoints = []
+    , splitCategories = []
     , liveLookahead = 5000
     , liveLookbehind = 2000
     , labelHeightGain = 1.0
@@ -571,6 +574,7 @@ type Msg
     | AddSplitPoint
     | UpdateSplitPoint Int PointRef
     | RemoveSplitPoint Int
+    | SetSplitCategoryEnabled String Bool
     | UpdateLiveLookahead Float
     | UpdateLiveLookbehind Float
     | UpdateDistanceMarkerInterval (Maybe Float)
@@ -675,6 +679,10 @@ update msg model =
                                 (updateState { s | tracks = Error ("getting profile data from GPX: " ++ errMsg) })
 
                         Ok gpxTracks ->
+                            let
+                                newCategories =
+                                    initialFilteredCategories (List.concatMap .waypoints gpxTracks)
+                            in
                             updateSplitAndStore
                                 (updateState
                                     { s
@@ -685,13 +693,22 @@ update msg model =
 
                                                 Just positionalTracks ->
                                                     Loaded positionalTracks
-                                        , filteredCategories = initialFilteredCategories (List.concatMap .waypoints gpxTracks)
+                                        , filteredCategories = newCategories
                                         , elevationProfile =
                                             let
                                                 ep =
                                                     s.elevationProfile
                                             in
-                                            { ep | splitPoints = [] }
+                                            { ep
+                                                | splitPoints = []
+
+                                                -- Categories are named, not indexed, so a
+                                                -- selection carries over to a route that has
+                                                -- the same ones. Any the new route lacks are
+                                                -- dropped rather than lingering invisibly:
+                                                -- they would not appear as a checkbox to untick.
+                                                , splitCategories = List.filter (\cat -> Dict.member cat newCategories) ep.splitCategories
+                                            }
                                     }
                                 )
 
@@ -1217,6 +1234,26 @@ update msg model =
             updateSplitAndStore
                 (updateState { s | elevationProfile = { ep | splitPoints = List.Extra.removeAt splitListPos ep.splitPoints } })
 
+        SetSplitCategoryEnabled category enabled ->
+            let
+                ep =
+                    s.elevationProfile
+            in
+            updateSplitAndStore
+                (updateState
+                    { s
+                        | elevationProfile =
+                            { ep
+                                | splitCategories =
+                                    if enabled then
+                                        ep.splitCategories ++ [ category ]
+
+                                    else
+                                        List.filter ((/=) category) ep.splitCategories
+                            }
+                    }
+                )
+
         UpdateLiveLookahead val ->
             let
                 ep =
@@ -1448,6 +1485,14 @@ requestSplitCmdWasm state =
                 filteredWaypoints =
                     effectiveWaypoints tracks.current
                         |> filterWaypoints (waypointPredicates state)
+
+                -- "waypoints" is the WASM module's vocabulary, not ours:
+                -- elevation.SplitRequest is defined in github.com/glynternet/gpx, and the
+                -- mode splits at the distances given whatever they came from.
+                splitAtChosenDistances =
+                    [ ( "mode", Json.Encode.string "waypoints" )
+                    , ( "distances", Json.Encode.list Json.Encode.float (splitDistances state tracks.current) )
+                    ]
             in
             requestSplitProfile
                 (Json.Encode.encode 0
@@ -1460,19 +1505,10 @@ requestSplitCmdWasm state =
                                         ]
 
                                     PointsMode ->
-                                        let
-                                            distances =
-                                                state.elevationProfile.splitPoints
-                                                    |> List.filterMap (refDistance state.position tracks.current)
-                                                    |> List.sort
-                                        in
-                                        -- "waypoints" is the WASM module's vocabulary, not
-                                        -- ours: elevation.SplitRequest is defined in
-                                        -- github.com/glynternet/gpx, and the mode splits at
-                                        -- the distances given whatever they came from.
-                                        [ ( "mode", Json.Encode.string "waypoints" )
-                                        , ( "distances", Json.Encode.list Json.Encode.float distances )
-                                        ]
+                                        splitAtChosenDistances
+
+                                    CategoriesMode ->
+                                        splitAtChosenDistances
                                )
                         )
                     )
@@ -1786,6 +1822,51 @@ selectableSplitPoints : State -> EditableTrack -> List PointRef
 selectableSplitPoints state track =
     List.map (Tuple.first >> AtWaypoint) (selectableWaypoints state track)
         ++ positionRefIfSet state
+
+
+{-| Whether a waypoint carries any of the given categories. An uncategorised waypoint counts
+as the unknown category, exactly as `categoryPredicate` treats it, so "unknown" can be split
+on like any other.
+-}
+inAnyCategory : List String -> GpxApi.Waypoint -> Bool
+inAnyCategory categories w =
+    case w.categories of
+        [] ->
+            List.member unknownCategory categories
+
+        cats ->
+            List.any (\cat -> List.member cat categories) cats
+
+
+{-| The distances the current mode splits the route at, sorted, de-duplicated and stripped of
+the route's own ends. `elevation.SplitByWaypoints` brackets whatever it is given with 0 and the
+total distance, so a repeated boundary — or one sitting on the start or finish, which a
+"Start/Finish" category produces at both — would otherwise yield an empty segment.
+
+A category split cuts at every waypoint carrying **any** of the chosen categories, which is
+what makes choosing more than one useful: "Water" and "Campground" splits at all of both, not
+at the few tagged with both. Its candidates come from `selectableWaypoints` so that a waypoint
+hidden by the category filter or the off-route threshold cannot silently split the route.
+
+-}
+splitDistances : State -> EditableTrack -> List Float
+splitDistances state track =
+    (case state.elevationProfile.activeSplitMode of
+        EquidistantMode ->
+            []
+
+        PointsMode ->
+            List.filterMap (refDistance state.position track) state.elevationProfile.splitPoints
+
+        CategoriesMode ->
+            selectableWaypoints state track
+                |> List.map Tuple.second
+                |> List.filter (inAnyCategory state.elevationProfile.splitCategories)
+                |> List.map .distance
+    )
+        |> List.sort
+        |> List.Extra.unique
+        |> List.filter (\distance -> distance > 0 && distance < lastTrackpointDistance track.trackpoints)
 
 
 {-| `AtRoutePosition` as a one-element list when a position is set, so selector option
@@ -4438,6 +4519,9 @@ viewElevationProfileOptions state =
                                 "points" ->
                                     SetSplitMode PointsMode
 
+                                "categories" ->
+                                    SetSplitMode CategoriesMode
+
                                 _ ->
                                     SetSplitMode EquidistantMode
                         )
@@ -4452,6 +4536,11 @@ viewElevationProfileOptions state =
                         , Html.Attributes.selected (ep.activeSplitMode == PointsMode)
                         ]
                         [ Html.text "By points" ]
+                    , Html.option
+                        [ Html.Attributes.value "categories"
+                        , Html.Attributes.selected (ep.activeSplitMode == CategoriesMode)
+                        ]
+                        [ Html.text "By category" ]
                     ]
               ]
             , case ep.activeSplitMode of
@@ -4499,6 +4588,38 @@ viewElevationProfileOptions state =
                                 ]
                                 [ Html.text "Add" ]
                            ]
+
+                CategoriesMode ->
+                    let
+                        selectable =
+                            maybeFromloadableResource state.tracks
+                                |> Maybe.map (.current >> selectableWaypoints state >> List.map Tuple.second)
+                                |> Maybe.withDefault []
+
+                        categoryCheckbox category =
+                            let
+                                selected =
+                                    List.member category ep.splitCategories
+                            in
+                            checkbox selected
+                                (SetSplitCategoryEnabled category (not selected))
+                                -- The count of waypoints the category would split at, so
+                                -- that ticking one is not guesswork. Counted against the
+                                -- same selectable set the split itself uses, so a category
+                                -- whose waypoints are all filtered out reads as the 0
+                                -- splits it would produce.
+                                ((if category == unknownCategory then
+                                    "unknown"
+
+                                  else
+                                    category
+                                 )
+                                    ++ " ("
+                                    ++ String.fromInt (List.length (List.filter (inAnyCategory [ category ]) selectable))
+                                    ++ ")"
+                                )
+                    in
+                    [ Html.fieldset [] (List.map categoryCheckbox (Dict.keys state.filteredCategories)) ]
             ]
         )
     , Html.hr [] []
@@ -5093,10 +5214,14 @@ encodeSavedState state =
 
                         PointsMode ->
                             "points"
+
+                        CategoriesMode ->
+                            "categories"
                     )
                 )
             , Just ( "splitEquidistantCount", Json.Encode.int ep.splitEquidistantCount )
             , Just ( "splitPoints", Json.Encode.list (formatPointRef >> Json.Encode.string) ep.splitPoints )
+            , Just ( "splitCategories", Json.Encode.list Json.Encode.string ep.splitCategories )
             , Just ( "liveLookahead", Json.Encode.float ep.liveLookahead )
             , Just ( "liveLookbehind", Json.Encode.float ep.liveLookbehind )
             , Just ( "labelHeightGain", Json.Encode.float ep.labelHeightGain )
@@ -5135,7 +5260,7 @@ stateDecoder =
             defaultRelativeOptions
     in
     Json.Decode.succeed
-        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau position viewMode splitMode splitEquidistantCount splitPoints liveLookahead liveLookbehind labelHeightGain distanceMarkerInterval distanceMarkerSegmentEnds totalDistanceDisplay referenceDistance itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints relativeStart relativeEnd relativeStartCollapsed relativeEndCollapsed ->
+        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau position viewMode splitMode splitEquidistantCount splitPoints splitCategories liveLookahead liveLookbehind labelHeightGain distanceMarkerInterval distanceMarkerSegmentEnds totalDistanceDisplay referenceDistance itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints relativeStart relativeEnd relativeStartCollapsed relativeEndCollapsed ->
             { tracks = loadableResourceFromMaybe tracks
             , showOptions = showOptions |> Maybe.withDefault defaultState.showOptions
             , activeTab = activeTab |> Maybe.andThen parseTab |> Maybe.withDefault defaultState.activeTab
@@ -5168,10 +5293,14 @@ stateDecoder =
                         Just "points" ->
                             PointsMode
 
+                        Just "categories" ->
+                            CategoriesMode
+
                         _ ->
                             EquidistantMode
                 , splitEquidistantCount = splitEquidistantCount |> Maybe.withDefault 1
                 , splitPoints = splitPoints |> Maybe.withDefault [] |> List.filterMap parsePointRef
+                , splitCategories = splitCategories |> Maybe.withDefault defEp.splitCategories
                 , liveLookahead = liveLookahead |> Maybe.withDefault defEp.liveLookahead
                 , liveLookbehind = liveLookbehind |> Maybe.withDefault defEp.liveLookbehind
                 , labelHeightGain = labelHeightGain |> Maybe.withDefault defEp.labelHeightGain
@@ -5213,6 +5342,7 @@ stateDecoder =
         |> andMap (maybeField "splitMode" Json.Decode.string)
         |> andMap (maybeField "splitEquidistantCount" Json.Decode.int)
         |> andMap (maybeField "splitPoints" (Json.Decode.list Json.Decode.string))
+        |> andMap (maybeField "splitCategories" (Json.Decode.list Json.Decode.string))
         |> andMap (maybeField "liveLookahead" Json.Decode.float)
         |> andMap (maybeField "liveLookbehind" Json.Decode.float)
         |> andMap (maybeField "labelHeightGain" Json.Decode.float)
