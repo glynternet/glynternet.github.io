@@ -87,19 +87,43 @@ This is a Jekyll static site with the following structure:
 
 ### Navigating `elm/route/src/Main.elm`
 
-The route app is one monolithic Elm file (~4200 lines). To orient quickly:
+The route app is one monolithic Elm file (~5800 lines). To orient quickly:
 
 - **Rough section map** (line numbers approximate — grep the names):
-  - Model/`State`, option records, and defaults: ~`type alias State` through `defaultCuesheetOptions`
+  - Model/`State`, option records, and defaults: ~`type alias State` through `defaultPaceOptions`
   - `Msg` + `update`
   - Elevation profile rendering: `viewElevationProfileTab`, `profile`, `distanceMarkers`
   - Cuesheet rendering: `viewCuesheetTab`, `cuesheetSvg`, `waypointInfos`
+  - Relative rendering: `viewRelativeTab`, `viewRelativeTravelCard`, `relativePointFor`
+  - Pace rendering: `viewPaceTab`, `paceMetresPerSecond`, `viewArrivalCard`
   - Distance/elevation display logic: `displayedDistanceValue`, `displayIsPercent`
   - Format helpers: `formatKm`, `formatM`, `formatEleGainLoss`, `formatPercent`
+  - Card primitives shared by the Relative and Pace tabs: `infoCard`, `infoSection`, `infoRow`, `infoNote`, `noticePanel`, `labelledControl`
   - Serialization: `parseTotalDistanceDisplay` / `formatTotalDistanceDisplay`, plus the encode/decode of `State`
 - **`TotalDistanceDisplay` is the central enum for distance/elevation display.** Both the cuesheet and the elevation profile key off the single `state.cuesheet.totalDistanceDisplay`. To find everything affected by a display mode, grep `TotalDistanceDisplay` / `totalDistanceDisplay`; the Elm compiler's exhaustive `case` checking then flags every site to update when you add a constructor.
+- **`PointRef` is the vocabulary for "a point on the route"** — a waypoint, the current position, or either end of the track. Every flow that asks the user to choose one stores a `PointRef` and shows `viewPointSelector`; `resolvePointRef` turns it into a `GpxApi.Waypoint`, and `selectedWaypointFor` does the same but only ever resolves to a waypoint the dropdown is still offering (so a filtered-out one reads as "nothing chosen"). Adding a constructor makes the compiler point at every flow that has to answer for it.
+- **The device clock lives in `state.now` / `state.zone`, and only the Pace tab uses it.** Both are transient — a stored clock reading is a wrong one the moment it is read back — so they are excluded from `encodeSavedState` and lifted across a state import by hand, alongside `profilePixelWidth`. `Time.every` is subscribed only while the Pace tab is active, so no other tab pays for a ticking clock.
 - **Data model** (`elm/shared/src/GpxApi.elm`): `TrackPoint.gain`/`.loss` are **cumulative** from the start; route totals live in `EditableTrack.gainLoss` / `Track.gainLoss`; `lastTrackpointDistance` gives total distance; `cumulativeGainLossAtDistance` looks up cumulative climb at any distance (used to build the current-position cuesheet row).
-- Build/typecheck with `make route.js` (compiles to `data/route.js`).
+- Build/typecheck with `make route.js` (compiles to `data/route.js`); run the Elm tests with `make elm-test`.
+
+### Elm modules outside `Main.elm`
+
+`elm/shared/src/` holds the parts that know nothing about the app: `GpxApi`, `Location`,
+`Zipper`, plus `Wallclock` (times of day, durations, and the wall-clock datetime a
+`datetime-local` input deals in) and `Format` (figures in the units they are read in). Both
+`elm/route/elm.json` source-directories point there, so a module dropped in is importable
+with no further wiring.
+
+`Wallclock` is the one with tests (`elm/route/tests/`), because `daysFromCivil` is arithmetic
+that could be subtly wrong for years without ever looking wrong. **`Wallclock` differences two
+wall-clock times without a timezone database**, so a span crossing a daylight-saving change is
+out by that hour — documented on `elapsedSinceRideStart`, and immaterial next to the accuracy
+of a pace estimate.
+
+The Elm toolchain is pinned in `elm.Dockerfile` (`elm@0.19.1-6`, `elm-test@0.19.1-revision12`).
+Leave it pinned: `npm install -g elm` now resolves to 0.19.2, which refuses to build an
+`elm.json` that asks for 0.19.1, so an unpinned rebuild breaks `make route.js` with no change
+to the repo. `make elm-docker-image` rebuilds it.
 
 ### Where route state is saved
 

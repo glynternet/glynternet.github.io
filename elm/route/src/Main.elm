@@ -6,6 +6,7 @@ import Dict
 import Dropdown
 import File exposing (File)
 import File.Select
+import Format
 import GpxApi
 import Html exposing (Attribute, Html)
 import Html.Attributes
@@ -22,6 +23,7 @@ import Svg.Attributes
 import Task
 import Time
 import Url
+import Wallclock
 import Zipper exposing (Zipper)
 
 
@@ -53,6 +55,14 @@ subscriptions { state } =
         , receiveSplitProfile SplitProfileReceived
         , profileWidthChanged ProfileWidthChanged
         , storeStateFailed StoreStateFailed
+
+        -- Only the Pace tab shows a clock, and only to the minute, so nothing else pays for
+        -- keeping one running.
+        , if state.activeTab == PaceTab then
+            Time.every 10000 GotNow
+
+          else
+            Sub.none
         ]
 
 
@@ -94,6 +104,7 @@ type alias State =
     , elevationProfile : ElevationProfileOptions
     , cuesheet : CuesheetOptions
     , relative : RelativeOptions
+    , pace : PaceOptions
 
     -- Off-route
     , offRouteThreshold : Float
@@ -105,6 +116,12 @@ type alias State =
     , storageError : Maybe String
     , splitSegments : Maybe GpxApi.SplitResult
     , profilePixelWidth : Maybe Int
+
+    -- The device clock, for the Pace tab's arrival times. Transient because a stored clock
+    -- reading is a wrong one the moment it is read back; `zone` stays UTC only for the
+    -- moment before `Time.here` lands.
+    , now : Maybe Time.Posix
+    , zone : Time.Zone
     }
 
 
@@ -119,6 +136,7 @@ type Tab
     | CuesheetTab
     | WaypointsTab
     | RelativeTab
+    | PaceTab
 
 
 type ViewMode
@@ -422,6 +440,43 @@ type alias RelativeOptions =
     }
 
 
+{-| The two points the Pace tab estimates between, and where the speed it estimates at comes
+from.
+
+Both a set speed and an elapsed time are kept whichever source is active, so switching to the
+other and back does not throw away what was typed — the same reason `ElevationProfileOptions`
+keeps every split mode's settings side by side rather than hanging them off `activeSplitMode`.
+
+-}
+type alias PaceOptions =
+    { start : PointRef
+    , end : PointRef
+    , activePaceSource : PaceSource
+    , speedKmh : Float
+    , elapsedAtStartSec : Float
+    , rideStart : String
+    }
+
+
+{-| Where the Pace tab's speed comes from: a figure the rider set, or the ride so far — how
+much route is behind them over how long it has taken — with the elapsed time either typed in
+or counted off the clock from the moment they set off.
+
+`FromRideStart` is the one that keeps itself right: a typed elapsed time is a snapshot that
+goes stale the moment the rider stops retyping it, whereas a time they set off at stays true
+all day and the pace follows the clock from there.
+
+`rideStart` is held as the raw value of a `datetime-local` input rather than as an instant,
+because that is what the control gives and what it wants back; `Wallclock.parseLocalDateTime` reads it,
+and anything unparseable — including the empty default — simply yields no pace.
+
+-}
+type PaceSource
+    = SetSpeed
+    | FromElapsed
+    | FromRideStart
+
+
 type TotalDistanceDisplay
     = FromZero
     | ToFinish
@@ -471,6 +526,20 @@ defaultRelativeOptions =
     }
 
 
+{-| Where the rider is now to where the route ends: the arrival the tab exists to answer for,
+before anything has been chosen.
+-}
+defaultPaceOptions : PaceOptions
+defaultPaceOptions =
+    { start = AtRoutePosition
+    , end = AtRouteEnd
+    , activePaceSource = SetSpeed
+    , speedKmh = 20
+    , elapsedAtStartSec = 0
+    , rideStart = ""
+    }
+
+
 defaultSpacing : Int
 defaultSpacing =
     25
@@ -502,6 +571,7 @@ defaultState =
     , elevationProfile = defaultElevationProfileOptions
     , cuesheet = defaultCuesheetOptions
     , relative = defaultRelativeOptions
+    , pace = defaultPaceOptions
     , offRouteThreshold = 100
     , showOffRouteWaypoints = True
     , showOffRouteDistance = False
@@ -509,6 +579,8 @@ defaultState =
     , storageError = Nothing
     , splitSegments = Nothing
     , profilePixelWidth = Nothing
+    , now = Nothing
+    , zone = Time.utc
     }
 
 
@@ -520,33 +592,39 @@ init maybeState url key =
 
         base =
             Model nav defaultState
+
+        -- Asked for once here rather than per branch, so however the state is arrived at the
+        -- Pace tab has a clock and a zone to render its arrival times against.
+        withClock ( model, cmd ) =
+            ( model, Cmd.batch [ cmd, Task.perform GotZone Time.here, Task.perform GotNow Time.now ] )
     in
-    case extractQueryParam "state" url of
-        Just stateUrl ->
-            ( base, Http.get { url = stateUrl, expect = Http.expectString StateUrlFetched } )
+    withClock <|
+        case extractQueryParam "state" url of
+            Just stateUrl ->
+                ( base, Http.get { url = stateUrl, expect = Http.expectString StateUrlFetched } )
 
-        Nothing ->
-            case maybeState of
-                Nothing ->
-                    ( base, Cmd.none )
+            Nothing ->
+                case maybeState of
+                    Nothing ->
+                        ( base, Cmd.none )
 
-                Just stateValue ->
-                    case Json.Decode.decodeValue stateDecoder stateValue of
-                        Ok decoded ->
-                            let
-                                state =
-                                    withLiveSplit decoded
-                            in
-                            ( Model nav state, requestSplitCmd state )
+                    Just stateValue ->
+                        case Json.Decode.decodeValue stateDecoder stateValue of
+                            Ok decoded ->
+                                let
+                                    state =
+                                        withLiveSplit decoded
+                                in
+                                ( Model nav state, requestSplitCmd state )
 
-                        Err err ->
-                            let
-                                errorMsg =
-                                    Json.Decode.errorToString err
-                            in
-                            ( { base | state = { defaultState | stateDecodeError = Just errorMsg } }
-                            , logError ("Failed to decode stored state: " ++ errorMsg)
-                            )
+                            Err err ->
+                                let
+                                    errorMsg =
+                                        Json.Decode.errorToString err
+                                in
+                                ( { base | state = { defaultState | stateDecodeError = Just errorMsg } }
+                                , logError ("Failed to decode stored state: " ++ errorMsg)
+                                )
 
 
 extractQueryParam : String -> Url.Url -> Maybe String
@@ -645,6 +723,14 @@ type Msg
     | SetRelativeEnd PointRef
     | SetRelativeStartCollapsed Bool
     | SetRelativeEndCollapsed Bool
+    | SetPaceStart PointRef
+    | SetPaceEnd PointRef
+    | SetPaceSource PaceSource
+    | UpdatePaceSpeed Float
+    | UpdatePaceElapsed Float
+    | UpdatePaceRideStart String
+    | GotNow Time.Posix
+    | GotZone Time.Zone
       -- State export/import
     | ExportState
     | DownloadSplitsGpx
@@ -674,6 +760,9 @@ update msg model =
         updateState newState =
             { model | state = newState }
 
+        updatePace change =
+            updateAndStoreModel (updateState { s | pace = change s.pace })
+
         updateSplitAndStore newModel =
             let
                 state =
@@ -699,6 +788,16 @@ update msg model =
 
         SwitchTab tab ->
             updateAndStoreModel (updateState { s | activeTab = tab })
+                -- Without this the Pace tab's clock would be up to a whole tick out of date
+                -- the moment it is opened.
+                |> Tuple.mapSecond
+                    (\cmd ->
+                        if tab == PaceTab then
+                            Cmd.batch [ cmd, Task.perform GotNow Time.now ]
+
+                        else
+                            cmd
+                    )
 
         OpenFileBrowser ->
             ( model, File.Select.file [ "application/gpx+xml" ] FileUploaded )
@@ -1428,6 +1527,32 @@ update msg model =
             in
             updateAndStoreModel (updateState { s | relative = { rel | endCollapsed = collapsed } })
 
+        SetPaceStart ref ->
+            updatePace (\pace -> { pace | start = ref })
+
+        SetPaceEnd ref ->
+            updatePace (\pace -> { pace | end = ref })
+
+        SetPaceSource source ->
+            updatePace (\pace -> { pace | activePaceSource = source })
+
+        UpdatePaceSpeed kmh ->
+            updatePace (\pace -> { pace | speedKmh = kmh })
+
+        UpdatePaceElapsed seconds ->
+            updatePace (\pace -> { pace | elapsedAtStartSec = seconds })
+
+        UpdatePaceRideStart rideStart ->
+            updatePace (\pace -> { pace | rideStart = rideStart })
+
+        -- The clock is never stored: reading a stale one back would date every arrival time
+        -- the tab shows.
+        GotNow now ->
+            ( updateState { s | now = Just now }, Cmd.none )
+
+        GotZone zone ->
+            ( updateState { s | zone = zone }, Cmd.none )
+
         ExportState ->
             ( model, downloadState (encodeSavedState { s | showOptions = False }) )
 
@@ -1500,7 +1625,17 @@ restoreState jsonString model =
         Ok decoded ->
             let
                 restored =
-                    { model | state = withLiveSplit { decoded | profilePixelWidth = model.state.profilePixelWidth } }
+                    -- The decoded state carries none of the live readings, so they are lifted
+                    -- across rather than being reset by a state import.
+                    { model
+                        | state =
+                            withLiveSplit
+                                { decoded
+                                    | profilePixelWidth = model.state.profilePixelWidth
+                                    , now = model.state.now
+                                    , zone = model.state.zone
+                                }
+                    }
             in
             ( restored, Cmd.batch [ storeState (encodeSavedState restored.state), requestSplitCmd restored.state ] )
 
@@ -1865,6 +2000,36 @@ selectableWaypoints state track =
         (filterWaypoints (waypointSelectionPredicates state) (effectiveWaypoints track))
 
 
+{-| Resolves a chosen point, but only ever to a waypoint the dropdown is still offering.
+Going through `selectable` rather than the whole track means a reference to one the filters
+have hidden reads as "nothing chosen" instead of silently standing for something the rider
+cannot see. Nothing else the dropdown offers is a waypoint of the track's, so nothing else
+can be filtered away.
+-}
+selectedWaypointFor : State -> EditableTrack -> List ( Int, GpxApi.Waypoint ) -> PointRef -> Maybe GpxApi.Waypoint
+selectedWaypointFor state track selectable ref =
+    case ref of
+        AtWaypoint idx ->
+            selectable |> List.Extra.find (\( i, _ ) -> i == idx) |> Maybe.map Tuple.second
+
+        _ ->
+            resolvePointRef state.position state.location track ref
+
+
+{-| What to say in place of figures a chosen point could not be resolved for. An unset
+position is the one case with a way out of it, so it says what that is; anything else is a
+waypoint that has gone, and only the caller knows what it was being chosen for.
+-}
+unresolvedPointNotice : PointRef -> String -> String
+unresolvedPointNotice ref fallback =
+    case ref of
+        AtRoutePosition ->
+            "This needs a position on the route. Set one with the Position slider in the options panel, or start tracking."
+
+        _ ->
+            fallback
+
+
 {-| The points the elevation profile offers as split boundaries. Waypoints come first so
 that "Add" keeps working through them in route order before reaching for the position.
 -}
@@ -2153,6 +2318,9 @@ view { state } =
 
                                     RelativeTab ->
                                         viewRelativeTab state tracks
+
+                                    PaceTab ->
+                                        viewPaceTab state tracks
                                 ]
                             ]
                    )
@@ -2264,7 +2432,7 @@ viewTabBar activeTab =
         , Html.button
             [ Html.Events.onClick (SwitchTab RelativeTab)
             , Html.Attributes.class "button-4"
-            , Html.Attributes.style "border-radius" "0 4px 4px 0"
+            , Html.Attributes.style "border-radius" "0"
             , if activeTab == RelativeTab then
                 Html.Attributes.style "font-weight" "bold"
 
@@ -2272,6 +2440,17 @@ viewTabBar activeTab =
                 Html.Attributes.style "opacity" "0.7"
             ]
             [ Html.text "Relative" ]
+        , Html.button
+            [ Html.Events.onClick (SwitchTab PaceTab)
+            , Html.Attributes.class "button-4"
+            , Html.Attributes.style "border-radius" "0 4px 4px 0"
+            , if activeTab == PaceTab then
+                Html.Attributes.style "font-weight" "bold"
+
+              else
+                Html.Attributes.style "opacity" "0.7"
+            ]
+            [ Html.text "Pace" ]
         ]
 
 
@@ -3705,17 +3884,8 @@ viewRelativeTab state tracks =
         selectable =
             selectableWaypoints state tracks.current
 
-        -- A waypoint is resolved through `selectable` rather than the whole track, so a
-        -- reference to one the filters have hidden reads as "nothing chosen" instead of
-        -- silently comparing against something that is not in the dropdown. Nothing else in
-        -- the dropdown is a waypoint of the track's, so nothing else can be filtered away.
-        waypointFor ref =
-            case ref of
-                AtWaypoint idx ->
-                    selectable |> List.Extra.find (\( i, _ ) -> i == idx) |> Maybe.map Tuple.second
-
-                _ ->
-                    resolvePointRef state.position state.location tracks.current ref
+        waypointFor =
+            selectedWaypointFor state tracks.current selectable
 
         pointFor ref =
             waypointFor ref
@@ -3734,21 +3904,13 @@ viewRelativeTab state tracks =
                         )
                     )
 
-        unresolvedNotice ref fallback =
-            case ref of
-                AtRoutePosition ->
-                    "This needs a position on the route. Set one with the Position slider in the options panel, or start tracking."
-
-                _ ->
-                    fallback
-
         contextCardOrNotice card ref =
             case pointFor ref of
                 Just point ->
                     viewRelativeContextCard tracks.current card point
 
                 Nothing ->
-                    relativeNotice (unresolvedNotice ref card.fallback)
+                    noticePanel (unresolvedPointNotice ref card.fallback)
 
         -- No check for an empty waypoint list: the route's own ends are always there to
         -- compare, so the tab has something to say about a track carrying no waypoints at
@@ -3799,8 +3961,8 @@ viewRelativeControls hasPosition rel selectable =
         , Html.Attributes.style "gap" "1em"
         , Html.Attributes.style "align-items" "flex-end"
         ]
-        [ relativeControl "Start" (viewPointSelector { onSelect = SetRelativeStart, hasPosition = hasPosition, offerRouteEnds = True } selectable rel.start)
-        , relativeControl "End" (viewPointSelector { onSelect = SetRelativeEnd, hasPosition = hasPosition, offerRouteEnds = True } selectable rel.end)
+        [ labelledControl "Start" (viewPointSelector { onSelect = SetRelativeStart, hasPosition = hasPosition, offerRouteEnds = True } selectable rel.start)
+        , labelledControl "End" (viewPointSelector { onSelect = SetRelativeEnd, hasPosition = hasPosition, offerRouteEnds = True } selectable rel.end)
         ]
 
 
@@ -3823,8 +3985,8 @@ viewRelativeContextCard track card point =
         ( totalGain, totalLoss ) =
             track.gainLoss
     in
-    relativeCard
-        (relativeCardHeading
+    infoCard
+        (infoCardHeading
             [ Html.Events.onClick card.onToggle
             , Html.Attributes.style "cursor" "pointer"
             , Html.Attributes.style "user-select" "none"
@@ -3862,26 +4024,17 @@ viewRelativeContextCard track card point =
          else
             List.filterMap identity
                 [ Just (Html.div [ Html.Attributes.style "font-weight" "bold" ] [ Html.text (waypointDisplayName waypoint) ])
-                , snapNote point
-                    |> Maybe.map
-                        (\note ->
-                            Html.div
-                                [ Html.Attributes.style "font-size" "0.85em"
-                                , Html.Attributes.style "opacity" "0.7"
-                                , Html.Attributes.style "font-style" "italic"
-                                ]
-                                [ Html.text note ]
-                        )
+                , snapNote point |> Maybe.map infoNote
                 , case waypoint.categories of
                     [] ->
                         Nothing
 
                     categories ->
-                        Just (relativeRow "Categories" (String.join ", " categories))
-                , Just (relativeRow (elevationLabel point.elevationFromGps) (formatM point.elevation))
-                , Just (relativeRow "From start" (formatKm 1 waypoint.distance ++ " · " ++ formatEleGainLoss waypoint.gain waypoint.loss))
+                        Just (infoRow "Categories" (String.join ", " categories))
+                , Just (infoRow (elevationLabel point.elevationFromGps) (formatM point.elevation))
+                , Just (infoRow "From start" (formatKm 1 waypoint.distance ++ " · " ++ formatEleGainLoss waypoint.gain waypoint.loss))
                 , Just
-                    (relativeRow "To finish"
+                    (infoRow "To finish"
                         (formatKm 1 (lastTrackpointDistance track.trackpoints - waypoint.distance)
                             ++ " · "
                             ++ formatEleGainLoss (totalGain - waypoint.gain) (totalLoss - waypoint.loss)
@@ -3967,8 +4120,8 @@ viewRelativeTravelCard track selectable start end =
                     )
                 |> List.length
     in
-    relativeCard (relativeCardHeading [] [ Html.text "Travel" ])
-        [ relativeSection "Direct"
+    infoCard (infoCardHeading [] [ Html.text "Travel" ])
+        [ infoSection "Direct"
             (if usingFix then
                 "from your GPS fix"
 
@@ -3976,17 +4129,17 @@ viewRelativeTravelCard track selectable start end =
                 "between points on the route"
             )
             (List.filterMap identity
-                [ Just (relativeRow "Distance" (formatKm 2 crowFlies))
-                , Just (relativeRow "Bearing" (formatBearing (Location.bearing start.latLon end.latLon)))
-                , Just (relativeRow (elevationLabel (start.elevationFromGps || end.elevationFromGps)) (formatSignedM elevationDifference))
+                [ Just (infoRow "Distance" (formatKm 2 crowFlies))
+                , Just (infoRow "Bearing" (formatBearing (Location.bearing start.latLon end.latLon)))
+                , Just (infoRow (elevationLabel (start.elevationFromGps || end.elevationFromGps)) (formatSignedM elevationDifference))
                 , if crowFlies > 0 then
-                    Just (relativeRow "Gradient" (formatGradient (elevationDifference / crowFlies * 100)))
+                    Just (infoRow "Gradient" (formatGradient (elevationDifference / crowFlies * 100)))
 
                   else
                     Nothing
                 ]
             )
-        , relativeSection "Along route"
+        , infoSection "Along route"
             -- Only the route can say how far along it something is, so a GPS fix has to be
             -- taken as the route point it matched — worth saying when the two differ.
             (if usingFix then
@@ -3997,7 +4150,7 @@ viewRelativeTravelCard track selectable start end =
             )
             (List.filterMap identity
                 [ Just
-                    (relativeRow "Distance"
+                    (infoRow "Distance"
                         (formatSignedKm 1 alongRoute
                             ++ (if alongRoute < 0 then
                                     " (behind you)"
@@ -4007,15 +4160,15 @@ viewRelativeTravelCard track selectable start end =
                                )
                         )
                     )
-                , Just (relativeRow "Climb" (formatEleGainLoss gain loss))
+                , Just (infoRow "Climb" (formatEleGainLoss gain loss))
                 , if alongRoute /= 0 then
-                    Just (relativeRow "Climbing rate" (formatClimbRate (gain / abs alongRoute * 1000)))
+                    Just (infoRow "Climbing rate" (formatClimbRate (gain / abs alongRoute * 1000)))
 
                   else
                     Nothing
                 , Maybe.map2
                     (\distanceShare climbShare ->
-                        relativeRow "Share of route" (formatPercent distanceShare ++ " of distance · " ++ formatPercent climbShare ++ " of climbing")
+                        infoRow "Share of route" (formatPercent distanceShare ++ " of distance · " ++ formatPercent climbShare ++ " of climbing")
                     )
                     (safePercent (abs alongRoute) (lastTrackpointDistance track.trackpoints))
                     -- Riding a segment backwards climbs what the route descends, so the
@@ -4028,19 +4181,19 @@ viewRelativeTravelCard track selectable start end =
                             Tuple.first track.gainLoss
                         )
                     )
-                , Just (relativeRow "Waypoints between" (String.fromInt waypointsBetween))
+                , Just (infoRow "Waypoints between" (String.fromInt waypointsBetween))
                 ]
             )
         ]
 
 
-relativeNotice : String -> Html Msg
-relativeNotice text =
+noticePanel : String -> Html Msg
+noticePanel text =
     Html.div [ Html.Attributes.class "warning_panel" ] [ Html.text text ]
 
 
-relativeControl : String -> Html Msg -> Html Msg
-relativeControl label control =
+labelledControl : String -> Html Msg -> Html Msg
+labelledControl label control =
     Html.label
         [ Html.Attributes.style "display" "inline-flex"
         , Html.Attributes.style "flex-direction" "column"
@@ -4055,8 +4208,8 @@ relativeControl label control =
         ]
 
 
-relativeCard : Html Msg -> List (Html Msg) -> Html Msg
-relativeCard heading contents =
+infoCard : Html Msg -> List (Html Msg) -> Html Msg
+infoCard heading contents =
     Html.div
         [ Html.Attributes.style "border" "1px solid #ddd"
         , Html.Attributes.style "border-radius" "6px"
@@ -4072,8 +4225,8 @@ relativeCard heading contents =
 {-| A card's title row, laid out so a card with more to say than its title — a collapsed one
 naming the point it holds, say — can put it on the same line.
 -}
-relativeCardHeading : List (Html.Attribute Msg) -> List (Html Msg) -> Html Msg
-relativeCardHeading attributes contents =
+infoCardHeading : List (Html.Attribute Msg) -> List (Html Msg) -> Html Msg
+infoCardHeading attributes contents =
     Html.h3
         (Html.Attributes.style "margin" "0"
             :: Html.Attributes.style "display" "flex"
@@ -4088,8 +4241,8 @@ relativeCardHeading attributes contents =
 {-| A titled group of rows. `note` says where the section's figures were measured from, and
 is empty when there is nothing to disambiguate.
 -}
-relativeSection : String -> String -> List (Html Msg) -> Html Msg
-relativeSection title note rows =
+infoSection : String -> String -> List (Html Msg) -> Html Msg
+infoSection title note rows =
     Html.div
         [ Html.Attributes.style "display" "flex"
         , Html.Attributes.style "flex-direction" "column"
@@ -4111,8 +4264,21 @@ relativeSection title note rows =
         )
 
 
-relativeRow : String -> String -> Html Msg
-relativeRow label value =
+{-| An aside under a card's rows, for saying something about where the figures above it came
+from rather than adding another figure of its own.
+-}
+infoNote : String -> Html Msg
+infoNote text =
+    Html.div
+        [ Html.Attributes.style "font-size" "0.85em"
+        , Html.Attributes.style "opacity" "0.7"
+        , Html.Attributes.style "font-style" "italic"
+        ]
+        [ Html.text text ]
+
+
+infoRow : String -> String -> Html Msg
+infoRow label value =
     Html.div
         [ Html.Attributes.style "display" "flex"
         , Html.Attributes.style "flex-wrap" "wrap"
@@ -4206,13 +4372,6 @@ formatBearing degreesFromNorth =
     Round.round 0 degreesFromNorth ++ "° (" ++ point ++ ")"
 
 
-{-| The first trackpoint at or beyond `dist`, falling back to the last trackpoint for a
-distance past the end of the route. Nothing only when the track has no points at all.
-
-TODO: interpolate between bracketing trackpoints when dist falls between two points,
-rather than snapping to the next one (could use interpolateTrackpointAt)
-
--}
 trackpointAtDistance : Float -> List GpxApi.TrackPoint -> Maybe GpxApi.TrackPoint
 trackpointAtDistance dist trackpoints =
     case List.Extra.find (\tp -> tp.distance >= dist) trackpoints of
@@ -4228,6 +4387,358 @@ cumulativeGainLossAtDistance dist trackpoints =
     trackpointAtDistance dist trackpoints
         |> Maybe.map (\tp -> Ok ( tp.gain, tp.loss ))
         |> Maybe.withDefault (Err "no trackpoints found for gain/loss lookup")
+
+
+
+-- PACE VIEW
+
+
+{-| The speed an estimate runs at, in metres per second, or Nothing when the tab has not been
+given enough to work one out.
+-}
+paceMetresPerSecond : State -> Maybe Float
+paceMetresPerSecond state =
+    case state.pace.activePaceSource of
+        SetSpeed ->
+            ifPositive (state.pace.speedKmh / 3.6)
+
+        _ ->
+            elapsedSoFar state |> Maybe.andThen (averageSoFar state)
+
+
+{-| The ride's average speed so far: how much route is behind the rider, over how long it has
+taken them to cover it.
+
+Measured to where they are now rather than to the tab's chosen start point, because how fast
+the ride has been going is a fact about the ride and not about a point picked out of a
+dropdown. What it yields is an *elapsed* speed, stops and all — which is what an arrival
+estimate wants, rather than the moving average a bike computer shows.
+
+Both halves have to be real: at the route's start, or before the clock has moved, there is
+nothing to divide.
+
+-}
+averageSoFar : State -> Float -> Maybe Float
+averageSoFar state elapsedSeconds =
+    Maybe.map2 (/)
+        (state.position |> Maybe.andThen ifPositive)
+        (ifPositive elapsedSeconds)
+
+
+{-| How long the ride has taken so far, however the tab is being told: typed in as a duration,
+or counted from the moment the rider set off. A set speed is not told at all.
+-}
+elapsedSoFar : State -> Maybe Float
+elapsedSoFar state =
+    case state.pace.activePaceSource of
+        SetSpeed ->
+            Nothing
+
+        FromElapsed ->
+            Just state.pace.elapsedAtStartSec
+
+        FromRideStart ->
+            elapsedSinceRideStart state
+
+
+{-| The time between the moment the rider set off and now, in seconds.
+
+Both are read as local wall-clock time and differenced, which is exact unless the clocks go
+forward or back between the two — a twice-a-year hour that Elm cannot see, because `Time.Zone`
+will convert an instant to local parts but will not tell you the offset it used.
+
+-}
+elapsedSinceRideStart : State -> Maybe Float
+elapsedSinceRideStart state =
+    Maybe.map2
+        (\setOff now -> toFloat (Wallclock.civilSeconds (Wallclock.localDateTime state.zone now) - Wallclock.civilSeconds setOff))
+        (Wallclock.parseLocalDateTime state.pace.rideStart)
+        state.now
+
+
+ifPositive : Float -> Maybe Float
+ifPositive value =
+    if value > 0 then
+        Just value
+
+    else
+        Nothing
+
+
+viewPaceTab : State -> Zipper EditableTrack -> Html Msg
+viewPaceTab state tracks =
+    let
+        pace =
+            state.pace
+
+        selectable =
+            selectableWaypoints state tracks.current
+
+        waypointFor =
+            selectedWaypointFor state tracks.current selectable
+
+        body =
+            case ( waypointFor pace.start, waypointFor pace.end ) of
+                ( Just start, Just end ) ->
+                    viewPaceEstimate state start end
+
+                ( Nothing, _ ) ->
+                    [ noticePanel (unresolvedPointNotice pace.start "Choose a start point.") ]
+
+                ( _, Nothing ) ->
+                    [ noticePanel (unresolvedPointNotice pace.end "Choose an end point.") ]
+    in
+    Html.div
+        [ Html.Attributes.style "display" "flex"
+        , Html.Attributes.style "flex-direction" "column"
+        , Html.Attributes.style "gap" "0.75em"
+        , Html.Attributes.style "padding" "0.5em"
+        ]
+        (viewPaceControls (state.position /= Nothing) pace selectable :: body)
+
+
+viewPaceControls : Bool -> PaceOptions -> List ( Int, GpxApi.Waypoint ) -> Html Msg
+viewPaceControls hasPosition pace selectable =
+    let
+        pointSelector onSelect =
+            viewPointSelector { onSelect = onSelect, hasPosition = hasPosition, offerRouteEnds = True } selectable
+
+        sourceItem source =
+            Dropdown.Item (formatPaceSource source) (paceSourceName source) True
+
+        numberInput attributes value change =
+            Html.input
+                (Html.Attributes.type_ "number"
+                    :: Html.Attributes.min "0"
+                    :: Html.Attributes.value value
+                    :: Html.Events.onInput change
+                    :: attributes
+                )
+                []
+    in
+    Html.div
+        [ Html.Attributes.style "display" "flex"
+        , Html.Attributes.style "flex-wrap" "wrap"
+        , Html.Attributes.style "gap" "1em"
+        , Html.Attributes.style "align-items" "flex-end"
+        ]
+        [ labelledControl "Start" (pointSelector SetPaceStart pace.start)
+        , labelledControl "End" (pointSelector SetPaceEnd pace.end)
+        , labelledControl "Pace from"
+            (Dropdown.dropdown
+                (Dropdown.Options
+                    [ sourceItem SetSpeed, sourceItem FromRideStart, sourceItem FromElapsed ]
+                    Nothing
+                    (Maybe.andThen parsePaceSource >> Maybe.map SetPaceSource >> Maybe.withDefault Ignore)
+                )
+                []
+                (Just (formatPaceSource pace.activePaceSource))
+            )
+        , case pace.activePaceSource of
+            SetSpeed ->
+                labelledControl "Speed (km/h)"
+                    (numberInput
+                        [ Html.Attributes.step "0.5", Html.Attributes.style "width" "6em" ]
+                        (String.fromFloat pace.speedKmh)
+                        (String.toFloat >> Maybe.withDefault 0 >> UpdatePaceSpeed)
+                    )
+
+            FromRideStart ->
+                labelledControl "Set off at"
+                    (Html.input
+                        [ Html.Attributes.type_ "datetime-local"
+                        , Html.Attributes.value pace.rideStart
+                        , Html.Events.onInput UpdatePaceRideStart
+                        ]
+                        []
+                    )
+
+            FromElapsed ->
+                viewElapsedInput numberInput pace.elapsedAtStartSec
+        ]
+
+
+{-| Hours and minutes as two plain number boxes rather than a native time control: a time of
+day stops at 23:59, and a ride that runs past a day is exactly the kind this tab is for.
+-}
+viewElapsedInput : (List (Html.Attribute Msg) -> String -> (String -> Msg) -> Html Msg) -> Float -> Html Msg
+viewElapsedInput numberInput elapsedSec =
+    let
+        totalMinutes =
+            round (elapsedSec / 60)
+
+        part label value change =
+            labelledControl label
+                (numberInput
+                    [ Html.Attributes.style "width" "4.5em" ]
+                    (String.fromInt value)
+                    (String.toInt >> Maybe.withDefault 0 >> change >> UpdatePaceElapsed)
+                )
+    in
+    Html.div
+        [ Html.Attributes.style "display" "flex"
+        , Html.Attributes.style "gap" "0.5em"
+        , Html.Attributes.style "align-items" "flex-end"
+        ]
+        [ part "Time so far (h)" (totalMinutes // 60) (\hours -> toFloat ((hours * 60 + modBy 60 totalMinutes) * 60))
+        , part "(min)" (modBy 60 totalMinutes) (\minutes -> toFloat ((totalMinutes // 60 * 60 + minutes) * 60))
+        ]
+
+
+paceSourceName : PaceSource -> String
+paceSourceName source =
+    case source of
+        SetSpeed ->
+            "Set speed"
+
+        FromRideStart ->
+            "When I set off"
+
+        FromElapsed ->
+            "Time so far"
+
+
+{-| The figures themselves, or the one thing standing in the way of working them out. Each
+notice names what is missing rather than leaving an empty tab, because every one of them is
+something the rider can put right from the controls above.
+-}
+viewPaceEstimate : State -> GpxApi.Waypoint -> GpxApi.Waypoint -> List (Html Msg)
+viewPaceEstimate state start end =
+    let
+        distanceToGo =
+            end.distance - start.distance
+    in
+    if distanceToGo <= 0 then
+        [ noticePanel
+            ("“"
+                ++ waypointDisplayName end
+                ++ "” is not ahead of “"
+                ++ waypointDisplayName start
+                ++ "”, so there is no arrival to estimate. Choose an end point further along the route."
+            )
+        ]
+
+    else
+        case paceMetresPerSecond state of
+            Nothing ->
+                [ noticePanel (noPaceNotice state) ]
+
+            Just speed ->
+                [ viewPaceCard state speed
+                , viewArrivalCard state start end distanceToGo (distanceToGo / speed)
+                ]
+
+
+noPaceNotice : State -> String
+noPaceNotice state =
+    case state.pace.activePaceSource of
+        SetSpeed ->
+            "Set a speed above zero to estimate an arrival."
+
+        FromElapsed ->
+            rideSoFarNotice state "Enter how long the ride has taken so far."
+
+        FromRideStart ->
+            rideSoFarNotice state
+                (case Wallclock.parseLocalDateTime state.pace.rideStart of
+                    Nothing ->
+                        "Give the date and time you set off and the pace will follow the clock from there."
+
+                    Just _ ->
+                        "No time has passed since you set off yet."
+                )
+
+
+{-| A pace read off the ride so far can fail for want of either half of it, and the distance is
+worth answering for first: with no idea how far along the route the rider is there is no ride
+so far to average, whatever the clock says.
+-}
+rideSoFarNotice : State -> String -> String
+rideSoFarNotice state timeProblem =
+    case state.position of
+        Nothing ->
+            "A pace worked out from the ride so far needs to know how far along the route you are. Set a position with the Position slider in the options panel, or start tracking."
+
+        Just position ->
+            if position <= 0 then
+                "A pace worked out from the ride so far needs some route behind you to average over."
+
+            else
+                timeProblem
+
+
+viewPaceCard : State -> Float -> Html Msg
+viewPaceCard state speed =
+    infoCard (infoCardHeading [] [ Html.text "Pace" ])
+        (infoRow "Speed" (Format.speedKmh speed)
+            :: infoRow "Pace" (Format.paceMinPerKm speed)
+            -- Says what the speed was divided out of, so a figure that looks wrong points
+            -- straight at the ride it was read from.
+            :: (case Maybe.map2 Tuple.pair state.position (elapsedSoFar state) of
+                    Nothing ->
+                        []
+
+                    Just ( position, elapsed ) ->
+                        [ infoNote
+                            ("averaged over "
+                                ++ formatKm 1 position
+                                ++ " in "
+                                ++ Wallclock.duration elapsed
+                                ++ ", stops included"
+                            )
+                        ]
+               )
+        )
+
+
+viewArrivalCard : State -> GpxApi.Waypoint -> GpxApi.Waypoint -> Float -> Float -> Html Msg
+viewArrivalCard state start end distanceToGo secondsToGo =
+    infoCard
+        (infoCardHeading []
+            [ Html.text "Arrival"
+            , Html.span
+                [ Html.Attributes.style "font-weight" "normal"
+                , Html.Attributes.style "opacity" "0.75"
+                ]
+                [ Html.text (waypointDisplayName end) ]
+            ]
+        )
+        (List.filterMap identity
+            [ Just (infoRow "Distance to go" (formatKm 1 distanceToGo))
+            , Just (infoRow "Climb to go" (formatEleGainLoss (end.gain - start.gain) (end.loss - start.loss)))
+            , Just (infoRow "Time to go" (Wallclock.duration secondsToGo))
+            , state.now |> Maybe.map (\now -> infoRow "Arrives at" (Wallclock.timeOfDayAfter state.zone now secondsToGo))
+            , elapsedSoFar state
+                |> Maybe.map (\elapsed -> infoRow "Elapsed at arrival" (Wallclock.duration (elapsed + secondsToGo)))
+            , Just (infoNote (arrivalAssumption state start))
+            ]
+        )
+
+
+{-| The clock arrival counts from now, which only tells the truth if the rider is at the start
+point now. Whenever they might not be — because the start is a fixed point rather than the
+tracked position — the card says so out loud rather than letting a precise-looking time imply
+otherwise.
+-}
+arrivalAssumption : State -> GpxApi.Waypoint -> String
+arrivalAssumption state start =
+    let
+        clockNote =
+            case state.now of
+                Just now ->
+                    " · now " ++ Wallclock.timeOfDayAfter state.zone now 0
+
+                Nothing ->
+                    ""
+    in
+    (case state.pace.start of
+        AtRoutePosition ->
+            "counted from where you are now"
+
+        _ ->
+            "counted as if you were at “" ++ waypointDisplayName start ++ "” now"
+    )
+        ++ clockNote
 
 
 
@@ -4358,9 +4869,12 @@ viewOptionsPanel state =
                         WaypointsTab ->
                             []
 
-                        -- The Relative tab's controls live in the tab itself, beside the
-                        -- figures they drive.
+                        -- The Relative and Pace tabs' controls live in the tabs themselves,
+                        -- beside the figures they drive.
                         RelativeTab ->
+                            []
+
+                        PaceTab ->
                             []
 
                     -- Location tracking
@@ -5172,6 +5686,9 @@ parseTab s =
         "relative" ->
             Just RelativeTab
 
+        "pace" ->
+            Just PaceTab
+
         _ ->
             Nothing
 
@@ -5190,6 +5707,38 @@ formatTab tab =
 
         RelativeTab ->
             "relative"
+
+        PaceTab ->
+            "pace"
+
+
+parsePaceSource : String -> Maybe PaceSource
+parsePaceSource s =
+    case s of
+        "speed" ->
+            Just SetSpeed
+
+        "elapsed" ->
+            Just FromElapsed
+
+        "rideStart" ->
+            Just FromRideStart
+
+        _ ->
+            Nothing
+
+
+formatPaceSource : PaceSource -> String
+formatPaceSource source =
+    case source of
+        SetSpeed ->
+            "speed"
+
+        FromElapsed ->
+            "elapsed"
+
+        FromRideStart ->
+            "rideStart"
 
 
 
@@ -5259,6 +5808,9 @@ encodeSavedState state =
 
         rel =
             state.relative
+
+        pace =
+            state.pace
     in
     Json.Encode.object
         (List.filterMap
@@ -5320,6 +5872,12 @@ encodeSavedState state =
             , Just ( "relativeEnd", Json.Encode.string (formatPointRef rel.end) )
             , Just ( "relativeStartCollapsed", Json.Encode.bool rel.startCollapsed )
             , Just ( "relativeEndCollapsed", Json.Encode.bool rel.endCollapsed )
+            , Just ( "paceStart", Json.Encode.string (formatPointRef pace.start) )
+            , Just ( "paceEnd", Json.Encode.string (formatPointRef pace.end) )
+            , Just ( "paceSource", Json.Encode.string (formatPaceSource pace.activePaceSource) )
+            , Just ( "paceSpeedKmh", Json.Encode.float pace.speedKmh )
+            , Just ( "paceElapsedSec", Json.Encode.float pace.elapsedAtStartSec )
+            , Just ( "paceRideStart", Json.Encode.string pace.rideStart )
             ]
         )
         |> Json.Encode.encode 0
@@ -5339,9 +5897,12 @@ stateDecoder =
 
         defRel =
             defaultRelativeOptions
+
+        defPace =
+            defaultPaceOptions
     in
     Json.Decode.succeed
-        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau position viewMode splitMode splitEquidistantCount splitPoints splitCategories liveLookahead liveLookbehind labelHeightGain distanceMarkerInterval distanceMarkerSegmentEnds totalDistanceDisplay referenceDistance itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints relativeStart relativeEnd relativeStartCollapsed relativeEndCollapsed ->
+        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau position viewMode splitMode splitEquidistantCount splitPoints splitCategories liveLookahead liveLookbehind labelHeightGain distanceMarkerInterval distanceMarkerSegmentEnds totalDistanceDisplay referenceDistance itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints relativeStart relativeEnd relativeStartCollapsed relativeEndCollapsed paceStart paceEnd paceSource paceSpeedKmh paceElapsedSec paceRideStart ->
             { tracks = loadableResourceFromMaybe tracks
             , showOptions = showOptions |> Maybe.withDefault defaultState.showOptions
             , activeTab = activeTab |> Maybe.andThen parseTab |> Maybe.withDefault defaultState.activeTab
@@ -5401,10 +5962,20 @@ stateDecoder =
                 , startCollapsed = relativeStartCollapsed |> Maybe.withDefault defRel.startCollapsed
                 , endCollapsed = relativeEndCollapsed |> Maybe.withDefault defRel.endCollapsed
                 }
+            , pace =
+                { start = paceStart |> Maybe.andThen parsePointRef |> Maybe.withDefault defPace.start
+                , end = paceEnd |> Maybe.andThen parsePointRef |> Maybe.withDefault defPace.end
+                , activePaceSource = paceSource |> Maybe.andThen parsePaceSource |> Maybe.withDefault defPace.activePaceSource
+                , speedKmh = paceSpeedKmh |> Maybe.withDefault defPace.speedKmh
+                , elapsedAtStartSec = paceElapsedSec |> Maybe.withDefault defPace.elapsedAtStartSec
+                , rideStart = paceRideStart |> Maybe.withDefault defPace.rideStart
+                }
             , stateDecodeError = Nothing
             , storageError = Nothing
             , splitSegments = Nothing
             , profilePixelWidth = Nothing
+            , now = Nothing
+            , zone = Time.utc
             }
         )
         |> andMap (maybeField "tracks" (Zipper.decoder editableTrackDecoder))
@@ -5441,6 +6012,12 @@ stateDecoder =
         |> andMap (maybeField "relativeEnd" Json.Decode.string)
         |> andMap (maybeField "relativeStartCollapsed" Json.Decode.bool)
         |> andMap (maybeField "relativeEndCollapsed" Json.Decode.bool)
+        |> andMap (maybeField "paceStart" Json.Decode.string)
+        |> andMap (maybeField "paceEnd" Json.Decode.string)
+        |> andMap (maybeField "paceSource" Json.Decode.string)
+        |> andMap (maybeField "paceSpeedKmh" Json.Decode.float)
+        |> andMap (maybeField "paceElapsedSec" Json.Decode.float)
+        |> andMap (maybeField "paceRideStart" Json.Decode.string)
 
 
 andMap : Json.Decode.Decoder a -> Json.Decode.Decoder (a -> b) -> Json.Decode.Decoder b

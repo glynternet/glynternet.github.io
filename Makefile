@@ -31,6 +31,15 @@ route.js:
 		glynternet/elm:latest \
 		sh -c "cd elmapp/elm/route && elm make ${ELM_OPTIMIZE} ./src/Main.elm --output=../../data/$@"
 
+.PHONY: elm-test
+elm-test:
+	docker run --rm \
+		--user="$$(id -u):$$(id -g)" \
+		--volume="${PWD}:/elmapp:Z" \
+		--env HOME=/tmp \
+		glynternet/elm:latest \
+		sh -c "cd elmapp/elm/route && elm-test"
+
 elm-sh:
 	docker run --rm -it \
 		--user="$$(id -u):$$(id -g)" \
