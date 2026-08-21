@@ -101,6 +101,28 @@ The route app is one monolithic Elm file (~4200 lines). To orient quickly:
 - **Data model** (`elm/shared/src/GpxApi.elm`): `TrackPoint.gain`/`.loss` are **cumulative** from the start; route totals live in `EditableTrack.gainLoss` / `Track.gainLoss`; `lastTrackpointDistance` gives total distance; `cumulativeGainLossAtDistance` looks up cumulative climb at any distance (used to build the current-position cuesheet row).
 - Build/typecheck with `make route.js` (compiles to `data/route.js`).
 
+### Where route state is saved
+
+The route app persists one blob — the track, the waypoint edits and every view
+option together, so that a future "share this view" feature can hand over the
+whole thing — through the `storeState` port, which `_layouts/route.html` writes
+to **IndexedDB** (database `route`, store `state`, key `appState`).
+
+It used to be `localStorage`, and a long route broke it: the state is almost
+entirely trackpoints, and a few tens of thousands of them exceeded the ~5MB
+per-origin cap, so uploading a big GPX died on an uncaught `QuotaExceededError`.
+Two things guard against that now, and both are worth keeping:
+
+- `GpxApi.encodeStoredTrackpoints` writes each point as a fixed-order array of
+  rounded numbers (~48 characters a point instead of ~118). `decodeTrackpoints`
+  reads that **and** the WASM module's named-field form, which is still what
+  crosses the port to Go — don't collapse the two encoders into one.
+- A write that the browser refuses no longer throws into the void: it falls back
+  to `localStorage`, and if that fails too the message reaches Elm on the
+  `storeStateFailed` port and shows as a banner, leaving the route usable.
+
+State written by an older build is migrated out of `localStorage` on first load.
+
 ### Important: `_data/` vs `data/` Directories
 
 These two directories serve different purposes and are **both necessary**:

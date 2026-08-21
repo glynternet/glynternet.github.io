@@ -52,6 +52,7 @@ subscriptions { state } =
         , receiveElevationProfileData WasmResponseReceived
         , receiveSplitProfile SplitProfileReceived
         , profileWidthChanged ProfileWidthChanged
+        , storeStateFailed StoreStateFailed
         ]
 
 
@@ -101,6 +102,7 @@ type alias State =
 
     -- Transient (never persisted)
     , stateDecodeError : Maybe String
+    , storageError : Maybe String
     , splitSegments : Maybe GpxApi.SplitResult
     , profilePixelWidth : Maybe Int
     }
@@ -445,6 +447,7 @@ defaultState =
     , showOffRouteWaypoints = True
     , showOffRouteDistance = False
     , stateDecodeError = Nothing
+    , storageError = Nothing
     , splitSegments = Nothing
     , profilePixelWidth = Nothing
     }
@@ -517,6 +520,8 @@ extractQueryParam key url =
 type Msg
     = Ignore
     | DismissStateDecodeError
+    | StoreStateFailed String
+    | DismissStorageError
       -- Shared
     | ShowOptions Bool
     | OpenFileBrowser
@@ -620,6 +625,12 @@ update msg model =
 
         DismissStateDecodeError ->
             ( updateState { s | stateDecodeError = Nothing }, Cmd.none )
+
+        StoreStateFailed error ->
+            ( updateState { s | storageError = Just error }, Cmd.none )
+
+        DismissStorageError ->
+            ( updateState { s | storageError = Nothing }, Cmd.none )
 
         ShowOptions show ->
             updateAndStoreModel (updateState { s | showOptions = show })
@@ -1905,7 +1916,8 @@ view { state } =
             , Html.Attributes.class "page"
             , Html.Attributes.style "height" "100%"
             ]
-            (viewStateDecodeError state.stateDecodeError
+            (viewWarningBanner "Failed to restore saved state: " DismissStateDecodeError state.stateDecodeError
+                ++ viewWarningBanner "Couldn't save this route, so it won't be here when you come back: " DismissStorageError state.storageError
                 ++ (case state.tracks of
                         NotLoaded ->
                             [ viewOptionsPanel state
@@ -1982,8 +1994,8 @@ view { state } =
         ]
 
 
-viewStateDecodeError : Maybe String -> List (Html Msg)
-viewStateDecodeError maybeError =
+viewWarningBanner : String -> Msg -> Maybe String -> List (Html Msg)
+viewWarningBanner title dismiss maybeError =
     case maybeError of
         Nothing ->
             []
@@ -2002,11 +2014,11 @@ viewStateDecodeError maybeError =
                 , Html.Attributes.style "width" "100%"
                 ]
                 [ Html.div []
-                    [ Html.strong [] [ Html.text "Failed to restore saved state: " ]
+                    [ Html.strong [] [ Html.text title ]
                     , Html.text (String.left 500 error)
                     ]
                 , Html.button
-                    [ Html.Events.onClick DismissStateDecodeError
+                    [ Html.Events.onClick dismiss
                     , Html.Attributes.style "background" "none"
                     , Html.Attributes.style "border" "none"
                     , Html.Attributes.style "cursor" "pointer"
@@ -4893,7 +4905,7 @@ formatTab tab =
 encodeEditableTrack : EditableTrack -> Json.Encode.Value
 encodeEditableTrack track =
     Json.Encode.object
-        [ ( "trackpoints", GpxApi.encodeTrackpoints track.trackpoints )
+        [ ( "trackpoints", GpxApi.encodeStoredTrackpoints track.trackpoints )
         , ( "editableWaypoints", Json.Encode.list encodeEditableWaypoint track.editableWaypoints )
         , ( "gain", Json.Encode.float (Tuple.first track.gainLoss) )
         , ( "loss", Json.Encode.float (Tuple.second track.gainLoss) )
@@ -5084,6 +5096,7 @@ stateDecoder =
                 , end = relativeEnd |> Maybe.andThen parsePointRef |> Maybe.withDefault defRel.end
                 }
             , stateDecodeError = Nothing
+            , storageError = Nothing
             , splitSegments = Nothing
             , profilePixelWidth = Nothing
             }
@@ -5134,6 +5147,11 @@ port logError : String -> Cmd msg
 
 
 port storeState : String -> Cmd msg
+
+
+-- Reports that the browser refused to save what storeState sent: the route is
+-- still usable but will not survive a reload.
+port storeStateFailed : (String -> msg) -> Sub msg
 
 
 port downloadState : String -> Cmd msg

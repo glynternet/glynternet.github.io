@@ -8,8 +8,8 @@ module GpxApi exposing
     , decodeSplitResult
     , decodeTrackpoints
     , decodeWaypoint
+    , encodeStoredTrackpoints
     , encodeTrack
-    , encodeTrackpoints
     , encodeWaypoint
     )
 
@@ -66,14 +66,25 @@ decodeTrack =
 
 decodeTrackpoints : Json.Decode.Decoder (List TrackPoint)
 decodeTrackpoints =
+    -- Points come either as the WASM module's named fields or, from stored
+    -- state, as the compact array that encodeStoredTrackpoints writes.
     Json.Decode.list
-        (Json.Decode.map6 TrackPoint
-            (Json.Decode.field "dist" Json.Decode.float)
-            (Json.Decode.field "ele" Json.Decode.float)
-            (Json.Decode.field "lat" Json.Decode.float)
-            (Json.Decode.field "lon" Json.Decode.float)
-            (Json.Decode.field "gain" Json.Decode.float)
-            (Json.Decode.field "loss" Json.Decode.float)
+        (Json.Decode.oneOf
+            [ Json.Decode.map6 TrackPoint
+                (Json.Decode.field "dist" Json.Decode.float)
+                (Json.Decode.field "ele" Json.Decode.float)
+                (Json.Decode.field "lat" Json.Decode.float)
+                (Json.Decode.field "lon" Json.Decode.float)
+                (Json.Decode.field "gain" Json.Decode.float)
+                (Json.Decode.field "loss" Json.Decode.float)
+            , Json.Decode.map6 TrackPoint
+                (Json.Decode.index 0 Json.Decode.float)
+                (Json.Decode.index 1 Json.Decode.float)
+                (Json.Decode.index 2 Json.Decode.float)
+                (Json.Decode.index 3 Json.Decode.float)
+                (Json.Decode.index 4 Json.Decode.float)
+                (Json.Decode.index 5 Json.Decode.float)
+            ]
         )
 
 
@@ -130,6 +141,37 @@ encodeTrackpoints =
                 , ( "loss", Json.Encode.float point.loss )
                 ]
         )
+
+
+encodeStoredTrackpoints : List TrackPoint -> Json.Encode.Value
+encodeStoredTrackpoints =
+    -- Stored state is almost entirely trackpoints - a long route carries tens
+    -- of thousands of them - and the whole state is re-encoded on every change,
+    -- so each point is written as a fixed-order array of rounded numbers rather
+    -- than named full-precision fields: ~48 characters a point instead of ~118.
+    -- Six decimal places of latitude/longitude is ~0.1m, finer than a GPS fix,
+    -- and metres to a decimal place is finer than any elevation the profile
+    -- draws. decodeTrackpoints reads this alongside the named-field form.
+    Json.Encode.list
+        (\point ->
+            Json.Encode.list Json.Encode.float
+                [ roundedTo 1 point.distance
+                , roundedTo 1 point.elevation
+                , roundedTo 6 point.lat
+                , roundedTo 6 point.lon
+                , roundedTo 1 point.gain
+                , roundedTo 1 point.loss
+                ]
+        )
+
+
+roundedTo : Int -> Float -> Float
+roundedTo decimalPlaces value =
+    let
+        scale =
+            toFloat (10 ^ decimalPlaces)
+    in
+    toFloat (round (value * scale)) / scale
 
 
 encodeWaypoint : Waypoint -> Json.Encode.Value

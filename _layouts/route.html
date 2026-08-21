@@ -15,116 +15,209 @@ layout: default
 		<script>
 			const go = new Go();
 			// Init Elm app after WASM is ready, since Elm may immediately call WASM functions (e.g. splitProfile) when restoring stored state.
-			WebAssembly.instantiateStreaming(fetch("/data/gpx.wasm"), go.importObject).then((result) => {
-				go.run(result.instance);
-				initApp();
-			});
-
-			function initApp() {
-				try {
-					const storedState = localStorage.getItem("appState");
-					const app = Elm.Main.init({
-						flags: JSON.parse(storedState)
-					});
-					app.ports.storeState.subscribe(state => {
-						localStorage.setItem("appState", state);
-					});
-					app.ports.logError.subscribe(msg => {
-						console.error(msg);
-					});
-					app.ports.downloadState.subscribe(state => {
-						const blob = new Blob([state], { type: 'application/json' });
-						const url = URL.createObjectURL(blob);
-						const a = document.createElement('a');
-						a.href = url;
-						a.download = 'route-state.json';
-						a.click();
-						URL.revokeObjectURL(url);
-					});
-					app.ports.calculateElevationProfileData.subscribe(gpxData => {
-						const profileData = elevationProfileData(gpxData);
-						app.ports.receiveElevationProfileData.send(profileData);
-					});
-					app.ports.requestSplitProfile.subscribe(params => {
-						const result = splitProfile(params);
-						app.ports.receiveSplitProfile.send(result);
-					});
-					app.ports.requestSplitsGpx.subscribe(segmentsJson => {
-						const gpxResult = splitsToGpx(segmentsJson);
-						const parsed = JSON.parse(gpxResult);
-						if (parsed && parsed.error) {
-							console.error('GPX generation error:', parsed.error);
-							return;
-						}
-						const blob = new Blob([parsed], { type: 'application/gpx+xml' });
-						const url = URL.createObjectURL(blob);
-						const a = document.createElement('a');
-						a.href = url;
-						a.download = 'route.gpx';
-						a.click();
-						URL.revokeObjectURL(url);
-					});
-					// Track the elevation profile container's width so Elm can downsample
-					// the track line to ~one point per pixel. The container is unmounted
-					// and remounted as routes are loaded/re-uploaded (it's hidden during
-					// the "Loading" state), so:
-					//   - the ResizeObserver ignores a detached target: a node being torn
-					//     down reports 0x0, which previously reached Elm and collapsed the
-					//     track line to <2 points;
-					//   - the MutationObserver stays connected and re-points the observer at
-					//     whichever #profile-container currently exists, releasing the old
-					//     one, instead of disconnecting after the first match.
-					let observedProfileEl = null;
-					const profileObserver = new ResizeObserver(entries => {
-						for (const entry of entries) {
-							if (!entry.target.isConnected) continue; // detaching node, 0x0 — ignore
-							const w = Math.round(entry.contentRect.width);
-							if (w > 0) app.ports.profileWidthChanged.send(w);
-						}
-					});
-					function syncProfileObserver() {
-						const el = document.getElementById('profile-container');
-						if (el === observedProfileEl) return;
-						if (observedProfileEl) profileObserver.unobserve(observedProfileEl);
-						observedProfileEl = el;
-						if (el) profileObserver.observe(el);
-					}
-					new MutationObserver(syncProfileObserver).observe(document.body, { childList: true, subtree: true });
-					syncProfileObserver(); // in case the container is already present
-
-					app.ports.requestLocation.subscribe(function() {
-						if (!navigator.geolocation) {
-							app.ports.receiveLocation.send({ error: "position_unavailable" });
-							return;
-						}
-						navigator.geolocation.getCurrentPosition(
-							function(pos) {
-								app.ports.receiveLocation.send({
-									lat: pos.coords.latitude,
-									lon: pos.coords.longitude,
-									accuracy: pos.coords.accuracy,
-									// null on most devices without a barometer; the Elm side
-									// falls back to the route's elevation when it is missing
-									altitude: pos.coords.altitude
-								});
-							},
-							function(err) {
-								var code = "position_unavailable";
-								if (err.code === 1) code = "permission_denied";
-								if (err.code === 3) code = "timeout";
-								app.ports.receiveLocation.send({ error: code });
-							},
-							{ enableHighAccuracy: true, timeout: 10000 }
-						);
-					});
-				}
-				catch(err) {
+			WebAssembly.instantiateStreaming(fetch("/data/gpx.wasm"), go.importObject)
+				.then((result) => {
+					go.run(result.instance);
+					return readStoredState();
+				})
+				.then(initApp)
+				.catch(err => {
 					console.error(err);
 					if (window.confirm("Error initialising app, please see console.\nWould you like to start a fresh?")) {
-						localStorage.removeItem("appState");
-						location.reload();
+						clearStoredState().then(() => location.reload());
 					}
+				});
+
+			// The saved state is one blob holding the route and the view options
+			// together, and it is dominated by trackpoints: a long route carries tens
+			// of thousands of them, which is megabytes of JSON. That overflowed
+			// localStorage's ~5MB per-origin cap the moment a big GPX was uploaded, and
+			// the resulting QuotaExceededError killed the load. IndexedDB has no such
+			// cap, so route length is no longer a limit on what can be saved.
+			const STATE_KEY = "appState";
+
+			let stateDb = null;
+
+			function openStateDb() {
+				// A rejection is cached deliberately: where IndexedDB is unavailable
+				// (some private-browsing modes) every later read and write falls
+				// straight through to localStorage rather than retrying the open.
+				stateDb = stateDb || new Promise((resolve, reject) => {
+					const request = indexedDB.open("route", 1);
+					request.onupgradeneeded = () => request.result.createObjectStore("state");
+					request.onsuccess = () => resolve(request.result);
+					request.onerror = () => reject(request.error);
+					request.onblocked = () => reject(new Error("opening state database: blocked by another connection"));
+				});
+				return stateDb;
+			}
+
+			// Each operation below opens its transaction and issues its request in the
+			// same callback: a transaction goes inactive as soon as the microtask that
+			// created it ends, so it cannot be handed across a promise boundary.
+
+			function readStateFromDb() {
+				return openStateDb().then(db => new Promise((resolve, reject) => {
+					const request = db.transaction("state", "readonly").objectStore("state").get(STATE_KEY);
+					request.onsuccess = () => resolve(request.result);
+					request.onerror = () => reject(request.error);
+				}));
+			}
+
+			function writeStateToDb(state) {
+				return openStateDb().then(db => new Promise((resolve, reject) => {
+					// Settle on the transaction rather than the request: a write beyond
+					// quota fails by aborting the transaction around it.
+					const transaction = db.transaction("state", "readwrite");
+					transaction.objectStore("state").put(state, STATE_KEY);
+					transaction.oncomplete = () => resolve();
+					transaction.onerror = () => reject(transaction.error);
+					transaction.onabort = () => reject(transaction.error || new Error("writing state was aborted"));
+				}));
+			}
+
+			function deleteStateFromDb() {
+				return openStateDb().then(db => new Promise((resolve, reject) => {
+					const transaction = db.transaction("state", "readwrite");
+					transaction.objectStore("state").delete(STATE_KEY);
+					transaction.oncomplete = () => resolve();
+					transaction.onerror = () => reject(transaction.error);
+					transaction.onabort = () => reject(transaction.error || new Error("clearing state was aborted"));
+				}));
+			}
+
+			function readStoredState() {
+				return readStateFromDb()
+					.then(stored => stored === undefined ? migrateStateFromLocalStorage() : stored)
+					.catch(err => {
+						console.error("Reading stored state from IndexedDB:", err);
+						return localStorage.getItem(STATE_KEY);
+					});
+			}
+
+			// Anyone who used the route tools before the move to IndexedDB has their
+			// state in localStorage; carry it over, releasing the old copy only once
+			// the new one is safely written.
+			function migrateStateFromLocalStorage() {
+				const stored = localStorage.getItem(STATE_KEY);
+				if (stored === null) {
+					return null;
 				}
+				return writeStateToDb(stored)
+					.then(() => localStorage.removeItem(STATE_KEY))
+					.catch(err => console.error("Migrating stored state to IndexedDB:", err))
+					.then(() => stored);
+			}
+
+			function writeStoredState(state) {
+				return writeStateToDb(state).catch(err => {
+					console.error("Storing state in IndexedDB:", err);
+					// Throws on quota, which the caller reports to the user.
+					localStorage.setItem(STATE_KEY, state);
+				});
+			}
+
+			function clearStoredState() {
+				localStorage.removeItem(STATE_KEY);
+				return deleteStateFromDb()
+					.catch(err => console.error("Clearing stored state from IndexedDB:", err));
+			}
+
+			function initApp(storedState) {
+				const app = Elm.Main.init({
+					flags: storedState ? JSON.parse(storedState) : null
+				});
+				app.ports.storeState.subscribe(state => {
+					writeStoredState(state).catch(err => app.ports.storeStateFailed.send(String(err)));
+				});
+				app.ports.logError.subscribe(msg => {
+					console.error(msg);
+				});
+				app.ports.downloadState.subscribe(state => {
+					const blob = new Blob([state], { type: 'application/json' });
+					const url = URL.createObjectURL(blob);
+					const a = document.createElement('a');
+					a.href = url;
+					a.download = 'route-state.json';
+					a.click();
+					URL.revokeObjectURL(url);
+				});
+				app.ports.calculateElevationProfileData.subscribe(gpxData => {
+					const profileData = elevationProfileData(gpxData);
+					app.ports.receiveElevationProfileData.send(profileData);
+				});
+				app.ports.requestSplitProfile.subscribe(params => {
+					const result = splitProfile(params);
+					app.ports.receiveSplitProfile.send(result);
+				});
+				app.ports.requestSplitsGpx.subscribe(segmentsJson => {
+					const gpxResult = splitsToGpx(segmentsJson);
+					const parsed = JSON.parse(gpxResult);
+					if (parsed && parsed.error) {
+						console.error('GPX generation error:', parsed.error);
+						return;
+					}
+					const blob = new Blob([parsed], { type: 'application/gpx+xml' });
+					const url = URL.createObjectURL(blob);
+					const a = document.createElement('a');
+					a.href = url;
+					a.download = 'route.gpx';
+					a.click();
+					URL.revokeObjectURL(url);
+				});
+				// Track the elevation profile container's width so Elm can downsample
+				// the track line to ~one point per pixel. The container is unmounted
+				// and remounted as routes are loaded/re-uploaded (it's hidden during
+				// the "Loading" state), so:
+				//   - the ResizeObserver ignores a detached target: a node being torn
+				//     down reports 0x0, which previously reached Elm and collapsed the
+				//     track line to <2 points;
+				//   - the MutationObserver stays connected and re-points the observer at
+				//     whichever #profile-container currently exists, releasing the old
+				//     one, instead of disconnecting after the first match.
+				let observedProfileEl = null;
+				const profileObserver = new ResizeObserver(entries => {
+					for (const entry of entries) {
+						if (!entry.target.isConnected) continue; // detaching node, 0x0 — ignore
+						const w = Math.round(entry.contentRect.width);
+						if (w > 0) app.ports.profileWidthChanged.send(w);
+					}
+				});
+				function syncProfileObserver() {
+					const el = document.getElementById('profile-container');
+					if (el === observedProfileEl) return;
+					if (observedProfileEl) profileObserver.unobserve(observedProfileEl);
+					observedProfileEl = el;
+					if (el) profileObserver.observe(el);
+				}
+				new MutationObserver(syncProfileObserver).observe(document.body, { childList: true, subtree: true });
+				syncProfileObserver(); // in case the container is already present
+
+				app.ports.requestLocation.subscribe(function() {
+					if (!navigator.geolocation) {
+						app.ports.receiveLocation.send({ error: "position_unavailable" });
+						return;
+					}
+					navigator.geolocation.getCurrentPosition(
+						function(pos) {
+							app.ports.receiveLocation.send({
+								lat: pos.coords.latitude,
+								lon: pos.coords.longitude,
+								accuracy: pos.coords.accuracy,
+								// null on most devices without a barometer; the Elm side
+								// falls back to the route's elevation when it is missing
+								altitude: pos.coords.altitude
+							});
+						},
+						function(err) {
+							var code = "position_unavailable";
+							if (err.code === 1) code = "permission_denied";
+							if (err.code === 3) code = "timeout";
+							app.ports.receiveLocation.send({ error: code });
+						},
+						{ enableHighAccuracy: true, timeout: 10000 }
+					);
+				});
 			}
 		</script>
     	</div>
