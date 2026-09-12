@@ -16,6 +16,7 @@ import Json.Decode
 import Json.Encode
 import List.Extra
 import Location
+import RouteFilename
 import String
 import Svg
 import Svg.Attributes
@@ -78,6 +79,7 @@ type alias Navigation =
 
 type alias State =
     { tracks : LoadableResource (Zipper EditableTrack)
+    , routeName : String
     , showOptions : Bool
     , activeTab : Tab
 
@@ -557,6 +559,7 @@ defaultDistanceDetail =
 defaultState : State
 defaultState =
     { tracks = NotLoaded
+    , routeName = "route"
     , showOptions = True
     , activeTab = ElevationProfileTab
     , position = Nothing
@@ -803,7 +806,13 @@ update msg model =
             ( model, File.Select.file [ "application/gpx+xml" ] FileUploaded )
 
         FileUploaded file ->
-            updateAndStoreModel (updateState { s | tracks = Loading })
+            updateAndStoreModel
+                (updateState
+                    { s
+                        | tracks = Loading
+                        , routeName = RouteFilename.fromUploadFilename (File.name file)
+                    }
+                )
                 |> Tuple.mapSecond
                     (\cmd ->
                         Cmd.batch
@@ -1554,12 +1563,24 @@ update msg model =
             ( updateState { s | zone = zone }, Cmd.none )
 
         ExportState ->
-            ( model, downloadState (encodeSavedState { s | showOptions = False }) )
+            ( model
+            , downloadState
+                (downloadPayload
+                    (RouteFilename.filename s.routeName ".json")
+                    (encodeSavedState { s | showOptions = False })
+                )
+            )
 
         DownloadSplitsGpx ->
             case s.splitSegments of
                 Just splitResult ->
-                    ( model, requestSplitsGpx (Json.Encode.encode 0 (Json.Encode.list GpxApi.encodeTrack splitResult.segments)) )
+                    ( model
+                    , requestSplitsGpx
+                        (downloadPayload
+                            (RouteFilename.filename s.routeName ".gpx")
+                            (Json.Encode.encode 0 (Json.Encode.list GpxApi.encodeTrack splitResult.segments))
+                        )
+                    )
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -5631,6 +5652,7 @@ encodeSavedState state =
         (List.filterMap
             identity
             [ maybeFromloadableResource state.tracks |> Maybe.map (\tracks -> ( "tracks", Zipper.encode encodeEditableTrack tracks ))
+            , Just ( "routeName", Json.Encode.string state.routeName )
             , Just ( "activeTab", Json.Encode.string (formatTab state.activeTab) )
             , Just ( "showOptions", Json.Encode.bool state.showOptions )
             , Just ( "trackingIntervalSec", Json.Encode.int state.trackingIntervalSec )
@@ -5717,8 +5739,9 @@ stateDecoder =
             defaultPaceOptions
     in
     Json.Decode.succeed
-        (\tracks activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau position viewMode splitMode splitEquidistantCount splitPoints splitCategories liveLookahead liveLookbehind labelHeightGain distanceMarkerInterval distanceMarkerSegmentEnds totalDistanceDisplay referenceDistance itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints relativeStart relativeEnd relativeStartCollapsed relativeEndCollapsed paceStart paceEnd paceSource paceSpeedKmh paceElapsedSec paceRideStart ->
+        (\tracks routeName activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau position viewMode splitMode splitEquidistantCount splitPoints splitCategories liveLookahead liveLookbehind labelHeightGain distanceMarkerInterval distanceMarkerSegmentEnds totalDistanceDisplay referenceDistance itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints relativeStart relativeEnd relativeStartCollapsed relativeEndCollapsed paceStart paceEnd paceSource paceSpeedKmh paceElapsedSec paceRideStart ->
             { tracks = loadableResourceFromMaybe tracks
+            , routeName = routeName |> Maybe.withDefault defaultState.routeName
             , showOptions = showOptions |> Maybe.withDefault defaultState.showOptions
             , activeTab = activeTab |> Maybe.andThen parseTab |> Maybe.withDefault defaultState.activeTab
             , position = position
@@ -5794,6 +5817,7 @@ stateDecoder =
             }
         )
         |> andMap (maybeField "tracks" (Zipper.decoder editableTrackDecoder))
+        |> andMap (maybeField "routeName" Json.Decode.string)
         |> andMap (maybeField "activeTab" Json.Decode.string)
         |> andMap (maybeField "showOptions" Json.Decode.bool)
         |> andMap (maybeField "trackingIntervalSec" Json.Decode.int)
@@ -5842,6 +5866,15 @@ andMap =
 
 
 -- PORTS
+
+
+downloadPayload : String -> String -> String
+downloadPayload filename content =
+    Json.Encode.object
+        [ ( "filename", Json.Encode.string filename )
+        , ( "content", Json.Encode.string content )
+        ]
+        |> Json.Encode.encode 0
 
 
 port logError : String -> Cmd msg

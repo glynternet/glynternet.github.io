@@ -133,14 +133,18 @@ layout: default
 				app.ports.logError.subscribe(msg => {
 					console.error(msg);
 				});
-				app.ports.downloadState.subscribe(state => {
-					const blob = new Blob([state], { type: 'application/json' });
+				function download(filename, content, type) {
+					const blob = new Blob([content], { type });
 					const url = URL.createObjectURL(blob);
 					const a = document.createElement('a');
 					a.href = url;
-					a.download = 'route-state.json';
+					a.download = filename;
 					a.click();
 					URL.revokeObjectURL(url);
+				}
+				app.ports.downloadState.subscribe(payload => {
+					const { filename, content } = JSON.parse(payload);
+					download(filename, content, 'application/json');
 				});
 				app.ports.calculateElevationProfileData.subscribe(gpxData => {
 					const profileData = elevationProfileData(gpxData);
@@ -150,20 +154,15 @@ layout: default
 					const result = splitProfile(params);
 					app.ports.receiveSplitProfile.send(result);
 				});
-				app.ports.requestSplitsGpx.subscribe(segmentsJson => {
-					const gpxResult = splitsToGpx(segmentsJson);
+				app.ports.requestSplitsGpx.subscribe(payload => {
+					const { filename, content } = JSON.parse(payload);
+					const gpxResult = splitsToGpx(content);
 					const parsed = JSON.parse(gpxResult);
 					if (parsed && parsed.error) {
 						console.error('GPX generation error:', parsed.error);
 						return;
 					}
-					const blob = new Blob([parsed], { type: 'application/gpx+xml' });
-					const url = URL.createObjectURL(blob);
-					const a = document.createElement('a');
-					a.href = url;
-					a.download = 'route.gpx';
-					a.click();
-					URL.revokeObjectURL(url);
+					download(filename, parsed, 'application/gpx+xml');
 				});
 				// Track the elevation profile container's width so Elm can downsample
 				// the track line to ~one point per pixel. The container is unmounted
