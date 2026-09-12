@@ -1,0 +1,14 @@
+# Migrated from .claude/settings.local.json.
+# Codex rules govern shell commands; Claude WebFetch/WebSearch and Read
+# permissions have no direct project-local Codex equivalent.
+
+prefix_rule(pattern = ["make"], decision = "allow", justification = "Repository build commands were allowed by the Claude project settings.")
+prefix_rule(pattern = ["ls"], decision = "allow", justification = "Directory inspection was allowed by the Claude project settings.")
+prefix_rule(pattern = ["find"], decision = "allow", justification = "File discovery was allowed by the Claude project settings.")
+prefix_rule(pattern = ["grep"], decision = "allow", justification = "Text search was allowed by the Claude project settings.")
+prefix_rule(pattern = ["zcat"], decision = "allow", justification = "Compressed-file inspection was allowed by the Claude project settings.")
+prefix_rule(pattern = ["elm", "make"], decision = "allow", justification = "Elm compilation was allowed by the Claude project settings.")
+prefix_rule(pattern = ["git", "-C", "/home/g/dev/src/github.com/glynternet/glynternet.github.io", "status"], decision = "allow", justification = "Repository status inspection was allowed by the Claude project settings.")
+prefix_rule(pattern = ["git", "-C", "/home/g/dev/src/github.com/glynternet/glynternet.github.io", "diff"], decision = "allow", justification = "Repository diff inspection was allowed by the Claude project settings.")
+prefix_rule(pattern = ["git", "-C", "/home/g/dev/src/github.com/glynternet/glynternet.github.io", "log", "--oneline", "-5"], decision = "allow", justification = "Recent commit inspection was allowed by the Claude project settings.")
+prefix_rule(pattern = ["git", "checkout"], decision = "allow", justification = "Git checkout was allowed by the Claude project settings.")

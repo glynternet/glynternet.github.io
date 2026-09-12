@@ -1,0 +1,4 @@
+# Best-effort migration from .claude/settings.local.json.
+# Project-local rules in .codex/rules/default.rules carry over the command
+# allow-list. These defaults keep normal repository work in the workspace.
+sandbox_mode = "workspace-write"
