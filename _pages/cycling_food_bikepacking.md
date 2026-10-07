@@ -86,8 +86,9 @@ be adjusted for different products.
 
 These are menus in progress. **Every day includes one serving of overnight oats,
 two Veloforte bars, one pack of Veloforte energy chews, one Veloforte energy
-gel, two cheese strings and 120 g of Jus' Sugs as two 60 g servings.** Day 2 also
-includes one packet of Jell-O instant pudding.
+gel, two cheese strings, 120 g of Jus' Sugs as two 60 g servings, one handful
+of savoury trail mix and two handfuls of chocolate-and-nut trail mix.** Day 2
+also includes one packet of Jell-O instant pudding.
 
 <p class="food-table-hint">Swipe or scroll sideways to see all columns.</p>
 
@@ -101,12 +102,15 @@ includes one packet of Jell-O instant pudding.
 | Veloforte energy gel | 1 | 1 | 1 | 107 |
 | Cheese strings | 2 | 2 | 2 | 160 |
 | [Jus' Sugs](/cycling/nutrition#jus-sugs) | 2 × 60 g | 2 × 60 g | 2 × 60 g | 480 |
+| [Savoury trail mix](#trail-mix-estimates) | 30 g | 30 g | 30 g | 170 |
+| [Chocolate-and-nut trail mix](#trail-mix-estimates) | 60 g | 60 g | 60 g | 330 |
 | Jell-O instant pudding | — | 1 packet | — | 360 |
 
 </div>
 
 The kcal column is the approximate energy for the quantity shown on a day when
-that food is included. Pudding is counted as dry mix only.
+that food is included. Trail mix uses **30 g per handful**: one savoury and two
+chocolate-and-nut handfuls per day. Pudding is counted as dry mix only.
 
 #### Daily energy (kcal)
 
@@ -114,8 +118,8 @@ that food is included. Pudding is counted as dry mix only.
 
 | | Day 1 | Day 2 | Day 3 |
 |---|---:|---:|---:|
-| **Accounted for** | **2,646** | **3,006** | **2,646** |
-| Still to allocate | 2,354 | 1,994 | 2,354 |
+| **Accounted for** | **3,146** | **3,506** | **3,146** |
+| Still to allocate | 1,854 | 1,494 | 1,854 |
 | Daily target | 5,000 | 5,000 | 5,000 |
 
 </div>
@@ -165,9 +169,34 @@ averages about **137 g carbohydrate**. Amaro chews and Doppio and Desto gels eac
 contain **75 mg caffeine** per pack.
 
 The daily calculation is **2 × 233 + 172 + 107 = 745 kcal** of Veloforte food.
-Adding the oats, cheese strings and Jus' Sugs gives about **2,646 kcal accounted
-for** on Days 1 and 3. The pudding packet brings Day 2 to about **3,006 kcal**,
-before adding its milk.
+Adding the oats, cheese strings, Jus' Sugs and both trail mixes gives about
+**3,146 kcal accounted for** on Days 1 and 3. The pudding packet brings Day 2
+to about **3,506 kcal**, before adding its milk.
+
+### Trail mix estimates
+
+For packing, I estimate **one small handful at 30 g**. This rounds the
+[Almond Board's 28 g handful guide](https://www.almonds.com/sites/default/files/all_about_almonds%5B1%5D.pdf)
+to an easy portion weight. Applying that nut portion to trail mix is a planning
+estimate: hand size and the mix's ingredients affect the actual weight.
+
+The calorie estimates use these reference products, checked on **7 October
+2026**, and are rounded to the nearest 10 kcal per daily portion:
+
+<div class="food-table" role="region" aria-label="Trail mix portion and calorie estimates" tabindex="0" markdown="1">
+
+| Mix | Daily portion | Reference label | kcal used |
+|---|---|---|---:|
+| Savoury | 1 handful ≈ 30 g | [Planters Spicy Nuts & Cajun Sticks](https://www.hormelfoodservice.com/products/planters-trail-mix-spicy-nuts-cajun-stix-12-6oz/): 160 kcal per 28 g | 170 |
+| Chocolate and nut | 2 handfuls ≈ 60 g | [Planters Nuts & Chocolate](https://www.planters.com/product/nuts-chocolate-trail-mix/): 180 kcal per 33 g | 330 |
+| **Total** | **3 handfuls ≈ 90 g** | | **500** |
+
+</div>
+
+The calculations are 30 × 160 ÷ 28 ≈ 171 kcal for the savoury mix and
+60 × 180 ÷ 33 ≈ 327 kcal for the chocolate-and-nut mix. These products are
+references for the estimates, not fixed shopping choices. Use the label on the
+mix packed and weigh a handful once to adjust the portions if needed.
 
 ### Cheese, pudding and drink estimates
 
@@ -198,14 +227,17 @@ separately added salt do not add calories.
 | Veloforte energy gels | 3 gels |
 | Cheese strings | 6 sticks |
 | Jus' Sugs | 6 × 60 g servings: 360 g carbohydrate mix (about 200 g maltodextrin and 160 g fructose) |
+| Savoury trail mix | 3 handfuls, about 90 g |
+| Chocolate-and-nut trail mix | 6 handfuls, about 180 g |
 | Jell-O instant pudding | 1 packet for Day 2, plus preparation milk to account for |
 
 </div>
 
-This accounts for about **8,297 kcal** of the **15,000 kcal** three-day target,
+This accounts for about **9,797 kcal** of the **15,000 kcal** three-day target,
 before adding the pudding milk. Totals use the unrounded oats calculation and
-the rounded Veloforte averages; displayed day totals may differ by 1 kcal when
-summed because of rounding.
+the rounded Veloforte and trail mix estimates; displayed day totals may differ
+by 1 kcal when summed because of rounding. The two trail mixes add about
+**270 g and 1,500 kcal** across the trip.
 Pack the first breakfast for preparation the evening before the first riding
 day, then prepare each following breakfast at camp. Follow the
 [oats preparation and cold-storage guidance](/cycling/food/bikepacking/overnight-oats#preparation).

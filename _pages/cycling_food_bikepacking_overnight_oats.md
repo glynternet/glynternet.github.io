@@ -48,10 +48,11 @@ At my 5,000 kcal daily planning target, this serving leaves approximately
 **3.94 kcal/g**, before adding water or packaging.
 
 Each day also includes two Veloforte bars, one pack of energy chews, one energy
-gel, two cheese strings and 120 g of [Jus' Sugs](/cycling/nutrition#jus-sugs).
+gel, two cheese strings, 120 g of [Jus' Sugs](/cycling/nutrition#jus-sugs),
+one handful of savoury trail mix and two handfuls of chocolate-and-nut trail mix.
 The [day menus](/cycling/food/bikepacking#three-day-menus) account for about
-**2,646 kcal per day** with those additions. Day 2 also has one Jell-O instant
-pudding packet, bringing it to about **3,006 kcal** before its milk is added.
+**3,146 kcal per day** with those additions. Day 2 also has one Jell-O instant
+pudding packet, bringing it to about **3,506 kcal** before its milk is added.
 
 The oats stay the same across all three mornings; variety will come from the
 rest of the menus. If I try breakfast flavour variations later, I'll record their
