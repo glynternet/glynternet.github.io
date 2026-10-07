@@ -49,10 +49,17 @@ At my 5,000 kcal daily planning target, this serving leaves approximately
 
 Each day also includes two Veloforte bars, one pack of energy chews, one energy
 gel, two cheese strings, 120 g of [Jus' Sugs](/cycling/nutrition#jus-sugs),
-one handful of savoury trail mix and two handfuls of chocolate-and-nut trail mix.
+one handful of savoury trail mix, two handfuls of chocolate-and-nut trail mix
+and one US quart of [Drinking milk](/cycling/food/bikepacking#drinking-milk).
+Days 1 and 3 add one flavoured tuna packet shared between two wraps. Day 2
+adds peanut butter shared between two wraps, provisionally using one 32 g
+serving from a squeeze pack.
+Every day also has [vegetables with rice and quinoa](/cycling/food/bikepacking#vegetables-with-rice-and-quinoa)
+for dinner: one 240 g grain pouch and 30 g dried vegetables, about 540 kcal.
 The [day menus](/cycling/food/bikepacking#three-day-menus) account for about
-**3,146 kcal per day** with those additions. Day 2 also has one Jell-O instant
-pudding packet, bringing it to about **3,506 kcal** before its milk is added.
+**4,676 kcal on Days 1 and 3** with those additions. Day 2 also has one Jell-O
+instant pudding packet, bringing it to about **5,146 kcal** before its milk is
+added.
 
 The oats stay the same across all three mornings; variety will come from the
 rest of the menus. If I try breakfast flavour variations later, I'll record their
