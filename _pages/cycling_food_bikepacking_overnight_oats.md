@@ -26,12 +26,20 @@ divided by the stated serving weight. For example, the oats contribute
 250 × 180 ÷ 45 = 1,000 kcal. The total is calculated before rounding; different
 products may have different nutritional values.
 
-### Preparation to establish
+### Preparation
 
-The dry ingredients can be weighed and packed together as one serving. I still
-need to establish the water quantity, soaking duration, preparation conditions
-and container size, then record taste and portion feedback. The quantities above
-are the starting recipe; the campsite method is still in development.
+This is breakfast for all three day menus. Weigh and pack the dry ingredients
+together as one serving. The plan is to add drinking water and mix on arrival at
+camp, then leave it to hydrate overnight so breakfast needs little effort in the
+morning. Prepare the first day's serving the evening before departure.
+
+Once water is added, the milk-containing mix needs cold storage: keep it at
+**4°C / 40°F or below** throughout the overnight soak. If that cannot be
+maintained at camp, keep the mix dry until morning and prepare it then.
+See the [FDA guidance on keeping food cold outdoors](https://www.fda.gov/food/buy-store-serve-safe-food/handling-food-safely-while-eating-outdoors).
+
+The water quantity, container size and texture after soaking still need trying
+and recording, along with taste and portion feedback.
 
 ### Building a day around it
 
@@ -39,5 +47,12 @@ At my 5,000 kcal daily planning target, this serving leaves approximately
 **3,739 kcal** for the rest of the day. Its dry energy density is approximately
 **3.94 kcal/g**, before adding water or packaging.
 
-This is the base recipe. As I try flavour variations, I'll record their
-ingredients and calories alongside it to help keep the three day menus varied.
+Each day also includes two Veloforte bars, one pack of energy chews, one energy
+gel, two cheese strings and 120 g of [Jus' Sugs](/cycling/nutrition#jus-sugs).
+The [day menus](/cycling/food/bikepacking#three-day-menus) account for about
+**2,646 kcal per day** with those additions. Day 2 also has one Jell-O instant
+pudding packet, bringing it to about **3,006 kcal** before its milk is added.
+
+The oats stay the same across all three mornings; variety will come from the
+rest of the menus. If I try breakfast flavour variations later, I'll record their
+ingredients and calories alongside this base recipe.
