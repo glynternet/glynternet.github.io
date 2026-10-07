@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Routes
+title: Cycling food and nutrition
 permalink: /cycling/nutrition
 tags: cycling
 ---
@@ -12,6 +12,12 @@ tags: cycling
 
 ### 📝
 * [Vegan rice cakes](/cycling/food/vegan-rice-cakes)
+
+### Bikepacking food
+
+[Recipes and three-day menus](/cycling/food/bikepacking), starting with campsite
+overnight oats. I'm building towards three slightly different days of food at
+5,000 kcal a day, with enough variety to avoid palate fatigue.
 
 ### 😜
 * [Wrapping snacks with finesse](https://www.skratchlabs.com/blogs/recipes/rice-cake-wrapping-and-recipe)
