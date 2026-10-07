@@ -5,6 +5,54 @@ permalink: /cycling/food/bikepacking
 tags: cycling
 ---
 
+<style>
+.food-table {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid #cbd5db;
+  border-radius: 8px;
+}
+.food-table:focus-visible {
+  outline: 3px solid #268bd2;
+  outline-offset: 3px;
+}
+.food-table table {
+  width: 100%;
+  min-width: 28rem;
+  border-collapse: collapse;
+  color: #263f49;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+.food-table table * { font-family: system-ui, sans-serif; }
+.food-table th, .food-table td {
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid #dce3e7;
+  vertical-align: middle;
+}
+.food-table th {
+  background: #eaf0f3;
+  color: #173844;
+  font-weight: 650;
+  text-align: left;
+}
+.food-table th + th, .food-table td + td { border-left: 1px solid #dce3e7; }
+.food-table tbody tr:nth-child(even) { background: #f5f8fa; }
+.food-table tbody tr:last-child td { border-bottom: 0; }
+.food-table strong { color: inherit; font-weight: 650; }
+.food-table--menu table { min-width: 40rem; }
+.food-table--menu th:first-child { width: 36%; }
+.food-table--menu td:not(:first-child),
+.food-table--totals td:not(:first-child) { white-space: nowrap; }
+.food-table--totals tbody tr:first-child { background: #e7f3ef; }
+.food-table--totals th:first-child { width: 40%; }
+.food-table-hint { display: none; }
+@media (max-width: 40rem) {
+  .food-table-hint { display: block; font-size: 1rem; }
+}
+</style>
+
 [Cycling food and nutrition](/cycling/nutrition)
 
 ## Bikepacking food
@@ -21,10 +69,14 @@ will provide the variety.
 
 ### Recipes
 
+<div class="food-table" role="region" aria-label="Recipes" tabindex="0" markdown="1">
+
 | Recipe | Dry weight per serving | Energy per serving |
 |---|---:|---:|
 | [Campsite overnight oats](/cycling/food/bikepacking/overnight-oats) | 320 g | About 1,261 kcal |
 | [Jus' Sugs](/cycling/nutrition#jus-sugs) | 60 g carbohydrate mix | About 240 kcal |
+
+</div>
 
 Food Calories are recorded as kcal. Dry weights exclude added water and packaging.
 Energy estimates use the ingredient values listed with each recipe, so they can
@@ -37,18 +89,36 @@ two Veloforte bars, one pack of Veloforte energy chews, one Veloforte energy
 gel, two cheese strings and 120 g of Jus' Sugs as two 60 g servings.** Day 2 also
 includes one packet of Jell-O instant pudding.
 
-| Food | Day 1 | Day 2 | Day 3 | Approx. kcal per listed daily portion |
-|---|---|---|---|---:|
+<p class="food-table-hint">Swipe or scroll sideways to see all columns.</p>
+
+<div class="food-table food-table--menu" role="region" aria-label="Food quantities for each day" tabindex="0" markdown="1">
+
+| Food | Day 1 | Day 2 | Day 3 | kcal |
+|---|:---:|:---:|:---:|---:|
 | [Overnight oats](/cycling/food/bikepacking/overnight-oats) | 1 serving | 1 serving | 1 serving | 1,261 |
 | Veloforte bars | 2 | 2 | 2 | 466 |
 | Veloforte energy chews | 1 pack | 1 pack | 1 pack | 172 |
 | Veloforte energy gel | 1 | 1 | 1 | 107 |
 | Cheese strings | 2 | 2 | 2 | 160 |
 | [Jus' Sugs](/cycling/nutrition#jus-sugs) | 2 × 60 g | 2 × 60 g | 2 × 60 g | 480 |
-| Jell-O instant pudding | — | 1 packet | — | 360, dry mix only |
-| **Accounted for** | **2,646 kcal** | **3,006 kcal** | **2,646 kcal** | |
-| **Still to allocate** | **2,354 kcal** | **1,994 kcal** | **2,354 kcal** | |
-| **Daily target** | **5,000 kcal** | **5,000 kcal** | **5,000 kcal** | |
+| Jell-O instant pudding | — | 1 packet | — | 360 |
+
+</div>
+
+The kcal column is the approximate energy for the quantity shown on a day when
+that food is included. Pudding is counted as dry mix only.
+
+#### Daily energy (kcal)
+
+<div class="food-table food-table--totals" role="region" aria-label="Daily calorie totals" tabindex="0" markdown="1">
+
+| | Day 1 | Day 2 | Day 3 |
+|---|---:|---:|---:|
+| **Accounted for** | **2,646** | **3,006** | **2,646** |
+| Still to allocate | 2,354 | 1,994 | 2,354 |
+| Daily target | 5,000 | 5,000 | 5,000 |
+
+</div>
 
 Lunch, dinner and any additional snacks or drinks still need filling in. The
 Day 2 total excludes milk for the pudding; count that when its quantity is set.
@@ -59,12 +129,16 @@ Flavours and pack sizes differ. These ranges come from the manufacturer values
 checked on **6 October 2026**; the averages give each listed flavour/size equal
 weight and are rounded to whole kcal before use in the menus.
 
-| Item | Serving used | Approx. kcal range | Approx. average kcal |
+<div class="food-table" role="region" aria-label="Veloforte calorie estimates" tabindex="0" markdown="1">
+
+| Item | Serving used | kcal range | Average kcal |
 |---|---|---:|---:|
 | [Energy bar](https://veloforte.com/pages/mixed-energy-bars-nutritionals) | 1 × 55 g bar; 6 flavours | 221–255 | 233 |
 | [Energy chews](https://veloforte.com/pages/mixed-chews-nutritionals) | 1 × 50 g pack; 5 flavours | 167–179 | 172 |
 | [Energy gel](https://veloforte.com/products/riba-natural-energy-gel) | 1 whole gel; 7 options, 33–67 g | 89–182 | 107 |
 | **Daily Veloforte food** | **2 bars + 1 chew pack + 1 gel** | **698–871** | **745** |
+
+</div>
 
 The bar average covers Zenzero, Classico, Ciocco, Avanti, Di Bosco and Mocha;
 the chew average covers Fresco, Citro, Amaro, Nero and Mela. Gel values cover
@@ -114,6 +188,8 @@ separately added salt do not add calories.
 
 ### Three-day quantities so far
 
+<div class="food-table" role="region" aria-label="Three-day packing quantities" tabindex="0" markdown="1">
+
 | Item | Three-day quantity |
 |---|---|
 | Oats breakfast | 3 × 320 g dry servings: 750 g oats, 75 g powdered peanut butter, 135 g powdered milk |
@@ -123,6 +199,8 @@ separately added salt do not add calories.
 | Cheese strings | 6 sticks |
 | Jus' Sugs | 6 × 60 g servings: 360 g carbohydrate mix (about 200 g maltodextrin and 160 g fructose) |
 | Jell-O instant pudding | 1 packet for Day 2, plus preparation milk to account for |
+
+</div>
 
 This accounts for about **8,297 kcal** of the **15,000 kcal** three-day target,
 before adding the pudding milk. Totals use the unrounded oats calculation and
