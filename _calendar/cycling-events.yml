@@ -127,7 +127,7 @@ events:
 - summary: West Texas Showdown
   begin: 2026-12-04
   end: 2026-12-06
-  location:  Terlingua, TX
+  location: Terlingua, TX
   urls:
   - https://texasshowdownseries.com/west-texas-showdown/
 - summary: Picketpost Punisher
@@ -147,6 +147,7 @@ events:
   - https://dustyroadrunner.weebly.com/november-8th---quebradas-desert-kraken.html
 - summary: Kentucky Camp Charity Ride
   begin: 2026-10-24
+  attending: false
   location: Arizona
   series: Arizona Endurance Series
   urls:
@@ -161,12 +162,14 @@ events:
 - summary: Coconino Stage Bikepack
   begin: 2026-10-09
   end: 2026-10-12
+  attending: false
   location: Arizona
   series: Arizona Endurance Series
   urls:
   - https://rockyroad5050.wordpress.com/5-coconino-250-and-350/
 - summary: Jemez Loupes
   begin: 2026-10-03
+  attending: false
   location: Jemez Mountains (FR69 area), NM (https://maps.app.goo.gl/dFX25UJecM311bBE9)
   geo:
     lat: 35.9993171
@@ -203,6 +206,7 @@ events:
   - https://www.mrhi.org/poker-ride--glide.html
 - summary: 'Colorado Trail Classic (CTC)'
   begin: 2026-09-06
+  attending: false
   location: Colorado
   series: Colorado Endurance Series
   urls:
