@@ -21,6 +21,13 @@ series:
 events:
 
 ### 2027
+- summary: Vapor Trail 125
+  begin: 2027-09-11
+  end: 2027-09-12
+  location: Salida, CO
+  description: A wild ride that will push you to your physical and mental limits!
+  urls:
+  - https://vaportrail125.com/
 - summary: Summit Classic
   begin: 2027-08-14
   location: Arapahoe Basin Ski Area, CO
