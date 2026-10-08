@@ -75,7 +75,7 @@ will provide the variety.
 |---|---:|---:|
 | [Campsite overnight oats](/cycling/food/bikepacking/overnight-oats) | 320 g dry | About 1,261 kcal |
 | [Jus' Sugs](/cycling/nutrition#jus-sugs) | 60 g carbohydrate mix | About 240 kcal |
-| [Vegetables with rice and quinoa](#vegetables-with-rice-and-quinoa) | 240 g cooked grains + 30 g dried veg | About 540 kcal |
+| [Vegetables with rice and quinoa](#vegetables-with-rice-and-quinoa) | 480 g cooked grains + 30 g dried veg | About 980 kcal |
 
 </div>
 
@@ -89,15 +89,16 @@ be adjusted for different products.
 These are menus in progress. **Every day includes one serving of overnight oats,
 two Veloforte bars, one pack of Veloforte energy chews, one Veloforte energy
 gel, two cheese strings, 120 g of Jus' Sugs as two 60 g servings, one handful
-of savoury trail mix, two handfuls of chocolate-and-nut trail mix and one US
-quart of Drinking milk.** Day 2 also includes one packet of Jell-O instant
-pudding.
+of savoury trail mix and two handfuls of chocolate-and-nut trail mix.**
+Days 1 and 3 have one US quart of **Drinking milk** each. On Day 2, that full
+quart becomes **pudding milk**, mixed with **one packet of Jell-O instant
+pudding** and counted once.
 
 **Days 1 and 3 each have one flavoured tuna packet shared between two wraps.
 Day 2 has peanut butter shared between two wraps.** The provisional peanut
 butter portion below is one 32 g serving from a squeeze pack.
 
-Dinner on every day is **one rice-and-quinoa pouch with rehydrated vegetables**,
+Dinner on every day is **two rice-and-quinoa pouches with rehydrated vegetables**,
 using 30 g dried vegetables per meal as a planning portion.
 
 <p class="food-table-hint">Swipe or scroll sideways to see all columns.</p>
@@ -114,17 +115,19 @@ using 30 g dried vegetables per meal as a planning portion.
 | [Jus' Sugs](/cycling/nutrition#jus-sugs) | 2 × 60 g | 2 × 60 g | 2 × 60 g | 480 |
 | [Savoury trail mix](#trail-mix-estimates) | 30 g | 30 g | 30 g | 170 |
 | [Chocolate-and-nut trail mix](#trail-mix-estimates) | 60 g | 60 g | 60 g | 330 |
-| [Drinking milk](#drinking-milk) | 1 quart | 1 quart | 1 quart | 630 |
+| [Drinking milk](#drinking-milk) | 1 quart | — | 1 quart | 630 |
 | [Flavoured tuna wraps](#wrap-estimates) | 2 wraps | — | 2 wraps | 360 |
 | [Peanut butter wraps](#wrap-estimates) | — | 2 wraps | — | 470 |
-| [Vegetables, rice and quinoa](#vegetables-with-rice-and-quinoa) | 1 dinner | 1 dinner | 1 dinner | 540 |
-| Jell-O instant pudding | — | 1 packet | — | 360 |
+| [Vegetables, rice and quinoa](#vegetables-with-rice-and-quinoa) | 1 dinner | 1 dinner | 1 dinner | 980 |
+| [Jell-O + pudding milk](#pudding-with-milk) | — | 1 batch | — | 990 |
 
 </div>
 
 The kcal column is the approximate energy for the quantity shown on a day when
 that food is included. Trail mix uses **30 g per handful**: one savoury and two
-chocolate-and-nut handfuls per day. Pudding is counted as dry mix only.
+chocolate-and-nut handfuls per day. The pudding batch includes **one dry packet
+and the full quart of pudding milk**; there is no separate Drinking milk on
+Day 2.
 
 #### Daily energy (kcal)
 
@@ -132,16 +135,16 @@ chocolate-and-nut handfuls per day. Pudding is counted as dry mix only.
 
 | | Day 1 | Day 2 | Day 3 |
 |---|---:|---:|---:|
-| **Accounted for** | **4,676** | **5,146** | **4,676** |
-| Below target | 324 | 0 | 324 |
-| Above target | 0 | 146 | 0 |
+| **Accounted for** | **5,116** | **5,586** | **5,116** |
+| Above target | 116 | 586 | 116 |
 | Daily target | 5,000 | 5,000 | 5,000 |
 
 </div>
 
-Days 1 and 3 have about **324 kcal left to allocate**; Day 2 is already about
-**146 kcal above the target**. The Day 2 total excludes milk for the pudding;
-count that when its quantity is set, then balance portions across the menus.
+Days 1 and 3 are about **116 kcal above the target**; Day 2 is about **586 kcal
+above**. These totals include the larger dinner and all allocated milk, with
+Day 2's milk counted in the pudding. Portions can be balanced once the menus
+have been tried.
 
 ### Veloforte planning values
 
@@ -186,8 +189,8 @@ contain **75 mg caffeine** per pack.
 
 The daily calculation is **2 × 233 + 172 + 107 = 745 kcal** of Veloforte food.
 The overall daily totals above also include the oats, cheese strings, Jus' Sugs,
-trail mixes, Drinking milk, that day's wraps and dinner. Day 2 adds 360 kcal
-for the dry pudding packet.
+trail mixes, that day's milk, wraps and dinner. Day 2's 990 kcal pudding batch
+includes the 630 kcal milk allocation and the 360 kcal dry pudding packet.
 
 ### Trail mix estimates
 
@@ -221,12 +224,24 @@ at **80 kcal and 6 g protein per stick**: two give **160 kcal and 12 g protein**
 This is a reference product for the calculations; adjust for the cheese packed
 and follow its storage instructions.
 
+#### Pudding with milk
+
+On Day 2, **one packet of Jell-O instant pudding uses the full US quart of milk
+allocated to that day**. Its **126 g whole milk powder supplies 630 kcal**;
+this replaces that day's Drinking milk allocation.
+
 The pudding estimate uses a [3.4 oz Jell-O vanilla instant pudding packet](https://www.kraftheinz.com/jell-o/products/00043000204337-vanilla-instant-pudding-pie-filling-mix):
 four labelled servings at 90 kcal give **360 kcal for the whole dry packet**,
-with **92 g carbohydrate**. The packet calls for **2 cups of cold milk**. Milk
-powder and water for preparation are additional to the dry packet, the
-breakfast ingredients and Drinking milk; their quantities and calories still
-need adding.
+with **92 g carbohydrate**. The whole batch is therefore **360 + 630 = 990 kcal**,
+including the milk exactly once.
+
+Reconstitute and chill the milk before mixing in the packet. The packet's
+standard directions call for **2 cups of cold milk**; this plan deliberately
+uses **4 cups (one US quart) with one packet**. Expect a thinner result that
+may not set like the standard recipe, and try the consistency before the trip.
+Keep the milk and prepared pudding chilled as described below.
+
+#### Jus' Sugs
 
 [Jus' Sugs](/cycling/nutrition#jus-sugs) supplies approximately **240 kcal per
 60 g carbohydrate serving**, or **480 kcal for the daily 120 g**. Water and any
@@ -234,9 +249,11 @@ separately added salt do not add calories.
 
 ### Drinking milk
 
-Every day includes **one US quart (about 946 mL) of Drinking milk**, made from
-approximately **126 g whole milk powder**, supplying **630 kcal**. This is a
-separate allocation from the powdered milk in the oats and any milk for pudding.
+**Days 1 and 3 each include one US quart (about 946 mL) of Drinking milk**,
+made from approximately **126 g whole milk powder**, supplying **630 kcal**.
+On **Day 2**, the same quantity becomes **pudding milk**, already included in
+the pudding batch's calories. The powdered milk in the oats is a separate
+breakfast ingredient.
 
 The reference is [Hoosier Hill Farm Whole Milk Powder](https://hoosierhillfarm.com/products/whole-milk-powder),
 checked on **7 October 2026**. Its quart directions use **1 cup plus 2 tablespoons
@@ -249,7 +266,7 @@ different quantities; follow the powder's own mixing directions and label.
 For drinking on the go, pack the powder dry and mix smaller portions when
 needed. This reference powder is not instant and mixes best with warm drinking
 water and thorough stirring; the maker recommends chilling overnight for the
-best texture. If carrying prepared Drinking milk, keep it at **4°C / 40°F or
+best texture. Keep prepared Drinking milk, pudding milk and pudding at **4°C / 40°F or
 below**. Otherwise, consume within **2 hours**, or **1 hour above 32°C / 90°F**,
 following the [FDA's outdoor food guidance](https://www.fda.gov/food/buy-store-serve-safe-food/handling-food-safely-while-eating-outdoors).
 
@@ -280,17 +297,18 @@ but are excluded from the menu's calories.
 
 ### Vegetables with rice and quinoa
 
-A simple dinner for **each of the three days**: one ready-cooked rice-and-quinoa
-pouch with **30 g dried mixed vegetables**, rehydrated at camp. This planning
-portion supplies about **540 kcal** and weighs **270 g before adding water**,
-excluding packaging. The grains are already hydrated; only the vegetables are
+A dinner of approximately **1,000 kcal for each of the three days**: two
+ready-cooked rice-and-quinoa pouches with **30 g dried mixed vegetables**,
+rehydrated at camp. This planning portion supplies about **980 kcal** and
+weighs **510 g before adding water**, excluding packaging. The grains are
+already hydrated; only the vegetables are
 packed dry.
 
 Reference products checked on **7 October 2026**:
 
 - [Seeds of Change Quinoa & Brown Rice with Garlic](https://www.seedsofchange.com/products/whole-grain-brown-rice/seeds-change-certified-organic-quinoa-brown-rice-garlic-85-oz-pouch):
   **one whole 240 g pouch supplies 440 kcal**. Use the whole-pouch value, not
-  the smaller cup serving on the label.
+  the smaller cup serving on the label. **Two pouches give 480 g and 880 kcal**.
 - [Harmony House dried vegetable mix](https://www.harmonyhousefoods.com/products/dried-vegetable-soup-mix):
   **30 g dry**. Its [nutrition sheet](https://cdn.shopify.com/s/files/1/0628/2857/6862/files/Vegetable_Soup_Mix_60d919b8-b5a6-4022-bfd3-a1868e306fb7.pdf)
   lists 330.76 kcal per 100 g dry: 30 × 330.76 ÷ 100 ≈ 99 kcal, rounded to
@@ -302,8 +320,9 @@ Bring a stove, fuel, cooking pot with lid and spoon. At camp:
    [rehydration directions](https://cdn.shopify.com/s/files/1/0628/2857/6862/files/2026_Rehydration_Chart.pdf)
    start with two volumes of water for one volume of dried vegetables;
    simmer for about **10–15 minutes**, adding water if needed until tender.
-2. Open the grain pouch and empty it into the pot. Stir and heat thoroughly.
-   The pouch's stovetop directions use **2 tablespoons (about 30 mL) water**;
+2. Open both grain pouches and empty them into the pot. Stir and heat thoroughly.
+   The stovetop directions use 2 tablespoons of water per pouch, so allow
+   **4 tablespoons (about 60 mL) water for the two pouches**;
    use remaining vegetable cooking water or add a little more as needed.
 3. Season to taste and eat the whole portion. Any added oil or sauce needs
    counting separately. Try the meal before the trip to settle the water,
@@ -327,18 +346,21 @@ products packed.
 | Jus' Sugs | 6 × 60 g servings: 360 g carbohydrate mix (about 200 g maltodextrin and 160 g fructose) |
 | Savoury trail mix | 3 handfuls, about 90 g |
 | Chocolate-and-nut trail mix | 6 handfuls, about 180 g |
-| Drinking milk | 3 × 126 g whole milk powder: 378 g, making about 3 US quarts (2.84 L) |
+| Drinking milk | 2 × 126 g whole milk powder: 252 g, making about 2 US quarts for Days 1 and 3 |
+| Pudding milk | 126 g whole milk powder, making about 1 US quart for Day 2 |
 | Flour wraps | 6 × 50 g wraps: 300 g; 4 for tuna and 2 for peanut butter |
 | Flavoured tuna packets | 2 × 74 g packets: 148 g, for Days 1 and 3 |
 | Peanut butter squeeze pack | 1 × 32 g serving for Day 2 (provisional pack size) |
-| Rice-and-quinoa pouches | 3 × 240 g ready-cooked pouches: 720 g |
+| Rice-and-quinoa pouches | 6 × 240 g ready-cooked pouches: 1,440 g |
 | Dried mixed vegetables | 3 × 30 g portions: 90 g |
-| Jell-O instant pudding | 1 packet for Day 2, plus preparation milk to account for |
+| Jell-O instant pudding | 1 packet for Day 2; its milk is the pudding milk row above |
 
 </div>
 
-This accounts for about **14,497 kcal** of the **15,000 kcal** three-day target,
-before adding the pudding milk. Totals use the unrounded oats calculation and
+This accounts for about **15,817 kcal**, around **817 kcal above** the
+**15,000 kcal** three-day target, including pudding milk. The milk powder for
+Drinking milk and pudding milk totals **378 g**, in addition to the **135 g**
+already packed in the oats. Totals use the unrounded oats calculation and
 the rounded Veloforte, trail mix and vegetable estimates; displayed day totals may differ
 by 1 kcal when summed because of rounding. The two trail mixes add about
 **270 g and 1,500 kcal** across the trip.
@@ -353,6 +375,6 @@ equipment needs, preparation details, and feedback from trying it. Variations
 will have their own quantities and calorie totals.
 
 Next steps are to establish the oats water quantity and container size, try the
-dinner, settle the peanut butter pack size, add the pudding milk and balance
+dinner and pudding consistency, settle the peanut butter pack size and balance
 the day totals. I'll then complete the three-day shopping and packing list,
 including total food weight, and record flavour variations.
