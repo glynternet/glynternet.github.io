@@ -1,10 +1,10 @@
 # Route App Module Extraction
 
-`elm/route/src/Main.elm` is ~5,800 lines. The plan is not to break it up for its own sake —
+`elm/route/src/Main.elm` is ~5,400 lines. The plan is not to break it up for its own sake —
 the win is testability and blast radius, so each extraction below is worth doing only where it
 leaves behind something that can be reasoned about, or tested, on its own.
 
-Four are already done. `elm/shared/src/` now holds `Wallclock`, `Format`, `Ui` and `Pace` alongside
+All five are done. `elm/shared/src/` now holds `Wallclock`, `Format`, `Ui`, `Pace` and `Route` alongside
 the older `GpxApi`, `Location` and `Zipper`. `elm/route/elm.json`'s `source-directories`
 already points at `../shared/src`, so **a new module dropped in there needs no wiring**.
 
@@ -47,45 +47,20 @@ updates, midnight/multi-day/year boundaries and the existing saved source names.
 times without a timezone database, so a span crossing a daylight-saving change is off by
 that hour. This remains documented on `Pace.elapsedSinceRideStart`.
 
-## 5. `Route` — the track model and the point vocabulary
+## ~~5. `Route` — the track model and the point vocabulary~~ ✅ Done
 
-**Impact:** High | **Effort:** High
+`elm/shared/src/Route.elm` now owns the editable track/waypoint types, `PointRef`, effective
+edits, stable indexed selections, point resolution and saved track encoding/decoding. `Main`
+passes selection predicates to `Route.selectableWaypoints`, and passes position and location
+explicitly to `Route.selectedWaypointFor`. The module has no dependency on app `State` or
+`Msg`; live-view filtering, selection correction and user-facing notices remain in `Main`.
 
-`PointRef` (Main.elm:188) is the vocabulary for "a point on the route" — a waypoint, the
-current position, or either end of the track — and every flow that asks the user to choose one
-goes through it. It is the single most reused idea in the app and the best candidate for a
-module of its own.
+The stored track format is unchanged, including compact rounded trackpoints and support for
+the older named-field encoding and waypoints without `created`. `RouteTest.elm` covers literal
+saved-format fixtures, edit/creation/deletion round trips, multi-track zipper storage, point
+resolution, category/off-route selection and stable waypoint indices.
 
-**The blocker:** `resolvePointRef` (:205) needs `EditableTrack`, which is the app's core track
-model. Extracting `PointRef` therefore means extracting the track model with it:
-
-| Type / function | Main.elm | Call sites in Main |
-| --- | --- | --- |
-| `EditableTrack` | 153 | 25 |
-| `EditableWaypoint` | 160 | 11 |
-| `WaypointOverrides` | 334 | — |
-| `PointRef` | 188 | 27 |
-| `resolvePointRef` | 205 | 9 |
-| `effectiveWaypoint` / `effectiveWaypoints` | 359 / 391 | 6 |
-| `selectableWaypoints` | 1997 | 10 |
-
-Plus `refDistance` (:254), `shiftPointRef` (:263), `formatPointRef` / `parsePointRef`
-(:302, :318), `selectedWaypointFor` (:2009), `sortPointRefs` (:749),
-`editableTrackFromGpxTrack` (:346), `waypointDisplayName` (:5323), the three point names
-(:283–294), and the `encodeEditableTrack` / `editableTrackDecoder` pair (:5563, :5591).
-
-**What to do:** move the lot into a `Route` module (or a `Route.Track` / `Route.PointRef`
-pair) in `elm/shared/src/`. Two snags to expect:
-
-- `selectableWaypoints` and `selectedWaypointFor` take `State` today, only to read the
-  category-filter fields. Same treatment as item 4: pass what they actually need.
-- `unresolvedPointNotice` (:2023) is copy, not model. Leave it in `Main`.
-
-**Why it is worth the effort:** the encode/decode pair is the format of everything the app
-persists (see "Where route state is saved" in `CLAUDE.md`, including the compact trackpoint
-encoding that keeps long routes inside browser storage limits). Round-tripping that is
-currently untestable, and a regression in it silently breaks every saved route and every
-shared state URL.
-
-**Do this one on its own**, with nothing else in the commit, and check a real GPX still loads,
-saves and reloads afterwards — not just that it compiles.
+Browser validation uses a real GPX (`data/nosoco24-0.gpx`, 3,112 trackpoints) with the actual
+Elm bundle, WASM and IndexedDB code from `_layouts/route.html`. It verifies that the extracted
+app restores a state saved by the previous build, persists edits across a reload, and writes
+a state the previous build can still read. Rebuild and commit `data/route.js` with the source.

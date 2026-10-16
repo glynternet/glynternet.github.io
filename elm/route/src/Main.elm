@@ -17,6 +17,7 @@ import Json.Encode
 import List.Extra
 import Location
 import Pace
+import Route exposing (EditableTrack, EditableWaypoint, PointRef(..))
 import RouteFilename
 import String
 import Svg
@@ -151,259 +152,6 @@ type ActiveSplitMode
     = EquidistantMode
     | PointsMode
     | CategoriesMode
-
-
-type alias EditableTrack =
-    { trackpoints : List GpxApi.TrackPoint
-    , editableWaypoints : List EditableWaypoint
-    , gain : Float
-    , loss : Float
-    }
-
-
-type alias EditableWaypoint =
-    { original : GpxApi.Waypoint
-    , deleted : Bool
-    , created : Bool
-    , overrides : WaypointOverrides
-    }
-
-
-{-| A point on the route the user has picked out: one of the track's waypoints, wherever they
-are, or either end of the route.
-
-Every flow that asks the user to choose a point on the route stores one of these, so the
-same selector serves all of them. `AtRoutePosition` resolves against `state.position`,
-which may be unset — hence the `Maybe` on the resolvers below. It is the point on the route
-nearest the rider, not the rider: a GPS fix off the route resolves to what it matched, and
-the gap is the resolved waypoint's off-route distance.
-
-`AtWaypoint` indexes `editableWaypoints`, deliberately including the deleted ones: that index
-is stable, whereas a position in the resolved-and-filtered list shifts under the user as soon
-as an earlier waypoint is marked deleted or filtered out. It is also the index space the
-edit flows already maintain — see `removeWaypointAt`, `WaypointDeleted` and `ResetWaypoints`.
-
-`AtRouteStart` / `AtRouteEnd` are the ends of the track itself, so they stand whether or not
-the GPX puts a waypoint there and whatever the waypoint filters hide. Only the flows that
-compare two arbitrary points offer them — see `viewPointSelector`'s `offerRouteEnds` for why
-the split and cuesheet selectors do not.
-
--}
-type PointRef
-    = AtWaypoint Int
-    | AtRoutePosition
-    | AtRouteStart
-    | AtRouteEnd
-
-
-{-| Resolves a reference to the waypoint it stands for, or Nothing when it no longer stands
-for one — a deleted waypoint, or `AtRoutePosition` with no position set. A position becomes a
-synthetic waypoint, carrying the cumulative climb to there and, when a GPS fix is what set
-the position, how far off route that fix is. The route's own ends become synthetic waypoints
-too, with no categories of their own — nothing in the file gave them any.
-
-Returning a `GpxApi.Waypoint` rather than a bespoke record is what lets the cuesheet and
-elevation profile treat a chosen position exactly like a chosen waypoint.
-
--}
-resolvePointRef : Maybe Float -> Maybe Location.LocationState -> EditableTrack -> PointRef -> Maybe GpxApi.Waypoint
-resolvePointRef position location track ref =
-    case ref of
-        AtWaypoint i ->
-            List.Extra.getAt i track.editableWaypoints
-                |> Maybe.andThen
-                    (\ew ->
-                        if ew.deleted then
-                            Nothing
-
-                        else
-                            Just (effectiveWaypoint track.trackpoints ew)
-                    )
-
-        AtRoutePosition ->
-            position
-                |> Maybe.andThen
-                    (\pos ->
-                        cumulativeGainLossAtDistance pos track.trackpoints
-                            |> Result.toMaybe
-                            |> Maybe.map
-                                (\( gain, loss ) ->
-                                    GpxApi.Waypoint pos
-                                        routePositionName
-                                        []
-                                        gain
-                                        loss
-                                        (location |> Maybe.map .offRouteDistance |> Maybe.withDefault 0)
-                                )
-                    )
-
-        AtRouteStart ->
-            Just (GpxApi.Waypoint 0 routeStartName [] 0 0 0)
-
-        AtRouteEnd ->
-            Just
-                (GpxApi.Waypoint (lastTrackpointDistance track.trackpoints)
-                    routeEndName
-                    []
-                    track.gain
-                    track.loss
-                    0
-                )
-
-
-{-| The route distance a reference stands for, for the flows that only need to place the
-point along the route. Defined through `resolvePointRef` so there is a single answer to what
-an `AtWaypoint` index means; a GPS fix cannot move a point along the route, so none is needed.
--}
-refDistance : Maybe Float -> EditableTrack -> PointRef -> Maybe Float
-refDistance position track =
-    resolvePointRef position Nothing track >> Maybe.map .distance
-
-
-{-| Remaps a reference after the waypoint at `removedIndex` has been dropped from
-`editableWaypoints`, which shifts every later index down by one. Only `AtWaypoint` is
-addressed by index, so every other reference survives untouched.
--}
-shiftPointRef : Int -> PointRef -> PointRef
-shiftPointRef removedIndex ref =
-    case ref of
-        AtWaypoint i ->
-            if i > removedIndex then
-                AtWaypoint (i - 1)
-
-            else
-                ref
-
-        AtRoutePosition ->
-            ref
-
-        AtRouteStart ->
-            ref
-
-        AtRouteEnd ->
-            ref
-
-
-routePositionName : String
-routePositionName =
-    "Position on route"
-
-
-routeStartName : String
-routeStartName =
-    "Start of route"
-
-
-routeEndName : String
-routeEndName =
-    "End of route"
-
-
-{-| The stored form of a reference: a waypoint as its bare index, everything else as a word no
-index can collide with. Doubles as the option value in `viewPointSelector`, and as the suffix
-after the colon in a `TotalDistanceDisplay` — so it must stay colon-free.
--}
-formatPointRef : PointRef -> String
-formatPointRef ref =
-    case ref of
-        AtWaypoint idx ->
-            String.fromInt idx
-
-        AtRoutePosition ->
-            "position"
-
-        AtRouteStart ->
-            "start"
-
-        AtRouteEnd ->
-            "end"
-
-
-parsePointRef : String -> Maybe PointRef
-parsePointRef s =
-    case s of
-        "position" ->
-            Just AtRoutePosition
-
-        "start" ->
-            Just AtRouteStart
-
-        "end" ->
-            Just AtRouteEnd
-
-        _ ->
-            String.toInt s |> Maybe.map AtWaypoint
-
-
-type alias WaypointOverrides =
-    { name : Maybe String
-    , distance : Maybe Float
-    , categories : Maybe (List String)
-    }
-
-
-emptyOverrides : WaypointOverrides
-emptyOverrides =
-    WaypointOverrides Nothing Nothing Nothing
-
-
-editableTrackFromGpxTrack : GpxApi.Track -> EditableTrack
-editableTrackFromGpxTrack track =
-    { trackpoints = track.trackpoints
-    , editableWaypoints = List.map (\w -> EditableWaypoint w False False emptyOverrides) track.waypoints
-    , gain = track.gain
-    , loss = track.loss
-    }
-
-
-effectiveDistance : EditableWaypoint -> Float
-effectiveDistance ew =
-    Maybe.withDefault ew.original.distance ew.overrides.distance
-
-
-effectiveWaypoint : List GpxApi.TrackPoint -> EditableWaypoint -> GpxApi.Waypoint
-effectiveWaypoint trackpoints ew =
-    let
-        -- A distance override relocates the waypoint along the route, so its
-        -- cumulative gain/loss must be re-read at the new position; keeping the
-        -- original values would report climb/descent for where it used to be.
-        ( gain, loss ) =
-            case ew.overrides.distance of
-                Just overriddenDistance ->
-                    cumulativeGainLossAtDistance overriddenDistance trackpoints
-                        |> Result.withDefault ( ew.original.gain, ew.original.loss )
-
-                Nothing ->
-                    ( ew.original.gain, ew.original.loss )
-    in
-    { distance = effectiveDistance ew
-    , name = Maybe.withDefault ew.original.name ew.overrides.name
-    , categories = Maybe.withDefault ew.original.categories ew.overrides.categories
-    , gain = gain
-    , loss = loss
-    , offRoute =
-        case ew.overrides.distance of
-            -- An overridden distance pins the waypoint onto the route at
-            -- that point, so it is no longer off-route.
-            Just _ ->
-                0
-
-            Nothing ->
-                ew.original.offRoute
-    }
-
-
-effectiveWaypoints : EditableTrack -> List GpxApi.Waypoint
-effectiveWaypoints track =
-    List.filterMap
-        (\ew ->
-            if ew.deleted then
-                Nothing
-
-            else
-                Just (effectiveWaypoint track.trackpoints ew)
-        )
-        track.editableWaypoints
 
 
 type alias ElevationProfileOptions =
@@ -701,11 +449,6 @@ type Msg
 -- UPDATE
 
 
-sortPointRefs : Maybe Float -> EditableTrack -> List PointRef -> List PointRef
-sortPointRefs position track =
-    List.sortBy (refDistance position track >> Maybe.withDefault 0)
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
@@ -800,7 +543,7 @@ update msg model =
                                 (updateState
                                     { s
                                         | tracks =
-                                            case Zipper.fromList <| List.map editableTrackFromGpxTrack gpxTracks of
+                                            case Zipper.fromList <| List.map Route.editableTrackFromGpxTrack gpxTracks of
                                                 Nothing ->
                                                     Error "No tracks available in uploaded GPX"
 
@@ -958,10 +701,10 @@ update msg model =
                         distance =
                             s.position
                                 |> Maybe.withDefault 0
-                                |> clamp 0 (lastTrackpointDistance tracks.current.trackpoints)
+                                |> clamp 0 (Route.lastTrackpointDistance tracks.current.trackpoints)
 
                         ( gain, loss ) =
-                            cumulativeGainLossAtDistance distance tracks.current.trackpoints
+                            Route.cumulativeGainLossAtDistance distance tracks.current.trackpoints
                                 |> Result.withDefault ( 0, 0 )
                     in
                     updateSplitAndStore
@@ -984,7 +727,7 @@ update msg model =
                                                                     }
                                                                  , deleted = False
                                                                  , created = True
-                                                                 , overrides = emptyOverrides
+                                                                 , overrides = Route.emptyOverrides
                                                                  }
                                                                ]
                                                 }
@@ -1008,7 +751,7 @@ update msg model =
                                 | tracks =
                                     Loaded <|
                                         Zipper.updateCurrent
-                                            (\current -> updateEditableWaypoint current i (\ew -> updateOverrides (\o -> { o | name = Just name }) ew))
+                                            (\current -> Route.updateEditableWaypoint current i (\ew -> Route.updateOverrides (\o -> { o | name = Just name }) ew))
                                             tracks
                             }
                         )
@@ -1025,7 +768,7 @@ update msg model =
                                 | tracks =
                                     Loaded <|
                                         Zipper.updateCurrent
-                                            (\current -> updateEditableWaypoint current i (\ew -> updateOverrides (\o -> { o | distance = Just dist }) ew))
+                                            (\current -> Route.updateEditableWaypoint current i (\ew -> Route.updateOverrides (\o -> { o | distance = Just dist }) ew))
                                             tracks
                             }
                         )
@@ -1050,7 +793,7 @@ update msg model =
                                     | tracks =
                                         Loaded <|
                                             Zipper.updateCurrent
-                                                (\current -> updateEditableWaypoint current i (\ew -> { ew | deleted = deleted }))
+                                                (\current -> Route.updateEditableWaypoint current i (\ew -> { ew | deleted = deleted }))
                                                 tracks
                                     , elevationProfile =
                                         { ep
@@ -1101,11 +844,11 @@ update msg model =
 
                         newTracks =
                             Zipper.updateCurrent
-                                (\current -> updateEditableWaypoint current i updateCats)
+                                (\current -> Route.updateEditableWaypoint current i updateCats)
                                 tracks
 
                         allEffectiveWaypoints =
-                            List.concatMap effectiveWaypoints (newTracks.prev ++ [ newTracks.current ] ++ newTracks.next)
+                            List.concatMap Route.effectiveWaypoints (newTracks.prev ++ [ newTracks.current ] ++ newTracks.next)
 
                         newFilteredCategories =
                             if add then
@@ -1179,7 +922,7 @@ update msg model =
                                     | tracks =
                                         Loaded <|
                                             Zipper.updateCurrent
-                                                (\current -> updateEditableWaypoint current i updateCats)
+                                                (\current -> Route.updateEditableWaypoint current i updateCats)
                                                 tracks
                                     , filteredCategories = newFilteredCategories
                                     , newCategoryInputs = Dict.remove i s.newCategoryInputs
@@ -1215,7 +958,7 @@ update msg model =
                                                         | editableWaypoints =
                                                             current.editableWaypoints
                                                                 |> List.filter (not << .created)
-                                                                |> List.map (\ew -> { ew | deleted = False, overrides = emptyOverrides })
+                                                                |> List.map (\ew -> { ew | deleted = False, overrides = Route.emptyOverrides })
                                                     }
                                                 )
                                                 tracks
@@ -1321,7 +1064,7 @@ update msg model =
                                 (updateState
                                     { s
                                         | elevationProfile =
-                                            { ep | splitPoints = sortPointRefs s.position tracks.current (ref :: ep.splitPoints) }
+                                            { ep | splitPoints = Route.sortPointRefs s.position tracks.current (ref :: ep.splitPoints) }
                                     }
                                 )
 
@@ -1342,7 +1085,7 @@ update msg model =
                         |> Maybe.map
                             (\tracks ->
                                 List.Extra.setAt splitListPos newRef ep.splitPoints
-                                    |> sortPointRefs s.position tracks.current
+                                    |> Route.sortPointRefs s.position tracks.current
                             )
                         |> Maybe.withDefault []
             in
@@ -1653,8 +1396,8 @@ requestSplitCmdWasm state =
         Loaded tracks ->
             let
                 filteredWaypoints =
-                    effectiveWaypoints tracks.current
-                        |> filterWaypoints (waypointPredicates state)
+                    Route.effectiveWaypoints tracks.current
+                        |> Route.filterWaypoints (waypointPredicates state)
 
                 -- "waypoints" is the WASM module's vocabulary, not ours:
                 -- elevation.SplitRequest is defined in github.com/glynternet/gpx, and the
@@ -1714,8 +1457,8 @@ computeLiveSplitFromState state =
                     tps |> List.filter (\tp -> tp.distance >= rangeStart && tp.distance <= rangeEnd)
 
                 segWps =
-                    effectiveWaypoints tracks.current
-                        |> filterWaypoints (waypointPredicates state)
+                    Route.effectiveWaypoints tracks.current
+                        |> Route.filterWaypoints (waypointPredicates state)
                         |> List.filter (\wp -> wp.distance >= rangeStart && wp.distance <= rangeEnd)
 
                 shift record =
@@ -1767,16 +1510,6 @@ withLiveSplit state =
 -- HELPERS
 
 
-updateEditableWaypoint : EditableTrack -> Int -> (EditableWaypoint -> EditableWaypoint) -> EditableTrack
-updateEditableWaypoint track i fn =
-    { track | editableWaypoints = List.Extra.updateAt i fn track.editableWaypoints }
-
-
-updateOverrides : (WaypointOverrides -> WaypointOverrides) -> EditableWaypoint -> EditableWaypoint
-updateOverrides fn ew =
-    { ew | overrides = fn ew.overrides }
-
-
 {-| Physically removes the waypoint at index `i` (used for permanently deleting a
 user-created waypoint). Dropping a list element shifts every later index down by
 one, so the index-based references into editableWaypoints must be remapped: the
@@ -1808,10 +1541,10 @@ removeWaypointAt i s =
                 shiftDisplay display =
                     case display of
                         ToPoint ref ->
-                            ToPoint (shiftPointRef i ref)
+                            ToPoint (Route.shiftPointRef i ref)
 
                         FromPoint ref ->
-                            FromPoint (shiftPointRef i ref)
+                            FromPoint (Route.shiftPointRef i ref)
 
                         other ->
                             other
@@ -1824,12 +1557,12 @@ removeWaypointAt i s =
                                 (\current -> { current | editableWaypoints = List.Extra.removeAt i current.editableWaypoints })
                                 tracks
                     , elevationProfile =
-                        { ep | splitPoints = ep.splitPoints |> List.filter ((/=) (AtWaypoint i)) |> List.map (shiftPointRef i) }
+                        { ep | splitPoints = ep.splitPoints |> List.filter ((/=) (AtWaypoint i)) |> List.map (Route.shiftPointRef i) }
                     , cuesheet = { cs | totalDistanceDisplay = shiftDisplay cs.totalDistanceDisplay }
                     , relative =
                         { rel
-                            | start = shiftPointRef i rel.start
-                            , end = shiftPointRef i rel.end
+                            | start = Route.shiftPointRef i rel.start
+                            , end = Route.shiftPointRef i rel.end
                         }
                     , newCategoryInputs =
                         s.newCategoryInputs
@@ -1849,18 +1582,6 @@ removeWaypointAt i s =
             s
 
 
-lastTrackpointDistance : List GpxApi.TrackPoint -> Float
-lastTrackpointDistance trackpoints =
-    List.Extra.last trackpoints
-        |> Maybe.map .distance
-        |> Maybe.withDefault 0
-
-
-unknownCategory : String
-unknownCategory =
-    ""
-
-
 startFinishCategory : String
 startFinishCategory =
     "Start/Finish"
@@ -1878,7 +1599,7 @@ categoryOptions saved =
                 options
                 (case categories of
                     [] ->
-                        [ unknownCategory ]
+                        [ Route.unknownCategory ]
 
                     _ ->
                         categories
@@ -1910,11 +1631,6 @@ availableWaypointCategories state =
             Dict.empty
 
 
-filterWaypoints : List (GpxApi.Waypoint -> Bool) -> List GpxApi.Waypoint -> List GpxApi.Waypoint
-filterWaypoints filters =
-    List.filter (\waypoint -> List.all (\filter -> filter waypoint) filters)
-
-
 {-| The filters that decide whether a waypoint exists as far as the user is concerned:
 category filtering and off-route hiding. Kept separate from the live-view window in
 `waypointPredicates` so that flows which pick a waypoint out of the whole route (the
@@ -1924,7 +1640,7 @@ waypointSelectionPredicates : State -> List (GpxApi.Waypoint -> Bool)
 waypointSelectionPredicates state =
     List.filterMap identity
         [ if state.categoryFilterEnabled then
-            Just (categoryPredicate state.filteredCategories)
+            Just (Route.categoryPredicate state.filteredCategories)
 
           else
             Nothing
@@ -1932,7 +1648,7 @@ waypointSelectionPredicates state =
             Nothing
 
           else
-            Just (offRoutePredicate state.offRouteThreshold)
+            Just (Route.offRoutePredicate state.offRouteThreshold)
         ]
 
 
@@ -1952,20 +1668,6 @@ waypointPredicates state =
            )
 
 
-categoryPredicate : Dict.Dict String Bool -> GpxApi.Waypoint -> Bool
-categoryPredicate categories w =
-    let
-        includeCategory cat =
-            Dict.get cat categories |> Maybe.withDefault True
-    in
-    case w.categories of
-        [] ->
-            includeCategory unknownCategory
-
-        cats ->
-            List.any includeCategory cats
-
-
 trimWaypointCategories : Dict.Dict String Bool -> List GpxApi.Waypoint -> List GpxApi.Waypoint
 trimWaypointCategories categories =
     List.map
@@ -1977,54 +1679,6 @@ trimWaypointCategories categories =
                 cats ->
                     { w | categories = List.filter (\cat -> Dict.get cat categories |> Maybe.withDefault True) cats }
         )
-
-
-offRoutePredicate : Float -> GpxApi.Waypoint -> Bool
-offRoutePredicate threshold w =
-    w.offRoute <= threshold
-
-
-{-| Pairs each waypoint that survived filtering with the index a `PointRef` would name it by,
-so a selector's options carry references the rest of the app can resolve. See `PointRef` for
-why that is the `editableWaypoints` index rather than a position in this list.
--}
-indexedFilteredWaypoints : EditableTrack -> List GpxApi.Waypoint -> List ( Int, GpxApi.Waypoint )
-indexedFilteredWaypoints track filtered =
-    track.editableWaypoints
-        |> List.indexedMap Tuple.pair
-        |> List.filter (Tuple.second >> .deleted >> not)
-        |> List.map (Tuple.mapSecond (effectiveWaypoint track.trackpoints))
-        |> List.filter (\( _, wp ) -> List.member wp filtered)
-
-
-{-| The waypoints offered for selection to the flows that pick a point out of the whole
-route — the Relative tab and the elevation profile's split boundaries.
-
-Deliberately filtered by `waypointSelectionPredicates` rather than the full
-`waypointPredicates`: a selection must not disappear just because the live-view window has
-moved past the waypoint it names.
-
--}
-selectableWaypoints : State -> EditableTrack -> List ( Int, GpxApi.Waypoint )
-selectableWaypoints state track =
-    indexedFilteredWaypoints track
-        (filterWaypoints (waypointSelectionPredicates state) (effectiveWaypoints track))
-
-
-{-| Resolves a chosen point, but only ever to a waypoint the dropdown is still offering.
-Going through `selectable` rather than the whole track means a reference to one the filters
-have hidden reads as "nothing chosen" instead of silently standing for something the rider
-cannot see. Nothing else the dropdown offers is a waypoint of the track's, so nothing else
-can be filtered away.
--}
-selectedWaypointFor : State -> EditableTrack -> List ( Int, GpxApi.Waypoint ) -> PointRef -> Maybe GpxApi.Waypoint
-selectedWaypointFor state track selectable ref =
-    case ref of
-        AtWaypoint idx ->
-            selectable |> List.Extra.find (\( i, _ ) -> i == idx) |> Maybe.map Tuple.second
-
-        _ ->
-            resolvePointRef state.position state.location track ref
 
 
 {-| What to say in place of figures a chosen point could not be resolved for. An unset
@@ -2046,22 +1700,8 @@ that "Add" keeps working through them in route order before reaching for the pos
 -}
 selectableSplitPoints : State -> EditableTrack -> List PointRef
 selectableSplitPoints state track =
-    List.map (Tuple.first >> AtWaypoint) (selectableWaypoints state track)
+    List.map (Tuple.first >> AtWaypoint) (Route.selectableWaypoints (waypointSelectionPredicates state) track)
         ++ positionRefIfSet state
-
-
-{-| Whether a waypoint carries any of the given categories. An uncategorised waypoint counts
-as the unknown category, exactly as `categoryPredicate` treats it, so "unknown" can be split
-on like any other.
--}
-inAnyCategory : List String -> GpxApi.Waypoint -> Bool
-inAnyCategory categories w =
-    case w.categories of
-        [] ->
-            List.member unknownCategory categories
-
-        cats ->
-            List.any (\cat -> List.member cat categories) cats
 
 
 {-| The distances the current mode splits the route at, sorted, de-duplicated and stripped of
@@ -2082,17 +1722,17 @@ splitDistances state track =
             []
 
         PointsMode ->
-            List.filterMap (refDistance state.position track) state.elevationProfile.splitPoints
+            List.filterMap (Route.refDistance state.position track) state.elevationProfile.splitPoints
 
         CategoriesMode ->
-            selectableWaypoints state track
+            Route.selectableWaypoints (waypointSelectionPredicates state) track
                 |> List.map Tuple.second
-                |> List.filter (inAnyCategory state.elevationProfile.splitCategories)
+                |> List.filter (Route.inAnyCategory state.elevationProfile.splitCategories)
                 |> List.map .distance
     )
         |> List.sort
         |> List.Extra.unique
-        |> List.filter (\distance -> distance > 0 && distance < lastTrackpointDistance track.trackpoints)
+        |> List.filter (\distance -> distance > 0 && distance < Route.lastTrackpointDistance track.trackpoints)
 
 
 {-| `AtRoutePosition` as a one-element list when a position is set, so selector option
@@ -2158,10 +1798,10 @@ referenceWaypoint : State -> EditableTrack -> Maybe GpxApi.Waypoint
 referenceWaypoint state track =
     case state.cuesheet.totalDistanceDisplay of
         ToPoint ref ->
-            resolvePointRef state.position state.location track ref
+            Route.resolvePointRef state.position state.location track ref
 
         FromPoint ref ->
-            resolvePointRef state.position state.location track ref
+            Route.resolvePointRef state.position state.location track ref
 
         _ ->
             Nothing
@@ -2176,8 +1816,8 @@ correctWaypointSelectionInState s =
         Just tracks ->
             let
                 indexed =
-                    indexedFilteredWaypoints tracks.current
-                        (filterWaypoints (waypointPredicates s) (effectiveWaypoints tracks.current))
+                    Route.indexedFilteredWaypoints tracks.current
+                        (Route.filterWaypoints (waypointPredicates s) (Route.effectiveWaypoints tracks.current))
 
                 cs =
                     s.cuesheet
@@ -2191,7 +1831,7 @@ correctWaypointSelectionInState s =
                 -- The Relative tab can target waypoints outside the live window, so its
                 -- selection is validated against its own, wider list.
                 relativeSelectable =
-                    selectableWaypoints s tracks.current
+                    Route.selectableWaypoints (waypointSelectionPredicates s) tracks.current
 
                 clampToSelectable fallback ref =
                     case ref of
@@ -2533,7 +2173,7 @@ viewElevationProfileTab state tracks =
             state.cuesheet
 
         currentFinishDistance =
-            lastTrackpointDistance tracks.current.trackpoints
+            Route.lastTrackpointDistance tracks.current.trackpoints
 
         refWaypoint =
             referenceWaypoint state tracks.current
@@ -3313,10 +2953,10 @@ viewCuesheetTab state tracks =
             state.cuesheet
 
         currentEffectiveWaypoints =
-            effectiveWaypoints tracks.current
+            Route.effectiveWaypoints tracks.current
 
         currentFinishDistance =
-            lastTrackpointDistance tracks.current.trackpoints
+            Route.lastTrackpointDistance tracks.current.trackpoints
 
         waypointsWithStartFinish =
             if cs.showStartFinish then
@@ -3326,11 +2966,11 @@ viewCuesheetTab state tracks =
                 currentEffectiveWaypoints
 
         filteredWaypoints =
-            filterWaypoints (waypointPredicates state) waypointsWithStartFinish
+            Route.filterWaypoints (waypointPredicates state) waypointsWithStartFinish
                 |> trimWaypointCategories state.filteredCategories
 
         positionWaypoint =
-            resolvePointRef state.position state.location tracks.current AtRoutePosition
+            Route.resolvePointRef state.position state.location tracks.current AtRoutePosition
 
         -- Sort by distance so edited waypoint distances reorder the list (the original
         -- waypoint order no longer matches distance once a distance override is applied)
@@ -3362,7 +3002,7 @@ viewCuesheetTab state tracks =
                     ( wp.gain, wp.loss )
 
                 Nothing ->
-                    cumulativeGainLossAtDistance cs.referenceDistance tracks.current.trackpoints
+                    Route.cumulativeGainLossAtDistance cs.referenceDistance tracks.current.trackpoints
                         |> Result.withDefault ( 0, 0 )
     in
     Html.div []
@@ -3375,11 +3015,11 @@ viewWaypointsTab : State -> Zipper EditableTrack -> Html Msg
 viewWaypointsTab state tracks =
     let
         maxDistance =
-            lastTrackpointDistance tracks.current.trackpoints
+            Route.lastTrackpointDistance tracks.current.trackpoints
 
         anyWaypointEdited =
             List.any
-                (\ew -> ew.deleted || ew.created || ew.overrides /= emptyOverrides)
+                (\ew -> ew.deleted || ew.created || ew.overrides /= Route.emptyOverrides)
                 tracks.current.editableWaypoints
     in
     Html.div
@@ -3405,7 +3045,7 @@ viewWaypointsTab state tracks =
                     (\( i, ew ) ->
                         let
                             wp =
-                                effectiveWaypoint tracks.current.trackpoints ew
+                                Route.effectiveWaypoint tracks.current.trackpoints ew
 
                             predicates =
                                 waypointPredicates state
@@ -3457,7 +3097,7 @@ viewWaypointsTab state tracks =
                                           else
                                             viewButton [] "X" (WaypointDeleted i True)
                                         ]
-                                    , viewWaypointCategories i wp.categories (List.filter (\c -> c /= unknownCategory) (Dict.keys state.filteredCategories)) (Dict.get i state.newCategoryInputs |> Maybe.withDefault "")
+                                    , viewWaypointCategories i wp.categories (List.filter (\c -> c /= Route.unknownCategory) (Dict.keys state.filteredCategories)) (Dict.get i state.newCategoryInputs |> Maybe.withDefault "")
                                     ]
                                 )
                     )
@@ -3860,7 +3500,7 @@ there rather than the waypoint itself — `snapNote` reports that gap rather tha
 -}
 relativePointFor : List GpxApi.TrackPoint -> Maybe Location.LocationState -> GpxApi.Waypoint -> Maybe RelativePoint
 relativePointFor trackpoints fix waypoint =
-    trackpointAtDistance waypoint.distance trackpoints
+    Route.trackpointAtDistance waypoint.distance trackpoints
         |> Maybe.map
             (\tp ->
                 { waypoint = waypoint
@@ -3879,10 +3519,10 @@ viewRelativeTab state tracks =
             state.relative
 
         selectable =
-            selectableWaypoints state tracks.current
+            Route.selectableWaypoints (waypointSelectionPredicates state) tracks.current
 
         waypointFor =
-            selectedWaypointFor state tracks.current selectable
+            Route.selectedWaypointFor state.position state.location tracks.current selectable
 
         pointFor ref =
             waypointFor ref
@@ -3965,7 +3605,7 @@ viewRelativeControls hasPosition rel selectable =
 
 {-| Where one end of the comparison sits on the route, under a heading naming the role it
 plays ("Start" / "End") so the two cards either side of the travel figures are told apart at
-a glance. Built from the resolved point, so a route position — which `resolvePointRef` hands
+a glance. Built from the resolved point, so a route position — which `Route.resolvePointRef` hands
 back as a synthetic waypoint — reads exactly like a chosen waypoint, and the elevation shown
 is the same one the travel figures were computed from.
 
@@ -4004,7 +3644,7 @@ viewRelativeContextCard track card point =
                             [ Html.Attributes.style "font-weight" "normal"
                             , Html.Attributes.style "opacity" "0.75"
                             ]
-                            [ Html.text (waypointDisplayName waypoint) ]
+                            [ Html.text (Route.waypointDisplayName waypoint) ]
                         ]
 
                     else
@@ -4017,7 +3657,7 @@ viewRelativeContextCard track card point =
 
          else
             List.filterMap identity
-                [ Just (Html.div [ Html.Attributes.style "font-weight" "bold" ] [ Html.text (waypointDisplayName waypoint) ])
+                [ Just (Html.div [ Html.Attributes.style "font-weight" "bold" ] [ Html.text (Route.waypointDisplayName waypoint) ])
                 , snapNote point |> Maybe.map Ui.note
                 , case waypoint.categories of
                     [] ->
@@ -4029,7 +3669,7 @@ viewRelativeContextCard track card point =
                 , Just (Ui.row "From start" (Format.km 1 waypoint.distance ++ " · " ++ Format.eleGainLoss waypoint.gain waypoint.loss))
                 , Just
                     (Ui.row "To finish"
-                        (Format.km 1 (lastTrackpointDistance track.trackpoints - waypoint.distance)
+                        (Format.km 1 (Route.lastTrackpointDistance track.trackpoints - waypoint.distance)
                             ++ " · "
                             ++ Format.eleGainLoss (track.gain - waypoint.gain) (track.loss - waypoint.loss)
                         )
@@ -4164,7 +3804,7 @@ viewRelativeTravelCard track selectable start end =
                     (\distanceShare climbShare ->
                         Ui.row "Share of route" (Format.percent distanceShare ++ " of distance · " ++ Format.percent climbShare ++ " of climbing")
                     )
-                    (safePercent (abs alongRoute) (lastTrackpointDistance track.trackpoints))
+                    (safePercent (abs alongRoute) (Route.lastTrackpointDistance track.trackpoints))
                     -- Riding a segment backwards climbs what the route descends, so the
                     -- share is against the route's total descent to compare like with like
                     (safePercent gain
@@ -4181,24 +3821,6 @@ viewRelativeTravelCard track selectable start end =
         ]
 
 
-trackpointAtDistance : Float -> List GpxApi.TrackPoint -> Maybe GpxApi.TrackPoint
-trackpointAtDistance dist trackpoints =
-    case List.Extra.find (\tp -> tp.distance >= dist) trackpoints of
-        Just tp ->
-            Just tp
-
-        Nothing ->
-            List.Extra.last trackpoints
-
-
-cumulativeGainLossAtDistance : Float -> List GpxApi.TrackPoint -> Result String ( Float, Float )
-cumulativeGainLossAtDistance dist trackpoints =
-    trackpointAtDistance dist trackpoints
-        |> Maybe.map (\tp -> Ok ( tp.gain, tp.loss ))
-        |> Maybe.withDefault (Err "no trackpoints found for gain/loss lookup")
-
-
-
 -- PACE VIEW
 
 
@@ -4209,10 +3831,10 @@ viewPaceTab state tracks =
             state.pace
 
         selectable =
-            selectableWaypoints state tracks.current
+            Route.selectableWaypoints (waypointSelectionPredicates state) tracks.current
 
         waypointFor =
-            selectedWaypointFor state tracks.current selectable
+            Route.selectedWaypointFor state.position state.location tracks.current selectable
 
         body =
             case ( waypointFor pace.start, waypointFor pace.end ) of
@@ -4348,9 +3970,9 @@ viewPaceEstimate state start end =
     if distanceToGo <= 0 then
         [ Ui.noticePanel
             ("“"
-                ++ waypointDisplayName end
+                ++ Route.waypointDisplayName end
                 ++ "” is not ahead of “"
-                ++ waypointDisplayName start
+                ++ Route.waypointDisplayName start
                 ++ "”, so there is no arrival to estimate. Choose an end point further along the route."
             )
         ]
@@ -4437,7 +4059,7 @@ viewArrivalCard state start end distanceToGo secondsToGo =
                 [ Html.Attributes.style "font-weight" "normal"
                 , Html.Attributes.style "opacity" "0.75"
                 ]
-                [ Html.text (waypointDisplayName end) ]
+                [ Html.text (Route.waypointDisplayName end) ]
             ]
         )
         (List.filterMap identity
@@ -4473,7 +4095,7 @@ arrivalAssumption state start =
             "counted from where you are now"
 
         _ ->
-            "counted as if you were at “" ++ waypointDisplayName start ++ "” now"
+            "counted as if you were at “" ++ Route.waypointDisplayName start ++ "” now"
     )
         ++ clockNote
 
@@ -4713,7 +4335,7 @@ viewCategoryFilterOptions state =
                                 (\( cat, included ) ->
                                     checkbox included
                                         (CategoryEnabled cat (not included))
-                                        (if cat /= unknownCategory then
+                                        (if cat /= Route.unknownCategory then
                                             cat
 
                                          else
@@ -4874,7 +4496,7 @@ viewElevationProfileOptions state =
                     let
                         selectable =
                             maybeFromloadableResource state.tracks
-                                |> Maybe.map (.current >> selectableWaypoints state)
+                                |> Maybe.map (.current >> Route.selectableWaypoints (waypointSelectionPredicates state))
                                 |> Maybe.withDefault []
 
                         availableCount =
@@ -4907,7 +4529,7 @@ viewElevationProfileOptions state =
                     let
                         selectable =
                             maybeFromloadableResource state.tracks
-                                |> Maybe.map (.current >> selectableWaypoints state >> List.map Tuple.second)
+                                |> Maybe.map (.current >> Route.selectableWaypoints (waypointSelectionPredicates state) >> List.map Tuple.second)
                                 |> Maybe.withDefault []
 
                         categoryCheckbox category =
@@ -4922,14 +4544,14 @@ viewElevationProfileOptions state =
                                 -- same selectable set the split itself uses, so a category
                                 -- whose waypoints are all filtered out reads as the 0
                                 -- splits it would produce.
-                                ((if category == unknownCategory then
+                                ((if category == Route.unknownCategory then
                                     "unknown"
 
                                   else
                                     category
                                  )
                                     ++ " ("
-                                    ++ String.fromInt (List.length (List.filter (inAnyCategory [ category ]) selectable))
+                                    ++ String.fromInt (List.length (List.filter (Route.inAnyCategory [ category ]) selectable))
                                     ++ ")"
                                 )
                     in
@@ -4989,7 +4611,7 @@ viewTotalDistanceOptions state =
 
         maxDistance =
             maybeTracks
-                |> Maybe.map (\ts -> lastTrackpointDistance ts.current.trackpoints)
+                |> Maybe.map (\ts -> Route.lastTrackpointDistance ts.current.trackpoints)
 
         filteredWps =
             maybeTracks
@@ -4997,22 +4619,22 @@ viewTotalDistanceOptions state =
                     (\ts ->
                         let
                             currentEffective =
-                                effectiveWaypoints ts.current
+                                Route.effectiveWaypoints ts.current
                         in
                         (if cs.showStartFinish then
-                            injectStartFinish (lastTrackpointDistance ts.current.trackpoints) ts.current currentEffective
+                            injectStartFinish (Route.lastTrackpointDistance ts.current.trackpoints) ts.current currentEffective
 
                          else
                             currentEffective
                         )
-                            |> filterWaypoints (waypointPredicates state)
+                            |> Route.filterWaypoints (waypointPredicates state)
                             |> trimWaypointCategories state.filteredCategories
                     )
                 |> Maybe.withDefault []
 
         indexedFiltered =
             maybeTracks
-                |> Maybe.map (.current >> (\track -> indexedFilteredWaypoints track filteredWps))
+                |> Maybe.map (.current >> (\track -> Route.indexedFilteredWaypoints track filteredWps))
                 |> Maybe.withDefault []
 
         defaultRef =
@@ -5131,7 +4753,7 @@ viewLocationOptions state =
         Loaded tracks ->
             let
                 maxDist =
-                    lastTrackpointDistance tracks.current.trackpoints
+                    Route.lastTrackpointDistance tracks.current.trackpoints
 
                 locationStatus text =
                     Html.p
@@ -5239,18 +4861,6 @@ viewButton attrs text onClickMsg =
         [ Html.text text ]
 
 
-{-| Waypoints can be unnamed — `AddWaypoint` creates them with an empty name — so fall back
-to something that still identifies which one is meant.
--}
-waypointDisplayName : GpxApi.Waypoint -> String
-waypointDisplayName waypoint =
-    if String.isEmpty (String.trim waypoint.name) then
-        "Unnamed waypoint (" ++ Format.km 1 waypoint.distance ++ ")"
-
-    else
-        waypoint.name
-
-
 {-| The one control for picking a point on the route. Offers the given waypoints plus the
 rider's position, the latter disabled — rather than hidden — when no position is set, so the
 option stays discoverable and the list does not change shape as a fix comes and goes.
@@ -5266,7 +4876,7 @@ viewPointSelector { onSelect, hasPosition, offerRouteEnds } indexed selected =
     let
         routeEndItem ref name =
             if offerRouteEnds then
-                [ Dropdown.Item (formatPointRef ref) name True ]
+                [ Dropdown.Item (Route.formatPointRef ref) name True ]
 
             else
                 []
@@ -5274,19 +4884,19 @@ viewPointSelector { onSelect, hasPosition, offerRouteEnds } indexed selected =
     Dropdown.dropdown
         (Dropdown.Options
             (List.concat
-                [ [ Dropdown.Item (formatPointRef AtRoutePosition) routePositionName hasPosition ]
-                , routeEndItem AtRouteStart routeStartName
+                [ [ Dropdown.Item (Route.formatPointRef AtRoutePosition) Route.routePositionName hasPosition ]
+                , routeEndItem AtRouteStart Route.routeStartName
                 , List.map
                     (\( idx, wp ) ->
-                        Dropdown.Item (formatPointRef (AtWaypoint idx)) (waypointDisplayName wp ++ " (" ++ Format.km 1 wp.distance ++ ")") True
+                        Dropdown.Item (Route.formatPointRef (AtWaypoint idx)) (Route.waypointDisplayName wp ++ " (" ++ Format.km 1 wp.distance ++ ")") True
                     )
                     indexed
-                , routeEndItem AtRouteEnd routeEndName
+                , routeEndItem AtRouteEnd Route.routeEndName
                 ]
             )
             Nothing
             (\maybeStr ->
-                case maybeStr |> Maybe.andThen parsePointRef of
+                case maybeStr |> Maybe.andThen Route.parsePointRef of
                     Just ref ->
                         onSelect ref
 
@@ -5295,7 +4905,7 @@ viewPointSelector { onSelect, hasPosition, offerRouteEnds } indexed selected =
             )
         )
         []
-        (Just (formatPointRef selected))
+        (Just (Route.formatPointRef selected))
 
 
 optionGroup : String -> List (Html Msg) -> Html Msg
@@ -5339,10 +4949,10 @@ parseTotalDistanceDisplay v =
 
         _ ->
             -- The two point-referring modes store which point after a colon, written by
-            -- formatPointRef
+            -- Route.formatPointRef
             case String.split ":" v of
                 [ mode, refStr ] ->
-                    parsePointRef refStr
+                    Route.parsePointRef refStr
                         |> Maybe.andThen
                             (\ref ->
                                 if mode == "to point" then
@@ -5365,10 +4975,10 @@ formatTotalDistanceDisplay : TotalDistanceDisplay -> String
 formatTotalDistanceDisplay v =
     case v of
         ToPoint ref ->
-            formatTotalDistanceDisplayMode v ++ ":" ++ formatPointRef ref
+            formatTotalDistanceDisplayMode v ++ ":" ++ Route.formatPointRef ref
 
         FromPoint ref ->
-            formatTotalDistanceDisplayMode v ++ ":" ++ formatPointRef ref
+            formatTotalDistanceDisplayMode v ++ ":" ++ Route.formatPointRef ref
 
         other ->
             formatTotalDistanceDisplayMode other
@@ -5453,56 +5063,6 @@ formatTab tab =
 -- ENCODE/DECODE STATE
 
 
-encodeEditableTrack : EditableTrack -> Json.Encode.Value
-encodeEditableTrack track =
-    Json.Encode.object
-        [ ( "trackpoints", GpxApi.encodeStoredTrackpoints track.trackpoints )
-        , ( "editableWaypoints", Json.Encode.list encodeEditableWaypoint track.editableWaypoints )
-        , ( "gain", Json.Encode.float track.gain )
-        , ( "loss", Json.Encode.float track.loss )
-        ]
-
-
-encodeEditableWaypoint : EditableWaypoint -> Json.Encode.Value
-encodeEditableWaypoint ew =
-    Json.Encode.object
-        (List.filterMap identity
-            [ Just ( "original", GpxApi.encodeWaypoint ew.original )
-            , Just ( "deleted", Json.Encode.bool ew.deleted )
-            , if ew.created then
-                Just ( "created", Json.Encode.bool True )
-
-              else
-                Nothing
-            , ew.overrides.name |> Maybe.map (\n -> ( "name", Json.Encode.string n ))
-            , ew.overrides.distance |> Maybe.map (\d -> ( "distance", Json.Encode.float d ))
-            , ew.overrides.categories |> Maybe.map (\cats -> ( "categories", Json.Encode.list Json.Encode.string cats ))
-            ]
-        )
-
-
-editableTrackDecoder : Json.Decode.Decoder EditableTrack
-editableTrackDecoder =
-    Json.Decode.map4 EditableTrack
-        (Json.Decode.field "trackpoints" GpxApi.decodeTrackpoints)
-        (Json.Decode.field "editableWaypoints" (Json.Decode.list editableWaypointDecoder))
-        (Json.Decode.field "gain" Json.Decode.float)
-        (Json.Decode.field "loss" Json.Decode.float)
-
-
-editableWaypointDecoder : Json.Decode.Decoder EditableWaypoint
-editableWaypointDecoder =
-    Json.Decode.map4 EditableWaypoint
-        (Json.Decode.field "original" GpxApi.decodeWaypoint)
-        (Json.Decode.field "deleted" Json.Decode.bool)
-        (Json.Decode.oneOf [ Json.Decode.field "created" Json.Decode.bool, Json.Decode.succeed False ])
-        (Json.Decode.map3 WaypointOverrides
-            (Json.Decode.maybe (Json.Decode.field "name" Json.Decode.string))
-            (Json.Decode.maybe (Json.Decode.field "distance" Json.Decode.float))
-            (Json.Decode.maybe (Json.Decode.field "categories" (Json.Decode.list Json.Decode.string)))
-        )
-
-
 encodeSavedState : State -> String
 encodeSavedState state =
     let
@@ -5521,7 +5081,7 @@ encodeSavedState state =
     Json.Encode.object
         (List.filterMap
             identity
-            [ maybeFromloadableResource state.tracks |> Maybe.map (\tracks -> ( "tracks", Zipper.encode encodeEditableTrack tracks ))
+            [ maybeFromloadableResource state.tracks |> Maybe.map (\tracks -> ( "tracks", Zipper.encode Route.encodeEditableTrack tracks ))
             , Just ( "routeName", Json.Encode.string state.routeName )
             , Just ( "activeTab", Json.Encode.string (formatTab state.activeTab) )
             , Just ( "showOptions", Json.Encode.bool state.showOptions )
@@ -5560,7 +5120,7 @@ encodeSavedState state =
                     )
                 )
             , Just ( "splitEquidistantCount", Json.Encode.int ep.splitEquidistantCount )
-            , Just ( "splitPoints", Json.Encode.list (formatPointRef >> Json.Encode.string) ep.splitPoints )
+            , Just ( "splitPoints", Json.Encode.list (Route.formatPointRef >> Json.Encode.string) ep.splitPoints )
             , Just ( "splitCategories", Json.Encode.list Json.Encode.string ep.splitCategories )
             , Just ( "liveLookahead", Json.Encode.float ep.liveLookahead )
             , Just ( "liveLookbehind", Json.Encode.float ep.liveLookbehind )
@@ -5575,12 +5135,12 @@ encodeSavedState state =
             , Just ( "offRouteThreshold", Json.Encode.float state.offRouteThreshold )
             , Just ( "showOffRouteWaypoints", Json.Encode.bool state.showOffRouteWaypoints )
             , Just ( "showOffRouteDistance", Json.Encode.bool state.showOffRouteDistance )
-            , Just ( "relativeStart", Json.Encode.string (formatPointRef rel.start) )
-            , Just ( "relativeEnd", Json.Encode.string (formatPointRef rel.end) )
+            , Just ( "relativeStart", Json.Encode.string (Route.formatPointRef rel.start) )
+            , Just ( "relativeEnd", Json.Encode.string (Route.formatPointRef rel.end) )
             , Just ( "relativeStartCollapsed", Json.Encode.bool rel.startCollapsed )
             , Just ( "relativeEndCollapsed", Json.Encode.bool rel.endCollapsed )
-            , Just ( "paceStart", Json.Encode.string (formatPointRef pace.start) )
-            , Just ( "paceEnd", Json.Encode.string (formatPointRef pace.end) )
+            , Just ( "paceStart", Json.Encode.string (Route.formatPointRef pace.start) )
+            , Just ( "paceEnd", Json.Encode.string (Route.formatPointRef pace.end) )
             , Just ( "paceSource", Json.Encode.string (Pace.formatSource pace.activePaceSource) )
             , Just ( "paceSpeedKmh", Json.Encode.float pace.speedKmh )
             , Just ( "paceElapsedSec", Json.Encode.float pace.elapsedAtStartSec )
@@ -5649,7 +5209,7 @@ stateDecoder =
                         _ ->
                             EquidistantMode
                 , splitEquidistantCount = splitEquidistantCount |> Maybe.withDefault 1
-                , splitPoints = splitPoints |> Maybe.withDefault [] |> List.filterMap parsePointRef
+                , splitPoints = splitPoints |> Maybe.withDefault [] |> List.filterMap Route.parsePointRef
                 , splitCategories = splitCategories |> Maybe.withDefault defEp.splitCategories
                 , liveLookahead = liveLookahead |> Maybe.withDefault defEp.liveLookahead
                 , liveLookbehind = liveLookbehind |> Maybe.withDefault defEp.liveLookbehind
@@ -5665,14 +5225,14 @@ stateDecoder =
                 , showStartFinish = showStartFinish |> Maybe.withDefault defCs.showStartFinish
                 }
             , relative =
-                { start = relativeStart |> Maybe.andThen parsePointRef |> Maybe.withDefault defRel.start
-                , end = relativeEnd |> Maybe.andThen parsePointRef |> Maybe.withDefault defRel.end
+                { start = relativeStart |> Maybe.andThen Route.parsePointRef |> Maybe.withDefault defRel.start
+                , end = relativeEnd |> Maybe.andThen Route.parsePointRef |> Maybe.withDefault defRel.end
                 , startCollapsed = relativeStartCollapsed |> Maybe.withDefault defRel.startCollapsed
                 , endCollapsed = relativeEndCollapsed |> Maybe.withDefault defRel.endCollapsed
                 }
             , pace =
-                { start = paceStart |> Maybe.andThen parsePointRef |> Maybe.withDefault defPace.start
-                , end = paceEnd |> Maybe.andThen parsePointRef |> Maybe.withDefault defPace.end
+                { start = paceStart |> Maybe.andThen Route.parsePointRef |> Maybe.withDefault defPace.start
+                , end = paceEnd |> Maybe.andThen Route.parsePointRef |> Maybe.withDefault defPace.end
                 , activePaceSource = paceSource |> Maybe.andThen Pace.parseSource |> Maybe.withDefault defPace.activePaceSource
                 , speedKmh = paceSpeedKmh |> Maybe.withDefault defPace.speedKmh
                 , elapsedAtStartSec = paceElapsedSec |> Maybe.withDefault defPace.elapsedAtStartSec
@@ -5686,7 +5246,7 @@ stateDecoder =
             , zone = Time.utc
             }
         )
-        |> andMap (maybeField "tracks" (Zipper.decoder editableTrackDecoder))
+        |> andMap (maybeField "tracks" (Zipper.decoder Route.editableTrackDecoder))
         |> andMap (maybeField "routeName" Json.Decode.string)
         |> andMap (maybeField "activeTab" Json.Decode.string)
         |> andMap (maybeField "showOptions" Json.Decode.bool)

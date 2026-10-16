@@ -87,7 +87,7 @@ This is a Jekyll static site with the following structure:
 
 ### Navigating `elm/route/src/Main.elm`
 
-The route app is one monolithic Elm file (~5800 lines). To orient quickly:
+The route app's main Elm file is ~5400 lines, with the track model and arithmetic in shared modules. To orient quickly:
 
 - **Rough section map** (line numbers approximate — grep the names):
   - Model/`State`, option records, and defaults: ~`type alias State` through `defaultRelativeOptions`; Pace options/defaults live in `Pace`
@@ -99,9 +99,9 @@ The route app is one monolithic Elm file (~5800 lines). To orient quickly:
   - Distance/elevation display logic: `displayedDistanceValue`, `displayIsPercent`
   - Serialization: `parseTotalDistanceDisplay` / `formatTotalDistanceDisplay`, plus the encode/decode of `State`
 - **`TotalDistanceDisplay` is the central enum for distance/elevation display.** Both the cuesheet and the elevation profile key off the single `state.cuesheet.totalDistanceDisplay`. To find everything affected by a display mode, grep `TotalDistanceDisplay` / `totalDistanceDisplay`; the Elm compiler's exhaustive `case` checking then flags every site to update when you add a constructor.
-- **`PointRef` is the vocabulary for "a point on the route"** — a waypoint, the current position, or either end of the track. Every flow that asks the user to choose one stores a `PointRef` and shows `viewPointSelector`; `resolvePointRef` turns it into a `GpxApi.Waypoint`, and `selectedWaypointFor` does the same but only ever resolves to a waypoint the dropdown is still offering (so a filtered-out one reads as "nothing chosen"). Adding a constructor makes the compiler point at every flow that has to answer for it.
+- **`Route.PointRef` is the vocabulary for "a point on the route"** — a waypoint, the current position, or either end of the track. Every flow that asks the user to choose one stores a `PointRef` and shows `viewPointSelector`; `Route.resolvePointRef` turns it into a `GpxApi.Waypoint`, and `Route.selectedWaypointFor` does the same but only ever resolves to a waypoint the dropdown is still offering (so a filtered-out one reads as "nothing chosen"). Adding a constructor makes the compiler point at every flow that has to answer for it.
 - **The device clock lives in `state.now` / `state.zone`, and only the Pace tab uses it.** Both are transient — a stored clock reading is a wrong one the moment it is read back — so they are excluded from `encodeSavedState` and lifted across a state import by hand, alongside `profilePixelWidth`. `Time.every` is subscribed only while the Pace tab is active, so no other tab pays for a ticking clock.
-- **Data model** (`elm/shared/src/GpxApi.elm`): `TrackPoint.gain`/`.loss` are **cumulative** from the start; route totals live in `EditableTrack.gain`/`.loss` and `Track.gain`/`.loss`; `lastTrackpointDistance` gives total distance; `cumulativeGainLossAtDistance` looks up cumulative climb at any distance (used to build the current-position cuesheet row).
+- **Data model** (`elm/shared/src/GpxApi.elm`, `elm/shared/src/Route.elm`): `TrackPoint.gain`/`.loss` are **cumulative** from the start; route totals live in `Route.EditableTrack.gain`/`.loss` and `GpxApi.Track.gain`/`.loss`; `Route.lastTrackpointDistance` gives total distance; `Route.cumulativeGainLossAtDistance` looks up cumulative climb at any distance (used to build the current-position cuesheet row).
 - Build/typecheck with `make route.js` (compiles to `data/route.js`); run the Elm tests with `make elm-test`.
 
 ### Elm modules outside `Main.elm`
@@ -109,21 +109,26 @@ The route app is one monolithic Elm file (~5800 lines). To orient quickly:
 `elm/shared/src/` holds the parts that know nothing about the app: `GpxApi`, `Location`,
 `Zipper`, plus `Wallclock` (times of day, durations, and the wall-clock datetime a
 `datetime-local` input deals in), `Pace` (options and arrival-estimate speed/elapsed arithmetic),
+`Route` (editable tracks, point references, selection and saved track format),
 `Format` (figures in the units they are read in) and `Ui`
 (the card, section, row, note and notice the Relative and Pace tabs are built from — all
 `Html msg`, so they stay ignorant of `Msg`). `elm/route/elm.json`'s source-directories point
 there, so a module dropped in is importable with no further wiring.
 
-`Wallclock` and `Pace` have tests in `elm/route/tests/` for calendar arithmetic and the
-conditions an arrival estimate needs. `Pace.Options point` takes the endpoint type as a
-parameter, keeping it independent of `Main`'s `PointRef`; the calculation functions require
-only the position/clock fields they read and the pace options. **`Wallclock` differences two
+`Wallclock`, `Pace` and `Route` have tests in `elm/route/tests/` for calendar arithmetic,
+arrival estimates, saved-track compatibility, edits and point selection. `Pace.Options point`
+takes the endpoint type as a parameter, keeping it independent of `Route.PointRef`; its
+functions require only the position/clock fields they read and the pace options. **`Wallclock` differences two
 wall-clock times without a timezone database**, so a span crossing a daylight-saving change is
 out by that hour — documented on `Pace.elapsedSinceRideStart`, and immaterial next to the
 accuracy of a pace estimate.
 
-`docs/module-extraction.md` records what has been extracted and the remaining extraction —
-the `PointRef`/track model — with its call-site counts and the snags to resolve.
+`Route.selectableWaypoints` takes filter predicates rather than app state;
+`Route.selectedWaypointFor` takes position and location explicitly. `Main` owns the live-view
+window and UI selection correction. `Route.encodeEditableTrack` stores originals and edits,
+while `GpxApi.encodeTrack` sends effective waypoints to WASM; keep these formats separate.
+
+`docs/module-extraction.md` records the five completed extractions and their verification.
 
 The Elm toolchain is pinned in `elm.Dockerfile` (`elm@0.19.1-6`, `elm-test@0.19.1-revision12`).
 Leave it pinned: `npm install -g elm` now resolves to 0.19.2, which refuses to build an
