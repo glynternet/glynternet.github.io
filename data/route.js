@@ -784,11 +784,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.i.be === region.k.be)
+	if (region.i.bf === region.k.bf)
 	{
-		return 'on line ' + region.i.be;
+		return 'on line ' + region.i.bf;
 	}
-	return 'on lines ' + region.i.be + ' through ' + region.k.be;
+	return 'on lines ' + region.i.bf + ' through ' + region.k.bf;
 }
 
 
@@ -4249,8 +4249,8 @@ function _Browser_getViewport()
 	return {
 		cW: _Browser_getScene(),
 		dc: {
-			bm: _Browser_window.pageXOffset,
-			bn: _Browser_window.pageYOffset,
+			bn: _Browser_window.pageXOffset,
+			bo: _Browser_window.pageYOffset,
 			df: _Browser_doc.documentElement.clientWidth,
 			cs: _Browser_doc.documentElement.clientHeight
 		}
@@ -4291,8 +4291,8 @@ function _Browser_getViewportOf(id)
 				cs: node.scrollHeight
 			},
 			dc: {
-				bm: node.scrollLeft,
-				bn: node.scrollTop,
+				bn: node.scrollLeft,
+				bo: node.scrollTop,
 				df: node.clientWidth,
 				cs: node.clientHeight
 			}
@@ -4326,14 +4326,14 @@ function _Browser_getElement(id)
 		return {
 			cW: _Browser_getScene(),
 			dc: {
-				bm: x,
-				bn: y,
+				bn: x,
+				bo: y,
 				df: _Browser_doc.documentElement.clientWidth,
 				cs: _Browser_doc.documentElement.clientHeight
 			},
 			dx: {
-				bm: x + rect.left,
-				bn: y + rect.top,
+				bn: x + rect.left,
+				bo: y + rect.top,
 				df: rect.width,
 				cs: rect.height
 			}
@@ -5655,7 +5655,7 @@ var $elm$time$Time$Zone = F2(
 		return {$: 0, a: a, b: b};
 	});
 var $elm$time$Time$utc = A2($elm$time$Time$Zone, 0, _List_Nil);
-var $author$project$Main$defaultState = {X: 0, Y: false, g: $author$project$Main$defaultCuesheetOptions, b: $author$project$Main$defaultElevationProfileOptions, f: $elm$core$Dict$empty, R: $elm$core$Maybe$Nothing, aA: $elm$core$Maybe$Nothing, T: $elm$core$Dict$empty, ao: $elm$core$Maybe$Nothing, U: 100, C: $author$project$Main$defaultPaceOptions, d4: $elm$core$Maybe$Nothing, aR: $elm$core$Maybe$Nothing, v: $author$project$Main$defaultRelativeOptions, aD: 'route', ar: false, as: true, aE: true, ai: $elm$core$Maybe$Nothing, aI: $elm$core$Maybe$Nothing, a0: $elm$core$Maybe$Nothing, W: false, at: 60, d: $author$project$Main$NotLoaded, I: 1, au: $elm$time$Time$utc};
+var $author$project$Main$defaultState = {X: 0, Y: false, f: $author$project$Main$defaultCuesheetOptions, b: $author$project$Main$defaultElevationProfileOptions, g: $elm$core$Dict$empty, R: $elm$core$Maybe$Nothing, aA: $elm$core$Maybe$Nothing, T: $elm$core$Dict$empty, ao: $elm$core$Maybe$Nothing, U: 100, C: $author$project$Main$defaultPaceOptions, d4: $elm$core$Maybe$Nothing, aR: $elm$core$Maybe$Nothing, v: $author$project$Main$defaultRelativeOptions, aD: 'route', ar: false, as: true, aE: true, ai: $elm$core$Maybe$Nothing, aI: $elm$core$Maybe$Nothing, a1: $elm$core$Maybe$Nothing, W: false, at: 60, d: $author$project$Main$NotLoaded, I: 1, au: $elm$time$Time$utc};
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
 		return {$: 3, a: a, b: b};
@@ -6561,7 +6561,7 @@ var $author$project$Main$trackpointAtDistance = F2(
 		var _v0 = A2(
 			$elm_community$list_extra$List$Extra$find,
 			function (tp) {
-				return _Utils_cmp(tp.a9, dist) > -1;
+				return _Utils_cmp(tp.ba, dist) > -1;
 			},
 			trackpoints);
 		if (!_v0.$) {
@@ -6580,12 +6580,12 @@ var $author$project$Main$cumulativeGainLossAtDistance = F2(
 				$elm$core$Maybe$map,
 				function (tp) {
 					return $elm$core$Result$Ok(
-						_Utils_Tuple2(tp.bb, tp.bf));
+						_Utils_Tuple2(tp.bc, tp.bg));
 				},
 				A2($author$project$Main$trackpointAtDistance, dist, trackpoints)));
 	});
 var $author$project$Main$effectiveDistance = function (ew) {
-	return A2($elm$core$Maybe$withDefault, ew.D.a9, ew.m.a9);
+	return A2($elm$core$Maybe$withDefault, ew.D.ba, ew.m.ba);
 };
 var $elm$core$Result$withDefault = F2(
 	function (def, result) {
@@ -6599,27 +6599,27 @@ var $elm$core$Result$withDefault = F2(
 var $author$project$Main$effectiveWaypoint = F2(
 	function (trackpoints, ew) {
 		var _v0 = function () {
-			var _v1 = ew.m.a9;
+			var _v1 = ew.m.ba;
 			if (!_v1.$) {
 				var overriddenDistance = _v1.a;
 				return A2(
 					$elm$core$Result$withDefault,
-					_Utils_Tuple2(ew.D.bb, ew.D.bf),
+					_Utils_Tuple2(ew.D.bc, ew.D.bg),
 					A2($author$project$Main$cumulativeGainLossAtDistance, overriddenDistance, trackpoints));
 			} else {
-				return _Utils_Tuple2(ew.D.bb, ew.D.bf);
+				return _Utils_Tuple2(ew.D.bc, ew.D.bg);
 			}
 		}();
 		var gain = _v0.a;
 		var loss = _v0.b;
 		return {
 			ce: A2($elm$core$Maybe$withDefault, ew.D.ce, ew.m.ce),
-			a9: $author$project$Main$effectiveDistance(ew),
-			bb: gain,
-			bf: loss,
+			ba: $author$project$Main$effectiveDistance(ew),
+			bc: gain,
+			bg: loss,
 			cD: A2($elm$core$Maybe$withDefault, ew.D.cD, ew.m.cD),
 			cI: function () {
-				var _v2 = ew.m.a9;
+				var _v2 = ew.m.ba;
 				if (!_v2.$) {
 					return 0;
 				} else {
@@ -6667,7 +6667,7 @@ var $author$project$GpxApi$encodeTrackpoints = $elm$json$Json$Encode$list(
 				[
 					_Utils_Tuple2(
 					'dist',
-					$elm$json$Json$Encode$float(point.a9)),
+					$elm$json$Json$Encode$float(point.ba)),
 					_Utils_Tuple2(
 					'ele',
 					$elm$json$Json$Encode$float(point.bC)),
@@ -6679,10 +6679,10 @@ var $author$project$GpxApi$encodeTrackpoints = $elm$json$Json$Encode$list(
 					$elm$json$Json$Encode$float(point.bM)),
 					_Utils_Tuple2(
 					'gain',
-					$elm$json$Json$Encode$float(point.bb)),
+					$elm$json$Json$Encode$float(point.bc)),
 					_Utils_Tuple2(
 					'loss',
-					$elm$json$Json$Encode$float(point.bf))
+					$elm$json$Json$Encode$float(point.bg))
 				]));
 	});
 var $author$project$GpxApi$encodeWaypoint = function (waypoint) {
@@ -6691,7 +6691,7 @@ var $author$project$GpxApi$encodeWaypoint = function (waypoint) {
 			[
 				_Utils_Tuple2(
 				'dist',
-				$elm$json$Json$Encode$float(waypoint.a9)),
+				$elm$json$Json$Encode$float(waypoint.ba)),
 				_Utils_Tuple2(
 				'name',
 				$elm$json$Json$Encode$string(waypoint.cD)),
@@ -6700,10 +6700,10 @@ var $author$project$GpxApi$encodeWaypoint = function (waypoint) {
 				A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$string, waypoint.ce)),
 				_Utils_Tuple2(
 				'gain',
-				$elm$json$Json$Encode$float(waypoint.bb)),
+				$elm$json$Json$Encode$float(waypoint.bc)),
 				_Utils_Tuple2(
 				'loss',
-				$elm$json$Json$Encode$float(waypoint.bf)),
+				$elm$json$Json$Encode$float(waypoint.bg)),
 				_Utils_Tuple2(
 				'offRoute',
 				$elm$json$Json$Encode$float(waypoint.cI))
@@ -6821,13 +6821,13 @@ var $author$project$Main$lastTrackpointDistance = function (trackpoints) {
 		A2(
 			$elm$core$Maybe$map,
 			function ($) {
-				return $.a9;
+				return $.ba;
 			},
 			$elm_community$list_extra$List$Extra$last(trackpoints)));
 };
 var $author$project$GpxApi$Waypoint = F6(
 	function (distance, name, categories, gain, loss, offRoute) {
-		return {ce: categories, a9: distance, bb: gain, bf: loss, cD: name, cI: offRoute};
+		return {ce: categories, ba: distance, bc: gain, bg: loss, cD: name, cI: offRoute};
 	});
 var $elm$core$List$drop = F2(
 	function (n, list) {
@@ -6930,7 +6930,7 @@ var $author$project$Main$refDistance = F2(
 			A3($author$project$Main$resolvePointRef, position, $elm$core$Maybe$Nothing, track),
 			$elm$core$Maybe$map(
 				function ($) {
-					return $.a9;
+					return $.ba;
 				}));
 	});
 var $elm$core$Tuple$mapSecond = F2(
@@ -6997,7 +6997,7 @@ var $author$project$Main$waypointSelectionPredicates = function (state) {
 		_List_fromArray(
 			[
 				state.Y ? $elm$core$Maybe$Just(
-				$author$project$Main$categoryPredicate(state.f)) : $elm$core$Maybe$Nothing,
+				$author$project$Main$categoryPredicate(state.g)) : $elm$core$Maybe$Nothing,
 				state.as ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
 				$author$project$Main$offRoutePredicate(state.U))
 			]));
@@ -7078,7 +7078,7 @@ var $author$project$Main$splitDistances = F2(
 								return A2(
 									$elm$core$List$map,
 									function ($) {
-										return $.a9;
+										return $.ba;
 									},
 									A2(
 										$elm$core$List$filter,
@@ -7102,7 +7102,7 @@ var $author$project$Main$waypointPredicates = function (state) {
 				return _List_fromArray(
 					[
 						function (wp) {
-						return (_Utils_cmp(wp.a9, pos - ep.ab) > -1) && (_Utils_cmp(wp.a9, pos + ep.aa) < 1);
+						return (_Utils_cmp(wp.ba, pos - ep.ab) > -1) && (_Utils_cmp(wp.ba, pos + ep.aa) < 1);
 					}
 					]);
 			} else {
@@ -7181,7 +7181,7 @@ var $author$project$Main$andMap = $elm$json$Json$Decode$map2($elm$core$Basics$ap
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $author$project$Zipper$Zipper = F3(
 	function (prev, current, next) {
-		return {c: current, bt: next, bh: prev};
+		return {c: current, bh: next, a$: prev};
 	});
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$list = _Json_decodeList;
@@ -7225,7 +7225,7 @@ var $author$project$Main$EditableTrack = F3(
 	});
 var $author$project$GpxApi$TrackPoint = F6(
 	function (distance, elevation, lat, lon, gain, loss) {
-		return {a9: distance, bC: elevation, bb: gain, bL: lat, bM: lon, bf: loss};
+		return {ba: distance, bC: elevation, bc: gain, bL: lat, bM: lon, bg: loss};
 	});
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $elm$json$Json$Decode$index = _Json_decodeIndex;
@@ -7260,7 +7260,7 @@ var $author$project$Main$EditableWaypoint = F4(
 	});
 var $author$project$Main$WaypointOverrides = F3(
 	function (name, distance, categories) {
-		return {ce: categories, a9: distance, cD: name};
+		return {ce: categories, ba: distance, cD: name};
 	});
 var $elm$json$Json$Decode$null = _Json_decodeNull;
 var $author$project$GpxApi$jsonDecodeNullableList = function (elementDecoder) {
@@ -7641,7 +7641,7 @@ var $author$project$Main$stateDecoder = function () {
 																																																																																						$author$project$Main$defaultState.X,
 																																																																																						A2($elm$core$Maybe$andThen, $author$project$Main$parseTab, activeTab)),
 																																																																																					Y: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.Y, categoryFilterEnabled),
-																																																																																					g: {
+																																																																																					f: {
 																																																																																						_: A2($elm$core$Maybe$withDefault, defCs._, distanceDetail),
 																																																																																						z: A2($elm$core$Maybe$withDefault, defCs.z, itemSpacing),
 																																																																																						L: A2($elm$core$Maybe$withDefault, defCs.L, referenceDistance),
@@ -7687,7 +7687,7 @@ var $author$project$Main$stateDecoder = function () {
 																																																																																						aJ: A2($elm$core$Maybe$withDefault, defEp.aJ, trackHeight),
 																																																																																						aK: A2($elm$core$Maybe$withDefault, defEp.aK, trackThickness)
 																																																																																					},
-																																																																																					f: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.f, filteredCategories),
+																																																																																					g: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.g, filteredCategories),
 																																																																																					R: $elm$core$Maybe$Nothing,
 																																																																																					aA: $elm$core$Maybe$Nothing,
 																																																																																					T: $elm$core$Dict$empty,
@@ -7730,7 +7730,7 @@ var $author$project$Main$stateDecoder = function () {
 																																																																																					aE: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.aE, showOptions),
 																																																																																					ai: $elm$core$Maybe$Nothing,
 																																																																																					aI: $elm$core$Maybe$Nothing,
-																																																																																					a0: $elm$core$Maybe$Nothing,
+																																																																																					a1: $elm$core$Maybe$Nothing,
 																																																																																					W: false,
 																																																																																					at: A2($elm$core$Maybe$withDefault, $author$project$Main$defaultState.at, trackingIntervalSec),
 																																																																																					d: $author$project$Main$loadableResourceFromMaybe(tracks),
@@ -7791,7 +7791,7 @@ var $author$project$Main$computeGainLoss = function (tps) {
 		var last = _v0.a;
 		if (tps.b) {
 			var first = tps.a;
-			return _Utils_Tuple2(last.bb - first.bb, last.bf - first.bf);
+			return _Utils_Tuple2(last.bc - first.bc, last.bg - first.bg);
 		} else {
 			return _Utils_Tuple2(0, 0);
 		}
@@ -7814,7 +7814,7 @@ var $author$project$Main$computeLiveSplitFromState = function (state) {
 			A2(
 				$elm$core$Maybe$map,
 				function ($) {
-					return $.a9;
+					return $.ba;
 				},
 				$elm$core$List$head(
 					$elm$core$List$reverse(tps))));
@@ -7835,13 +7835,13 @@ var $author$project$Main$computeLiveSplitFromState = function (state) {
 		var segTps = A2(
 			$elm$core$List$filter,
 			function (tp) {
-				return (_Utils_cmp(tp.a9, rangeStart) > -1) && (_Utils_cmp(tp.a9, rangeEnd) < 1);
+				return (_Utils_cmp(tp.ba, rangeStart) > -1) && (_Utils_cmp(tp.ba, rangeEnd) < 1);
 			},
 			tps);
 		var segWps = A2(
 			$elm$core$List$filter,
 			function (wp) {
-				return (_Utils_cmp(wp.a9, rangeStart) > -1) && (_Utils_cmp(wp.a9, rangeEnd) < 1);
+				return (_Utils_cmp(wp.ba, rangeStart) > -1) && (_Utils_cmp(wp.ba, rangeEnd) < 1);
 			},
 			A2(
 				$author$project$Main$filterWaypoints,
@@ -7850,7 +7850,7 @@ var $author$project$Main$computeLiveSplitFromState = function (state) {
 		var shift = function (record) {
 			return _Utils_update(
 				record,
-				{a9: record.a9 - rangeStart});
+				{ba: record.ba - rangeStart});
 		};
 		return $elm$core$Maybe$Just(
 			{
@@ -8252,11 +8252,6 @@ var $author$project$Main$StateFileRead = function (a) {
 var $author$project$Main$StateFileSelected = function (a) {
 	return {$: 72, a: a};
 };
-var $author$project$Main$calculateElevationProfileData = _Platform_outgoingPort('calculateElevationProfileData', $elm$json$Json$Encode$string);
-var $elm$core$Basics$clamp = F3(
-	function (low, high, number) {
-		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
-	});
 var $elm$core$List$append = F2(
 	function (xs, ys) {
 		if (!ys.b) {
@@ -8272,6 +8267,89 @@ var $elm$core$List$concatMap = F2(
 	function (f, list) {
 		return $elm$core$List$concat(
 			A2($elm$core$List$map, f, list));
+	});
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $author$project$Main$initialFilteredCategories = A2(
+	$elm$core$Basics$composeR,
+	A2(
+		$elm$core$List$foldl,
+		F2(
+			function (w, _v0) {
+				var acc = _v0.a;
+				var includeUnknown = _v0.b;
+				return $elm$core$List$isEmpty(w.ce) ? _Utils_Tuple2(acc, true) : _Utils_Tuple2(
+					A3(
+						$elm$core$List$foldl,
+						F2(
+							function (cat, d) {
+								return A3($elm$core$Dict$insert, cat, true, d);
+							}),
+						acc,
+						w.ce),
+					includeUnknown);
+			}),
+		_Utils_Tuple2($elm$core$Dict$empty, false)),
+	function (_v1) {
+		var d = _v1.a;
+		var hasUnknown = _v1.b;
+		return hasUnknown ? A3($elm$core$Dict$insert, $author$project$Main$unknownCategory, true, d) : d;
+	});
+var $elm$core$Dict$map = F2(
+	function (func, dict) {
+		if (dict.$ === -2) {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				A2(func, key, value),
+				A2($elm$core$Dict$map, func, left),
+				A2($elm$core$Dict$map, func, right));
+		}
+	});
+var $author$project$Main$availableWaypointCategories = function (state) {
+	var _v0 = state.d;
+	if (_v0.$ === 3) {
+		var tracks = _v0.a;
+		return A2(
+			$elm$core$Dict$map,
+			F2(
+				function (category, _v1) {
+					return A2(
+						$elm$core$Maybe$withDefault,
+						true,
+						A2($elm$core$Dict$get, category, state.g));
+				}),
+			$author$project$Main$initialFilteredCategories(
+				A2(
+					$elm$core$List$concatMap,
+					$author$project$Main$effectiveWaypoints,
+					_Utils_ap(
+						tracks.a$,
+						_Utils_ap(
+							_List_fromArray(
+								[tracks.c]),
+							tracks.bh)))));
+	} else {
+		return $elm$core$Dict$empty;
+	}
+};
+var $author$project$Main$calculateElevationProfileData = _Platform_outgoingPort('calculateElevationProfileData', $elm$json$Json$Encode$string);
+var $elm$core$Basics$clamp = F3(
+	function (low, high, number) {
+		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
 	});
 var $author$project$Main$correctWaypointSelection = F2(
 	function (display, indexed) {
@@ -8344,7 +8422,7 @@ var $author$project$Main$correctWaypointSelectionInState = function (s) {
 				$author$project$Main$filterWaypoints,
 				$author$project$Main$waypointPredicates(s),
 				$author$project$Main$effectiveWaypoints(tracks.c)));
-		var cs = s.g;
+		var cs = s.f;
 		var corrected = A2($author$project$Main$correctWaypointSelection, cs.n, indexed);
 		var clampToSelectable = F2(
 			function (fallback, ref) {
@@ -8375,7 +8453,7 @@ var $author$project$Main$correctWaypointSelectionInState = function (s) {
 		return _Utils_update(
 			s,
 			{
-				g: _Utils_update(
+				f: _Utils_update(
 					cs,
 					{n: corrected}),
 				v: _Utils_update(
@@ -8524,13 +8602,13 @@ var $author$project$Zipper$encode = F2(
 				[
 					_Utils_Tuple2(
 					'previous',
-					A2($elm$json$Json$Encode$list, encodeElement, zipper.bh)),
+					A2($elm$json$Json$Encode$list, encodeElement, zipper.a$)),
 					_Utils_Tuple2(
 					'current',
 					encodeElement(zipper.c)),
 					_Utils_Tuple2(
 					'next',
-					A2($elm$json$Json$Encode$list, encodeElement, zipper.bt))
+					A2($elm$json$Json$Encode$list, encodeElement, zipper.bh))
 				]));
 	});
 var $author$project$Main$encodeEditableWaypoint = function (ew) {
@@ -8567,7 +8645,7 @@ var $author$project$Main$encodeEditableWaypoint = function (ew) {
 							'distance',
 							$elm$json$Json$Encode$float(d));
 					},
-					ew.m.a9),
+					ew.m.ba),
 					A2(
 					$elm$core$Maybe$map,
 					function (cats) {
@@ -8592,12 +8670,12 @@ var $author$project$GpxApi$encodeStoredTrackpoints = $elm$json$Json$Encode$list(
 			$elm$json$Json$Encode$float,
 			_List_fromArray(
 				[
-					A2($author$project$GpxApi$roundedTo, 1, point.a9),
+					A2($author$project$GpxApi$roundedTo, 1, point.ba),
 					A2($author$project$GpxApi$roundedTo, 1, point.bC),
 					A2($author$project$GpxApi$roundedTo, 6, point.bL),
 					A2($author$project$GpxApi$roundedTo, 6, point.bM),
-					A2($author$project$GpxApi$roundedTo, 1, point.bb),
-					A2($author$project$GpxApi$roundedTo, 1, point.bf)
+					A2($author$project$GpxApi$roundedTo, 1, point.bc),
+					A2($author$project$GpxApi$roundedTo, 1, point.bg)
 				]));
 	});
 var $author$project$Main$encodeEditableTrack = function (track) {
@@ -8692,7 +8770,7 @@ var $author$project$Main$encodeSavedState = function (state) {
 	var rel = state.v;
 	var pace = state.C;
 	var ep = state.b;
-	var cs = state.g;
+	var cs = state.f;
 	return A2(
 		$elm$json$Json$Encode$encode,
 		0,
@@ -8734,7 +8812,7 @@ var $author$project$Main$encodeSavedState = function (state) {
 						$elm$core$Maybe$Just(
 						_Utils_Tuple2(
 							'filteredCategories',
-							A3($elm$json$Json$Encode$dict, $elm$core$Basics$identity, $elm$json$Json$Encode$bool, state.f))),
+							A3($elm$json$Json$Encode$dict, $elm$core$Basics$identity, $elm$json$Json$Encode$bool, state.g))),
 						$elm$core$Maybe$Just(
 						_Utils_Tuple2(
 							'fontSize',
@@ -9057,57 +9135,6 @@ var $author$project$RouteFilename$fromUploadFilename = function (uploadedFilenam
 		$elm$core$String$toLower(basename)) ? A2($elm$core$String$dropRight, 4, basename) : basename;
 	return $author$project$RouteFilename$sanitise(withoutGpx);
 };
-var $elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
-};
-var $author$project$Main$initialFilteredCategories = A2(
-	$elm$core$Basics$composeR,
-	A2(
-		$elm$core$List$foldl,
-		F2(
-			function (w, _v0) {
-				var acc = _v0.a;
-				var includeUnknown = _v0.b;
-				return $elm$core$List$isEmpty(w.ce) ? _Utils_Tuple2(acc, true) : _Utils_Tuple2(
-					A3(
-						$elm$core$List$foldl,
-						F2(
-							function (cat, d) {
-								return A3($elm$core$Dict$insert, cat, true, d);
-							}),
-						acc,
-						w.ce),
-					includeUnknown);
-			}),
-		_Utils_Tuple2($elm$core$Dict$empty, false)),
-	function (_v1) {
-		var d = _v1.a;
-		var hasUnknown = _v1.b;
-		return hasUnknown ? A3($elm$core$Dict$insert, $author$project$Main$unknownCategory, true, d) : d;
-	});
-var $elm$core$Dict$map = F2(
-	function (func, dict) {
-		if (dict.$ === -2) {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		} else {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				key,
-				A2(func, key, value),
-				A2($elm$core$Dict$map, func, left),
-				A2($elm$core$Dict$map, func, right));
-		}
-	});
 var $elm$core$Dict$member = F2(
 	function (key, dict) {
 		var _v0 = A2($elm$core$Dict$get, key, dict);
@@ -9119,7 +9146,7 @@ var $elm$core$Dict$member = F2(
 	});
 var $elm$file$File$name = _File_name;
 var $author$project$Zipper$navigateNext = function (zipper) {
-	var _v0 = zipper.bt;
+	var _v0 = zipper.bh;
 	if (!_v0.b) {
 		return zipper;
 	} else {
@@ -9127,13 +9154,13 @@ var $author$project$Zipper$navigateNext = function (zipper) {
 		var rest = _v0.b;
 		return A3(
 			$author$project$Zipper$Zipper,
-			A2($elm$core$List$cons, zipper.c, zipper.bh),
+			A2($elm$core$List$cons, zipper.c, zipper.a$),
 			first,
 			rest);
 	}
 };
 var $author$project$Zipper$navigatePrevious = function (zipper) {
-	var _v0 = zipper.bh;
+	var _v0 = zipper.a$;
 	if (!_v0.b) {
 		return zipper;
 	} else {
@@ -9143,7 +9170,7 @@ var $author$project$Zipper$navigatePrevious = function (zipper) {
 			$author$project$Zipper$Zipper,
 			rest,
 			first,
-			A2($elm$core$List$cons, zipper.c, zipper.bt));
+			A2($elm$core$List$cons, zipper.c, zipper.bh));
 	}
 };
 var $elm$core$Basics$neq = _Utils_notEqual;
@@ -9307,9 +9334,9 @@ var $author$project$Zipper$updateCurrent = F2(
 	function (update, zipper) {
 		return A3(
 			$author$project$Zipper$Zipper,
-			zipper.bh,
+			zipper.a$,
 			update(zipper.c),
-			zipper.bt);
+			zipper.bh);
 	});
 var $author$project$Main$removeWaypointAt = F2(
 	function (i, s) {
@@ -9336,12 +9363,12 @@ var $author$project$Main$removeWaypointAt = F2(
 			};
 			var rel = s.v;
 			var ep = s.b;
-			var cs = s.g;
+			var cs = s.f;
 			return $author$project$Main$correctWaypointSelectionInState(
 				_Utils_update(
 					s,
 					{
-						g: _Utils_update(
+						f: _Utils_update(
 							cs,
 							{
 								n: shiftDisplay(cs.n)
@@ -9498,6 +9525,10 @@ var $author$project$Main$sortPointRefs = F2(
 				$elm$core$Maybe$withDefault(0)));
 	});
 var $elm$file$File$toString = _File_toString;
+var $elm$core$Dict$union = F2(
+	function (t1, t2) {
+		return A3($elm$core$Dict$foldl, $elm$core$Dict$insert, t2, t1);
+	});
 var $author$project$Main$updateAndStoreModel = function (model) {
 	return _Utils_Tuple2(
 		model,
@@ -9568,7 +9599,7 @@ var $author$project$Main$update = F2(
 						_Utils_update(
 							s,
 							{
-								a0: $elm$core$Maybe$Just(error)
+								a1: $elm$core$Maybe$Just(error)
 							})),
 					$elm$core$Platform$Cmd$none);
 			case 3:
@@ -9576,7 +9607,7 @@ var $author$project$Main$update = F2(
 					updateState(
 						_Utils_update(
 							s,
-							{a0: $elm$core$Maybe$Nothing})),
+							{a1: $elm$core$Maybe$Nothing})),
 					$elm$core$Platform$Cmd$none);
 			case 4:
 				var show = msg.a;
@@ -9694,7 +9725,7 @@ var $author$project$Main$update = F2(
 													l: _List_Nil
 												});
 										}(),
-										f: newCategories,
+										g: newCategories,
 										d: function () {
 											var _v3 = $author$project$Zipper$fromList(
 												A2($elm$core$List$map, $author$project$Main$editableTrackFromGpxTrack, gpxTracks));
@@ -9828,7 +9859,7 @@ var $author$project$Main$update = F2(
 								A2(
 									$elm$core$Maybe$map,
 									function ($) {
-										return $.a9;
+										return $.ba;
 									},
 									nearest));
 							var offRouteDist = A2(
@@ -9891,13 +9922,13 @@ var $author$project$Main$update = F2(
 			case 18:
 				var category = msg.a;
 				var enabled = msg.b;
-				var newCategories = A3($elm$core$Dict$insert, category, enabled, s.f);
+				var newCategories = A3($elm$core$Dict$insert, category, enabled, s.g);
 				return updateSplitAndStore(
 					updateState(
 						$author$project$Main$correctWaypointSelectionInState(
 							_Utils_update(
 								s,
-								{f: newCategories}))));
+								{g: newCategories}))));
 			case 19:
 				var enabled = msg.a;
 				return updateSplitAndStore(
@@ -9914,13 +9945,16 @@ var $author$project$Main$update = F2(
 							_Utils_update(
 								s,
 								{
-									f: A2(
-										$elm$core$Dict$map,
-										F2(
-											function (_v10, _v11) {
-												return enabled;
-											}),
-										s.f)
+									g: A2(
+										$elm$core$Dict$union,
+										A2(
+											$elm$core$Dict$map,
+											F2(
+												function (_v10, _v11) {
+													return enabled;
+												}),
+											$author$project$Main$availableWaypointCategories(s)),
+										s.g)
 								}))));
 			case 21:
 				var _v12 = s.d;
@@ -9956,7 +9990,7 @@ var $author$project$Main$update = F2(
 																	{
 																	aN: true,
 																	Z: false,
-																	D: {ce: _List_Nil, a9: distance, bb: gain, bf: loss, cD: '', cI: 0},
+																	D: {ce: _List_Nil, ba: distance, bc: gain, bg: loss, cD: '', cI: 0},
 																	m: $author$project$Main$emptyOverrides
 																}
 																]))
@@ -10035,7 +10069,7 @@ var $author$project$Main$update = F2(
 																return _Utils_update(
 																	o,
 																	{
-																		a9: $elm$core$Maybe$Just(dist)
+																		ba: $elm$core$Maybe$Just(dist)
 																	});
 															},
 															ew);
@@ -10126,14 +10160,14 @@ var $author$project$Main$update = F2(
 						$elm$core$List$concatMap,
 						$author$project$Main$effectiveWaypoints,
 						_Utils_ap(
-							newTracks.bh,
+							newTracks.a$,
 							_Utils_ap(
 								_List_fromArray(
 									[newTracks.c]),
-								newTracks.bt)));
+								newTracks.bh)));
 					var newFilteredCategories = function () {
 						if (add) {
-							return A2($elm$core$Dict$member, cat, s.f) ? s.f : A3($elm$core$Dict$insert, cat, true, s.f);
+							return A2($elm$core$Dict$member, cat, s.g) ? s.g : A3($elm$core$Dict$insert, cat, true, s.g);
 						} else {
 							var catStillUsed = A2(
 								$elm$core$List$any,
@@ -10141,7 +10175,7 @@ var $author$project$Main$update = F2(
 									return A2($elm$core$List$member, cat, w.ce);
 								},
 								allEffectiveWaypoints);
-							return catStillUsed ? s.f : A2($elm$core$Dict$remove, cat, s.f);
+							return catStillUsed ? s.g : A2($elm$core$Dict$remove, cat, s.g);
 						}
 					}();
 					return updateSplitAndStore(
@@ -10149,7 +10183,7 @@ var $author$project$Main$update = F2(
 							_Utils_update(
 								s,
 								{
-									f: newFilteredCategories,
+									g: newFilteredCategories,
 									d: $author$project$Main$Loaded(newTracks)
 								})));
 				} else {
@@ -10196,13 +10230,13 @@ var $author$project$Main$update = F2(
 										})
 								});
 						};
-						var newFilteredCategories = A2($elm$core$Dict$member, trimmed, s.f) ? s.f : A3($elm$core$Dict$insert, trimmed, true, s.f);
+						var newFilteredCategories = A2($elm$core$Dict$member, trimmed, s.g) ? s.g : A3($elm$core$Dict$insert, trimmed, true, s.g);
 						return updateSplitAndStore(
 							updateState(
 								_Utils_update(
 									s,
 									{
-										f: newFilteredCategories,
+										g: newFilteredCategories,
 										T: A2($elm$core$Dict$remove, i, s.T),
 										d: $author$project$Main$Loaded(
 											A2(
@@ -10544,13 +10578,13 @@ var $author$project$Main$update = F2(
 					A2(
 						$elm$core$Maybe$map,
 						function (selection) {
-							var cs = s.g;
+							var cs = s.f;
 							return $author$project$Main$updateAndStoreModel(
 								updateState(
 									_Utils_update(
 										s,
 										{
-											g: _Utils_update(
+											f: _Utils_update(
 												cs,
 												{n: selection})
 										})));
@@ -10558,49 +10592,49 @@ var $author$project$Main$update = F2(
 						maybeSelection));
 			case 49:
 				var distance = msg.a;
-				var cs = s.g;
+				var cs = s.f;
 				return $author$project$Main$updateAndStoreModel(
 					updateState(
 						_Utils_update(
 							s,
 							{
-								g: _Utils_update(
+								f: _Utils_update(
 									cs,
 									{L: distance})
 							})));
 			case 50:
 				var spacing = msg.a;
-				var cs = s.g;
+				var cs = s.f;
 				return $author$project$Main$updateAndStoreModel(
 					updateState(
 						_Utils_update(
 							s,
 							{
-								g: _Utils_update(
+								f: _Utils_update(
 									cs,
 									{z: spacing})
 							})));
 			case 51:
 				var detail = msg.a;
-				var cs = s.g;
+				var cs = s.f;
 				return $author$project$Main$updateAndStoreModel(
 					updateState(
 						_Utils_update(
 							s,
 							{
-								g: _Utils_update(
+								f: _Utils_update(
 									cs,
 									{_: detail})
 							})));
 			case 52:
 				var show = msg.a;
-				var cs = s.g;
+				var cs = s.f;
 				return $author$project$Main$updateAndStoreModel(
 					updateState(
 						_Utils_update(
 							s,
 							{
-								g: _Utils_update(
+								f: _Utils_update(
 									cs,
 									{ah: show})
 							})));
@@ -10613,7 +10647,7 @@ var $author$project$Main$update = F2(
 							{ar: show})));
 			case 54:
 				var ref = msg.a;
-				var cs = s.g;
+				var cs = s.f;
 				var newDisplay = function () {
 					var _v23 = cs.n;
 					switch (_v23.$) {
@@ -10631,7 +10665,7 @@ var $author$project$Main$update = F2(
 						_Utils_update(
 							s,
 							{
-								g: _Utils_update(
+								f: _Utils_update(
 									cs,
 									{n: newDisplay})
 							})));
@@ -10933,14 +10967,14 @@ var $author$project$Main$displayedDistanceValue = F5(
 				return A2(
 					$elm$core$Maybe$map,
 					function (rw) {
-						return rw.a9 - distance;
+						return rw.ba - distance;
 					},
 					refWaypoint);
 			case 4:
 				return A2(
 					$elm$core$Maybe$map,
 					function (rw) {
-						return distance - rw.a9;
+						return distance - rw.ba;
 					},
 					refWaypoint);
 			case 5:
@@ -11237,7 +11271,7 @@ var $author$project$Main$waypointInfos = F3(
 	function (positionDistance, position, waypoints) {
 		var infoConstructor = function (wp) {
 			return _Utils_eq(
-				$elm$core$Maybe$Just(wp.a9),
+				$elm$core$Maybe$Just(wp.ba),
 				positionDistance) ? $author$project$Main$InfoPosition(wp) : $author$project$Main$InfoWaypoint(wp);
 		};
 		return $elm$core$List$reverse(
@@ -11245,7 +11279,7 @@ var $author$project$Main$waypointInfos = F3(
 				$elm$core$List$foldl,
 				F2(
 					function (el, accum) {
-						return (_Utils_cmp(el.a9, position) < 0) ? accum : _Utils_Tuple2(
+						return (_Utils_cmp(el.ba, position) < 0) ? accum : _Utils_Tuple2(
 							$elm$core$Maybe$Just(el),
 							_Utils_ap(
 								A2(
@@ -11261,8 +11295,8 @@ var $author$project$Main$waypointInfos = F3(
 													[
 														A2(
 														$author$project$Main$Ride,
-														el.a9 - previous.a9,
-														_Utils_Tuple2(el.bb - previous.bb, el.bf - previous.bf))
+														el.ba - previous.ba,
+														_Utils_Tuple2(el.bc - previous.bc, el.bg - previous.bg))
 													]);
 											},
 											accum.a))),
@@ -11324,7 +11358,7 @@ var $author$project$Main$cuesheetSvg = function (offRouteThreshold) {
 																	function (showOffRoute, fillAttrs, waypoint) {
 																		var offRouteLabel = $elm$core$String$fromInt(
 																			$elm$core$Basics$round(waypoint.cI)) + 'm off';
-																		var displayedDistance = A5($author$project$Main$displayedDistanceValue, cs.n, finishDist, cs.L, refWaypoint, waypoint.a9);
+																		var displayedDistance = A5($author$project$Main$displayedDistanceValue, cs.n, finishDist, cs.L, refWaypoint, waypoint.ba);
 																		var isReferencePoint = _Utils_eq(
 																			displayedDistance,
 																			$elm$core$Maybe$Just(0));
@@ -11338,43 +11372,43 @@ var $author$project$Main$cuesheetSvg = function (offRouteThreshold) {
 																						return $elm$core$Maybe$Nothing;
 																					case 0:
 																						return $elm$core$Maybe$Just(
-																							A2($author$project$Format$eleGainLoss, waypoint.bb, waypoint.bf));
+																							A2($author$project$Format$eleGainLoss, waypoint.bc, waypoint.bg));
 																					case 1:
 																						return A2(
 																							$elm$core$Maybe$map,
 																							function (last) {
-																								return A2($author$project$Format$eleGainLoss, last.bb - waypoint.bb, last.bf - waypoint.bf);
+																								return A2($author$project$Format$eleGainLoss, last.bc - waypoint.bc, last.bg - waypoint.bg);
 																							},
 																							lastWaypoint);
 																					case 2:
 																						return $elm$core$Maybe$Just(
-																							A2($author$project$Format$eleGainLoss, refPointEle.a - waypoint.bb, refPointEle.b - waypoint.bf));
+																							A2($author$project$Format$eleGainLoss, refPointEle.a - waypoint.bc, refPointEle.b - waypoint.bg));
 																					case 3:
 																						return A2(
 																							$elm$core$Maybe$map,
 																							function (rw) {
-																								return A2($author$project$Format$eleGainLoss, rw.bb - waypoint.bb, rw.bf - waypoint.bf);
+																								return A2($author$project$Format$eleGainLoss, rw.bc - waypoint.bc, rw.bg - waypoint.bg);
 																							},
 																							refWaypoint);
 																					case 4:
 																						return A2(
 																							$elm$core$Maybe$map,
 																							function (rw) {
-																								return A2($author$project$Format$eleGainLoss, waypoint.bb - rw.bb, waypoint.bf - rw.bf);
+																								return A2($author$project$Format$eleGainLoss, waypoint.bc - rw.bc, waypoint.bg - rw.bg);
 																							},
 																							refWaypoint);
 																					case 5:
 																						return A3(
 																							$elm$core$Maybe$map2,
 																							$author$project$Format$eleGainLossPercent,
-																							A2($author$project$Main$safePercent, waypoint.bb, totalGain),
-																							A2($author$project$Main$safePercent, waypoint.bf, totalLoss));
+																							A2($author$project$Main$safePercent, waypoint.bc, totalGain),
+																							A2($author$project$Main$safePercent, waypoint.bg, totalLoss));
 																					default:
 																						return A3(
 																							$elm$core$Maybe$map2,
 																							$author$project$Format$eleGainLossPercent,
-																							A2($author$project$Main$safePercent, totalGain - waypoint.bb, totalGain),
-																							A2($author$project$Main$safePercent, totalLoss - waypoint.bf, totalLoss));
+																							A2($author$project$Main$safePercent, totalGain - waypoint.bc, totalGain),
+																							A2($author$project$Main$safePercent, totalLoss - waypoint.bg, totalLoss));
 																				}
 																			}
 																		}();
@@ -11606,7 +11640,7 @@ var $author$project$Main$injectStartFinish = F3(
 			return A2(
 				$elm$core$List$any,
 				function (w) {
-					return _Utils_eq(w.a9, d);
+					return _Utils_eq(w.ba, d);
 				},
 				waypoints);
 		};
@@ -11651,7 +11685,7 @@ var $author$project$Main$liveNoPositionWarning = function (state) {
 };
 var $author$project$Main$referenceWaypoint = F2(
 	function (state, track) {
-		var _v0 = state.g.n;
+		var _v0 = state.f.n;
 		switch (_v0.$) {
 			case 3:
 				var ref = _v0.a;
@@ -11701,11 +11735,11 @@ var $author$project$Main$viewCuesheetTab = F2(
 		var positionWaypoint = A4($author$project$Main$resolvePointRef, state.d4, state.R, tracks.c, $author$project$Main$AtRoutePosition);
 		var currentFinishDistance = $author$project$Main$lastTrackpointDistance(tracks.c.da);
 		var currentEffectiveWaypoints = $author$project$Main$effectiveWaypoints(tracks.c);
-		var cs = state.g;
+		var cs = state.f;
 		var refPointEle = function () {
 			if (!refWaypoint.$) {
 				var wp = refWaypoint.a;
-				return _Utils_Tuple2(wp.bb, wp.bf);
+				return _Utils_Tuple2(wp.bc, wp.bg);
 			} else {
 				return A2(
 					$elm$core$Result$withDefault,
@@ -11716,7 +11750,7 @@ var $author$project$Main$viewCuesheetTab = F2(
 		var waypointsWithStartFinish = cs.ah ? A3($author$project$Main$injectStartFinish, currentFinishDistance, tracks.c.bH, currentEffectiveWaypoints) : currentEffectiveWaypoints;
 		var filteredWaypoints = A2(
 			$author$project$Main$trimWaypointCategories,
-			state.f,
+			state.g,
 			A2(
 				$author$project$Main$filterWaypoints,
 				$author$project$Main$waypointPredicates(state),
@@ -11724,7 +11758,7 @@ var $author$project$Main$viewCuesheetTab = F2(
 		var waypointsWithPosition = A2(
 			$elm$core$List$sortBy,
 			function ($) {
-				return $.a9;
+				return $.ba;
 			},
 			function () {
 				if (!positionWaypoint.$) {
@@ -11744,7 +11778,7 @@ var $author$project$Main$viewCuesheetTab = F2(
 					A2(
 						$elm$core$Maybe$map,
 						function ($) {
-							return $.a9;
+							return $.ba;
 						},
 						positionWaypoint))(scrollPosition)(waypointsWithPosition)(cs)(currentFinishDistance)(tracks.c.bH)(refPointEle)(refWaypoint)
 				]));
@@ -11765,7 +11799,7 @@ var $author$project$Main$computeIntensity = F2(
 						var prev = _v3.a;
 						var prevIntensity = _v3.b;
 						var acc = _v2.b;
-						var deltaD = current.a9 - prev.a9;
+						var deltaD = current.ba - prev.ba;
 						var grade = (deltaD > 0) ? ((current.bC - prev.bC) / deltaD) : 0;
 						var decay = A2($elm$core$Basics$pow, $elm$core$Basics$e, (-deltaD) / tau);
 						var climbingGrade = A2($elm$core$Basics$max, 0, grade);
@@ -11774,14 +11808,14 @@ var $author$project$Main$computeIntensity = F2(
 							_Utils_Tuple2(current, newIntensity),
 							A2(
 								$elm$core$List$cons,
-								{a9: current.a9, bc: newIntensity},
+								{ba: current.ba, bd: newIntensity},
 								acc));
 					}),
 				_Utils_Tuple2(
 					_Utils_Tuple2(first, 0),
 					_List_fromArray(
 						[
-							{a9: first.a9, bc: 0}
+							{ba: first.ba, bd: 0}
 						])),
 				rest);
 			var result = _v1.b;
@@ -11814,7 +11848,7 @@ var $author$project$Main$distanceMarkers = function (cfg) {
 		var metresPerDisplayedUnit = isPercent ? (cfg.bE / 100) : 1;
 		var toMarker = function (value) {
 			return {
-				a9: ((_Utils_cmp(vStart, vEnd) < 1) ? (value - vStart) : (vStart - value)) * metresPerDisplayedUnit,
+				ba: ((_Utils_cmp(vStart, vEnd) < 1) ? (value - vStart) : (vStart - value)) * metresPerDisplayedUnit,
 				cy: isPercent ? $author$project$Format$percent(value) : A2($author$project$Format$km, cfg.ci, value)
 			};
 		};
@@ -11848,7 +11882,7 @@ var $author$project$Main$distanceMarkers = function (cfg) {
 			A2(
 				$elm$core$Basics$composeR,
 				function ($) {
-					return $.a9;
+					return $.ba;
 				},
 				$elm$core$Basics$round),
 			A2(
@@ -11956,14 +11990,14 @@ var $author$project$Main$interpolateWaypointElevation = F2(
 			} else {
 				var a = trackPoints.a;
 				var others = trackPoints.b;
-				if (_Utils_cmp(a.a9, distance) > -1) {
+				if (_Utils_cmp(a.ba, distance) > -1) {
 					return a.bC;
 				} else {
 					if (!others.b) {
 						return a.bC;
 					} else {
 						var b = others.a;
-						if (_Utils_cmp(b.a9, distance) > -1) {
+						if (_Utils_cmp(b.ba, distance) > -1) {
 							return a.bC;
 						} else {
 							var $temp$trackPoints = others,
@@ -12002,8 +12036,8 @@ var $author$project$Main$renderIntensityShading = F7(
 		var stops = A2(
 			$elm$core$List$map,
 			function (point) {
-				var offsetPct = (maxDistance > 0) ? ($elm$core$String$fromFloat((point.a9 / maxDistance) * 100) + '%') : '0%';
-				var normalized = (intensityRange > 0) ? ((point.bc - minIntensity) / intensityRange) : 0;
+				var offsetPct = (maxDistance > 0) ? ($elm$core$String$fromFloat((point.ba / maxDistance) * 100) + '%') : '0%';
+				var normalized = (intensityRange > 0) ? ((point.bd - minIntensity) / intensityRange) : 0;
 				return A2(
 					$elm$svg$Svg$stop,
 					_List_fromArray(
@@ -12069,7 +12103,7 @@ var $author$project$Main$resolveElevationProfileSVGLine = F3(
 						A2(
 							$elm$core$List$map,
 							function (point) {
-								return calc.bm(point.a9) + (' ' + calc.bn(point.bC));
+								return calc.bn(point.ba) + (' ' + calc.bo(point.bC));
 							},
 							profileData))),
 					$elm$svg$Svg$Attributes$stroke('grey'),
@@ -12080,7 +12114,7 @@ var $author$project$Main$resolveElevationProfileSVGLine = F3(
 	});
 var $author$project$Main$XYCalculator = F2(
 	function (x, y) {
-		return {bm: x, bn: y};
+		return {bn: x, bo: y};
 	});
 var $author$project$Main$xyCalculator = function (cfg) {
 	var svgWidthPerDistanceUnit = cfg.c5 / cfg.cA;
@@ -12177,7 +12211,7 @@ var $author$project$Main$profile = function (segmentIndex) {
 																					A2(
 																						$elm$core$List$concatMap,
 																						function (tickElev) {
-																							var y = calc.bn(tickElev);
+																							var y = calc.bo(tickElev);
 																							return _List_fromArray(
 																								[
 																									A2(
@@ -12218,7 +12252,7 @@ var $author$project$Main$profile = function (segmentIndex) {
 																					A2(
 																						$elm$core$List$concatMap,
 																						function (marker) {
-																							var x = calc.bm(marker.a9);
+																							var x = calc.bn(marker.ba);
 																							return _List_fromArray(
 																								[
 																									A2(
@@ -12262,9 +12296,9 @@ var $author$project$Main$profile = function (segmentIndex) {
 																						return A2(
 																							$elm$core$List$concatMap,
 																							function (waypoint) {
-																								var y = calc.bn(
-																									A2($author$project$Main$interpolateWaypointElevation, fullTrackpoints, waypoint.a9) - 5);
-																								var x = calc.bm(waypoint.a9);
+																								var y = calc.bo(
+																									A2($author$project$Main$interpolateWaypointElevation, fullTrackpoints, waypoint.ba) - 5);
+																								var x = calc.bn(waypoint.ba);
 																								var isOffRoute = _Utils_cmp(waypoint.cI, offRouteThreshold) > 0;
 																								var strokeColor = isOffRoute ? $author$project$Main$offRouteColour : 'lightgray';
 																								return _List_fromArray(
@@ -12311,9 +12345,9 @@ var $author$project$Main$profile = function (segmentIndex) {
 																					function () {
 																					if (!maybePosition.$) {
 																						var posDistance = maybePosition.a;
-																						var yPos = calc.bn(
+																						var yPos = calc.bo(
 																							A2($author$project$Main$interpolateWaypointElevation, fullTrackpoints, posDistance));
-																						var xPos = calc.bm(posDistance);
+																						var xPos = calc.bn(posDistance);
 																						return A2(
 																							$elm$svg$Svg$g,
 																							_List_Nil,
@@ -12437,7 +12471,7 @@ var $author$project$Main$viewElevationProfileTab = F2(
 		var ep = state.b;
 		var fullIntensity = ep.ag ? A2($author$project$Main$computeIntensity, ep.am, tracks.c.da) : _List_Nil;
 		var currentFinishDistance = $author$project$Main$lastTrackpointDistance(tracks.c.da);
-		var cs = state.g;
+		var cs = state.f;
 		var _v0 = A3(
 			$elm$core$List$foldl,
 			F2(
@@ -12445,8 +12479,8 @@ var $author$project$Main$viewElevationProfileTab = F2(
 					var mn = _v1.a;
 					var mx = _v1.b;
 					return _Utils_Tuple2(
-						A2($elm$core$Basics$min, mn, pt.bc),
-						A2($elm$core$Basics$max, mx, pt.bc));
+						A2($elm$core$Basics$min, mn, pt.bd),
+						A2($elm$core$Basics$max, mx, pt.bd));
 				}),
 			_Utils_Tuple2(1 / 0, -(1 / 0)),
 			fullIntensity);
@@ -12478,7 +12512,7 @@ var $author$project$Main$viewElevationProfileTab = F2(
 							A2(
 								$elm$core$Maybe$map,
 								function ($) {
-									return $.a9;
+									return $.ba;
 								},
 								$elm$core$List$head(
 									$elm$core$List$reverse(seg.da))));
@@ -12490,12 +12524,12 @@ var $author$project$Main$viewElevationProfileTab = F2(
 								function (pt) {
 									return _Utils_update(
 										pt,
-										{a9: pt.a9 - segStart});
+										{ba: pt.ba - segStart});
 								},
 								A2(
 									$elm$core$List$filter,
 									function (pt) {
-										return (_Utils_cmp(pt.a9, segStart) > -1) && (_Utils_cmp(pt.a9, segEnd) < 1);
+										return (_Utils_cmp(pt.ba, segStart) > -1) && (_Utils_cmp(pt.ba, segEnd) < 1);
 									},
 									fullIntensity)));
 						var markers = $author$project$Main$distanceMarkers(
@@ -12852,7 +12886,8 @@ var $author$project$Main$viewCategoryFilterOptions = function (state) {
 										A2($author$project$Main$CategoryEnabled, cat, !included),
 										(!_Utils_eq(cat, $author$project$Main$unknownCategory)) ? cat : 'unknown');
 								},
-								$elm$core$Dict$toList(state.f)),
+								$elm$core$Dict$toList(
+									$author$project$Main$availableWaypointCategories(state))),
 							_List_fromArray(
 								[
 									A2(
@@ -12934,7 +12969,7 @@ var $abadi199$elm_input_extra$Dropdown$Item = F3(
 	});
 var $abadi199$elm_input_extra$Dropdown$Options = F3(
 	function (items, emptyItem, onChange) {
-		return {bo: emptyItem, br: items, bW: onChange};
+		return {bp: emptyItem, bs: items, bW: onChange};
 	});
 var $author$project$Main$UpdateReferenceDistance = function (a) {
 	return {$: 49, a: a};
@@ -12973,12 +13008,12 @@ var $abadi199$elm_input_extra$Dropdown$onChange = F2(
 var $abadi199$elm_input_extra$Dropdown$dropdown = F3(
 	function (options, attributes, currentValue) {
 		var itemsWithEmptyItems = function () {
-			var _v1 = options.bo;
+			var _v1 = options.bp;
 			if (!_v1.$) {
 				var emptyItem = _v1.a;
-				return A2($elm$core$List$cons, emptyItem, options.br);
+				return A2($elm$core$List$cons, emptyItem, options.bs);
 			} else {
-				return options.br;
+				return options.bs;
 			}
 		}();
 		var isSelected = function (value) {
@@ -13014,13 +13049,13 @@ var $abadi199$elm_input_extra$Dropdown$dropdown = F3(
 				attributes,
 				_List_fromArray(
 					[
-						A2($abadi199$elm_input_extra$Dropdown$onChange, options.bo, options.bW)
+						A2($abadi199$elm_input_extra$Dropdown$onChange, options.bp, options.bW)
 					])),
 			A2($elm$core$List$map, toOption, itemsWithEmptyItems));
 	});
 var $author$project$Main$waypointDisplayName = function (waypoint) {
 	return $elm$core$String$isEmpty(
-		$elm$core$String$trim(waypoint.cD)) ? ('Unnamed waypoint (' + (A2($author$project$Format$km, 1, waypoint.a9) + ')')) : waypoint.cD;
+		$elm$core$String$trim(waypoint.cD)) ? ('Unnamed waypoint (' + (A2($author$project$Format$km, 1, waypoint.ba) + ')')) : waypoint.cD;
 };
 var $author$project$Main$viewPointSelector = F3(
 	function (_v0, indexed, selected) {
@@ -13063,7 +13098,7 @@ var $author$project$Main$viewPointSelector = F3(
 									$abadi199$elm_input_extra$Dropdown$Item,
 									$author$project$Main$formatPointRef(
 										$author$project$Main$AtWaypoint(idx)),
-									$author$project$Main$waypointDisplayName(wp) + (' (' + (A2($author$project$Format$km, 1, wp.a9) + ')')),
+									$author$project$Main$waypointDisplayName(wp) + (' (' + (A2($author$project$Format$km, 1, wp.ba) + ')')),
 									true);
 							},
 							indexed),
@@ -13098,7 +13133,7 @@ var $author$project$Main$viewTotalDistanceOptions = function (state) {
 			return $author$project$Main$lastTrackpointDistance(ts.c.da);
 		},
 		maybeTracks);
-	var cs = state.g;
+	var cs = state.f;
 	var filteredWps = A2(
 		$elm$core$Maybe$withDefault,
 		_List_Nil,
@@ -13108,7 +13143,7 @@ var $author$project$Main$viewTotalDistanceOptions = function (state) {
 				var currentEffective = $author$project$Main$effectiveWaypoints(ts.c);
 				return A2(
 					$author$project$Main$trimWaypointCategories,
-					state.f,
+					state.g,
 					A2(
 						$author$project$Main$filterWaypoints,
 						$author$project$Main$waypointPredicates(state),
@@ -13259,7 +13294,7 @@ var $author$project$Main$viewTotalDistanceOptions = function (state) {
 			}()));
 };
 var $author$project$Main$viewCuesheetOptionsPanel = function (state) {
-	var cs = state.g;
+	var cs = state.f;
 	return _List_fromArray(
 		[
 			A2(
@@ -13723,7 +13758,8 @@ var $author$project$Main$viewElevationProfileOptions = function (state) {
 										A2(
 											$elm$core$List$map,
 											categoryCheckbox,
-											$elm$core$Dict$keys(state.f)))
+											$elm$core$Dict$keys(
+												$author$project$Main$availableWaypointCategories(state))))
 									]);
 						}
 					}()
@@ -14075,7 +14111,7 @@ var $author$project$Main$viewTrackNavigationButtons = function (state) {
 		return $elm$core$List$concat(
 			_List_fromArray(
 				[
-					(!$elm$core$List$isEmpty(tracks.bh)) ? _List_fromArray(
+					(!$elm$core$List$isEmpty(tracks.a$)) ? _List_fromArray(
 					[
 						A3(
 						$author$project$Main$viewButton,
@@ -14086,7 +14122,7 @@ var $author$project$Main$viewTrackNavigationButtons = function (state) {
 						'PREV',
 						$author$project$Main$NavigateToPrevious)
 					]) : _List_Nil,
-					(!$elm$core$List$isEmpty(tracks.bt)) ? _List_fromArray(
+					(!$elm$core$List$isEmpty(tracks.bh)) ? _List_fromArray(
 					[
 						A3(
 						$author$project$Main$viewButton,
@@ -15128,7 +15164,7 @@ var $author$project$Main$viewArrivalCard = F5(
 						A2(
 							$author$project$Ui$row,
 							'Climb to go',
-							A2($author$project$Format$eleGainLoss, end.bb - start.bb, end.bf - start.bf))),
+							A2($author$project$Format$eleGainLoss, end.bc - start.bc, end.bg - start.bg))),
 						$elm$core$Maybe$Just(
 						A2(
 							$author$project$Ui$row,
@@ -15217,7 +15253,7 @@ var $author$project$Main$viewPaceCard = F2(
 	});
 var $author$project$Main$viewPaceEstimate = F3(
 	function (state, start, end) {
-		var distanceToGo = end.a9 - start.a9;
+		var distanceToGo = end.ba - start.ba;
 		if (distanceToGo <= 0) {
 			return _List_fromArray(
 				[
@@ -15303,7 +15339,7 @@ var $author$project$Main$relativePointFor = F3(
 			$elm$core$Maybe$map,
 			function (tp) {
 				return {
-					a7: !_Utils_eq(fix, $elm$core$Maybe$Nothing),
+					a8: !_Utils_eq(fix, $elm$core$Maybe$Nothing),
 					bC: A2(
 						$elm$core$Maybe$withDefault,
 						tp.bC,
@@ -15313,7 +15349,7 @@ var $author$project$Main$relativePointFor = F3(
 								return $.ca;
 							},
 							fix)),
-					ba: !_Utils_eq(
+					bb: !_Utils_eq(
 						A2(
 							$elm$core$Maybe$andThen,
 							function ($) {
@@ -15333,14 +15369,14 @@ var $author$project$Main$relativePointFor = F3(
 					q: waypoint
 				};
 			},
-			A2($author$project$Main$trackpointAtDistance, waypoint.a9, trackpoints));
+			A2($author$project$Main$trackpointAtDistance, waypoint.ba, trackpoints));
 	});
 var $author$project$Main$elevationLabel = function (fromGps) {
 	return fromGps ? 'Elevation (GPS)' : 'Elevation';
 };
 var $author$project$Main$snapNote = function (point) {
 	return (point.q.cI > 0) ? $elm$core$Maybe$Just(
-		'nearest route point to ' + ((point.a7 ? 'your fix' : 'the waypoint') + (', ' + ($author$project$Format$m(point.q.cI) + ' away')))) : $elm$core$Maybe$Nothing;
+		'nearest route point to ' + ((point.a8 ? 'your fix' : 'the waypoint') + (', ' + ($author$project$Format$m(point.q.cI) + ' away')))) : $elm$core$Maybe$Nothing;
 };
 var $author$project$Main$viewRelativeContextCard = F3(
 	function (track, card, point) {
@@ -15371,12 +15407,12 @@ var $author$project$Main$viewRelativeContextCard = F3(
 						_List_fromArray(
 							[
 								$elm$html$Html$text(
-								card.a6 ? '▸' : '▾')
+								card.a7 ? '▸' : '▾')
 							])),
 					A2(
 						$elm$core$List$cons,
 						$elm$html$Html$text(card.bZ),
-						card.a6 ? _List_fromArray(
+						card.a7 ? _List_fromArray(
 							[
 								A2(
 								$elm$html$Html$span,
@@ -15391,7 +15427,7 @@ var $author$project$Main$viewRelativeContextCard = F3(
 										$author$project$Main$waypointDisplayName(waypoint))
 									]))
 							]) : _List_Nil))),
-			card.a6 ? _List_Nil : A2(
+			card.a7 ? _List_Nil : A2(
 				$elm$core$List$filterMap,
 				$elm$core$Basics$identity,
 				_List_fromArray(
@@ -15428,13 +15464,13 @@ var $author$project$Main$viewRelativeContextCard = F3(
 						$elm$core$Maybe$Just(
 						A2(
 							$author$project$Ui$row,
-							$author$project$Main$elevationLabel(point.ba),
+							$author$project$Main$elevationLabel(point.bb),
 							$author$project$Format$m(point.bC))),
 						$elm$core$Maybe$Just(
 						A2(
 							$author$project$Ui$row,
 							'From start',
-							A2($author$project$Format$km, 1, waypoint.a9) + (' · ' + A2($author$project$Format$eleGainLoss, waypoint.bb, waypoint.bf)))),
+							A2($author$project$Format$km, 1, waypoint.ba) + (' · ' + A2($author$project$Format$eleGainLoss, waypoint.bc, waypoint.bg)))),
 						$elm$core$Maybe$Just(
 						A2(
 							$author$project$Ui$row,
@@ -15442,7 +15478,7 @@ var $author$project$Main$viewRelativeContextCard = F3(
 							A2(
 								$author$project$Format$km,
 								1,
-								$author$project$Main$lastTrackpointDistance(track.da) - waypoint.a9) + (' · ' + A2($author$project$Format$eleGainLoss, totalGain - waypoint.bb, totalLoss - waypoint.bf))))
+								$author$project$Main$lastTrackpointDistance(track.da) - waypoint.ba) + (' · ' + A2($author$project$Format$eleGainLoss, totalGain - waypoint.bc, totalLoss - waypoint.bg))))
 					])));
 	});
 var $author$project$Main$SetRelativeEnd = function (a) {
@@ -15591,17 +15627,17 @@ var $author$project$Main$viewRelativeTravelCard = F4(
 				function (_v1) {
 					var wp = _v1.b;
 					return (_Utils_cmp(
-						wp.a9,
-						A2($elm$core$Basics$min, start.q.a9, end.q.a9)) > 0) && (_Utils_cmp(
-						wp.a9,
-						A2($elm$core$Basics$max, start.q.a9, end.q.a9)) < 0);
+						wp.ba,
+						A2($elm$core$Basics$min, start.q.ba, end.q.ba)) > 0) && (_Utils_cmp(
+						wp.ba,
+						A2($elm$core$Basics$max, start.q.ba, end.q.ba)) < 0);
 				},
 				selectable));
-		var usingFix = start.a7 || end.a7;
+		var usingFix = start.a8 || end.a8;
 		var elevationDifference = end.bC - start.bC;
 		var crowFlies = A2($author$project$Location$haversineDistance, start.aY, end.aY);
-		var alongRoute = end.q.a9 - start.q.a9;
-		var _v0 = (alongRoute < 0) ? _Utils_Tuple2(start.q.bf - end.q.bf, start.q.bb - end.q.bb) : _Utils_Tuple2(end.q.bb - start.q.bb, end.q.bf - start.q.bf);
+		var alongRoute = end.q.ba - start.q.ba;
+		var _v0 = (alongRoute < 0) ? _Utils_Tuple2(start.q.bg - end.q.bg, start.q.bc - end.q.bc) : _Utils_Tuple2(end.q.bc - start.q.bc, end.q.bg - start.q.bg);
 		var gain = _v0.a;
 		var loss = _v0.b;
 		return A2(
@@ -15638,7 +15674,7 @@ var $author$project$Main$viewRelativeTravelCard = F4(
 								$elm$core$Maybe$Just(
 								A2(
 									$author$project$Ui$row,
-									$author$project$Main$elevationLabel(start.ba || end.ba),
+									$author$project$Main$elevationLabel(start.bb || end.bb),
 									$author$project$Format$signedM(elevationDifference))),
 								(crowFlies > 0) ? $elm$core$Maybe$Just(
 								A2(
@@ -15737,7 +15773,7 @@ var $author$project$Main$viewRelativeTab = F2(
 						A2(
 						contextCardOrNotice,
 						{
-							a6: rel.aH,
+							a7: rel.aH,
 							bD: 'Choose a start point.',
 							bX: $author$project$Main$SetRelativeStartCollapsed(!rel.aH),
 							bZ: 'Start'
@@ -15767,7 +15803,7 @@ var $author$project$Main$viewRelativeTab = F2(
 						A2(
 						contextCardOrNotice,
 						{
-							a6: rel.ax,
+							a7: rel.ax,
 							bD: 'Choose an end point.',
 							bX: $author$project$Main$SetRelativeEndCollapsed(!rel.ax),
 							bZ: 'End'
@@ -15881,8 +15917,8 @@ var $author$project$Main$viewTabBar = function (activeTab) {
 			]));
 };
 var $author$project$Main$viewTrackNavigation = function (tracks) {
-	var hasPrev = !$elm$core$List$isEmpty(tracks.bh);
-	var hasNext = !$elm$core$List$isEmpty(tracks.bt);
+	var hasPrev = !$elm$core$List$isEmpty(tracks.a$);
+	var hasNext = !$elm$core$List$isEmpty(tracks.bh);
 	return ((!hasPrev) && (!hasNext)) ? $elm$html$Html$text('') : A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -15906,8 +15942,8 @@ var $author$project$Main$viewTrackNavigation = function (tracks) {
 					])) : $elm$html$Html$text(''),
 				$elm$html$Html$text(
 				'Track ' + ($elm$core$String$fromInt(
-					$elm$core$List$length(tracks.bh) + 1) + (' of ' + $elm$core$String$fromInt(
-					($elm$core$List$length(tracks.bh) + 1) + $elm$core$List$length(tracks.bt))))),
+					$elm$core$List$length(tracks.a$) + 1) + (' of ' + $elm$core$String$fromInt(
+					($elm$core$List$length(tracks.a$) + 1) + $elm$core$List$length(tracks.bh))))),
 				hasNext ? A2(
 				$elm$html$Html$button,
 				_List_fromArray(
@@ -16220,7 +16256,7 @@ var $author$project$Main$viewWaypointsTab = F2(
 															$elm$html$Html$Attributes$min('0'),
 															A3($elm$core$Basics$composeR, $elm$core$String$fromFloat, $elm$html$Html$Attributes$max, maxDistance),
 															$elm$html$Html$Attributes$value(
-															$elm$core$String$fromFloat(wp.a9)),
+															$elm$core$String$fromFloat(wp.ba)),
 															$elm$html$Html$Events$onInput(
 															A2(
 																$elm$core$Basics$composeR,
@@ -16265,7 +16301,7 @@ var $author$project$Main$viewWaypointsTab = F2(
 												function (c) {
 													return !_Utils_eq(c, $author$project$Main$unknownCategory);
 												},
-												$elm$core$Dict$keys(state.f)),
+												$elm$core$Dict$keys(state.g)),
 											A2(
 												$elm$core$Maybe$withDefault,
 												'',
@@ -16294,7 +16330,7 @@ var $author$project$Main$view = function (_v0) {
 				_Utils_ap(
 					A3($author$project$Main$viewWarningBanner, 'Failed to restore saved state: ', $author$project$Main$DismissStateDecodeError, state.aI),
 					_Utils_ap(
-						A3($author$project$Main$viewWarningBanner, 'Couldn\'t save this route, so it won\'t be here when you come back: ', $author$project$Main$DismissStorageError, state.a0),
+						A3($author$project$Main$viewWarningBanner, 'Couldn\'t save this route, so it won\'t be here when you come back: ', $author$project$Main$DismissStorageError, state.a1),
 						function () {
 							var _v1 = state.d;
 							switch (_v1.$) {

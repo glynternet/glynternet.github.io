@@ -984,7 +984,16 @@ update msg model =
             updateSplitAndStore (updateState <| correctWaypointSelectionInState { s | categoryFilterEnabled = enabled })
 
         SetAllCategoriesEnabled enabled ->
-            updateSplitAndStore (updateState <| correctWaypointSelectionInState { s | filteredCategories = Dict.map (\_ _ -> enabled) s.filteredCategories })
+            updateSplitAndStore
+                (updateState <|
+                    correctWaypointSelectionInState
+                        { s
+                            | filteredCategories =
+                                Dict.union
+                                    (Dict.map (\_ _ -> enabled) (availableWaypointCategories s))
+                                    s.filteredCategories
+                        }
+                )
 
         -- Waypoint editing
         AddWaypoint ->
@@ -1918,6 +1927,22 @@ initialFilteredCategories =
                 else
                     d
            )
+
+
+{-| Category controls reflect undeleted waypoints across all tracks. Keep saved
+checkbox choices separate so undoing a deletion restores the previous selection.
+-}
+availableWaypointCategories : State -> Dict.Dict String Bool
+availableWaypointCategories state =
+    case state.tracks of
+        Loaded tracks ->
+            (tracks.prev ++ [ tracks.current ] ++ tracks.next)
+                |> List.concatMap effectiveWaypoints
+                |> initialFilteredCategories
+                |> Dict.map (\category _ -> Dict.get category state.filteredCategories |> Maybe.withDefault True)
+
+        _ ->
+            Dict.empty
 
 
 filterWaypoints : List (GpxApi.Waypoint -> Bool) -> List GpxApi.Waypoint -> List GpxApi.Waypoint
@@ -4806,7 +4831,7 @@ viewCategoryFilterOptions state =
             ]
             :: (if state.categoryFilterEnabled then
                     [ Html.fieldset []
-                        ((state.filteredCategories
+                        ((availableWaypointCategories state
                             |> Dict.toList
                             |> List.map
                                 (\( cat, included ) ->
@@ -5032,7 +5057,7 @@ viewElevationProfileOptions state =
                                     ++ ")"
                                 )
                     in
-                    [ Html.fieldset [] (List.map categoryCheckbox (Dict.keys state.filteredCategories)) ]
+                    [ Html.fieldset [] (List.map categoryCheckbox (Dict.keys (availableWaypointCategories state))) ]
             ]
         )
     , Html.hr [] []
