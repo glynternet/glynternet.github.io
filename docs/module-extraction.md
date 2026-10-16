@@ -1,10 +1,10 @@
 # Route App Module Extraction
 
-`elm/route/src/Main.elm` is ~5,900 lines. The plan is not to break it up for its own sake —
+`elm/route/src/Main.elm` is ~5,800 lines. The plan is not to break it up for its own sake —
 the win is testability and blast radius, so each extraction below is worth doing only where it
 leaves behind something that can be reasoned about, or tested, on its own.
 
-Three are already done. `elm/shared/src/` now holds `Wallclock`, `Format` and `Ui` alongside
+Four are already done. `elm/shared/src/` now holds `Wallclock`, `Format`, `Ui` and `Pace` alongside
 the older `GpxApi`, `Location` and `Zipper`. `elm/route/elm.json`'s `source-directories`
 already points at `../shared/src`, so **a new module dropped in there needs no wiring**.
 
@@ -27,54 +27,25 @@ Commit `44f78e1`. Names lost their `format` prefix: `Format.km`, `Format.eleGain
 Commit `0ec2417`. All `Html msg` rather than `Html Msg`, so nothing in `Ui` knows what the
 app's messages are.
 
-## 4. `Pace` — the arrival-estimate arithmetic
+## ~~4. `Pace` — the arrival-estimate arithmetic~~ ✅ Done
 
-**Impact:** Medium | **Effort:** Low-Medium
+`elm/shared/src/Pace.elm` now owns the options, source selection, defaults, saved source
+names and speed/elapsed-time calculations. `metresPerSecond` requires only a record with
+`position`, `now` and `zone`, plus the pace options; `elapsedSoFar` needs only `now` and
+`zone`, plus the options. Neither function depends on the app's `State`.
 
-The Pace tab's calculation currently takes the whole `State`:
+`Options point` takes the endpoint type as a parameter, so `Main` uses `Pace.Options PointRef`
+without moving the route model. The app supplies the default endpoints to
+`Pace.defaultOptions AtRoutePosition AtRouteEnd`. User-facing controls, notices and arrival
+cards remain in `Main`, and the saved-state field names and source strings are unchanged.
 
-| Function | Main.elm | Signature today |
-| --- | --- | --- |
-| `paceMetresPerSecond` | ~4214 | `State -> Maybe Float` |
-| `averageSoFar` | ~4236 | `State -> Float -> Maybe Float` |
-| `elapsedSoFar` | ~4246 | `State -> Maybe Float` |
-| `elapsedSinceRideStart` | ~4266 | `State -> Maybe Float` |
-| `ifPositive` | ~4274 | `Float -> Maybe Float` |
+`elm/route/tests/PaceTest.elm` covers set speeds, missing/non-positive distance and elapsed
+time, invalid or future start datetimes, missing clocks, local timezone conversion, clock
+updates, midnight/multi-day/year boundaries and the existing saved source names.
 
-It only ever reads **four** fields: `state.pace`, `state.position`, `state.now`, `state.zone`.
-Taking `State` hides that, and means the arithmetic cannot be exercised without building an
-entire app state — which is why it has no tests today, despite being the part most worth
-testing after `Wallclock`.
-
-**What to do:** a `Pace` module in `elm/shared/src/` holding `PaceOptions` (Main.elm:451),
-`PaceSource` (:474), `defaultPaceOptions` (:532), `parsePaceSource` / `formatPaceSource`
-(:5530, :5546) and the five functions above, with the app's state replaced by an explicit
-record:
-
-```elm
-metresPerSecond : { position : Maybe Float, now : Maybe Time.Posix, zone : Time.Zone } -> PaceOptions -> Maybe Float
-```
-
-This is a design change rather than a move, which is why it was not done alongside 1–3. Give
-it its own commit.
-
-**Then test it.** The cases are already known and were checked by hand against a running
-build; they should be `elm-test` cases in `elm/route/tests/`:
-
-- a set speed of 0, negative, and a normal value
-- ride-so-far with no position set, with a position of 0, and with a normal position
-- ride-so-far with 0 elapsed, negative elapsed, and a start datetime in the future
-- a start datetime that is empty, half-typed (`2026-08`) or junk
-- elapsed spanning midnight, several days, and a year boundary
-
-**Leave behind:** `noPaceNotice` (:4447) and `rideSoFarNotice` (:4471) are user-facing copy,
-not arithmetic. They stay in `Main` with the view.
-
-**Known limitation to preserve and keep documented:** `elapsedSinceRideStart` differences two
-wall-clock times with no timezone database, so a span crossing a daylight-saving change is out
-by that hour. Immaterial next to the accuracy of a pace estimate; do not silently "fix" it by
-changing behaviour without saying so. It is exactly fixable by round-tripping the zone offset
-at the start instant if it ever matters.
+**Preserved limitation:** elapsed time from a start datetime differences local wall-clock
+times without a timezone database, so a span crossing a daylight-saving change is off by
+that hour. This remains documented on `Pace.elapsedSinceRideStart`.
 
 ## 5. `Route` — the track model and the point vocabulary
 

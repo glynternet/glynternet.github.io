@@ -90,12 +90,12 @@ This is a Jekyll static site with the following structure:
 The route app is one monolithic Elm file (~5800 lines). To orient quickly:
 
 - **Rough section map** (line numbers approximate — grep the names):
-  - Model/`State`, option records, and defaults: ~`type alias State` through `defaultPaceOptions`
+  - Model/`State`, option records, and defaults: ~`type alias State` through `defaultRelativeOptions`; Pace options/defaults live in `Pace`
   - `Msg` + `update`
   - Elevation profile rendering: `viewElevationProfileTab`, `profile`, `distanceMarkers`
   - Cuesheet rendering: `viewCuesheetTab`, `cuesheetSvg`, `waypointInfos`
   - Relative rendering: `viewRelativeTab`, `viewRelativeTravelCard`, `relativePointFor`
-  - Pace rendering: `viewPaceTab`, `paceMetresPerSecond`, `viewArrivalCard`
+  - Pace rendering: `viewPaceTab`, `viewArrivalCard`; arithmetic lives in `Pace.metresPerSecond` / `Pace.elapsedSoFar`
   - Distance/elevation display logic: `displayedDistanceValue`, `displayIsPercent`
   - Serialization: `parseTotalDistanceDisplay` / `formatTotalDistanceDisplay`, plus the encode/decode of `State`
 - **`TotalDistanceDisplay` is the central enum for distance/elevation display.** Both the cuesheet and the elevation profile key off the single `state.cuesheet.totalDistanceDisplay`. To find everything affected by a display mode, grep `TotalDistanceDisplay` / `totalDistanceDisplay`; the Elm compiler's exhaustive `case` checking then flags every site to update when you add a constructor.
@@ -108,21 +108,22 @@ The route app is one monolithic Elm file (~5800 lines). To orient quickly:
 
 `elm/shared/src/` holds the parts that know nothing about the app: `GpxApi`, `Location`,
 `Zipper`, plus `Wallclock` (times of day, durations, and the wall-clock datetime a
-`datetime-local` input deals in), `Format` (figures in the units they are read in) and `Ui`
+`datetime-local` input deals in), `Pace` (options and arrival-estimate speed/elapsed arithmetic),
+`Format` (figures in the units they are read in) and `Ui`
 (the card, section, row, note and notice the Relative and Pace tabs are built from — all
 `Html msg`, so they stay ignorant of `Msg`). `elm/route/elm.json`'s source-directories point
 there, so a module dropped in is importable with no further wiring.
 
-`Wallclock` is the one with tests (`elm/route/tests/`), because `daysFromCivil` is arithmetic
-that could be subtly wrong for years without ever looking wrong. **`Wallclock` differences two
+`Wallclock` and `Pace` have tests in `elm/route/tests/` for calendar arithmetic and the
+conditions an arrival estimate needs. `Pace.Options point` takes the endpoint type as a
+parameter, keeping it independent of `Main`'s `PointRef`; the calculation functions require
+only the position/clock fields they read and the pace options. **`Wallclock` differences two
 wall-clock times without a timezone database**, so a span crossing a daylight-saving change is
-out by that hour — documented on `elapsedSinceRideStart`, and immaterial next to the accuracy
-of a pace estimate.
+out by that hour — documented on `Pace.elapsedSinceRideStart`, and immaterial next to the
+accuracy of a pace estimate.
 
-`docs/module-extraction.md` records what has been extracted and the two extractions still
-outstanding — the Pace arithmetic and the `PointRef`/track model — with the call-site counts,
-the snag each one runs into, and the tests the Pace one should arrive with. Pick either up
-from there.
+`docs/module-extraction.md` records what has been extracted and the remaining extraction —
+the `PointRef`/track model — with its call-site counts and the snags to resolve.
 
 The Elm toolchain is pinned in `elm.Dockerfile` (`elm@0.19.1-6`, `elm-test@0.19.1-revision12`).
 Leave it pinned: `npm install -g elm` now resolves to 0.19.2, which refuses to build an

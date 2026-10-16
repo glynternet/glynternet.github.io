@@ -16,6 +16,7 @@ import Json.Decode
 import Json.Encode
 import List.Extra
 import Location
+import Pace
 import RouteFilename
 import String
 import Svg
@@ -106,7 +107,7 @@ type alias State =
     , elevationProfile : ElevationProfileOptions
     , cuesheet : CuesheetOptions
     , relative : RelativeOptions
-    , pace : PaceOptions
+    , pace : Pace.Options PointRef
 
     -- Off-route
     , offRouteThreshold : Float
@@ -444,43 +445,6 @@ type alias RelativeOptions =
     }
 
 
-{-| The two points the Pace tab estimates between, and where the speed it estimates at comes
-from.
-
-Both a set speed and an elapsed time are kept whichever source is active, so switching to the
-other and back does not throw away what was typed — the same reason `ElevationProfileOptions`
-keeps every split mode's settings side by side rather than hanging them off `activeSplitMode`.
-
--}
-type alias PaceOptions =
-    { start : PointRef
-    , end : PointRef
-    , activePaceSource : PaceSource
-    , speedKmh : Float
-    , elapsedAtStartSec : Float
-    , rideStart : String
-    }
-
-
-{-| Where the Pace tab's speed comes from: a figure the rider set, or the ride so far — how
-much route is behind them over how long it has taken — with the elapsed time either typed in
-or counted off the clock from the moment they set off.
-
-`FromRideStart` is the one that keeps itself right: a typed elapsed time is a snapshot that
-goes stale the moment the rider stops retyping it, whereas a time they set off at stays true
-all day and the pace follows the clock from there.
-
-`rideStart` is held as the raw value of a `datetime-local` input rather than as an instant,
-because that is what the control gives and what it wants back; `Wallclock.parseLocalDateTime` reads it,
-and anything unparseable — including the empty default — simply yields no pace.
-
--}
-type PaceSource
-    = SetSpeed
-    | FromElapsed
-    | FromRideStart
-
-
 type TotalDistanceDisplay
     = FromZero
     | ToFinish
@@ -530,20 +494,6 @@ defaultRelativeOptions =
     }
 
 
-{-| Where the rider is now to where the route ends: the arrival the tab exists to answer for,
-before anything has been chosen.
--}
-defaultPaceOptions : PaceOptions
-defaultPaceOptions =
-    { start = AtRoutePosition
-    , end = AtRouteEnd
-    , activePaceSource = SetSpeed
-    , speedKmh = 20
-    , elapsedAtStartSec = 0
-    , rideStart = ""
-    }
-
-
 defaultSpacing : Int
 defaultSpacing =
     25
@@ -576,7 +526,7 @@ defaultState =
     , elevationProfile = defaultElevationProfileOptions
     , cuesheet = defaultCuesheetOptions
     , relative = defaultRelativeOptions
-    , pace = defaultPaceOptions
+    , pace = Pace.defaultOptions AtRoutePosition AtRouteEnd
     , offRouteThreshold = 100
     , showOffRouteWaypoints = True
     , showOffRouteDistance = False
@@ -730,7 +680,7 @@ type Msg
     | SetRelativeEndCollapsed Bool
     | SetPaceStart PointRef
     | SetPaceEnd PointRef
-    | SetPaceSource PaceSource
+    | SetPaceSource Pace.Source
     | UpdatePaceSpeed Float
     | UpdatePaceElapsed Float
     | UpdatePaceRideStart String
@@ -4252,78 +4202,6 @@ cumulativeGainLossAtDistance dist trackpoints =
 -- PACE VIEW
 
 
-{-| The speed an estimate runs at, in metres per second, or Nothing when the tab has not been
-given enough to work one out.
--}
-paceMetresPerSecond : State -> Maybe Float
-paceMetresPerSecond state =
-    case state.pace.activePaceSource of
-        SetSpeed ->
-            ifPositive (state.pace.speedKmh / 3.6)
-
-        _ ->
-            elapsedSoFar state |> Maybe.andThen (averageSoFar state)
-
-
-{-| The ride's average speed so far: how much route is behind the rider, over how long it has
-taken them to cover it.
-
-Measured to where they are now rather than to the tab's chosen start point, because how fast
-the ride has been going is a fact about the ride and not about a point picked out of a
-dropdown. What it yields is an *elapsed* speed, stops and all — which is what an arrival
-estimate wants, rather than the moving average a bike computer shows.
-
-Both halves have to be real: at the route's start, or before the clock has moved, there is
-nothing to divide.
-
--}
-averageSoFar : State -> Float -> Maybe Float
-averageSoFar state elapsedSeconds =
-    Maybe.map2 (/)
-        (state.position |> Maybe.andThen ifPositive)
-        (ifPositive elapsedSeconds)
-
-
-{-| How long the ride has taken so far, however the tab is being told: typed in as a duration,
-or counted from the moment the rider set off. A set speed is not told at all.
--}
-elapsedSoFar : State -> Maybe Float
-elapsedSoFar state =
-    case state.pace.activePaceSource of
-        SetSpeed ->
-            Nothing
-
-        FromElapsed ->
-            Just state.pace.elapsedAtStartSec
-
-        FromRideStart ->
-            elapsedSinceRideStart state
-
-
-{-| The time between the moment the rider set off and now, in seconds.
-
-Both are read as local wall-clock time and differenced, which is exact unless the clocks go
-forward or back between the two — a twice-a-year hour that Elm cannot see, because `Time.Zone`
-will convert an instant to local parts but will not tell you the offset it used.
-
--}
-elapsedSinceRideStart : State -> Maybe Float
-elapsedSinceRideStart state =
-    Maybe.map2
-        (\setOff now -> toFloat (Wallclock.civilSeconds (Wallclock.localDateTime state.zone now) - Wallclock.civilSeconds setOff))
-        (Wallclock.parseLocalDateTime state.pace.rideStart)
-        state.now
-
-
-ifPositive : Float -> Maybe Float
-ifPositive value =
-    if value > 0 then
-        Just value
-
-    else
-        Nothing
-
-
 viewPaceTab : State -> Zipper EditableTrack -> Html Msg
 viewPaceTab state tracks =
     let
@@ -4356,14 +4234,14 @@ viewPaceTab state tracks =
         (viewPaceControls (state.position /= Nothing) pace selectable :: body)
 
 
-viewPaceControls : Bool -> PaceOptions -> List ( Int, GpxApi.Waypoint ) -> Html Msg
+viewPaceControls : Bool -> Pace.Options PointRef -> List ( Int, GpxApi.Waypoint ) -> Html Msg
 viewPaceControls hasPosition pace selectable =
     let
         pointSelector onSelect =
             viewPointSelector { onSelect = onSelect, hasPosition = hasPosition, offerRouteEnds = True } selectable
 
         sourceItem source =
-            Dropdown.Item (formatPaceSource source) (paceSourceName source) True
+            Dropdown.Item (Pace.formatSource source) (paceSourceName source) True
 
         numberInput attributes value change =
             Html.input
@@ -4386,15 +4264,15 @@ viewPaceControls hasPosition pace selectable =
         , Ui.labelledControl "Pace from"
             (Dropdown.dropdown
                 (Dropdown.Options
-                    [ sourceItem SetSpeed, sourceItem FromRideStart, sourceItem FromElapsed ]
+                    [ sourceItem Pace.SetSpeed, sourceItem Pace.FromRideStart, sourceItem Pace.FromElapsed ]
                     Nothing
-                    (Maybe.andThen parsePaceSource >> Maybe.map SetPaceSource >> Maybe.withDefault Ignore)
+                    (Maybe.andThen Pace.parseSource >> Maybe.map SetPaceSource >> Maybe.withDefault Ignore)
                 )
                 []
-                (Just (formatPaceSource pace.activePaceSource))
+                (Just (Pace.formatSource pace.activePaceSource))
             )
         , case pace.activePaceSource of
-            SetSpeed ->
+            Pace.SetSpeed ->
                 Ui.labelledControl "Speed (km/h)"
                     (numberInput
                         [ Html.Attributes.step "0.5", Html.Attributes.style "width" "6em" ]
@@ -4402,7 +4280,7 @@ viewPaceControls hasPosition pace selectable =
                         (String.toFloat >> Maybe.withDefault 0 >> UpdatePaceSpeed)
                     )
 
-            FromRideStart ->
+            Pace.FromRideStart ->
                 Ui.labelledControl "Set off at"
                     (Html.input
                         [ Html.Attributes.type_ "datetime-local"
@@ -4412,7 +4290,7 @@ viewPaceControls hasPosition pace selectable =
                         []
                     )
 
-            FromElapsed ->
+            Pace.FromElapsed ->
                 viewElapsedInput numberInput pace.elapsedAtStartSec
         ]
 
@@ -4444,16 +4322,16 @@ viewElapsedInput numberInput elapsedSec =
         ]
 
 
-paceSourceName : PaceSource -> String
+paceSourceName : Pace.Source -> String
 paceSourceName source =
     case source of
-        SetSpeed ->
+        Pace.SetSpeed ->
             "Set speed"
 
-        FromRideStart ->
+        Pace.FromRideStart ->
             "When I set off"
 
-        FromElapsed ->
+        Pace.FromElapsed ->
             "Time so far"
 
 
@@ -4478,7 +4356,7 @@ viewPaceEstimate state start end =
         ]
 
     else
-        case paceMetresPerSecond state of
+        case Pace.metresPerSecond state state.pace of
             Nothing ->
                 [ Ui.noticePanel (noPaceNotice state) ]
 
@@ -4491,13 +4369,13 @@ viewPaceEstimate state start end =
 noPaceNotice : State -> String
 noPaceNotice state =
     case state.pace.activePaceSource of
-        SetSpeed ->
+        Pace.SetSpeed ->
             "Set a speed above zero to estimate an arrival."
 
-        FromElapsed ->
+        Pace.FromElapsed ->
             rideSoFarNotice state "Enter how long the ride has taken so far."
 
-        FromRideStart ->
+        Pace.FromRideStart ->
             rideSoFarNotice state
                 (case Wallclock.parseLocalDateTime state.pace.rideStart of
                     Nothing ->
@@ -4533,7 +4411,7 @@ viewPaceCard state speed =
             :: Ui.row "Pace" (Format.paceMinPerKm speed)
             -- Says what the speed was divided out of, so a figure that looks wrong points
             -- straight at the ride it was read from.
-            :: (case Maybe.map2 Tuple.pair state.position (elapsedSoFar state) of
+            :: (case Maybe.map2 Tuple.pair state.position (Pace.elapsedSoFar state state.pace) of
                     Nothing ->
                         []
 
@@ -4567,7 +4445,7 @@ viewArrivalCard state start end distanceToGo secondsToGo =
             , Just (Ui.row "Climb to go" (Format.eleGainLoss (end.gain - start.gain) (end.loss - start.loss)))
             , Just (Ui.row "Time to go" (Wallclock.duration secondsToGo))
             , state.now |> Maybe.map (\now -> Ui.row "Arrives at" (Wallclock.timeOfDayAfter state.zone now secondsToGo))
-            , elapsedSoFar state
+            , Pace.elapsedSoFar state state.pace
                 |> Maybe.map (\elapsed -> Ui.row "Elapsed at arrival" (Wallclock.duration (elapsed + secondsToGo)))
             , Just (Ui.note (arrivalAssumption state start))
             ]
@@ -5571,35 +5449,6 @@ formatTab tab =
             "pace"
 
 
-parsePaceSource : String -> Maybe PaceSource
-parsePaceSource s =
-    case s of
-        "speed" ->
-            Just SetSpeed
-
-        "elapsed" ->
-            Just FromElapsed
-
-        "rideStart" ->
-            Just FromRideStart
-
-        _ ->
-            Nothing
-
-
-formatPaceSource : PaceSource -> String
-formatPaceSource source =
-    case source of
-        SetSpeed ->
-            "speed"
-
-        FromElapsed ->
-            "elapsed"
-
-        FromRideStart ->
-            "rideStart"
-
-
 
 -- ENCODE/DECODE STATE
 
@@ -5732,7 +5581,7 @@ encodeSavedState state =
             , Just ( "relativeEndCollapsed", Json.Encode.bool rel.endCollapsed )
             , Just ( "paceStart", Json.Encode.string (formatPointRef pace.start) )
             , Just ( "paceEnd", Json.Encode.string (formatPointRef pace.end) )
-            , Just ( "paceSource", Json.Encode.string (formatPaceSource pace.activePaceSource) )
+            , Just ( "paceSource", Json.Encode.string (Pace.formatSource pace.activePaceSource) )
             , Just ( "paceSpeedKmh", Json.Encode.float pace.speedKmh )
             , Just ( "paceElapsedSec", Json.Encode.float pace.elapsedAtStartSec )
             , Just ( "paceRideStart", Json.Encode.string pace.rideStart )
@@ -5757,7 +5606,7 @@ stateDecoder =
             defaultRelativeOptions
 
         defPace =
-            defaultPaceOptions
+            Pace.defaultOptions AtRoutePosition AtRouteEnd
     in
     Json.Decode.succeed
         (\tracks routeName activeTab showOptions trackingIntervalSec categoryFilterEnabled filteredCategories fontSize trackHeight trackThickness showIntensity intensityTau position viewMode splitMode splitEquidistantCount splitPoints splitCategories liveLookahead liveLookbehind labelHeightGain distanceMarkerInterval distanceMarkerSegmentEnds totalDistanceDisplay referenceDistance itemSpacing distanceDetail showStartFinish showOffRouteDistance offRouteThreshold showOffRouteWaypoints relativeStart relativeEnd relativeStartCollapsed relativeEndCollapsed paceStart paceEnd paceSource paceSpeedKmh paceElapsedSec paceRideStart ->
@@ -5824,7 +5673,7 @@ stateDecoder =
             , pace =
                 { start = paceStart |> Maybe.andThen parsePointRef |> Maybe.withDefault defPace.start
                 , end = paceEnd |> Maybe.andThen parsePointRef |> Maybe.withDefault defPace.end
-                , activePaceSource = paceSource |> Maybe.andThen parsePaceSource |> Maybe.withDefault defPace.activePaceSource
+                , activePaceSource = paceSource |> Maybe.andThen Pace.parseSource |> Maybe.withDefault defPace.activePaceSource
                 , speedKmh = paceSpeedKmh |> Maybe.withDefault defPace.speedKmh
                 , elapsedAtStartSec = paceElapsedSec |> Maybe.withDefault defPace.elapsedAtStartSec
                 , rideStart = paceRideStart |> Maybe.withDefault defPace.rideStart
