@@ -839,7 +839,10 @@ update msg model =
                         Ok gpxTracks ->
                             let
                                 newCategories =
-                                    initialFilteredCategories (List.concatMap .waypoints gpxTracks)
+                                    gpxTracks
+                                        |> List.concatMap .waypoints
+                                        |> List.map .categories
+                                        |> categoryOptions Dict.empty
                             in
                             updateSplitAndStore
                                 (updateState
@@ -1907,26 +1910,25 @@ startFinishCategory =
     "Start/Finish"
 
 
-initialFilteredCategories : List GpxApi.Waypoint -> Dict.Dict String Bool
-initialFilteredCategories =
+categoryOptions : Dict.Dict String Bool -> List (List String) -> Dict.Dict String Bool
+categoryOptions saved =
     List.foldl
-        (\w ( acc, includeUnknown ) ->
-            if List.isEmpty w.categories then
-                ( acc, True )
+        (\categories options ->
+            List.foldl
+                (\category ->
+                    Dict.insert category
+                        (Dict.get category saved |> Maybe.withDefault True)
+                )
+                options
+                (case categories of
+                    [] ->
+                        [ unknownCategory ]
 
-            else
-                ( List.foldl (\cat d -> Dict.insert cat True d) acc w.categories
-                , includeUnknown
+                    _ ->
+                        categories
                 )
         )
-        ( Dict.empty, False )
-        >> (\( d, hasUnknown ) ->
-                if hasUnknown then
-                    Dict.insert unknownCategory True d
-
-                else
-                    d
-           )
+        Dict.empty
 
 
 {-| Category controls reflect undeleted waypoints across all tracks. Keep saved
@@ -1937,9 +1939,16 @@ availableWaypointCategories state =
     case state.tracks of
         Loaded tracks ->
             (tracks.prev ++ [ tracks.current ] ++ tracks.next)
-                |> List.concatMap effectiveWaypoints
-                |> initialFilteredCategories
-                |> Dict.map (\category _ -> Dict.get category state.filteredCategories |> Maybe.withDefault True)
+                |> List.concatMap .editableWaypoints
+                |> List.filterMap
+                    (\waypoint ->
+                        if waypoint.deleted then
+                            Nothing
+
+                        else
+                            Just (Maybe.withDefault waypoint.original.categories waypoint.overrides.categories)
+                    )
+                |> categoryOptions state.filteredCategories
 
         _ ->
             Dict.empty
