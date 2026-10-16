@@ -155,7 +155,8 @@ type ActiveSplitMode
 type alias EditableTrack =
     { trackpoints : List GpxApi.TrackPoint
     , editableWaypoints : List EditableWaypoint
-    , gainLoss : ( Float, Float )
+    , gain : Float
+    , loss : Float
     }
 
 
@@ -243,8 +244,8 @@ resolvePointRef position location track ref =
                 (GpxApi.Waypoint (lastTrackpointDistance track.trackpoints)
                     routeEndName
                     []
-                    (Tuple.first track.gainLoss)
-                    (Tuple.second track.gainLoss)
+                    track.gain
+                    track.loss
                     0
                 )
 
@@ -349,7 +350,8 @@ editableTrackFromGpxTrack : GpxApi.Track -> EditableTrack
 editableTrackFromGpxTrack track =
     { trackpoints = track.trackpoints
     , editableWaypoints = List.map (\w -> EditableWaypoint w False False emptyOverrides) track.waypoints
-    , gainLoss = track.gainLoss
+    , gain = track.gain
+    , loss = track.loss
     }
 
 
@@ -1715,7 +1717,7 @@ requestSplitCmdWasm state =
             requestSplitProfile
                 (Json.Encode.encode 0
                     (Json.Encode.object
-                        ([ ( "track", GpxApi.encodeTrack <| GpxApi.Track tracks.current.trackpoints filteredWaypoints tracks.current.gainLoss ) ]
+                        ([ ( "track", GpxApi.encodeTrack <| GpxApi.Track tracks.current.trackpoints filteredWaypoints tracks.current.gain tracks.current.loss ) ]
                             ++ (case state.elevationProfile.activeSplitMode of
                                     EquidistantMode ->
                                         [ ( "mode", Json.Encode.string "equidistant" )
@@ -1768,12 +1770,16 @@ computeLiveSplitFromState state =
 
                 shift record =
                     { record | distance = record.distance - rangeStart }
+
+                ( gain, loss ) =
+                    computeGainLoss segTps
             in
             Just
                 { segments =
                     [ { trackpoints = List.map shift segTps
                       , waypoints = List.map shift segWps
-                      , gainLoss = computeGainLoss segTps
+                      , gain = gain
+                      , loss = loss
                       }
                     ]
                 , boundaries = [ ( rangeStart, rangeEnd ) ]
@@ -2269,8 +2275,8 @@ correctWaypointSelectionInState s =
             }
 
 
-injectStartFinish : Float -> ( Float, Float ) -> List GpxApi.Waypoint -> List GpxApi.Waypoint
-injectStartFinish finishDist ( totalGain, totalLoss ) waypoints =
+injectStartFinish : Float -> { gainLoss | gain : Float, loss : Float } -> List GpxApi.Waypoint -> List GpxApi.Waypoint
+injectStartFinish finishDist track waypoints =
     let
         hasWaypointAtDistance d =
             List.any (\w -> w.distance == d) waypoints
@@ -2286,7 +2292,7 @@ injectStartFinish finishDist ( totalGain, totalLoss ) waypoints =
         withStart
 
     else
-        withStart ++ [ GpxApi.Waypoint finishDist "Finish" [ startFinishCategory ] totalGain totalLoss 0 ]
+        withStart ++ [ GpxApi.Waypoint finishDist "Finish" [ startFinishCategory ] track.gain track.loss 0 ]
 
 
 
@@ -2916,16 +2922,12 @@ profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation
         [ Html.Attributes.style "margin-top" "16px"
         , Html.Attributes.style "padding" "0 8px"
         ]
-        [ let
-            ( gain, loss ) =
-                track.gainLoss
-          in
-          Html.div
+        [ Html.div
             [ Html.Attributes.style "text-align" "center"
             , Html.Attributes.style "font-size" "1em"
             , Html.Attributes.style "padding" "4px 0"
             ]
-            [ Html.text <| Format.km 1 maxDistance ++ " " ++ Format.eleGainLoss gain loss ]
+            [ Html.text <| Format.km 1 maxDistance ++ " " ++ Format.eleGainLoss track.gain track.loss ]
         , Svg.svg
             [ Svg.Attributes.viewBox <| "-50 -5 " ++ String.fromInt (profileSvgWidth + 55) ++ " " ++ (String.fromInt <| svgHeight + 10)
             ]
@@ -3368,7 +3370,7 @@ viewCuesheetTab state tracks =
 
         waypointsWithStartFinish =
             if cs.showStartFinish then
-                injectStartFinish currentFinishDistance tracks.current.gainLoss currentEffectiveWaypoints
+                injectStartFinish currentFinishDistance tracks.current currentEffectiveWaypoints
 
             else
                 currentEffectiveWaypoints
@@ -3415,7 +3417,7 @@ viewCuesheetTab state tracks =
     in
     Html.div []
         [ liveNoPositionWarning state
-        , cuesheetSvg state.offRouteThreshold state.showOffRouteDistance (Maybe.map .distance positionWaypoint) scrollPosition waypointsWithPosition cs currentFinishDistance tracks.current.gainLoss refPointEle refWaypoint
+        , cuesheetSvg state.offRouteThreshold state.showOffRouteDistance (Maybe.map .distance positionWaypoint) scrollPosition waypointsWithPosition cs currentFinishDistance tracks.current refPointEle refWaypoint
         ]
 
 
@@ -3599,8 +3601,8 @@ viewWaypointCategories idx waypointCategories allCategories newCatInput =
         ]
 
 
-cuesheetSvg : Float -> Bool -> Maybe Float -> Float -> List GpxApi.Waypoint -> CuesheetOptions -> Float -> ( Float, Float ) -> ( Float, Float ) -> Maybe GpxApi.Waypoint -> Html Msg
-cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPosition waypoints cs finishDist ( totalGain, totalLoss ) refPointEle refWaypoint =
+cuesheetSvg : Float -> Bool -> Maybe Float -> Float -> List GpxApi.Waypoint -> CuesheetOptions -> Float -> { gainLoss | gain : Float, loss : Float } -> ( Float, Float ) -> Maybe GpxApi.Waypoint -> Html Msg
+cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPosition waypoints cs finishDist track refPointEle refWaypoint =
     let
         info =
             waypointInfos positionDistance scrollPosition waypoints
@@ -3701,13 +3703,13 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
 
                                                 PercentProgress ->
                                                     Maybe.map2 Format.eleGainLossPercent
-                                                        (safePercent waypoint.gain totalGain)
-                                                        (safePercent waypoint.loss totalLoss)
+                                                        (safePercent waypoint.gain track.gain)
+                                                        (safePercent waypoint.loss track.loss)
 
                                                 PercentRemaining ->
                                                     Maybe.map2 Format.eleGainLossPercent
-                                                        (safePercent (totalGain - waypoint.gain) totalGain)
-                                                        (safePercent (totalLoss - waypoint.loss) totalLoss)
+                                                        (safePercent (track.gain - waypoint.gain) track.gain)
+                                                        (safePercent (track.loss - waypoint.loss) track.loss)
 
                                     offRouteLabel =
                                         String.fromInt (round waypoint.offRoute) ++ "m off"
@@ -3833,8 +3835,8 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                                                 (safePercent dist finishDist |> Maybe.map Format.percent |> Maybe.withDefault "")
                                                     ++ " "
                                                     ++ Format.eleGainLossPercent
-                                                        (safePercent gain totalGain |> Maybe.withDefault 0)
-                                                        (safePercent loss totalLoss |> Maybe.withDefault 0)
+                                                        (safePercent gain track.gain |> Maybe.withDefault 0)
+                                                        (safePercent loss track.loss |> Maybe.withDefault 0)
 
                                             else
                                                 Format.km cs.distanceDetail dist
@@ -4036,9 +4038,6 @@ viewRelativeContextCard track card point =
     let
         waypoint =
             point.waypoint
-
-        ( totalGain, totalLoss ) =
-            track.gainLoss
     in
     Ui.card
         (Ui.cardHeading
@@ -4092,7 +4091,7 @@ viewRelativeContextCard track card point =
                     (Ui.row "To finish"
                         (Format.km 1 (lastTrackpointDistance track.trackpoints - waypoint.distance)
                             ++ " · "
-                            ++ Format.eleGainLoss (totalGain - waypoint.gain) (totalLoss - waypoint.loss)
+                            ++ Format.eleGainLoss (track.gain - waypoint.gain) (track.loss - waypoint.loss)
                         )
                     )
                 ]
@@ -4230,10 +4229,10 @@ viewRelativeTravelCard track selectable start end =
                     -- share is against the route's total descent to compare like with like
                     (safePercent gain
                         (if alongRoute < 0 then
-                            Tuple.second track.gainLoss
+                            track.loss
 
                          else
-                            Tuple.first track.gainLoss
+                            track.gain
                         )
                     )
                 , Just (Ui.row "Waypoints between" (String.fromInt waypointsBetween))
@@ -5133,7 +5132,7 @@ viewTotalDistanceOptions state =
                                 effectiveWaypoints ts.current
                         in
                         (if cs.showStartFinish then
-                            injectStartFinish (lastTrackpointDistance ts.current.trackpoints) ts.current.gainLoss currentEffective
+                            injectStartFinish (lastTrackpointDistance ts.current.trackpoints) ts.current currentEffective
 
                          else
                             currentEffective
@@ -5620,8 +5619,8 @@ encodeEditableTrack track =
     Json.Encode.object
         [ ( "trackpoints", GpxApi.encodeStoredTrackpoints track.trackpoints )
         , ( "editableWaypoints", Json.Encode.list encodeEditableWaypoint track.editableWaypoints )
-        , ( "gain", Json.Encode.float (Tuple.first track.gainLoss) )
-        , ( "loss", Json.Encode.float (Tuple.second track.gainLoss) )
+        , ( "gain", Json.Encode.float track.gain )
+        , ( "loss", Json.Encode.float track.loss )
         ]
 
 
@@ -5645,13 +5644,11 @@ encodeEditableWaypoint ew =
 
 editableTrackDecoder : Json.Decode.Decoder EditableTrack
 editableTrackDecoder =
-    Json.Decode.map3 EditableTrack
+    Json.Decode.map4 EditableTrack
         (Json.Decode.field "trackpoints" GpxApi.decodeTrackpoints)
         (Json.Decode.field "editableWaypoints" (Json.Decode.list editableWaypointDecoder))
-        (Json.Decode.map2 Tuple.pair
-            (Json.Decode.field "gain" Json.Decode.float)
-            (Json.Decode.field "loss" Json.Decode.float)
-        )
+        (Json.Decode.field "gain" Json.Decode.float)
+        (Json.Decode.field "loss" Json.Decode.float)
 
 
 editableWaypointDecoder : Json.Decode.Decoder EditableWaypoint
