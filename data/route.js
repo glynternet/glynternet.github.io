@@ -11277,43 +11277,69 @@ var $author$project$Main$Ride = F2(
 	function (a, b) {
 		return {$: 2, a: a, b: b};
 	});
+var $elm_community$list_extra$List$Extra$reverseAppend = F2(
+	function (list1, list2) {
+		return A3($elm$core$List$foldl, $elm$core$List$cons, list2, list1);
+	});
+var $elm_community$list_extra$List$Extra$interweaveHelp = F3(
+	function (acc, list1, list2) {
+		interweaveHelp:
+		while (true) {
+			var _v0 = _Utils_Tuple2(list1, list2);
+			if (_v0.a.b) {
+				if (_v0.b.b) {
+					var _v1 = _v0.a;
+					var x = _v1.a;
+					var xs = _v1.b;
+					var _v2 = _v0.b;
+					var y = _v2.a;
+					var ys = _v2.b;
+					var $temp$acc = A2(
+						$elm$core$List$cons,
+						y,
+						A2($elm$core$List$cons, x, acc)),
+						$temp$list1 = xs,
+						$temp$list2 = ys;
+					acc = $temp$acc;
+					list1 = $temp$list1;
+					list2 = $temp$list2;
+					continue interweaveHelp;
+				} else {
+					return A2($elm_community$list_extra$List$Extra$reverseAppend, acc, list1);
+				}
+			} else {
+				return A2($elm_community$list_extra$List$Extra$reverseAppend, acc, list2);
+			}
+		}
+	});
+var $elm_community$list_extra$List$Extra$interweave = $elm_community$list_extra$List$Extra$interweaveHelp(_List_Nil);
 var $author$project$Main$waypointInfos = F3(
 	function (positionDistance, position, waypoints) {
+		var visibleWaypoints = A2(
+			$elm$core$List$filter,
+			function (wp) {
+				return _Utils_cmp(wp.bc, position) > -1;
+			},
+			waypoints);
 		var infoConstructor = function (wp) {
 			return _Utils_eq(
 				$elm$core$Maybe$Just(wp.bc),
 				positionDistance) ? $author$project$Main$InfoPosition(wp) : $author$project$Main$InfoWaypoint(wp);
 		};
-		return $elm$core$List$reverse(
+		return A2(
+			$elm_community$list_extra$List$Extra$interweave,
+			A2($elm$core$List$map, infoConstructor, visibleWaypoints),
 			A3(
-				$elm$core$List$foldl,
+				$elm$core$List$map2,
 				F2(
-					function (el, accum) {
-						return (_Utils_cmp(el.bc, position) < 0) ? accum : _Utils_Tuple2(
-							$elm$core$Maybe$Just(el),
-							_Utils_ap(
-								A2(
-									$elm$core$List$cons,
-									infoConstructor(el),
-									A2(
-										$elm$core$Maybe$withDefault,
-										_List_Nil,
-										A2(
-											$elm$core$Maybe$map,
-											function (previous) {
-												return _List_fromArray(
-													[
-														A2(
-														$author$project$Main$Ride,
-														el.bc - previous.bc,
-														_Utils_Tuple2(el.aP - previous.aP, el.aR - previous.aR))
-													]);
-											},
-											accum.a))),
-								accum.b));
+					function (previous, current) {
+						return A2(
+							$author$project$Main$Ride,
+							current.bc - previous.bc,
+							_Utils_Tuple2(current.aP - previous.aP, current.aR - previous.aR));
 					}),
-				_Utils_Tuple2($elm$core$Maybe$Nothing, _List_Nil),
-				waypoints).b);
+				visibleWaypoints,
+				A2($elm$core$List$drop, 1, visibleWaypoints)));
 	});
 var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');

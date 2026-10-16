@@ -3852,6 +3852,9 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
 waypointInfos : Maybe Float -> Float -> List GpxApi.Waypoint -> List Info
 waypointInfos positionDistance position waypoints =
     let
+        visibleWaypoints =
+            List.filter (\wp -> wp.distance >= position) waypoints
+
         infoConstructor wp =
             if Just wp.distance == positionDistance then
                 InfoPosition wp
@@ -3859,33 +3862,20 @@ waypointInfos positionDistance position waypoints =
             else
                 InfoWaypoint wp
     in
-    List.foldl
-        (\el accum ->
-            if el.distance < position then
-                accum
-
-            else
-                ( Just el
-                , (infoConstructor el
-                    :: (Tuple.first accum
-                            |> Maybe.map
-                                (\previous ->
-                                    [ Ride (el.distance - previous.distance)
-                                        ( el.gain - previous.gain
-                                        , el.loss - previous.loss
-                                        )
-                                    ]
-                                )
-                            |> Maybe.withDefault []
-                       )
-                  )
-                    ++ Tuple.second accum
-                )
+    -- Pair each visible waypoint with the next to form rides, then interweave:
+    -- [ A, B, C ] + [ A-to-B, B-to-C ] -> [ A, A-to-B, B, B-to-C, C ].
+    List.Extra.interweave
+        (List.map infoConstructor visibleWaypoints)
+        (List.map2
+            (\previous current ->
+                Ride (current.distance - previous.distance)
+                    ( current.gain - previous.gain
+                    , current.loss - previous.loss
+                    )
+            )
+            visibleWaypoints
+            (List.drop 1 visibleWaypoints)
         )
-        ( Nothing, [] )
-        waypoints
-        |> Tuple.second
-        |> List.reverse
 
 
 -- RELATIVE VIEW
