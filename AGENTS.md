@@ -94,12 +94,12 @@ The route app's main Elm file is ~5400 lines, with the track model and arithmeti
   - `Msg` + `update`
   - Elevation profile rendering: `viewElevationProfileTab`, `profile`, `distanceMarkers`
     - `viewProfileContent` has a lazy boundary; `viewProfileBackground` and `viewProfileTrack` cache stable SVG groups. Dynamic marker rows change waypoint layout, so the track layer also receives their reserved height.
-  - Cuesheet rendering: `viewCuesheetTab`, `cuesheetSvg`, `waypointInfos`
+  - Cuesheet rendering: `viewCuesheetTab`, `cuesheetSvg`; row preparation lives in `CuesheetRows.waypointInfos`
   - Relative rendering: `viewRelativeTab`, `viewRelativeTravelCard`, `relativePointFor`
   - Pace rendering: `viewPaceTab`, `viewArrivalCard`; arithmetic lives in `Pace.metresPerSecond` / `Pace.elapsedSoFar`
-  - Distance/elevation display logic: `displayedDistanceValue`, `displayIsPercent`
+  - Distance/elevation display logic: `DistanceDisplay.displayedDistanceValue`, `DistanceDisplay.displayIsPercent`, `DistanceDisplay.waypointLabel`
   - Serialization: `parseTotalDistanceDisplay` / `formatTotalDistanceDisplay`, plus the encode/decode of `State`
-- **`TotalDistanceDisplay` is the central enum for distance/elevation display.** Both the cuesheet and the elevation profile key off the single `state.cuesheet.totalDistanceDisplay`. To find everything affected by a display mode, grep `TotalDistanceDisplay` / `totalDistanceDisplay`; the Elm compiler's exhaustive `case` checking then flags every site to update when you add a constructor.
+- **`DistanceDisplay.TotalDistanceDisplay` is the central enum for distance/elevation display.** Both the cuesheet and the elevation profile key off the single `state.cuesheet.totalDistanceDisplay`. To find everything affected by a display mode, grep `TotalDistanceDisplay` / `totalDistanceDisplay`; the Elm compiler's exhaustive `case` checking then flags every site to update when you add a constructor.
 - **`Route.PointRef` is the vocabulary for "a point on the route"** — a waypoint, the current position, or either end of the track. Every flow that asks the user to choose one stores a `PointRef` and shows `viewPointSelector`; `Route.resolvePointRef` turns it into a `GpxApi.Waypoint`, and `Route.selectedWaypointFor` does the same but only ever resolves to a waypoint the dropdown is still offering (so a filtered-out one reads as "nothing chosen"). Adding a constructor makes the compiler point at every flow that has to answer for it.
 - **The device clock lives in `state.now` / `state.zone`, and only the Pace tab uses it.** Both are transient — a stored clock reading is a wrong one the moment it is read back — so they are excluded from `encodeSavedState` and lifted across a state import by hand, alongside `profilePixelWidth`. `Time.every` is subscribed only while the Pace tab is active, so no other tab pays for a ticking clock.
 - **Data model** (`elm/shared/src/GpxApi.elm`, `elm/shared/src/Route.elm`): `TrackPoint.gain`/`.loss` are **cumulative** from the start; route totals live in `Route.EditableTrack.gain`/`.loss` and `GpxApi.Track.gain`/`.loss`; `Route.lastTrackpointDistance` gives total distance; `Route.cumulativeGainLossAtDistance` looks up cumulative climb at any distance (used to build the current-position cuesheet row).
@@ -128,6 +128,13 @@ accuracy of a pace estimate.
 `Route.selectedWaypointFor` takes position and location explicitly. `Main` owns the live-view
 window and UI selection correction. `Route.encodeEditableTrack` stores originals and edits,
 while `GpxApi.encodeTrack` sends effective waypoints to WASM; keep these formats separate.
+
+`WaypointGrouping.groupWaypoints` takes a `(GpxApi.Waypoint -> Maybe String)` callback
+and ordered indexed waypoints. `DistanceDisplay` supplies the same labels for rendering and
+grouping; `CuesheetRows` adds expanded members and ride intervals while preserving synthetic
+point identity. All three are pure shared modules tested without a browser. Grouping is
+derived from Distance detail; never save groups or rounded member distances. See
+`docs/waypoint-grouping-rfc.md` and the focused `waypoint-grouping.cjs` browser smoke test.
 
 `docs/module-extraction.md` records the five completed extractions and their verification.
 
@@ -252,4 +259,3 @@ Because sub-resources are served **cache-first** and the route page loads `route
 
 ## Code style
 - Avoid single-use variables; inline instead. Function, method and other variable names should support easily understanding what the result of an operation is.
-

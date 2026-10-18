@@ -2,7 +2,9 @@ port module Main exposing (main)
 
 import Browser
 import Browser.Navigation
+import CuesheetRows exposing (Info(..))
 import Dict
+import DistanceDisplay exposing (TotalDistanceDisplay(..), displayIsPercent, displayedDistanceValue, safePercent)
 import Dropdown
 import File exposing (File)
 import File.Select
@@ -18,8 +20,8 @@ import Json.Encode
 import List.Extra
 import Location
 import Pace
-import ProfileSplit
 import ProfilePreparation
+import ProfileSplit
 import Route exposing (EditableTrack, EditableWaypoint, PointRef(..))
 import RouteFilename
 import String
@@ -31,6 +33,7 @@ import Time
 import Ui
 import Url
 import Wallclock
+import WaypointGrouping
 import Zipper exposing (Zipper)
 
 
@@ -197,17 +200,6 @@ type alias RelativeOptions =
     , startCollapsed : Bool
     , endCollapsed : Bool
     }
-
-
-type TotalDistanceDisplay
-    = FromZero
-    | ToFinish
-    | ToDistance
-    | ToPoint PointRef
-    | FromPoint PointRef
-    | PercentProgress
-    | PercentRemaining
-    | None
 
 
 defaultElevationProfileOptions : ElevationProfileOptions
@@ -1823,17 +1815,9 @@ waypointPredicates state =
            )
 
 
-trimWaypointCategories : Dict.Dict String Bool -> List GpxApi.Waypoint -> List GpxApi.Waypoint
-trimWaypointCategories categories =
-    List.map
-        (\w ->
-            case w.categories of
-                [] ->
-                    w
-
-                cats ->
-                    { w | categories = List.filter (\cat -> Dict.get cat categories |> Maybe.withDefault True) cats }
-        )
+trimWaypointCategory : Dict.Dict String Bool -> GpxApi.Waypoint -> GpxApi.Waypoint
+trimWaypointCategory categories waypoint =
+    { waypoint | categories = List.filter (\cat -> Dict.get cat categories |> Maybe.withDefault True) waypoint.categories }
 
 
 {-| What to say in place of figures a chosen point could not be resolved for. An unset
@@ -2418,66 +2402,6 @@ elevationTicks minElev maxElev =
     buildTicks firstTick []
 
 
-{-| The distance value to display for an absolute route distance, given the chosen
-display mode. Returns Nothing when nothing should be shown (None, or an unresolved
-reference waypoint). Shared by the cuesheet and the elevation profile distance markers.
--}
-displayedDistanceValue : TotalDistanceDisplay -> Float -> Float -> Maybe GpxApi.Waypoint -> Float -> Maybe Float
-displayedDistanceValue mode finishDist referenceDistance refWaypoint distance =
-    case mode of
-        None ->
-            Nothing
-
-        FromZero ->
-            Just distance
-
-        ToFinish ->
-            Just (finishDist - distance)
-
-        ToDistance ->
-            Just (referenceDistance - distance)
-
-        ToPoint _ ->
-            refWaypoint |> Maybe.map (\rw -> rw.distance - distance)
-
-        FromPoint _ ->
-            refWaypoint |> Maybe.map (\rw -> distance - rw.distance)
-
-        PercentProgress ->
-            safePercent distance finishDist
-
-        PercentRemaining ->
-            safePercent (finishDist - distance) finishDist
-
-
-{-| True for the percentage display modes, whose distance/elevation values are fractions of
-the route total rather than absolute metres. The single switch the formatting code keys off.
--}
-displayIsPercent : TotalDistanceDisplay -> Bool
-displayIsPercent mode =
-    case mode of
-        PercentProgress ->
-            True
-
-        PercentRemaining ->
-            True
-
-        _ ->
-            False
-
-
-{-| `part` as a percentage of `total`, or Nothing when `total` is non-positive (empty or
-flat route) so we never display NaN.
--}
-safePercent : Float -> Float -> Maybe Float
-safePercent part total =
-    if total > 0 then
-        Just (part / total * 100)
-
-    else
-        Nothing
-
-
 {-| A "nice" round marker interval (in metres) for a displayed-distance range (in metres),
 bucketed like elevationTicks.
 -}
@@ -2727,7 +2651,6 @@ profile segmentIndex track prepared ep width segStart segEnd maxDistance offRout
                 )
             ]
         ]
-
 
 
 profileSvgHeight : ElevationProfileOptions -> GpxApi.Track -> Int -> Int
@@ -3082,12 +3005,6 @@ xyCalculator cfg =
 -- CUESHEET VIEW
 
 
-type Info
-    = InfoWaypoint GpxApi.Waypoint
-    | InfoPosition GpxApi.Waypoint
-    | Ride Float ( Float, Float )
-
-
 viewCuesheetTab : State -> Zipper EditableTrack -> Html Msg
 viewCuesheetTab state tracks =
     let
@@ -3100,30 +3017,38 @@ viewCuesheetTab state tracks =
         currentFinishDistance =
             Route.lastTrackpointDistance tracks.current.trackpoints
 
-        waypointsWithStartFinish =
+        filteredWaypoints =
+            Route.selectableWaypoints (waypointPredicates state) tracks.current
+                |> List.map (Tuple.mapFirst AtWaypoint)
+
+        endpoints =
             if cs.showStartFinish then
                 injectStartFinish currentFinishDistance tracks.current currentEffectiveWaypoints
+                    |> List.filter (\wp -> not (List.member wp currentEffectiveWaypoints))
+                    |> Route.filterWaypoints (waypointPredicates state)
+                    |> List.map
+                        (\wp ->
+                            ( if wp.distance == 0 then
+                                AtRouteStart
+
+                              else
+                                AtRouteEnd
+                            , wp
+                            )
+                        )
 
             else
-                currentEffectiveWaypoints
-
-        filteredWaypoints =
-            Route.filterWaypoints (waypointPredicates state) waypointsWithStartFinish
-                |> trimWaypointCategories state.filteredCategories
+                []
 
         positionWaypoint =
             Route.resolvePointRef state.position state.location tracks.current AtRoutePosition
 
-        -- Sort by distance so edited waypoint distances reorder the list (the original
-        -- waypoint order no longer matches distance once a distance override is applied)
+        -- Preserve identity when a waypoint and the current position coincide.
         waypointsWithPosition =
-            List.sortBy .distance
-                (case positionWaypoint of
-                    Just pw ->
-                        pw :: filteredWaypoints
-
-                    Nothing ->
-                        filteredWaypoints
+            List.sortBy (Tuple.second >> .distance)
+                ((positionWaypoint |> Maybe.map (\wp -> [ ( AtRoutePosition, wp ) ]) |> Maybe.withDefault [])
+                    ++ filteredWaypoints
+                    ++ endpoints
                 )
 
         -- Live view trims the list to what's ahead of the position; static view shows the whole list with the marker inline
@@ -3149,7 +3074,17 @@ viewCuesheetTab state tracks =
     in
     Html.div []
         [ liveNoPositionWarning state
-        , cuesheetSvg state.offRouteThreshold state.showOffRouteDistance (Maybe.map .distance positionWaypoint) scrollPosition waypointsWithPosition cs currentFinishDistance tracks.current refPointEle refWaypoint
+        , cuesheetSvg state.offRouteThreshold
+            state.showOffRouteDistance
+            (waypointsWithPosition
+                |> List.filter (\( _, wp ) -> wp.distance >= scrollPosition)
+                |> List.map (Tuple.mapSecond (trimWaypointCategory state.filteredCategories))
+            )
+            cs
+            currentFinishDistance
+            tracks.current
+            refPointEle
+            refWaypoint
         ]
 
 
@@ -3201,7 +3136,8 @@ viewWaypointsTab state tracks =
                         else
                             Just
                                 (Html.div
-                                    [ Html.Attributes.style "border" "1px solid #ddd"
+                                    [ Html.Attributes.attribute "data-waypoint-index" (String.fromInt i)
+                                    , Html.Attributes.style "border" "1px solid #ddd"
                                     , Html.Attributes.style "border-radius" "6px"
                                     , Html.Attributes.style "padding" "0.5em"
                                     , Html.Attributes.style "display" "flex"
@@ -3333,14 +3269,14 @@ viewWaypointCategories idx waypointCategories allCategories newCatInput =
         ]
 
 
-cuesheetSvg : Float -> Bool -> Maybe Float -> Float -> List GpxApi.Waypoint -> CuesheetOptions -> Float -> { gainLoss | gain : Float, loss : Float } -> ( Float, Float ) -> Maybe GpxApi.Waypoint -> Html Msg
-cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPosition waypoints cs finishDist track refPointEle refWaypoint =
+cuesheetSvg : Float -> Bool -> List ( PointRef, GpxApi.Waypoint ) -> CuesheetOptions -> Float -> { gainLoss | gain : Float, loss : Float } -> ( Float, Float ) -> Maybe GpxApi.Waypoint -> Html Msg
+cuesheetSvg offRouteThreshold showOffRouteDistance waypoints cs finishDist track refPointEle refWaypoint =
     let
         info =
-            waypointInfos positionDistance scrollPosition waypoints
+            CuesheetRows.waypointInfos (DistanceDisplay.waypointLabel cs finishDist refWaypoint) waypoints
 
         lastWaypoint =
-            List.reverse waypoints |> List.head
+            List.reverse waypoints |> List.head |> Maybe.map Tuple.second
 
         svgHeight =
             (*) cs.itemSpacing (List.length info)
@@ -3367,7 +3303,7 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                                 Svg.Attributes.transform <| "translate(0," ++ (String.fromInt <| i * cs.itemSpacing) ++ ")"
                         in
                         let
-                            renderWaypointItem showOffRoute fillAttrs waypoint =
+                            renderWaypointItem isMember showOffRoute fillAttrs waypoint =
                                 let
                                     displayedDistance =
                                         displayedDistanceValue cs.totalDistanceDisplay finishDist cs.referenceDistance refWaypoint waypoint.distance
@@ -3378,17 +3314,14 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                                         displayedDistance == Just 0
 
                                     waypointDistance =
-                                        if isReferencePoint then
+                                        if isMember then
                                             Nothing
 
-                                        else if displayIsPercent cs.totalDistanceDisplay then
-                                            Maybe.map Format.percent displayedDistance
-
                                         else
-                                            Maybe.map (Format.km cs.distanceDetail) displayedDistance
+                                            DistanceDisplay.waypointLabel cs finishDist refWaypoint waypoint
 
                                     waypointEle =
-                                        if isReferencePoint then
+                                        if isMember || isReferencePoint then
                                             Nothing
 
                                         else
@@ -3502,7 +3435,8 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                         in
                         case item of
                             InfoWaypoint waypoint ->
-                                renderWaypointItem showOffRouteDistance
+                                renderWaypointItem False
+                                    showOffRouteDistance
                                     (if waypoint.offRoute > offRouteThreshold then
                                         [ Svg.Attributes.fill offRouteColour ]
 
@@ -3511,8 +3445,31 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
                                     )
                                     waypoint
 
+                            InfoGroup group ->
+                                Svg.g
+                                    [ Svg.Attributes.class "cuesheet-group"
+                                    , Html.Attributes.attribute "aria-label" (String.fromInt (List.length group.members) ++ " waypoints: " ++ WaypointGrouping.label group)
+                                    ]
+                                    [ Svg.title [] [ Svg.text (String.fromInt (List.length group.members) ++ " waypoints") ]
+                                    , renderWaypointItem False
+                                        False
+                                        []
+                                        (GpxApi.Waypoint group.distance (WaypointGrouping.label group) [] group.gain group.loss 0)
+                                    ]
+
+                            InfoMember index waypoint ->
+                                Svg.g
+                                    [ Svg.Attributes.class "cuesheet-member"
+                                    , Html.Attributes.attribute "data-waypoint-index" (String.fromInt index)
+                                    ]
+                                    [ renderWaypointItem True
+                                        showOffRouteDistance
+                                        [ Svg.Attributes.fontSize "smaller" ]
+                                        { waypoint | name = "↳ " ++ Route.waypointDisplayName waypoint }
+                                    ]
+
                             InfoPosition waypoint ->
-                                renderWaypointItem True [ Svg.Attributes.fill "steelblue" ] waypoint
+                                renderWaypointItem False True [ Svg.Attributes.fill "steelblue" ] waypoint
 
                             Ride dist ( gain, loss ) ->
                                 let
@@ -3580,34 +3537,6 @@ cuesheetSvg offRouteThreshold showOffRouteDistance positionDistance scrollPositi
             )
         ]
 
-
-waypointInfos : Maybe Float -> Float -> List GpxApi.Waypoint -> List Info
-waypointInfos positionDistance position waypoints =
-    let
-        visibleWaypoints =
-            List.filter (\wp -> wp.distance >= position) waypoints
-
-        infoConstructor wp =
-            if Just wp.distance == positionDistance then
-                InfoPosition wp
-
-            else
-                InfoWaypoint wp
-    in
-    -- Pair each visible waypoint with the next to form rides, then interweave:
-    -- [ A, B, C ] + [ A-to-B, B-to-C ] -> [ A, A-to-B, B, B-to-C, C ].
-    List.Extra.interweave
-        (List.map infoConstructor visibleWaypoints)
-        (List.map2
-            (\previous current ->
-                Ride (current.distance - previous.distance)
-                    ( current.gain - previous.gain
-                    , current.loss - previous.loss
-                    )
-            )
-            visibleWaypoints
-            (List.drop 1 visibleWaypoints)
-        )
 
 
 -- RELATIVE VIEW
@@ -3729,19 +3658,19 @@ viewRelativeTab state tracks =
         , Html.Attributes.style "gap" "0.75em"
         , Html.Attributes.style "padding" "0.5em"
         ]
-        (viewRelativeControls (state.position /= Nothing) rel selectable :: body)
+        (viewRelativeControls state.cuesheet.distanceDetail (state.position /= Nothing) rel selectable :: body)
 
 
-viewRelativeControls : Bool -> RelativeOptions -> List ( Int, GpxApi.Waypoint ) -> Html Msg
-viewRelativeControls hasPosition rel selectable =
+viewRelativeControls : Int -> Bool -> RelativeOptions -> List ( Int, GpxApi.Waypoint ) -> Html Msg
+viewRelativeControls distanceDetail hasPosition rel selectable =
     Html.div
         [ Html.Attributes.style "display" "flex"
         , Html.Attributes.style "flex-wrap" "wrap"
         , Html.Attributes.style "gap" "1em"
         , Html.Attributes.style "align-items" "flex-end"
         ]
-        [ Ui.labelledControl "Start" (viewPointSelector { onSelect = SetRelativeStart, hasPosition = hasPosition, offerRouteEnds = True } selectable rel.start)
-        , Ui.labelledControl "End" (viewPointSelector { onSelect = SetRelativeEnd, hasPosition = hasPosition, offerRouteEnds = True } selectable rel.end)
+        [ Ui.labelledControl "Start" (viewPointSelector distanceDetail { onSelect = SetRelativeStart, hasPosition = hasPosition, offerRouteEnds = True } selectable rel.start)
+        , Ui.labelledControl "End" (viewPointSelector distanceDetail { onSelect = SetRelativeEnd, hasPosition = hasPosition, offerRouteEnds = True } selectable rel.end)
         ]
 
 
@@ -3963,6 +3892,7 @@ viewRelativeTravelCard track selectable start end =
         ]
 
 
+
 -- PACE VIEW
 
 
@@ -3995,14 +3925,14 @@ viewPaceTab state tracks =
         , Html.Attributes.style "gap" "0.75em"
         , Html.Attributes.style "padding" "0.5em"
         ]
-        (viewPaceControls (state.position /= Nothing) pace selectable :: body)
+        (viewPaceControls state.cuesheet.distanceDetail (state.position /= Nothing) pace selectable :: body)
 
 
-viewPaceControls : Bool -> Pace.Options PointRef -> List ( Int, GpxApi.Waypoint ) -> Html Msg
-viewPaceControls hasPosition pace selectable =
+viewPaceControls : Int -> Bool -> Pace.Options PointRef -> List ( Int, GpxApi.Waypoint ) -> Html Msg
+viewPaceControls distanceDetail hasPosition pace selectable =
     let
         pointSelector onSelect =
-            viewPointSelector { onSelect = onSelect, hasPosition = hasPosition, offerRouteEnds = True } selectable
+            viewPointSelector distanceDetail { onSelect = onSelect, hasPosition = hasPosition, offerRouteEnds = True } selectable
 
         sourceItem source =
             Dropdown.Item (Pace.formatSource source) (paceSourceName source) True
@@ -4647,7 +4577,7 @@ viewElevationProfileOptions state =
                         -- splitListPos is a position in the splits list, not a waypoint index
                         dropdownRow splitListPos selectedRef =
                             Html.div [ Html.Attributes.style "display" "flex", Html.Attributes.style "gap" "0.5em", Html.Attributes.style "align-items" "center" ]
-                                [ viewPointSelector
+                                [ viewPointSelector state.cuesheet.distanceDetail
                                     { onSelect = UpdateSplitPoint splitListPos, hasPosition = state.position /= Nothing, offerRouteEnds = False }
                                     selectable
                                     selectedRef
@@ -4755,28 +4685,9 @@ viewTotalDistanceOptions state =
             maybeTracks
                 |> Maybe.map (\ts -> Route.lastTrackpointDistance ts.current.trackpoints)
 
-        filteredWps =
-            maybeTracks
-                |> Maybe.map
-                    (\ts ->
-                        let
-                            currentEffective =
-                                Route.effectiveWaypoints ts.current
-                        in
-                        (if cs.showStartFinish then
-                            injectStartFinish (Route.lastTrackpointDistance ts.current.trackpoints) ts.current currentEffective
-
-                         else
-                            currentEffective
-                        )
-                            |> Route.filterWaypoints (waypointPredicates state)
-                            |> trimWaypointCategories state.filteredCategories
-                    )
-                |> Maybe.withDefault []
-
         indexedFiltered =
             maybeTracks
-                |> Maybe.map (.current >> (\track -> Route.indexedFilteredWaypoints track filteredWps))
+                |> Maybe.map (.current >> Route.selectableWaypoints (waypointSelectionPredicates state))
                 |> Maybe.withDefault []
 
         defaultRef =
@@ -4802,7 +4713,7 @@ viewTotalDistanceOptions state =
             Dropdown.Item (formatTotalDistanceDisplayMode mode) (formatTotalDistanceDisplayMode mode) True
 
         pointSelector ref =
-            [ viewPointSelector
+            [ viewPointSelector state.cuesheet.distanceDetail
                 { onSelect = UpdateSelectedPoint, hasPosition = state.position /= Nothing, offerRouteEnds = False }
                 indexedFiltered
                 ref
@@ -5013,41 +4924,69 @@ flows that compare two arbitrary points want them: a split there is dropped by
 `ToFinish` and `FromZero` already say.
 
 -}
-viewPointSelector : { onSelect : PointRef -> Msg, hasPosition : Bool, offerRouteEnds : Bool } -> List ( Int, GpxApi.Waypoint ) -> PointRef -> Html Msg
-viewPointSelector { onSelect, hasPosition, offerRouteEnds } indexed selected =
+viewPointSelector : Int -> { onSelect : PointRef -> Msg, hasPosition : Bool, offerRouteEnds : Bool } -> List ( Int, GpxApi.Waypoint ) -> PointRef -> Html Msg
+viewPointSelector distanceDetail { onSelect, hasPosition, offerRouteEnds } indexed selected =
     let
+        option ref name enabled =
+            Html.option
+                [ Html.Attributes.value (Route.formatPointRef ref)
+                , Html.Attributes.selected (ref == selected)
+                , Html.Attributes.disabled (not enabled)
+                ]
+                [ Html.text name ]
+
         routeEndItem ref name =
             if offerRouteEnds then
-                [ Dropdown.Item (Route.formatPointRef ref) name True ]
+                [ option ref name True ]
 
             else
                 []
-    in
-    Dropdown.dropdown
-        (Dropdown.Options
-            (List.concat
-                [ [ Dropdown.Item (Route.formatPointRef AtRoutePosition) Route.routePositionName hasPosition ]
-                , routeEndItem AtRouteStart Route.routeStartName
-                , List.map
-                    (\( idx, wp ) ->
-                        Dropdown.Item (Route.formatPointRef (AtWaypoint idx)) (Route.waypointDisplayName wp ++ " (" ++ Format.km 1 wp.distance ++ ")") True
-                    )
-                    indexed
-                , routeEndItem AtRouteEnd Route.routeEndName
-                ]
-            )
-            Nothing
-            (\maybeStr ->
-                case maybeStr |> Maybe.andThen Route.parsePointRef of
-                    Just ref ->
-                        onSelect ref
 
-                    Nothing ->
-                        Ignore
-            )
+        memberOption ( index, waypoint ) =
+            option (AtWaypoint index)
+                ((if String.isEmpty (String.trim waypoint.name) then
+                    "Unnamed waypoint"
+
+                  else
+                    waypoint.name
+                 )
+                    ++ " ("
+                    ++ Format.km distanceDetail waypoint.distance
+                    ++ ")"
+                )
+                True
+
+        groupOptions group =
+            if List.length group.members == 1 then
+                List.map memberOption group.members
+
+            else
+                [ Html.optgroup
+                    [ Html.Attributes.attribute "label"
+                        (WaypointGrouping.label group
+                            ++ " ("
+                            ++ Format.km distanceDetail group.distance
+                            ++ "; "
+                            ++ String.fromInt (List.length group.members)
+                            ++ " waypoints)"
+                        )
+                    ]
+                    (List.map memberOption group.members)
+                ]
+    in
+    Html.select
+        [ Html.Attributes.class "waypoint-selector"
+        , Html.Events.onInput (Route.parsePointRef >> Maybe.map onSelect >> Maybe.withDefault Ignore)
+        ]
+        ([ option AtRoutePosition Route.routePositionName hasPosition ]
+            ++ routeEndItem AtRouteStart Route.routeStartName
+            ++ (indexed
+                    |> List.sortBy (Tuple.second >> .distance)
+                    |> WaypointGrouping.groupWaypoints (DistanceDisplay.fromStartLabel distanceDetail)
+                    |> List.concatMap groupOptions
+               )
+            ++ routeEndItem AtRouteEnd Route.routeEndName
         )
-        []
-        (Just (Route.formatPointRef selected))
 
 
 optionGroup : String -> List (Html Msg) -> Html Msg
@@ -5157,6 +5096,7 @@ formatTotalDistanceDisplayMode v =
             "hide"
 
 
+
 -- TAB SERIALIZATION
 
 
@@ -5235,6 +5175,7 @@ encodeSavedState state =
             , Just ( "trackThickness", Json.Encode.float ep.trackThickness )
             , Just ( "showIntensity", Json.Encode.bool ep.showIntensity )
             , Just ( "intensityTau", Json.Encode.float ep.intensityTau )
+
             -- A GPS fix marks the position as live; manual edits clear it. Apply this
             -- here so every save and export omits GPS positions, even after other edits.
             , case state.location of
@@ -5464,8 +5405,11 @@ port logError : String -> Cmd msg
 port storeState : String -> Cmd msg
 
 
+
 -- Reports that the browser refused to save what storeState sent: the route is
 -- still usable but will not survive a reload.
+
+
 port storeStateFailed : (String -> msg) -> Sub msg
 
 

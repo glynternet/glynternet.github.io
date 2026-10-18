@@ -64,3 +64,13 @@ Browser validation uses a real GPX (`data/nosoco24-0.gpx`, 3,112 trackpoints) wi
 Elm bundle, WASM and IndexedDB code from `_layouts/route.html`. It verifies that the extracted
 app restores a state saved by the previous build, persists edits across a reload, and writes
 a state the previous build can still read. Rebuild and commit `data/route.js` with the source.
+
+## Waypoint grouping and distance display — 19 October 2026
+
+`WaypointGrouping` takes a waypoint-to-label callback and groups consecutive equal labels,
+preserving each indexed member. `DistanceDisplay` owns the existing total-distance enum,
+value conversion and the shared display labels. `CuesheetRows` prepares the grouped rows
+without a dependency on `Main`, HTML/SVG or browser APIs. Their unit tests cover grouping,
+rounding, member identity and synthetic rows; the focused browser smoke test covers UI
+wiring, storage restore preserving both members, and unchanged split-GPX track output. See the
+[grouping RFC](waypoint-grouping-rfc.md) for the implementation and verification record.

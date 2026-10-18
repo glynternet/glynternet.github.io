@@ -2,9 +2,9 @@
 
 ## Status
 
-Reviewed design for a first implementation in the route app. Implementation
-remains pending; this design does not change the current GPX or saved-state
-format.
+Implemented on 19 October 2026. Grouping uses the selected Distance detail in
+the cuesheet and waypoint pickers, with expanded member rows and individual
+selection/editing. The GPX and saved-state formats are unchanged.
 
 The grouping criterion was confirmed on 18 October 2026: group waypoints when
 their distances appear equal after rounding at the selected **Distance detail**.
@@ -89,10 +89,10 @@ reference cannot be resolved, leave those waypoints ungrouped. A reference
 point whose zero label is suppressed likewise remains separate. This avoids
 combining every row merely because none has a distance label.
 
-Waypoint pickers currently show from-start distances at a fixed one decimal
-place. Update their distance labels to use Distance detail, and derive their
-groups from those same from-start labels. Each view's grouping must agree with
-the distances it actually shows.
+Waypoint pickers show from-start distances using Distance detail and derive
+their groups from those same labels. Native option groups provide context while
+each member remains selectable. Each view's grouping agrees with the distances
+it actually shows.
 
 ### Group rows and selection
 
@@ -244,3 +244,26 @@ labels. No additional grouping rule is decided here.
    export.
 5. Run the repository Elm test/build commands and the focused browser
    integration smoke test.
+
+## Implementation and verification, 19 October 2026
+
+- `WaypointGrouping.elm` owns the pure callback-based grouping function and
+  group labels. It preserves input order, original indices and unrounded values.
+- `DistanceDisplay.elm` owns the distance-display modes and shared label
+  calculation. `Main` supplies the current options to that calculation.
+- `CuesheetRows.elm` prepares expanded group/member rows and ride intervals.
+  Synthetic position and endpoint identities remain separate even when their
+  distances coincide with actual waypoints. Ride intervals use the first
+  members' unrounded representative values.
+- Pickers use native `optgroup` elements with individually selectable options.
+  Member editing remains in the Waypoints tab. Category filtering preserves
+  original indices before display-only category trimming.
+- The 170-test Elm suite passed under `elm-test 0.19.1-revision12`; the
+  optimized application build passed with Elm 0.19.1. The grouping and row
+  preparation cases run directly in the unit suite.
+- `elm/route/browser-tests/waypoint-grouping.cjs` uses synthetic state with the
+  actual Elm bundle, page adapters, WASM and IndexedDB. It verifies detail
+  changes, individual selection/editing, saved-state restore preserving both
+  members, and unchanged split-GPX track output. The existing split-GPX exporter
+  writes tracks only; waypoint records remain in saved state. The zero-gap
+  follow-up above remains deferred.
