@@ -2,13 +2,18 @@
 
 ## Status
 
-Proposal. This describes a first implementation for the route app; it does
-not change the current GPX or saved-state format.
+Reviewed design for a first implementation in the route app. Implementation
+remains pending; this design does not change the current GPX or saved-state
+format.
 
 The grouping criterion was confirmed on 18 October 2026: group waypoints when
 their distances appear equal after rounding at the selected **Distance detail**.
 This replaces the earlier proposal to group points within a fixed 50 m span.
-The rendering and implementation details below remain proposals for review.
+
+On 19 October 2026 the user confirmed that the RFC looks good and requested
+that grouping live in a separate, easily unit-tested module accepting a
+`Waypoint -> Maybe String` callback. The implementation and testing plan below
+records that requirement. The zero-gap question remains a follow-up consideration.
 
 ## Problem
 
@@ -104,8 +109,15 @@ context only and must not replace the underlying `PointRef`.
 
 ## Data and implementation
 
-Keep `EditableWaypoint` and `GpxApi.Waypoint` unchanged. Add a derived type in
-`elm/route/src/Main.elm`, for example:
+Keep `EditableWaypoint` and `GpxApi.Waypoint` unchanged. Put the grouping type
+and algorithm in a separate local module, `elm/shared/src/WaypointGrouping.elm`,
+exposing `WaypointGroup` and `groupWaypoints`. This follows the existing shared
+module layout and is directly importable by `elm-test` through the route app's
+existing source directories.
+
+The module must be independent of `Main`, app state, HTML/SVG, ports and browser
+APIs. Its inputs are the supplied label function and an ordered list of indexed
+effective waypoints; its output is the derived groups. For example:
 
 ```elm
 type alias WaypointGroup =
@@ -133,9 +145,17 @@ where appropriate, so rounding cannot drift between grouping and display.
 Compare the formatted labels directly rather than introducing separate
 floating-point tolerances or reimplementing rounding.
 
-The function consumes effective waypoints with stable editable-list indices,
-so grouping never changes indices used by `AtWaypoint`, deletion, or editing
-messages.
+`Main` supplies the label function with the current display settings captured
+in it, then renders the returned groups. Keep the shared label calculation
+pure and importable too, so tests can exercise the actual display-mode and
+rounding logic without importing `Main` or starting the application. The
+grouping module itself only compares the callback's results; it has no
+knowledge of distance detail, display modes or formatting rules.
+
+The caller resolves edits, excludes deleted/filtered/synthetic points and
+orders the effective waypoints before calling the function. The function
+preserves that input order and the stable editable-list indices, so grouping
+never changes indices used by `AtWaypoint`, deletion, or editing messages.
 
 Use the same effective waypoint source as the existing cuesheet and selectors.
 Group at the presentation boundary, after filtering and distance overrides have
@@ -171,23 +191,35 @@ a fallback such as `2 waypoints` rather than an empty label.
 
 ## Testing
 
-Add unit tests for empty and singleton input; equal-distance groups; all four
-examples above; and values below, at and above rounding boundaries using the
-existing formatter's results. Cover every supported Distance detail value and
-verify that a chain of small gaps cannot merge different labels.
+Unit tests are the primary verification for grouping. Add
+`elm/route/tests/WaypointGroupingTest.elm`, importing `WaypointGrouping`
+directly and running under the existing `make elm-test` target. Tests pass
+small waypoint fixtures and a `GpxApi.Waypoint -> Maybe String` callback
+straight to `groupWaypoints`; no browser or application startup is required.
 
-Cover distance-mode/reference changes, percentage labels, absent labels,
-deleted/filtered members, distance overrides, stable original indices, and
-duplicate/empty display names. Verify the group representative retains the
-first member's unrounded distance and cumulative gain/loss, with every member's
-original values intact.
+Test the grouping contract with simple supplied callbacks: empty and singleton
+input; consecutive equal `Just` labels; differing labels; nonconsecutive
+matching labels; and `Nothing` producing a singleton and breaking the run,
+including consecutive `Nothing` values. Verify that the supplied labels control
+grouping even when the underlying waypoint distances differ. Assert exact
+member order, stable original indices and preservation of every waypoint;
+the representative must retain the first member's unrounded distance and
+cumulative gain/loss.
 
-Add a view-level fixture with waypoints at 300 m and 304 m. At detail 2, verify
-one grouped location labelled `0.30km`, with both members individually
-selectable and editable. Change to detail 3 and verify separate `0.300km` and
-`0.304km` rows; change back and verify they regroup without losing selection.
-Repeat for picker labels, and verify that a saved-state round trip restores
-the selected detail and resulting groups without storing the groups themselves.
+Then use the real shared label/formatting helpers in unit tests for all four
+examples above, values below/at/above rounding boundaries, every supported
+Distance detail value, display-mode/reference changes, percentages and absent
+labels. Calling the function again with detail 3 and then detail 2 must split
+and regroup the 300 m/304 m fixture. Verify that a chain of small gaps cannot
+merge different labels. Test the effective-waypoint preparation and display
+helpers for deleted/filtered members, distance overrides and duplicate/empty
+display names.
+
+Keep browser coverage to a small integration smoke test with the 300 m/304 m
+fixture: changing Distance detail updates the rendered cuesheet and picker
+groups, both members remain selectable/editable, selection survives regrouping,
+and restoring saved state restores the detail and resulting groups. The rounding
+and grouping edge-case matrix belongs in the unit suite.
 
 ## Follow-up consideration: gaps displayed as zero
 
@@ -203,12 +235,12 @@ labels. No additional grouping rule is decided here.
 
 ## Rollout
 
-1. Share the displayed-distance label calculation between rendering and the
-   pure grouping function, and add tests.
+1. Add `WaypointGrouping.elm` and its direct unit tests; make the shared
+   displayed-distance label calculation independently testable as well.
 2. Refactor cuesheet rendering behind derived groups.
 3. Add expanded member rendering and accessibility text; align picker labels
    and grouping with Distance detail.
 4. Verify detail changes, selectors, edits, saved-state round trips, and GPX
    export.
-5. Run the repository Elm test/build commands and inspect a GPX containing
-   waypoints with equal rounded distances and points across a rounding boundary.
+5. Run the repository Elm test/build commands and the focused browser
+   integration smoke test.
