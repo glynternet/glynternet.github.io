@@ -11,17 +11,21 @@ import GpxApi
 import Html exposing (Attribute, Html)
 import Html.Attributes
 import Html.Events
+import Html.Lazy
 import Http
 import Json.Decode
 import Json.Encode
 import List.Extra
 import Location
 import Pace
+import ProfileSplit
+import ProfilePreparation
 import Route exposing (EditableTrack, EditableWaypoint, PointRef(..))
 import RouteFilename
 import String
 import Svg
 import Svg.Attributes
+import Svg.Lazy
 import Task
 import Time
 import Ui
@@ -120,6 +124,8 @@ type alias State =
     , storageError : Maybe String
     , splitSegments : Maybe GpxApi.SplitResult
     , profilePixelWidth : Maybe Int
+    , profileSourceRevision : Int
+    , profilePreparation : Maybe ProfilePreparation.Data
 
     -- The device clock, for the Pace tab's arrival times. Transient because a stored clock
     -- reading is a wrong one the moment it is read back; `zone` stays UTC only for the
@@ -282,6 +288,8 @@ defaultState =
     , storageError = Nothing
     , splitSegments = Nothing
     , profilePixelWidth = Nothing
+    , profileSourceRevision = 0
+    , profilePreparation = Nothing
     , now = Nothing
     , zone = Time.utc
     }
@@ -289,6 +297,11 @@ defaultState =
 
 init : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
 init maybeState url key =
+    initAppState maybeState url key |> Tuple.mapFirst prepareProfile
+
+
+initAppState : Maybe Json.Decode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
+initAppState maybeState url key =
     let
         nav =
             Navigation key url.path
@@ -451,6 +464,94 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    let
+        ( updated, cmd ) =
+            updateAppState msg model
+
+        state =
+            updated.state
+    in
+    ( if profileSourceChanged msg then
+        prepareProfile { updated | state = { state | profileSourceRevision = model.state.profileSourceRevision + 1 } }
+
+      else
+        prepareProfile updated
+    , cmd
+    )
+
+
+{-| Source changes invalidate the single transient preparation, independently of waypoint
+edits and segment updates. Imports get a fresh revision even though decoded transients reset.
+-}
+profileSourceChanged : Msg -> Bool
+profileSourceChanged msg =
+    case msg of
+        WasmResponseReceived _ ->
+            True
+
+        NavigateToPrevious ->
+            True
+
+        NavigateToNext ->
+            True
+
+        StateFileRead _ ->
+            True
+
+        StateUrlFetched _ ->
+            True
+
+        _ ->
+            False
+
+
+prepareProfile : Model -> Model
+prepareProfile model =
+    let
+        state =
+            model.state
+    in
+    case ( state.tracks, state.activeTab ) of
+        ( Loaded tracks, ElevationProfileTab ) ->
+            let
+                intensityTau =
+                    if state.elevationProfile.showIntensity then
+                        Just state.elevationProfile.intensityTau
+
+                    else
+                        Nothing
+
+                prepare previous =
+                    { model
+                        | state =
+                            { state
+                                | profilePreparation =
+                                    Just (ProfilePreparation.prepare state.profileSourceRevision intensityTau tracks.current.trackpoints previous)
+                            }
+                    }
+            in
+            case state.profilePreparation of
+                Just prepared ->
+                    if prepared.sourceRevision == state.profileSourceRevision && (intensityTau == Nothing || prepared.intensityTau == intensityTau) then
+                        model
+
+                    else
+                        prepare state.profilePreparation
+
+                Nothing ->
+                    prepare Nothing
+
+        _ ->
+            case state.profilePreparation of
+                Nothing ->
+                    model
+
+                Just _ ->
+                    { model | state = { state | profilePreparation = Nothing } }
+
+
+updateAppState : Msg -> Model -> ( Model, Cmd Msg )
+updateAppState msg model =
     let
         s =
             model.state
@@ -644,20 +745,26 @@ update msg model =
                                         |> Maybe.withDefault 0
                             in
                             let
-                                locatedState =
-                                    withLiveSplit
+                                ( locatedState, splitCmd ) =
+                                    updatePositionSplit s
                                         { s
                                             | location = Just (Location.LocationState gpsPos pos.accuracy matchedDist offRouteDist pos.altitude)
                                             , locationError = Nothing
-                                            , position = Just matchedDist
+                                            , position =
+                                                if s.position == Just matchedDist then
+                                                    s.position
+
+                                                else
+                                                    Just matchedDist
                                         }
                             in
-                            -- A GPS-derived position is transient, so we never persist it: keeping it
-                            -- would mean a stale tracking position is shown when the app is reopened.
-                            -- We still store here (with position cleared) to drop any position that was
-                            -- previously persisted, so nothing stale survives a reload.
+                            -- Keep this GPS write sanitized even when refreshing a static split:
+                            -- do not persist the live GPS position here.
                             ( updateState locatedState
-                            , storeState (encodeSavedState { locatedState | position = Nothing })
+                            , Cmd.batch
+                                [ storeState (encodeSavedState { locatedState | position = Nothing })
+                                , splitCmd
+                                ]
                             )
 
                         _ ->
@@ -1028,7 +1135,22 @@ update msg model =
 
         UpdatePosition pos ->
             -- Manually setting or clearing the position drops the GPS fix, whose accuracy no longer applies
-            updateSplitAndStore (updateState { s | position = pos, location = Nothing })
+            let
+                ( positionedState, splitCmd ) =
+                    updatePositionSplit s
+                        { s
+                            | position =
+                                if pos == s.position then
+                                    s.position
+
+                                else
+                                    pos
+                            , location = Nothing
+                        }
+            in
+            ( updateState positionedState
+            , Cmd.batch [ storeState (encodeSavedState positionedState), splitCmd ]
+            )
 
         UpdateSplits n ->
             let
@@ -1210,10 +1332,10 @@ update msg model =
             updateAndStoreModel (updateState { s | cuesheet = { cs | totalDistanceDisplay = newDisplay } })
 
         UpdateOffRouteThreshold threshold ->
-            updateAndStoreModel (updateState { s | offRouteThreshold = threshold })
+            updateSplitAndStore (updateState <| correctWaypointSelectionInState { s | offRouteThreshold = threshold })
 
         UpdateShowOffRouteWaypoints show ->
-            updateAndStoreModel (updateState { s | showOffRouteWaypoints = show })
+            updateSplitAndStore (updateState <| correctWaypointSelectionInState { s | showOffRouteWaypoints = show })
 
         SetRelativeStart ref ->
             let
@@ -1390,6 +1512,46 @@ requestSplitCmd state =
             requestSplitCmdWasm state
 
 
+{-| Only for position changes: route edits, filters and split settings keep their full
+refresh paths. Compare boundary distances or the effective live range, never trackpoint lists.
+-}
+updatePositionSplit : State -> State -> ( State, Cmd Msg )
+updatePositionSplit previous positioned =
+    case positioned.tracks of
+        Loaded tracks ->
+            case positioned.viewMode of
+                StaticView ->
+                    case positioned.splitSegments of
+                        Nothing ->
+                            ( positioned, requestSplitCmd positioned )
+
+                        Just _ ->
+                            if positioned.elevationProfile.activeSplitMode == PointsMode && splitDistances previous tracks.current /= splitDistances positioned tracks.current then
+                                ( positioned, requestSplitCmd positioned )
+
+                            else
+                                ( positioned, Cmd.none )
+
+                LiveView ->
+                    let
+                        rangeAt =
+                            ProfileSplit.liveRange positioned.elevationProfile (Route.lastTrackpointDistance tracks.current.trackpoints)
+                    in
+                    case positioned.splitSegments of
+                        Just _ ->
+                            if rangeAt previous.position == rangeAt positioned.position then
+                                ( positioned, Cmd.none )
+
+                            else
+                                ( withLiveSplit positioned, Cmd.none )
+
+                        Nothing ->
+                            ( withLiveSplit positioned, Cmd.none )
+
+        _ ->
+            ( positioned, Cmd.none )
+
+
 requestSplitCmdWasm : State -> Cmd Msg
 requestSplitCmdWasm state =
     case state.tracks of
@@ -1446,12 +1608,7 @@ computeLiveSplitFromState state =
                     state.elevationProfile
 
                 ( rangeStart, rangeEnd ) =
-                    case state.position of
-                        Just p ->
-                            ( max 0 (p - ep.liveLookbehind), min maxDist (p + ep.liveLookahead) )
-
-                        Nothing ->
-                            ( 0, maxDist )
+                    ProfileSplit.liveRange ep maxDist state.position
 
                 segTps =
                     tps |> List.filter (\tp -> tp.distance >= rangeStart && tp.distance <= rangeEnd)
@@ -1717,22 +1874,19 @@ hidden by the category filter or the off-route threshold cannot silently split t
 -}
 splitDistances : State -> EditableTrack -> List Float
 splitDistances state track =
-    (case state.elevationProfile.activeSplitMode of
+    case state.elevationProfile.activeSplitMode of
         EquidistantMode ->
             []
 
         PointsMode ->
-            List.filterMap (Route.refDistance state.position track) state.elevationProfile.splitPoints
+            ProfileSplit.pointDistances state.position track state.elevationProfile.splitPoints
 
         CategoriesMode ->
             Route.selectableWaypoints (waypointSelectionPredicates state) track
                 |> List.map Tuple.second
                 |> List.filter (Route.inAnyCategory state.elevationProfile.splitCategories)
                 |> List.map .distance
-    )
-        |> List.sort
-        |> List.Extra.unique
-        |> List.filter (\distance -> distance > 0 && distance < Route.lastTrackpointDistance track.trackpoints)
+                |> ProfileSplit.internalDistances (Route.lastTrackpointDistance track.trackpoints)
 
 
 {-| `AtRoutePosition` as a one-element list when a position is set, so selector option
@@ -2144,100 +2298,84 @@ viewTrackNavigation tracks =
 
 viewElevationProfileTab : State -> Zipper EditableTrack -> Html Msg
 viewElevationProfileTab state tracks =
-    let
-        ep =
-            state.elevationProfile
-
-        trackMaxElevation =
-            Maybe.withDefault 1 <| List.maximum <| List.map .elevation tracks.current.trackpoints
-
-        trackMinElevation =
-            Maybe.withDefault 1 <| List.minimum <| List.map .elevation tracks.current.trackpoints
-
-        fullIntensity =
-            if ep.showIntensity then
-                computeIntensity ep.intensityTau tracks.current.trackpoints
-
-            else
-                []
-
-        ( trackMinIntensity, trackMaxIntensity ) =
-            List.foldl
-                (\pt ( mn, mx ) -> ( min mn pt.intensity, max mx pt.intensity ))
-                ( 1 / 0, -(1 / 0) )
-                fullIntensity
-
-        -- distance markers reuse the cuesheet's "Total distance" setting so distance
-        -- reads the same in both views
-        cs =
-            state.cuesheet
-
-        currentFinishDistance =
-            Route.lastTrackpointDistance tracks.current.trackpoints
-
-        refWaypoint =
-            referenceWaypoint state tracks.current
-    in
-    case state.splitSegments of
-        Nothing ->
-            Html.text ""
-
-        Just splitResult ->
-            let
-                downsampleWidth =
-                    Maybe.withDefault profileSvgWidth state.profilePixelWidth
-
-                profileViews =
-                    List.map2 Tuple.pair splitResult.boundaries splitResult.segments
-                        |> List.indexedMap
-                            (\segIndex ( ( segStart, segEnd ), seg ) ->
-                                let
-                                    segMaxDistance =
-                                        List.reverse seg.trackpoints
-                                            |> List.head
-                                            |> Maybe.map .distance
-                                            |> Maybe.withDefault (segEnd - segStart)
-
-                                    segPosition =
-                                        state.position
-                                            |> Maybe.andThen
-                                                (\p ->
-                                                    if p >= segStart && p <= segEnd then
-                                                        Just (p - segStart)
-
-                                                    else
-                                                        Nothing
-                                                )
-
-                                    segIntensity =
-                                        fullIntensity
-                                            |> List.filter (\pt -> pt.distance >= segStart && pt.distance <= segEnd)
-                                            |> List.map (\pt -> { pt | distance = pt.distance - segStart })
-                                            |> downsample downsampleWidth
-
-                                    downsampledSeg =
-                                        { seg | trackpoints = downsample downsampleWidth seg.trackpoints }
-
-                                    markers =
-                                        distanceMarkers
-                                            { mode = cs.totalDistanceDisplay
-                                            , finishDist = currentFinishDistance
-                                            , referenceDistance = cs.referenceDistance
-                                            , refWaypoint = refWaypoint
-                                            , detail = cs.distanceDetail
-                                            , interval = ep.distanceMarkerInterval
-                                            , segmentEnds = ep.distanceMarkerSegmentEnds
-                                            , segStart = segStart
-                                            , segMaxDistance = segMaxDistance
-                                            }
-                                in
-                                profile segIndex downsampledSeg seg.trackpoints segMaxDistance trackMinElevation trackMaxElevation ep.fontSize ep.trackHeight ep.trackThickness ep.labelHeightGain state.offRouteThreshold segPosition segIntensity trackMinIntensity trackMaxIntensity markers
-                            )
-            in
+    case ( state.splitSegments, state.profilePreparation ) of
+        ( Just splitResult, Just prepared ) ->
             Html.div []
                 [ liveNoPositionWarning state
-                , Html.div [ Html.Attributes.id profileContainerId ] profileViews
+                , Html.Lazy.lazy8 viewProfileContent
+                    tracks.current
+                    splitResult
+                    state.elevationProfile
+                    state.cuesheet
+                    (Maybe.withDefault profileSvgWidth state.profilePixelWidth)
+                    state.position
+                    state.offRouteThreshold
+                    prepared
                 ]
+
+        _ ->
+            Html.text ""
+
+
+{-| Existing source records and shared preparation let unrelated updates skip this entire
+view. The SVG layers below also reuse their sampling and geometry during position changes.
+-}
+viewProfileContent : EditableTrack -> GpxApi.SplitResult -> ElevationProfileOptions -> CuesheetOptions -> Int -> Maybe Float -> Float -> ProfilePreparation.Data -> Html Msg
+viewProfileContent track splitResult ep cs downsampleWidth position offRouteThreshold prepared =
+    let
+        currentFinishDistance =
+            Route.lastTrackpointDistance track.trackpoints
+
+        refWaypoint =
+            case cs.totalDistanceDisplay of
+                ToPoint ref ->
+                    Route.resolvePointRef position Nothing track ref
+
+                FromPoint ref ->
+                    Route.resolvePointRef position Nothing track ref
+
+                _ ->
+                    Nothing
+
+        profileViews =
+            List.map2 Tuple.pair splitResult.boundaries splitResult.segments
+                |> List.indexedMap
+                    (\segIndex ( ( segStart, segEnd ), seg ) ->
+                        let
+                            segMaxDistance =
+                                List.reverse seg.trackpoints
+                                    |> List.head
+                                    |> Maybe.map .distance
+                                    |> Maybe.withDefault (segEnd - segStart)
+
+                            segPosition =
+                                position
+                                    |> Maybe.andThen
+                                        (\p ->
+                                            if p >= segStart && p <= segEnd then
+                                                Just (p - segStart)
+
+                                            else
+                                                Nothing
+                                        )
+
+                            markers =
+                                distanceMarkers
+                                    { mode = cs.totalDistanceDisplay
+                                    , finishDist = currentFinishDistance
+                                    , referenceDistance = cs.referenceDistance
+                                    , refWaypoint = refWaypoint
+                                    , detail = cs.distanceDetail
+                                    , interval = ep.distanceMarkerInterval
+                                    , segmentEnds = ep.distanceMarkerSegmentEnds
+                                    , segStart = segStart
+                                    , segMaxDistance = segMaxDistance
+                                    }
+                        in
+                        profile segIndex seg prepared ep downsampleWidth segStart segEnd segMaxDistance offRouteThreshold segPosition markers
+                    )
+    in
+    Html.div [ Html.Attributes.id profileContainerId ] profileViews
 
 
 profileContainerId : String
@@ -2477,18 +2615,9 @@ distanceMarkers cfg =
             []
 
 
-profile : Int -> GpxApi.Track -> List GpxApi.TrackPoint -> Float -> Float -> Float -> Float -> Int -> Float -> Float -> Float -> Maybe Float -> List { distance : Float, intensity : Float } -> Float -> Float -> List { distance : Float, label : String } -> Html Msg
-profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation fontSize trackHeight trackThickness labelHeightGain offRouteThreshold maybePosition intensityPoints minIntensity maxIntensity markers =
+profile : Int -> GpxApi.Track -> ProfilePreparation.Data -> ElevationProfileOptions -> Int -> Float -> Float -> Float -> Float -> Maybe Float -> List { distance : Float, label : String } -> Html Msg
+profile segmentIndex track prepared ep width segStart segEnd maxDistance offRouteThreshold maybePosition markers =
     let
-        waypointTextHeight =
-            track.waypoints
-                |> List.map (\w -> String.length w.name)
-                |> List.maximum
-                |> Maybe.withDefault 0
-                |> (\len -> max 100 (round (toFloat len * 0.6 * fontSize * labelHeightGain)))
-
-        -- a reserved row below the axis for horizontal distance-marker labels, so they
-        -- don't collide with the rotated waypoint names
         markerLabelHeight =
             if List.isEmpty markers then
                 0
@@ -2497,16 +2626,10 @@ profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation
                 14
 
         svgHeight =
-            trackHeight + markerLabelHeight + waypointTextHeight
+            profileSvgHeight ep track markerLabelHeight
 
         calc =
-            xyCalculator
-                { svgHeight = toFloat trackHeight
-                , svgWidth = toFloat profileSvgWidth
-                , maxDistance = maxDistance
-                , minElevation = minElevation
-                , maxElevation = maxElevation
-                }
+            profileCalculator prepared ep maxDistance
     in
     Html.div
         [ Html.Attributes.style "margin-top" "16px"
@@ -2521,42 +2644,7 @@ profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation
         , Svg.svg
             [ Svg.Attributes.viewBox <| "-50 -5 " ++ String.fromInt (profileSvgWidth + 55) ++ " " ++ (String.fromInt <| svgHeight + 10)
             ]
-            [ -- intensity shading
-              if List.isEmpty intensityPoints then
-                Svg.g [] []
-
-              else
-                renderIntensityShading segmentIndex (toFloat profileSvgWidth) maxDistance (toFloat trackHeight) intensityPoints minIntensity maxIntensity
-            , -- elevation ticks
-              Svg.g []
-                (elevationTicks minElevation maxElevation
-                    |> List.concatMap
-                        (\tickElev ->
-                            let
-                                y =
-                                    calc.y tickElev
-                            in
-                            [ Svg.line
-                                [ Svg.Attributes.x1 "-5"
-                                , Svg.Attributes.y1 y
-                                , Svg.Attributes.x2 "0"
-                                , Svg.Attributes.y2 y
-                                , Svg.Attributes.stroke "grey"
-                                , Svg.Attributes.strokeWidth "1"
-                                ]
-                                []
-                            , Svg.text_
-                                [ Svg.Attributes.x "-8"
-                                , Svg.Attributes.y y
-                                , Svg.Attributes.textAnchor "end"
-                                , Svg.Attributes.dominantBaseline "central"
-                                , Svg.Attributes.fontSize "10"
-                                , Svg.Attributes.fill "grey"
-                                ]
-                                [ Svg.text (String.fromInt (round tickElev)) ]
-                            ]
-                        )
-                )
+            [ Svg.Lazy.lazy7 viewProfileBackground segmentIndex prepared ep width segStart segEnd maxDistance
             , -- distance markers
               Svg.g []
                 (markers
@@ -2568,16 +2656,16 @@ profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation
                             in
                             [ Svg.line
                                 [ Svg.Attributes.x1 x
-                                , Svg.Attributes.y1 <| String.fromInt <| trackHeight - 4
+                                , Svg.Attributes.y1 <| String.fromInt <| ep.trackHeight - 4
                                 , Svg.Attributes.x2 x
-                                , Svg.Attributes.y2 <| String.fromInt <| trackHeight + 4
+                                , Svg.Attributes.y2 <| String.fromInt <| ep.trackHeight + 4
                                 , Svg.Attributes.stroke "grey"
                                 , Svg.Attributes.strokeWidth "1"
                                 ]
                                 []
                             , Svg.text_
                                 [ Svg.Attributes.x x
-                                , Svg.Attributes.y <| String.fromInt <| trackHeight + markerLabelHeight - 3
+                                , Svg.Attributes.y <| String.fromInt <| ep.trackHeight + markerLabelHeight - 3
                                 , Svg.Attributes.textAnchor "middle"
                                 , Svg.Attributes.fontSize "10"
                                 , Svg.Attributes.fill "grey"
@@ -2586,62 +2674,7 @@ profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation
                             ]
                         )
                 )
-            , -- waypoints
-              Svg.g []
-                (let
-                    svgBottom =
-                        String.fromInt svgHeight
-
-                    paddedWaypointTextY =
-                        String.fromInt <| trackHeight + 5 + markerLabelHeight
-                 in
-                 track.waypoints
-                    |> List.concatMap
-                        (\waypoint ->
-                            let
-                                x =
-                                    calc.x waypoint.distance
-
-                                y =
-                                    calc.y <| interpolateWaypointElevation fullTrackpoints waypoint.distance - 5
-
-                                isOffRoute =
-                                    waypoint.offRoute > offRouteThreshold
-
-                                strokeColor =
-                                    if isOffRoute then
-                                        offRouteColour
-
-                                    else
-                                        "lightgray"
-                            in
-                            [ Svg.line
-                                [ Svg.Attributes.x1 <| x
-                                , Svg.Attributes.y1 <| svgBottom
-                                , Svg.Attributes.x2 <| x
-                                , Svg.Attributes.y2 <| y
-                                , Svg.Attributes.stroke strokeColor
-                                , Svg.Attributes.strokeWidth "1"
-                                ]
-                                []
-                            , Svg.text_
-                                ([ Svg.Attributes.fontSize <| String.fromFloat fontSize
-                                 , Svg.Attributes.dominantBaseline "text-top"
-                                 , Svg.Attributes.transform <| "translate(" ++ x ++ ", " ++ paddedWaypointTextY ++ ") rotate(90)"
-                                 ]
-                                    ++ (if isOffRoute then
-                                            [ Svg.Attributes.fill "orange" ]
-
-                                        else
-                                            []
-                                       )
-                                )
-                                [ Svg.text waypoint.name ]
-                            ]
-                        )
-                )
-            , -- track line
-              resolveElevationProfileSVGLine calc track.trackpoints (String.fromFloat trackThickness)
+            , Svg.Lazy.lazy7 viewProfileTrack track prepared ep width maxDistance markerLabelHeight offRouteThreshold
             , -- position marker
               case maybePosition of
                 Just posDistance ->
@@ -2650,14 +2683,14 @@ profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation
                             calc.x posDistance
 
                         yPos =
-                            calc.y (interpolateWaypointElevation fullTrackpoints posDistance)
+                            calc.y (interpolateWaypointElevation track.trackpoints posDistance)
                     in
                     Svg.g []
                         [ Svg.line
                             [ Svg.Attributes.x1 xPos
                             , Svg.Attributes.y1 "0"
                             , Svg.Attributes.x2 xPos
-                            , Svg.Attributes.y2 (String.fromInt trackHeight)
+                            , Svg.Attributes.y2 (String.fromInt ep.trackHeight)
                             , Svg.Attributes.stroke "dodgerblue"
                             , Svg.Attributes.strokeWidth "2"
                             , Svg.Attributes.opacity "0.7"
@@ -2676,10 +2709,10 @@ profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation
                     Svg.g [] []
             , -- track border
               Svg.g []
-                ([ ( ( 0, 0 ), ( trackHeight, 0 ) )
+                ([ ( ( 0, 0 ), ( ep.trackHeight, 0 ) )
                  , ( ( 0, 0 ), ( 0, profileSvgWidth ) )
-                 , ( ( trackHeight, profileSvgWidth ), ( trackHeight, 0 ) )
-                 , ( ( trackHeight, profileSvgWidth ), ( 0, profileSvgWidth ) )
+                 , ( ( ep.trackHeight, profileSvgWidth ), ( ep.trackHeight, 0 ) )
+                 , ( ( ep.trackHeight, profileSvgWidth ), ( 0, profileSvgWidth ) )
                  ]
                     |> List.map
                         (\( ( y1, x1 ), ( y2, x2 ) ) ->
@@ -2695,6 +2728,158 @@ profile segmentIndex track fullTrackpoints maxDistance minElevation maxElevation
                         )
                 )
             ]
+        ]
+
+
+
+profileSvgHeight : ElevationProfileOptions -> GpxApi.Track -> Int -> Int
+profileSvgHeight ep track markerLabelHeight =
+    ep.trackHeight
+        + markerLabelHeight
+        + (track.waypoints
+            |> List.map (\waypoint -> String.length waypoint.name)
+            |> List.maximum
+            |> Maybe.withDefault 0
+            |> (\length -> max 100 (round (toFloat length * 0.6 * ep.fontSize * ep.labelHeightGain)))
+          )
+
+
+profileCalculator : ProfilePreparation.Data -> ElevationProfileOptions -> Float -> XYCalculator
+profileCalculator prepared ep maxDistance =
+    xyCalculator
+        { svgHeight = toFloat ep.trackHeight
+        , svgWidth = toFloat profileSvgWidth
+        , maxDistance = maxDistance
+        , minElevation = prepared.minElevation
+        , maxElevation = prepared.maxElevation
+        }
+
+
+{-| Background and track are separate lazy groups so dynamic distance labels and the
+position marker keep their existing paint order. Full-route intensity is prepared only once.
+-}
+viewProfileBackground : Int -> ProfilePreparation.Data -> ElevationProfileOptions -> Int -> Float -> Float -> Float -> Svg.Svg Msg
+viewProfileBackground segmentIndex prepared ep width segStart segEnd maxDistance =
+    let
+        calc =
+            profileCalculator prepared ep maxDistance
+
+        intensityPoints =
+            if ep.showIntensity then
+                prepared.intensityPoints
+                    |> List.filter (\point -> point.distance >= segStart && point.distance <= segEnd)
+                    |> List.map (\point -> { point | distance = point.distance - segStart })
+                    |> downsample width
+
+            else
+                []
+    in
+    Svg.g []
+        [ -- intensity shading
+          if List.isEmpty intensityPoints then
+            Svg.g [] []
+
+          else
+            renderIntensityShading segmentIndex (toFloat profileSvgWidth) maxDistance (toFloat ep.trackHeight) intensityPoints prepared.minIntensity prepared.maxIntensity
+        , -- elevation ticks
+          Svg.g []
+            (elevationTicks prepared.minElevation prepared.maxElevation
+                |> List.concatMap
+                    (\tickElev ->
+                        let
+                            y =
+                                calc.y tickElev
+                        in
+                        [ Svg.line
+                            [ Svg.Attributes.x1 "-5"
+                            , Svg.Attributes.y1 y
+                            , Svg.Attributes.x2 "0"
+                            , Svg.Attributes.y2 y
+                            , Svg.Attributes.stroke "grey"
+                            , Svg.Attributes.strokeWidth "1"
+                            ]
+                            []
+                        , Svg.text_
+                            [ Svg.Attributes.x "-8"
+                            , Svg.Attributes.y y
+                            , Svg.Attributes.textAnchor "end"
+                            , Svg.Attributes.dominantBaseline "central"
+                            , Svg.Attributes.fontSize "10"
+                            , Svg.Attributes.fill "grey"
+                            ]
+                            [ Svg.text (String.fromInt (round tickElev)) ]
+                        ]
+                    )
+            )
+        ]
+
+
+viewProfileTrack : GpxApi.Track -> ProfilePreparation.Data -> ElevationProfileOptions -> Int -> Float -> Int -> Float -> Svg.Svg Msg
+viewProfileTrack track prepared ep width maxDistance markerLabelHeight offRouteThreshold =
+    let
+        calc =
+            profileCalculator prepared ep maxDistance
+
+        svgHeight =
+            profileSvgHeight ep track markerLabelHeight
+    in
+    Svg.g []
+        [ -- waypoints
+          Svg.g []
+            (let
+                svgBottom =
+                    String.fromInt svgHeight
+
+                paddedWaypointTextY =
+                    String.fromInt <| ep.trackHeight + 5 + markerLabelHeight
+             in
+             track.waypoints
+                |> List.concatMap
+                    (\waypoint ->
+                        let
+                            x =
+                                calc.x waypoint.distance
+
+                            y =
+                                calc.y <| interpolateWaypointElevation track.trackpoints waypoint.distance - 5
+
+                            isOffRoute =
+                                waypoint.offRoute > offRouteThreshold
+
+                            strokeColor =
+                                if isOffRoute then
+                                    offRouteColour
+
+                                else
+                                    "lightgray"
+                        in
+                        [ Svg.line
+                            [ Svg.Attributes.x1 <| x
+                            , Svg.Attributes.y1 <| svgBottom
+                            , Svg.Attributes.x2 <| x
+                            , Svg.Attributes.y2 <| y
+                            , Svg.Attributes.stroke strokeColor
+                            , Svg.Attributes.strokeWidth "1"
+                            ]
+                            []
+                        , Svg.text_
+                            ([ Svg.Attributes.fontSize <| String.fromFloat ep.fontSize
+                             , Svg.Attributes.dominantBaseline "text-top"
+                             , Svg.Attributes.transform <| "translate(" ++ x ++ ", " ++ paddedWaypointTextY ++ ") rotate(90)"
+                             ]
+                                ++ (if isOffRoute then
+                                        [ Svg.Attributes.fill "orange" ]
+
+                                    else
+                                        []
+                                   )
+                            )
+                            [ Svg.text waypoint.name ]
+                        ]
+                    )
+            )
+        , -- track line
+          resolveElevationProfileSVGLine calc (downsample width track.trackpoints) (String.fromFloat ep.trackThickness)
         ]
 
 
@@ -2774,47 +2959,6 @@ resolveElevationProfileSVGLine calc profileData trackThicknessAttrValue =
         , Svg.Attributes.fill "none"
         ]
         []
-
-
-computeIntensity : Float -> List GpxApi.TrackPoint -> List { distance : Float, intensity : Float }
-computeIntensity tau trackPoints =
-    case trackPoints of
-        [] ->
-            []
-
-        first :: rest ->
-            let
-                ( _, result ) =
-                    List.foldl
-                        (\current ( ( prev, prevIntensity ), acc ) ->
-                            let
-                                deltaD =
-                                    current.distance - prev.distance
-
-                                grade =
-                                    if deltaD > 0 then
-                                        (current.elevation - prev.elevation) / deltaD
-
-                                    else
-                                        0
-
-                                climbingGrade =
-                                    max 0 grade
-
-                                decay =
-                                    e ^ (-deltaD / tau)
-
-                                newIntensity =
-                                    decay * prevIntensity + (1 - decay) * climbingGrade
-                            in
-                            ( ( current, newIntensity )
-                            , { distance = current.distance, intensity = newIntensity } :: acc
-                            )
-                        )
-                        ( ( first, 0 ), [ { distance = first.distance, intensity = 0 } ] )
-                        rest
-            in
-            List.reverse result
 
 
 renderIntensityShading : Int -> Float -> Float -> Float -> List { distance : Float, intensity : Float } -> Float -> Float -> Svg.Svg msg
@@ -5242,6 +5386,8 @@ stateDecoder =
             , storageError = Nothing
             , splitSegments = Nothing
             , profilePixelWidth = Nothing
+            , profileSourceRevision = 0
+            , profilePreparation = Nothing
             , now = Nothing
             , zone = Time.utc
             }

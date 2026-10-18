@@ -93,6 +93,7 @@ The route app's main Elm file is ~5400 lines, with the track model and arithmeti
   - Model/`State`, option records, and defaults: ~`type alias State` through `defaultRelativeOptions`; Pace options/defaults live in `Pace`
   - `Msg` + `update`
   - Elevation profile rendering: `viewElevationProfileTab`, `profile`, `distanceMarkers`
+    - `viewProfileContent` has a lazy boundary; `viewProfileBackground` and `viewProfileTrack` cache stable SVG groups. Dynamic marker rows change waypoint layout, so the track layer also receives their reserved height.
   - Cuesheet rendering: `viewCuesheetTab`, `cuesheetSvg`, `waypointInfos`
   - Relative rendering: `viewRelativeTab`, `viewRelativeTravelCard`, `relativePointFor`
   - Pace rendering: `viewPaceTab`, `viewArrivalCard`; arithmetic lives in `Pace.metresPerSecond` / `Pace.elapsedSoFar`
@@ -129,6 +130,14 @@ window and UI selection correction. `Route.encodeEditableTrack` stores originals
 while `GpxApi.encodeTrack` sends effective waypoints to WASM; keep these formats separate.
 
 `docs/module-extraction.md` records the five completed extractions and their verification.
+
+`ProfileSplit` holds the shared boundary/window calculations for construction and position-only
+reuse decisions. `ProfilePreparation` holds one transient preparation for the selected route,
+including full-route intensity and elevation bounds. `profileSourceRevision` advances on GPX
+responses, track navigation and imports; any new path replacing source trackpoints must also
+invalidate it. Both the revision and preparation are excluded from saved state, and preparation
+is cleared when the profile unmounts. `docs/profile-rendering-results.md` records measurements
+and the comparison against the rendering plan.
 
 The Elm toolchain is pinned in `elm.Dockerfile` (`elm@0.19.1-6`, `elm-test@0.19.1-revision12`).
 Leave it pinned: `npm install -g elm` now resolves to 0.19.2, which refuses to build an
