@@ -758,11 +758,9 @@ updateAppState msg model =
                                                     Just matchedDist
                                         }
                             in
-                            -- Keep this GPS write sanitized even when refreshing a static split:
-                            -- do not persist the live GPS position here.
                             ( updateState locatedState
                             , Cmd.batch
-                                [ storeState (encodeSavedState { locatedState | position = Nothing })
+                                [ storeState (encodeSavedState locatedState)
                                 , splitCmd
                                 ]
                             )
@@ -5237,7 +5235,14 @@ encodeSavedState state =
             , Just ( "trackThickness", Json.Encode.float ep.trackThickness )
             , Just ( "showIntensity", Json.Encode.bool ep.showIntensity )
             , Just ( "intensityTau", Json.Encode.float ep.intensityTau )
-            , state.position |> Maybe.map (\pos -> ( "position", Json.Encode.float pos ))
+            -- A GPS fix marks the position as live; manual edits clear it. Apply this
+            -- here so every save and export omits GPS positions, even after other edits.
+            , case state.location of
+                Nothing ->
+                    state.position |> Maybe.map (\pos -> ( "position", Json.Encode.float pos ))
+
+                Just _ ->
+                    Nothing
             , Just
                 ( "viewMode"
                 , Json.Encode.string

@@ -105,9 +105,10 @@ retained in the repository; those temporary browser drivers are not CI tests.
 
 ## Remaining work
 
-The earlier GPS persistence issue remains separate: a successful fix sanitizes its immediate
-storage write, but a later generic saved-control update can still save the live GPS position.
-This change preserves the sanitized handler write and does not expand into that separate fix.
+The GPS persistence issue was left separate by this rendering change: a successful fix sanitized
+its immediate storage write, but a later generic saved-control update could still save the live
+GPS position. A subsequent fix now excludes GPS-derived positions in the shared encoder for
+every save and state export; `elm/route/browser-tests/gps-persistence.cjs` covers the regression.
 
 Live movement that changes the window, changed split boundaries, route edits and relevant
 display changes correctly invalidate their dependent content. State serialization still runs

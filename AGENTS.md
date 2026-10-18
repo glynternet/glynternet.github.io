@@ -151,6 +151,12 @@ option together, so that a future "share this view" feature can hand over the
 whole thing — through the `storeState` port, which `_layouts/route.html` writes
 to **IndexedDB** (database `route`, store `state`, key `appState`).
 
+`encodeSavedState` omits GPS-derived positions from every save and state export. A present
+`state.location` marks the position as GPS-derived; manual edits (including the same distance)
+clear it and make the position persistable. Tracking being stopped or a subsequent GPS request
+failing does not make an old fix manual. The browser regression is
+`elm/route/browser-tests/gps-persistence.cjs`; its header gives the Playwright command.
+
 It used to be `localStorage`, and a long route broke it: the state is almost
 entirely trackpoints, and a few tens of thousands of them exceeded the ~5MB
 per-origin cap, so uploading a big GPX died on an uncaught `QuotaExceededError`.
