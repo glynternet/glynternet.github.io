@@ -63,9 +63,8 @@ groups; finer detail can split them. Use the formatter's existing rounding
 rules, including its treatment of exact rounding boundaries.
 
 Compare each waypoint's displayed distance, not the rounded gap between points.
-A gap displayed as zero does not establish that the two waypoint distance
-labels are equal. Do not use a fixed proximity threshold or chain together
-points merely because each neighbouring pair is close.
+Do not use a fixed proximity threshold or chain together points merely because
+each neighbouring pair is close.
 
 Use distance along the route rather than straight-line distance. Deleted
 waypoints are excluded; remaining items retain the view's route order after
@@ -189,6 +188,18 @@ selectable and editable. Change to detail 3 and verify separate `0.300km` and
 `0.304km` rows; change back and verify they regroup without losing selection.
 Repeat for picker labels, and verify that a saved-state round trip restores
 the selected detail and resulting groups without storing the groups themselves.
+
+## Follow-up consideration: gaps displayed as zero
+
+At the user's request on 18 October 2026, retain this for follow-up review:
+a gap displayed as zero does not establish that the two waypoint distance
+labels are equal. For example, at detail 2 the 2 m gap between 304 m and 306 m
+displays as `0.00km`, while the waypoint labels are `0.30km` and `0.31km`.
+
+Consider whether such waypoints should also be grouped, or whether their
+display needs another treatment. This is deferred for later consideration;
+the current proposal and its acceptance checks use matching waypoint distance
+labels. No additional grouping rule is decided here.
 
 ## Rollout
 
