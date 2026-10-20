@@ -227,6 +227,8 @@ and grouping edge-case matrix belongs in the unit suite.
 
 ## Follow-up consideration: gaps displayed as zero
 
+Tracked as an open item in the [repository TODO list](../TODO.md).
+
 At the user's request on 18 October 2026, retain this for follow-up review:
 a gap displayed as zero does not establish that the two waypoint distance
 labels are equal. For example, at detail 2 the 2 m gap between 304 m and 306 m
