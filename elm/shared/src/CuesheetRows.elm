@@ -1,4 +1,4 @@
-module CuesheetRows exposing (Info(..), waypointInfos)
+module CuesheetRows exposing (Info(..), sharedCategories, waypointInfos)
 
 {-| Prepare presentation rows while retaining the identity of synthetic points.
 A position at the same distance as a waypoint is still a separate row and
@@ -15,7 +15,7 @@ type Info
     = InfoWaypoint Waypoint
     | InfoPosition Waypoint
     | InfoGroup WaypointGroup
-    | InfoMember Int Waypoint
+    | InfoMember Int Waypoint (List String)
     | Ride Float ( Float, Float )
 
 
@@ -93,10 +93,44 @@ locationRows location =
                     [ InfoWaypoint waypoint ]
 
                 members ->
-                    InfoGroup group :: List.map (\( index, waypoint ) -> InfoMember index waypoint) members
+                    let
+                        common =
+                            sharedCategories group
+                    in
+                    InfoGroup group
+                        :: List.map
+                            (\( index, waypoint ) ->
+                                InfoMember index
+                                    waypoint
+                                    (displayCategories waypoint |> List.filter (\category -> not (List.member category common)))
+                            )
+                            members
 
         Synthetic AtRoutePosition waypoint ->
             [ InfoPosition waypoint ]
 
         Synthetic _ waypoint ->
             [ InfoWaypoint waypoint ]
+
+
+{-| Only promote categories when every member has the same nonempty set.
+Mixed groups keep categories beside each member, including partial overlaps.
+This is display metadata; the original waypoints remain unmodified.
+-}
+sharedCategories : WaypointGroup -> List String
+sharedCategories group =
+    case List.map (Tuple.second >> displayCategories) group.members of
+        first :: rest ->
+            if List.all (\categories -> List.sort categories == List.sort first) rest then
+                first
+
+            else
+                []
+
+        [] ->
+            []
+
+
+displayCategories : Waypoint -> List String
+displayCategories waypoint =
+    waypoint.categories |> List.map String.trim |> List.filter ((/=) "") |> List.Extra.unique

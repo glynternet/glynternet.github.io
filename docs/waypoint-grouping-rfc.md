@@ -96,13 +96,17 @@ it actually shows.
 
 ### Group rows and selection
 
-Singletons render as they do today. A group of two or more renders as one
-location row with a de-duplicated ` · `-joined label, the shared rounded distance
-and the member names/categories available in an expanded detail view. Use the
+Singletons render as they do today. A group of two or more renders as a heading
+with the shared rounded distance and member count, followed by each individual
+waypoint name once. When all members have the same nonempty category set, show
+those categories in the heading and omit them from the member rows. Mixed
+category sets stay beside their own members, including partial overlaps. Use the
 first member's unrounded route distance and cumulative gain/loss as the
 representative values; do not average or overwrite members' original values.
-The first version should default groups to expanded, so no information is
-hidden. Later, a per-view collapse preference could be added.
+Groups remain expanded, so no information is hidden. Member rows use indentation
+and closer spacing without repeated arrow markers. Off-route distances and
+warnings stay attached to individual members. Later, a per-view collapse
+preference could be added.
 
 Selectors should continue selecting individual members. The group label is
 context only and must not replace the underlying `PointRef`.
@@ -267,3 +271,20 @@ labels. No additional grouping rule is decided here.
   members, and unchanged split-GPX track output. The existing split-GPX exporter
   writes tracks only; waypoint records remain in saved state. The zero-gap
   follow-up above remains deferred.
+
+## Cuesheet presentation refinement, 19 October 2026
+
+After reviewing a screenshot, the user requested the simpler visible layout
+described above and a local preview to test it. This supersedes the initial
+concatenated-name cuesheet heading, which repeated the names below it. Picker
+labels and the distance-based grouping algorithm remain unchanged.
+
+`CuesheetRows.sharedCategories` promotes identical category sets, ignoring
+blank entries, duplicate categories and category order for this display only.
+Each member retains its original waypoint and index separately from the
+categories shown on its row. Unit tests cover category promotion, partial
+overlap and uncategorised members. The 173-test suite and optimized Elm build
+pass; the browser smoke test also checks that each name appears once, shared
+categories appear once, off-route warnings remain visible, and member rows do
+not overlap at desktop and mobile widths. The user reviewed the local preview
+and approved this refinement for pushing on 19 October 2026.

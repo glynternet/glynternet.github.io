@@ -3278,8 +3278,29 @@ cuesheetSvg offRouteThreshold showOffRouteDistance waypoints cs finishDist track
         lastWaypoint =
             List.reverse waypoints |> List.head |> Maybe.map Tuple.second
 
-        svgHeight =
-            (*) cs.itemSpacing (List.length info)
+        rowHeight item =
+            case item of
+                InfoMember _ waypoint categories ->
+                    max
+                        (if not (List.isEmpty categories) && (waypoint.offRoute > offRouteThreshold || (showOffRouteDistance && waypoint.offRoute > 0)) then
+                            32
+
+                         else
+                            20
+                        )
+                        (round (toFloat cs.itemSpacing * 0.75))
+
+                InfoGroup _ ->
+                    max 30 cs.itemSpacing
+
+                _ ->
+                    cs.itemSpacing
+
+        ( svgHeight, reversedRows ) =
+            List.foldl
+                (\item ( offset, rows ) -> ( offset + rowHeight item, ( offset, item ) :: rows ))
+                ( 0, [] )
+                info
 
         svgContentLeftStart =
             0
@@ -3295,12 +3316,12 @@ cuesheetSvg offRouteThreshold showOffRouteDistance waypoints cs finishDist track
             , Svg.Attributes.height <| String.fromInt svgHeight
             , Svg.Attributes.viewBox <| "-40 -10 240 " ++ String.fromInt (svgHeight + cs.itemSpacing)
             ]
-            (info
-                |> List.indexedMap
-                    (\i item ->
+            (List.reverse reversedRows
+                |> List.map
+                    (\( offset, item ) ->
                         let
                             translate =
-                                Svg.Attributes.transform <| "translate(0," ++ (String.fromInt <| i * cs.itemSpacing) ++ ")"
+                                Svg.Attributes.transform <| "translate(0," ++ String.fromInt offset ++ ")"
                         in
                         let
                             renderWaypointItem isMember showOffRoute fillAttrs waypoint =
@@ -3400,7 +3421,7 @@ cuesheetSvg offRouteThreshold showOffRouteDistance waypoints cs finishDist track
                                             ]
 
                                     waypointInfoLines =
-                                        if List.isEmpty waypointInfo then
+                                        if List.isEmpty waypointInfo && not isMember then
                                             [ ( "◉", [] ) ]
 
                                         else
@@ -3408,9 +3429,18 @@ cuesheetSvg offRouteThreshold showOffRouteDistance waypoints cs finishDist track
                                 in
                                 Svg.g [ translate ]
                                     (Svg.text_
-                                        ([ Svg.Attributes.x (String.fromInt <| svgContentLeftStart + 10)
+                                        ([ Svg.Attributes.x
+                                            (String.fromInt <|
+                                                svgContentLeftStart
+                                                    + (if isMember then
+                                                        16
+
+                                                       else
+                                                        10
+                                                      )
+                                            )
                                          , Svg.Attributes.dominantBaseline "middle"
-                                         , Svg.Attributes.y <| String.fromInt (cs.itemSpacing // 2)
+                                         , Svg.Attributes.y <| String.fromInt (rowHeight item // 2)
                                          ]
                                             ++ fillAttrs
                                         )
@@ -3420,7 +3450,7 @@ cuesheetSvg offRouteThreshold showOffRouteDistance waypoints cs finishDist track
                                                     (\j ( line, lineAttributes ) ->
                                                         Svg.text_
                                                             ([ Svg.Attributes.x svgContentLeftStartString
-                                                             , Svg.Attributes.y <| String.fromInt (cs.itemSpacing // 2)
+                                                             , Svg.Attributes.y <| String.fromInt (rowHeight item // 2)
                                                              , Svg.Attributes.dominantBaseline "middle"
                                                              , Svg.Attributes.dy (String.fromFloat (toFloat j - (toFloat <| List.length waypointInfoLines - 1) / 2) ++ "em")
                                                              , Svg.Attributes.textAnchor "end"
@@ -3446,26 +3476,46 @@ cuesheetSvg offRouteThreshold showOffRouteDistance waypoints cs finishDist track
                                     waypoint
 
                             InfoGroup group ->
+                                let
+                                    heading =
+                                        String.join " · "
+                                            (CuesheetRows.sharedCategories group
+                                                ++ [ String.fromInt (List.length group.members) ++ " waypoints" ]
+                                            )
+                                in
                                 Svg.g
                                     [ Svg.Attributes.class "cuesheet-group"
-                                    , Html.Attributes.attribute "aria-label" (String.fromInt (List.length group.members) ++ " waypoints: " ++ WaypointGrouping.label group)
+                                    , Html.Attributes.attribute "aria-label"
+                                        (String.join " · "
+                                            (List.filterMap identity
+                                                [ DistanceDisplay.waypointLabel cs finishDist refWaypoint (GpxApi.Waypoint group.distance "" [] group.gain group.loss 0)
+                                                , Just heading
+                                                ]
+                                            )
+                                        )
                                     ]
-                                    [ Svg.title [] [ Svg.text (String.fromInt (List.length group.members) ++ " waypoints") ]
-                                    , renderWaypointItem False
+                                    [ renderWaypointItem False
                                         False
-                                        []
-                                        (GpxApi.Waypoint group.distance (WaypointGrouping.label group) [] group.gain group.loss 0)
+                                        [ Svg.Attributes.fontWeight "600", Svg.Attributes.fontSize "smaller" ]
+                                        (GpxApi.Waypoint group.distance heading [] group.gain group.loss 0)
                                     ]
 
-                            InfoMember index waypoint ->
+                            InfoMember index waypoint categories ->
                                 Svg.g
                                     [ Svg.Attributes.class "cuesheet-member"
                                     , Html.Attributes.attribute "data-waypoint-index" (String.fromInt index)
                                     ]
                                     [ renderWaypointItem True
                                         showOffRouteDistance
-                                        [ Svg.Attributes.fontSize "smaller" ]
-                                        { waypoint | name = "↳ " ++ Route.waypointDisplayName waypoint }
+                                        (Svg.Attributes.fontSize "smaller"
+                                            :: (if waypoint.offRoute > offRouteThreshold then
+                                                    [ Svg.Attributes.fill offRouteColour ]
+
+                                                else
+                                                    []
+                                               )
+                                        )
+                                        { waypoint | name = Route.waypointDisplayName waypoint, categories = categories }
                                     ]
 
                             InfoPosition waypoint ->

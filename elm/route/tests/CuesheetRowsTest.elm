@@ -35,8 +35,51 @@ suite =
                     [ ( AtWaypoint 8, first ), ( AtWaypoint 3, second ), ( AtRouteEnd, finish ) ]
                     |> Expect.equal
                         (List.map InfoGroup (WaypointGrouping.groupWaypoints (DistanceDisplay.fromStartLabel 2) members)
-                            ++ [ InfoMember 8 first, InfoMember 3 second, Ride 700 ( 50, 2 ), InfoWaypoint finish ]
+                            ++ [ InfoMember 8 first first.categories, InfoMember 3 second second.categories, Ride 700 ( 50, 2 ), InfoWaypoint finish ]
                         )
+        , test "shared categories appear in the heading and original members retain all data" <|
+            \_ ->
+                let
+                    a =
+                        { first | categories = [ " water ", "supply", "water", "" ] }
+
+                    b =
+                        { second | categories = [ "supply", "water" ] }
+                in
+                case CuesheetRows.waypointInfos (always (Just "same")) [ ( AtWaypoint 8, a ), ( AtWaypoint 3, b ) ] of
+                    [ InfoGroup group, InfoMember 8 memberA categoriesA, InfoMember 3 memberB categoriesB ] ->
+                        Expect.equal
+                            ( [ "water", "supply" ], ( a, b ), ( [], [] ) )
+                            ( CuesheetRows.sharedCategories group, ( memberA, memberB ), ( categoriesA, categoriesB ) )
+
+                    _ ->
+                        Expect.fail "Expected a heading and both original members"
+        , test "partially overlapping categories stay on their own members" <|
+            \_ ->
+                let
+                    b =
+                        { second | categories = [ "water", "camp" ] }
+                in
+                case CuesheetRows.waypointInfos (always (Just "same")) [ ( AtWaypoint 8, first ), ( AtWaypoint 3, b ) ] of
+                    [ InfoGroup group, InfoMember _ _ categoriesA, InfoMember _ _ categoriesB ] ->
+                        Expect.equal ( [], [ "water" ], [ "water", "camp" ] )
+                            ( CuesheetRows.sharedCategories group, categoriesA, categoriesB )
+
+                    _ ->
+                        Expect.fail "Expected a heading and two members"
+        , test "an uncategorised member does not inherit another member's category" <|
+            \_ ->
+                let
+                    b =
+                        { second | categories = [] }
+                in
+                case CuesheetRows.waypointInfos (always (Just "same")) [ ( AtWaypoint 8, first ), ( AtWaypoint 3, b ) ] of
+                    [ InfoGroup group, InfoMember _ _ categoriesA, InfoMember _ _ categoriesB ] ->
+                        Expect.equal ( [], [ "water" ], [] )
+                            ( CuesheetRows.sharedCategories group, categoriesA, categoriesB )
+
+                    _ ->
+                        Expect.fail "Expected a heading and two members"
         , test "a coincident position stays a position and the actual waypoint stays a waypoint" <|
             \_ ->
                 CuesheetRows.waypointInfos (always (Just "same"))

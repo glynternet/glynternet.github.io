@@ -81,6 +81,7 @@ test('detail controls groups, member identity and edits survive regrouping and r
 
   await groupCount(page, 1);
   assert.match(await page.locator('.cuesheet-group').textContent(), /0\.30km/);
+  assert.doesNotMatch(await page.locator('.cuesheet-group').textContent(), /Water|Camp/);
   assert.match(await page.locator('.cuesheet-group').getAttribute('aria-label'), /2 waypoints/);
   assert.deepEqual(await page.locator('.cuesheet-member').evaluateAll(nodes => nodes.map(node => node.dataset.waypointIndex)), ['0', '1']);
   await page.getByRole('button', { name: 'Relative', exact: true }).click();
@@ -108,7 +109,9 @@ test('detail controls groups, member identity and edits survive regrouping and r
   await page.locator('[data-waypoint-index="1"] input[placeholder="Waypoint name..."]').fill('Camp edited');
   await page.getByRole('button', { name: 'Cuesheet', exact: true }).click();
   await groupCount(page, 1);
-  assert.match(await page.locator('.cuesheet-group').textContent(), /Water edited · Camp edited/);
+  assert.doesNotMatch(await page.locator('.cuesheet-group').textContent(), /Water edited|Camp edited/);
+  assert.match(await page.locator('.cuesheet-member').nth(0).textContent(), /Water edited/);
+  assert.match(await page.locator('.cuesheet-member').nth(1).textContent(), /Camp edited/);
   const stateDownload = page.waitForEvent('download');
   await page.getByRole('button', { name: 'export state', exact: true }).click();
   const saved = JSON.parse(fs.readFileSync(await (await stateDownload).path(), 'utf8'));
@@ -120,8 +123,8 @@ test('detail controls groups, member identity and edits survive regrouping and r
 
   await page.reload();
   await groupCount(page, 1);
-  assert.match(await page.locator('.cuesheet-group').textContent(), /Water edited · Camp edited/);
-  if (process.env.GROUPING_SCREENSHOT) await page.screenshot({ path: process.env.GROUPING_SCREENSHOT, fullPage: true });
+  assert.match(await page.locator('.cuesheet-member').nth(0).textContent(), /Water edited/);
+  assert.match(await page.locator('.cuesheet-member').nth(1).textContent(), /Camp edited/);
   await page.getByRole('button', { name: 'Relative', exact: true }).click();
   assert.equal(await end.inputValue(), '1');
   assert.equal(await end.locator('optgroup').count(), 1);
@@ -143,5 +146,48 @@ test('detail controls groups, member identity and edits survive regrouping and r
       ]),
     };
   }, gpx), { parseError: false, waypointCount: 0, points: [[40, -105, 100], [40.01, -105, 120]] });
+
+  // A realistic mix of categories checks the compact presentation without
+  // turning the browser test into the grouping algorithm's edge-case suite.
+  const examples = [
+    [33500, 'GGC Water 1', 'Drinking water', 45],
+    [33504, 'drinking_water (2)', 'Drinking water', 47],
+    [33509, 'toilets (5)', 'Toilets', 50],
+    [39300, 'drinking_water (4)', 'Drinking water', 65],
+    [39304, 'drinking_water (5)', 'Drinking water', 65],
+    [39308, 'drinking_water (6)', 'Drinking water', 278],
+  ];
+  Object.assign(saved, { activeTab: 'cuesheet', showOptions: false, showStartFinish: false,
+    showOffRouteDistance: true, showOffRouteWaypoints: true, distanceDetail: 1 });
+  saved.tracks.current.trackpoints[1][0] = 50000;
+  saved.tracks.current.editableWaypoints = examples.map(([dist, name, category, offRoute]) => ({
+    original: { dist, name, categories: [category], gain: dist / 50, loss: dist / 100, offRoute }, deleted: false,
+  }));
+  await page.evaluate(state => writeStoredState(JSON.stringify(state)), saved);
+  await page.reload();
+  await groupCount(page, 2);
+  const headings = await page.locator('.cuesheet-group').allTextContents();
+  assert.match(headings[0], /3 waypoints/);
+  assert.doesNotMatch(headings[0], /Drinking water|Toilets/);
+  assert.match(headings[1], /Drinking water · 3 waypoints/);
+  const members = await page.locator('.cuesheet-member').allTextContents();
+  assert.match(members[0], /Drinking water/);
+  assert.match(members[2], /Toilets/);
+  for (const text of members.slice(3)) assert.doesNotMatch(text, /Drinking water/);
+  assert.match(members[5], /⚠️ 278m off/);
+  const visibleLabels = await page.locator('.cuesheet text').allTextContents();
+  for (const [, name] of examples) assert.equal(visibleLabels.filter(text => text === name).length, 1);
+  assert.equal(visibleLabels.some(text => text.includes('↳')), false);
+  for (const width of [1100, 390]) {
+    await page.setViewportSize({ width, height: 800 });
+    if (process.env.GROUPING_SCREENSHOT) await page.screenshot({
+      path: process.env.GROUPING_SCREENSHOT.replace(/\.png$/, `-${width}.png`), fullPage: true,
+    });
+    const bounds = await page.locator('.cuesheet-member').evaluateAll(nodes => nodes.map(node => ({
+      top: node.getBoundingClientRect().top, bottom: node.getBoundingClientRect().bottom,
+    })));
+    assert.equal(bounds.some((row, i) => i > 0 && bounds[i - 1].bottom > row.top), false,
+      `member rows must not overlap: ${JSON.stringify(bounds)}`);
+  }
   assert.deepEqual(errors, []);
 });
