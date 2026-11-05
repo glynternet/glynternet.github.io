@@ -116,11 +116,38 @@ events:
     Saturday 3rd April
   urls:
   - https://www.breckenridgerecreation.com/races/imperial-challenge
+- summary: East Side Epic
+  begin: 2027-04-03
+  location: East 7th Street & Ash Street, Leadville, CO
+  description: Starts at 9:00 AM Mountain Time. Brought to you by LEADVELO BICICASA.
+  series: Leadville Winter Series
+- summary: Fatty Patty 50K
+  begin: 2027-03-20
+  location: Colorado Mountain College, Leadville, CO
+  description: Solos start at 8:00 AM and teams at 9:00 AM Mountain Time. Brought to
+    you by Oveja Negra.
+  series: Leadville Winter Series
+- summary: Mineral Belt Mayhem
+  begin: 2027-03-06
+  location: Cycles of Life, Harrison Avenue, Leadville, CO
+  description: Starts at 6:15 PM Mountain Time. Brought to you by Cycles of Life.
+  series: Leadville Winter Series
 - summary: Frisco Freeze
   begin: 2027-02-20
   location: Frisco Nordic Center
   urls:
   - https://www.townoffrisco.com/event/nordic-center-events/frisco-freeze-winter-bike-race/
+- summary: Tennessee Pass Night Jam
+  begin: 2027-02-06
+  location: Tennessee Pass, CO (meeting details coming soon)
+  description: Starts at 6:15 PM Mountain Time. Brought to you by Tennessee Pass
+    Nordic Center & Cookhouse.
+  series: Leadville Winter Series
+- summary: Colorado Cup
+  begin: 2027-01-16
+  location: Leadville, CO (start location to be announced)
+  description: Starts at 10:00 AM Mountain Time. Brought to you by Community Threads.
+  series: Leadville Winter Series
 
 
 ### 2026
