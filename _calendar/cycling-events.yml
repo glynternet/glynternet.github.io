@@ -152,16 +152,21 @@ events:
 
 ### 2026
 
+- summary: Global Fat Bike Day
+  begin: 2026-12-05
+  urls: []
 - summary: Pleasantville
   begin: 2026-12-05
   location: Arizona
   series: Arizona Endurance Series
+  attending: false
   urls:
   - https://rockyroad5050.wordpress.com/pleasantville/
 - summary: West Texas Showdown
   begin: 2026-12-04
   end: 2026-12-06
   location: Terlingua, TX
+  attending: false
   urls:
   - https://texasshowdownseries.com/west-texas-showdown/
 - summary: Picketpost Punisher
